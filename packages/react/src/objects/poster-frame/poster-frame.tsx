@@ -1,9 +1,14 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { POSTER_FRAME, POSTER_FRAME_REGIONS, posterFrameSpec, type PosterFrameSize } from '@area-mockups/core'
+import {
+  POSTER_FRAME,
+  POSTER_FRAME_REGIONS,
+  posterFrameSpec,
+  type PosterFrameSize,
+  roundedRectShape,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 

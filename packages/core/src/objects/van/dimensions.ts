@@ -15,9 +15,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the van. */
-export const VAN_MM = 1 / 1050
-
 export const VAN = {
   /** Overall body: length (x), height (y), width (z). `bevel` rounds the shell edges. */
   body: { length: 5.62, height: 2.43, width: 1.95, bevel: 0.045 },

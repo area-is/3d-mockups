@@ -295,8 +295,9 @@ function mergeSolids(solids: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const merged = new THREE.BufferGeometry()
   merged.setAttribute('position', new THREE.BufferAttribute(position, 3))
   merged.setAttribute('normal', new THREE.BufferAttribute(normal, 3))
-  for (const part of parts) part.dispose()
-  for (const solid of solids) solid.dispose()
+  // An unindexed input is its own `part`, so dispose the union once rather
+  // than double-firing its dispose event (three's WebGLRenderer listens).
+  for (const geometry of new Set([...parts, ...solids])) geometry.dispose()
   return merged
 }
 

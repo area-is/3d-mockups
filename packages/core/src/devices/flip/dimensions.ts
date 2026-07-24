@@ -167,9 +167,3 @@ export const FLIP_FRAMING = {
   openAngle?: number
   orientation?: Orientation
 }>
-
-/** Back-compat / default device. */
-export const FLIP = FLIP7
-
-/** Main (open) display aspect ratio (height / width). */
-export const FLIP_OPEN_ASPECT = FLIP.open.display.height / FLIP.open.display.width

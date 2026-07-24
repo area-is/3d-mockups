@@ -18,9 +18,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the bus. */
-export const BUS_MM = 1 / 1900
-
 export const BUS = {
   /** Overall body: length (x), height (y), width (z). `bevel` rounds the shell edges. */
   body: { length: 6.4, height: 1.684, width: 1.363, bevel: 0.04 },
@@ -100,9 +97,6 @@ export const BUS = {
   /** Default CSS px width of the full-coverage side wrap (`coverage="full"`). */
   fullResolution: 1920,
 } as const
-
-/** Ad panel aspect ratio (height / width) — the 30x144 king size. */
-export const BUS_AD_ASPECT = BUS.ad.height / BUS.ad.width
 
 /** Live regions: ad surfaces on both sides and the tail, plus the LED sign. */
 export const BUS_REGIONS = [

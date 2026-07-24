@@ -17,9 +17,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the semi trailer. */
-export const SEMI_TRAILER_MM = 1 / 2485
-
 export const SEMI_TRAILER = {
   /** The box: length (x), height (y), width (z). */
   body: { length: 6.5, height: 1.167, width: 1.046, radius: 0.02 },
@@ -39,9 +36,6 @@ export const SEMI_TRAILER = {
   /** Default CSS px width of the virtual side panel. */
   resolution: 1100,
 } as const
-
-/** Side panel aspect ratio (height / width). */
-export const SEMI_TRAILER_SIDE_ASPECT = SEMI_TRAILER.side.height / SEMI_TRAILER.side.width
 
 /** Live regions: both smooth sides and the rear doors. */
 export const SEMI_TRAILER_REGIONS = [

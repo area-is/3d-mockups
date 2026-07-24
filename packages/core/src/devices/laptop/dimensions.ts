@@ -14,9 +14,6 @@
 
 import type { MockupFraming } from '../../regions'
 
-/** World units per millimeter for the laptop family. */
-export const LAPTOP_MM = 1 / 72.4
-
 /** A port opening on a side wall of the base. `z` is distance from base center (+ = front). */
 export interface LaptopPort {
   z: number
@@ -276,9 +273,3 @@ export const LAPTOP_FRAMING = {
   extent: ({ variant }) =>
     -LAPTOP_STAGE_OFFSET_Y + LAPTOP_VARIANTS[variant ?? LAPTOP_DEFAULT_VARIANT].base.thickness / 2 - 0.056,
 } as const satisfies MockupFraming<{ variant?: LaptopVariant }>
-
-/** Back-compat: dimensions of the default device (MacBook Air 13"). */
-export const LAPTOP = MACBOOK_AIR_13
-
-/** Display aspect ratio (height / width) of the default device — the 13.6" 2560x1664 panel. */
-export const LAPTOP_DISPLAY_ASPECT = LAPTOP.display.height / LAPTOP.display.width

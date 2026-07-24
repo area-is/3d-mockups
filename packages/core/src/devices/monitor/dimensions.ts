@@ -101,6 +101,3 @@ export const MONITOR_FRAMING = {
   floatIntensity: 0.5,
   extent: () => MONITOR.standHeight - MONITOR_STAGE_OFFSET_Y,
 } as const satisfies MockupFraming
-
-/** Display aspect ratio (height / width) — the 16:9 5K panel. */
-export const MONITOR_DISPLAY_ASPECT = MONITOR.display.height / MONITOR.display.width

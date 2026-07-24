@@ -118,6 +118,3 @@ export const TV_FRAMING = {
   floatIntensity: 0.5,
   extent: ({ size }) => (size === undefined ? TV : tvSpec(size)).standHeight - TV_STAGE_OFFSET_Y,
 } as const satisfies MockupFraming<{ size?: number }>
-
-/** Display aspect ratio (height / width) — the 16:9 panel. */
-export const TV_DISPLAY_ASPECT = TV.display.height / TV.display.width

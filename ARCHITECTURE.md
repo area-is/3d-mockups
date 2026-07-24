@@ -48,8 +48,10 @@ What that puts in the core today:
   there. `*_FRAMING` is the per-object stage math (camera pose, float intensity, the
   ground line under the object) that wrappers used to hand-code; `framedShadowY`
   turns it into the contact-shadow plane's Y in any binding.
-- **Geometry math** (`src/geometry`) — e.g. `roundedRectShape`, returning plain
-  three.js values any renderer can consume.
+- **Geometry math** (`src/geometry`) — `roundedRectShape`, `gearShape`, the
+  CSS `clip-path` builders and `sweptStrapGeometry` (a crowned watch-strap
+  section swept along a worn-wrist oval), all returning plain three.js values
+  any renderer can consume.
 - **Screen behaviors** (`src/screen`) — everything that makes the live DOM screen
   work, minus the framework portal itself:
   - `screenSurfaceStyle`, `screenCssHeight`, `screenCornerRadiusCss`,

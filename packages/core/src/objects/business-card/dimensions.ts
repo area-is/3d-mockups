@@ -11,9 +11,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the business card. */
-export const BUSINESS_CARD_MM = 1 / 26
-
 export const BUSINESS_CARD = {
   /**
    * The card itself. Premium 32 pt stock is die-cut with square corners —
@@ -27,9 +24,6 @@ export const BUSINESS_CARD = {
   /** Default CSS px width of the virtual face (~150 dpi of the physical card). */
   resolution: 520,
 } as const
-
-/** Face aspect ratio (height / width). */
-export const BUSINESS_CARD_FACE_ASPECT = BUSINESS_CARD.face.height / BUSINESS_CARD.face.width
 
 /** Live regions: the two faces of the card. */
 export const BUSINESS_CARD_REGIONS = [

@@ -15,9 +15,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the bus shelter. */
-export const BUS_SHELTER_MM = 1 / 700
-
 export const BUS_SHELTER = {
   /** Overall envelope: width (x), height (y), depth (z). */
   body: { width: 6.14, height: 3.57, depth: 2.07 },
@@ -42,9 +39,6 @@ export const BUS_SHELTER = {
   /** Default CSS px width of the virtual poster. */
   resolution: 480,
 } as const
-
-/** Poster aspect ratio (height / width) — the 6-sheet. */
-export const BUS_SHELTER_POSTER_ASPECT = BUS_SHELTER.poster.height / BUS_SHELTER.poster.width
 
 /** Live regions: both lightbox faces plus the two arrivals-board faces. */
 export const BUS_SHELTER_REGIONS = [

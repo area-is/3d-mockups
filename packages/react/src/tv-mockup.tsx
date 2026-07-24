@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { TV_FRAMING, tvCameraFraming } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { TVSet, tvSetSlots, type TVProps } from './objects/tv/tv'

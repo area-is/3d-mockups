@@ -2,9 +2,15 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MONITOR, MONITOR_COLORWAYS, MONITOR_STAGE_OFFSET_Y, SCREEN_REGIONS, findColorway } from '@area-mockups/core'
+import {
+  MONITOR,
+  MONITOR_COLORWAYS,
+  MONITOR_STAGE_OFFSET_Y,
+  SCREEN_REGIONS,
+  findColorway,
+  roundedRectShape,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { createLogoGeometry } from '../logos'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'

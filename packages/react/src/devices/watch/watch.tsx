@@ -9,9 +9,12 @@ import {
   WATCH_DEFAULT_VARIANT,
   SCREEN_REGIONS,
   type WatchVariant,
+  roundedRectShape,
+  gearShape,
+  sweptStrapGeometry,
+  wristLoopAt,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape, gearShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
@@ -38,7 +41,7 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
   /** Case colorway. Apple aluminum: Jet Black `#1c1d21` (default), Silver
    * `#dfe0e3`, Rose Gold `#dcb8a8`. Galaxy: Graphite `#33363c`, Silver `#d9dade`. */
   color?: string
-  /** Band colorway (Sport-Band-style closed loop). Defaults to a dark band. */
+  /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
   bandColor?: string
   /**
    * CSS pixel width of the virtual display. The default matches the device's
@@ -58,9 +61,12 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
  * A procedurally built smartwatch — Apple Watch Series 11 (46 mm squircle
  * case, Digital Crown, Sport Band) or Samsung Galaxy Watch 8 (44 mm cushion
  * case with the round display raised on its dial puck, two flat keys, a
- * tapering Dynamic-Lug-style band with keeper and buckle) depending on
- * `variant` — wearing a full closed wristband that hugs an invisible wrist
- * directly behind the case, emerging through the case's band slots. No 3D
+ * tapering Dynamic-Lug-style band) depending on `variant`.
+ *
+ * The band is worn on an invisible wrist and built the way a real one is:
+ * TWO domed, tapering straps sliding into the case's band slots, meeting at
+ * a closure on the underside — the Sport Band's pin-and-tuck lap, or a
+ * stainless pin buckle with a keeper and punched adjustment holes. No 3D
  * asset files are loaded — the whole device is generated from geometry at
  * runtime.
  *
@@ -171,111 +177,94 @@ function WatchImpl({
     [speaker]
   )
 
-  // Full wristband: a rounded-rect cross-section swept along a wrist-hugging
-  // ovoid loop. The strap ends stay buried inside the case so the band appears
-  // to leave through the band slots in the case's top/bottom edges (as on the
-  // real products), then wraps the invisible wrist directly behind the case.
-  // The cross-section can taper toward the far side of the wrist (`backWidth`,
-  // the Galaxy Dynamic Lug band). Hand-swept as an indexed grid so the vertex
-  // normals come out smooth; ExtrudeGeometry's flat shading turns a glossy
-  // band into visible facets.
-  const bandGeometry = React.useMemo(() => {
-    const { ryFront, ryBack, rz, centerZ, startAngle } = band.loop
-    const a1 = (startAngle * Math.PI) / 180
-    const a2 = Math.PI * 2 - a1
-    const rings = 96
-    const path: THREE.Vector3[] = []
-    const widths: number[] = []
-    for (let i = 0; i <= rings; i++) {
-      const phi = a1 + ((a2 - a1) * i) / rings
-      const ease = (1 - Math.cos(phi)) * 0.5
-      const ry = ryFront + (ryBack - ryFront) * ease
-      path.push(new THREE.Vector3(0, ry * Math.sin(phi), centerZ + rz * Math.cos(phi)))
-      // The strap reaches its tapered width within the first stretch past the
-      // case (the wide part is just the lug connector, as on the real bands).
-      widths.push(band.width + ((band.backWidth ?? band.width) - band.width) * Math.min(1, ease * 2.2))
+  // The worn wristband: two straps, like the real product. The twelve-o'clock
+  // strap leaves the top band slot, wraps the invisible wrist and carries the
+  // closure on its underside; the six-o'clock strap comes up the other way
+  // and its tail runs past the closure. Both start inside the case, so they
+  // read as sliding into the band slots.
+  //
+  // Each is a domed strap section swept along the wrist oval (core's
+  // `sweptStrapGeometry`): wide at the lug shoulder, narrowing to the strap
+  // proper, tapering again at the tip. The twelve-o'clock strap lifts by one
+  // strap thickness as it approaches the closure so it laps cleanly OVER the
+  // tail instead of intersecting it.
+  const closure = band.closureAngle
+  const bandGeometries = React.useMemo(() => {
+    const { startAngle } = band.loop
+    // Lug shoulder → strap: the wide section is just the connector filling the
+    // case slot, exactly as on the real bands.
+    const shoulder = (t: number) => Math.min(1, t * 7)
+    const lugTaper = (t: number) => band.lugWidth + (band.width - band.lugWidth) * shoulder(t)
+    // Tip taper over the last fifth of the strap.
+    const tipFade = (t: number) => Math.max(0, (t - 0.8) / 0.2)
+    const strapWidth = (t: number) => lugTaper(t) + (band.tipWidth - band.width) * tipFade(t)
+    const thickness = (t: number) => band.thickness * (1 - 0.18 * tipFade(t))
+    const crown = (t: number) => band.crown * (1 - 0.4 * tipFade(t))
+    return {
+      // Twelve-o'clock strap, lapping over the tail near the closure.
+      upper: sweptStrapGeometry({
+        loop: band.loop,
+        from: startAngle,
+        to: closure,
+        width: strapWidth,
+        thickness,
+        crown,
+        lift: (t) => band.thickness * 1.05 * Math.min(1, Math.max(0, (t - 0.74) / 0.16)),
+        segments: 60,
+        capEnd: true,
+      }),
+      // Six-o'clock strap: swept backwards from the bottom band slot, running
+      // `tailOverrun` degrees past the closure.
+      lower: sweptStrapGeometry({
+        loop: band.loop,
+        from: 360 - startAngle,
+        to: closure - band.tailOverrun,
+        width: strapWidth,
+        thickness,
+        crown,
+        segments: 60,
+        capEnd: true,
+      }),
     }
-    // cross-section: x spans the thickness (radial), y the width (world x)
-    const sectionAt = (w: number) => {
-      const pts = roundedRectShape(band.thickness, w, band.thickness * 0.33).getPoints(4)
-      if (pts.length > 1 && pts[0]!.equals(pts[pts.length - 1]!)) pts.pop()
-      return pts
-    }
-    const cols = sectionAt(band.width).length
-
-    const positions = new Float32Array((rings + 1) * cols * 3)
-    const indices: number[] = []
-    const tangent = new THREE.Vector3()
-    const normal = new THREE.Vector3()
-    const binormal = new THREE.Vector3(1, 0, 0) // the path is planar in yz
-    for (let i = 0; i <= rings; i++) {
-      tangent
-        .subVectors(path[Math.min(i + 1, rings)]!, path[Math.max(i - 1, 0)]!)
-        .normalize()
-      normal.crossVectors(binormal, tangent).normalize()
-      const section = sectionAt(widths[i]!)
-      for (let j = 0; j < cols; j++) {
-        const s = section[j]!
-        const o = (i * cols + j) * 3
-        positions[o] = path[i]!.x + binormal.x * s.y
-        positions[o + 1] = path[i]!.y + normal.y * s.x
-        positions[o + 2] = path[i]!.z + normal.z * s.x
-      }
-      if (i < rings) {
-        for (let j = 0; j < cols; j++) {
-          const jn = (j + 1) % cols
-          const a = i * cols + j
-          const b = i * cols + jn
-          const c = (i + 1) * cols + j
-          const d = (i + 1) * cols + jn
-          indices.push(a, c, b, b, c, d)
-        }
-      }
-    }
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setIndex(indices)
-    geometry.computeVertexNormals()
-    return geometry
-  }, [band])
+  }, [band, closure])
 
   React.useEffect(() => {
     return () => {
       bodyGeometry.dispose()
       glassGeometry.dispose()
-      bandGeometry.dispose()
+      bandGeometries.upper.dispose()
+      bandGeometries.lower.dispose()
       crownGeometry?.dispose()
       speakerLinerGeometries.forEach((g) => g.dispose())
     }
-  }, [bodyGeometry, glassGeometry, bandGeometry, crownGeometry, speakerLinerGeometries])
+  }, [bodyGeometry, glassGeometry, bandGeometries, crownGeometry, speakerLinerGeometries])
 
-  const isGalaxy = spec.style === 'galaxy'
   const dial = spec.dial
   const faceZ = body.depth / 2 + (dial?.height ?? 0)
 
-  // Worn-strap fittings sit on the loop's centerline: point, strap width and
-  // tangent tilt at a given sweep angle (0° = the loop's front axis).
-  const loopAt = React.useCallback(
-    (phiDeg: number) => {
-      const { ryFront, ryBack, rz, centerZ } = band.loop
-      const phi = (phiDeg * Math.PI) / 180
-      const ease = (1 - Math.cos(phi)) * 0.5
-      const ry = ryFront + (ryBack - ryFront) * ease
-      const dry = ((ryBack - ryFront) / 2) * Math.sin(phi)
-      const ty = dry * Math.sin(phi) + ry * Math.cos(phi)
-      const tz = -rz * Math.sin(phi)
+  // Strap fittings ride the loop: a point on the wrist oval, the outward
+  // normal to stand hardware off the strap, and the tangent tilt that lays it
+  // flat against the band.
+  const fittingAt = React.useCallback(
+    (phiDeg: number, ride = 0) => {
+      const frame = wristLoopAt(band.loop, (phiDeg * Math.PI) / 180)
       return {
-        y: ry * Math.sin(phi),
-        z: centerZ + rz * Math.cos(phi),
-        width: band.width + ((band.backWidth ?? band.width) - band.width) * Math.min(1, ease * 2.2),
-        rotX: Math.atan2(tz, ty),
+        position: [0, frame.y + frame.ny * ride, frame.z + frame.nz * ride] as [number, number, number],
+        // The section's outward normal is (ny, nz); a fitting built along +Y
+        // lines up with the strap when rotated onto it.
+        rotX: Math.atan2(-frame.nz, frame.ny),
       }
     },
-    [band]
+    [band.loop]
   )
 
-  const keeper = isGalaxy ? loopAt(240) : null
-  const buckle = isGalaxy ? loopAt(264) : null
+  // Closure hardware on the wrist's underside. `tuck` (Sport Band) is just
+  // the pin stud on the lapping strap's tip; `buckle` is the classic metal
+  // frame with its pin, plus a keeper holding the tail down.
+  const stand = band.thickness * 1.05
+  const pinStud = fittingAt(closure - 5, stand + band.thickness * 0.55)
+  const buckleFrame = fittingAt(closure - 2, stand * 0.5)
+  const keeper = fittingAt(closure - band.tailOverrun * 0.62, band.thickness * 0.5)
 
   return (
     <group {...groupProps}>
@@ -420,53 +409,103 @@ function WatchImpl({
         </>
       )}
 
-      {/* full wristband loop, worn around the invisible wrist. Matte
-          fluoroelastomer: a soft sheen only, or grazing angles blow out white */}
-      <mesh geometry={bandGeometry}>
-        <meshPhysicalMaterial
-          color={bandColor}
-          metalness={0.05}
-          roughness={0.72}
-          clearcoat={0.12}
-          clearcoatRoughness={0.7}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Sport Band pin cap on the outer face at the bottom of the loop */}
-      {!isGalaxy && (
-        <mesh position={[0, -(band.loop.ryFront + band.loop.ryBack) / 2 - band.thickness / 2 - 0.012, band.loop.centerZ]}>
-          <cylinderGeometry args={[0.17, 0.17, 0.024, 20]} />
-          <meshPhysicalMaterial color="#9aa0ab" metalness={0.9} roughness={0.3} />
-        </mesh>
-      )}
-
-      {/* Galaxy Sport Band closure under the wrist: band keeper + metal buckle */}
-      {keeper && (
-        <RoundedBox
-          args={[keeper.width + 0.08, 0.18, band.thickness + 0.07]}
-          radius={0.04}
-          position={[0, keeper.y, keeper.z]}
-          rotation-x={keeper.rotX}
-        >
+      {/* the two worn straps. Fluoroelastomer is a soft-touch matte with a
+          velvety edge falloff — `sheen` gives that without the blown-out
+          white a clearcoat produces at grazing angles */}
+      {[bandGeometries.upper, bandGeometries.lower].map((geometry, i) => (
+        <mesh key={i} geometry={geometry}>
           <meshPhysicalMaterial
             color={bandColor}
-            metalness={0.05}
-            roughness={0.72}
-            clearcoat={0.12}
-            clearcoatRoughness={0.7}
+            metalness={0}
+            roughness={0.62}
+            clearcoat={0.2}
+            clearcoatRoughness={0.65}
+            sheen={0.4}
+            sheenRoughness={0.85}
+            sheenColor="#8d939c"
+            envMapIntensity={0.65}
           />
-        </RoundedBox>
-      )}
-      {buckle && (
-        <RoundedBox
-          args={[buckle.width + 0.09, 0.24, band.thickness + 0.08]}
-          radius={0.04}
-          position={[0, buckle.y, buckle.z]}
-          rotation-x={buckle.rotX}
-        >
-          <meshPhysicalMaterial color="#b9bdc6" metalness={0.85} roughness={0.35} />
-        </RoundedBox>
+        </mesh>
+      ))}
+
+      {/* adjustment holes punched through the tail, sunk as dark eyelets */}
+      {band.holes.map(({ angle, radius }) => {
+        const hole = fittingAt(angle, band.thickness * 0.5 + band.crown * 0.4)
+        return (
+          <mesh key={angle} position={hole.position} rotation-x={hole.rotX + Math.PI / 2}>
+            <cylinderGeometry args={[radius, radius * 0.86, band.thickness * 1.1, 16]} />
+            <meshPhysicalMaterial color="#08090b" metalness={0.1} roughness={0.75} envMapIntensity={0.25} />
+          </mesh>
+        )
+      })}
+
+      {band.closure === 'tuck' ? (
+        // Sport Band pin-and-tuck: the only hardware on show is the pin stud
+        // on the lapping strap's tip, seated in a shallow dark socket.
+        <group position={pinStud.position} rotation-x={pinStud.rotX}>
+          <mesh rotation-x={Math.PI / 2}>
+            <cylinderGeometry args={[band.thickness * 0.62, band.thickness * 0.68, band.thickness * 0.5, 24]} />
+            <meshPhysicalMaterial color="#0d0e11" metalness={0.2} roughness={0.6} envMapIntensity={0.3} />
+          </mesh>
+          <mesh rotation-x={Math.PI / 2} position-y={band.thickness * 0.16}>
+            <cylinderGeometry args={[band.thickness * 0.4, band.thickness * 0.44, band.thickness * 0.36, 24]} />
+            <meshPhysicalMaterial color="#aeb4bd" metalness={0.92} roughness={0.26} envMapIntensity={1.2} />
+          </mesh>
+        </group>
+      ) : (
+        <>
+          {/* pin buckle: a stainless frame straddling both straps, with the
+              tongue crossing it into the tail's holes */}
+          <group position={buckleFrame.position} rotation-x={buckleFrame.rotX}>
+            {([1, -1] as const).map((s) => (
+              <RoundedBox
+                key={s}
+                args={[0.07, 0.1, band.thickness * 2.6]}
+                radius={0.026}
+                position={[s * (band.width / 2 + 0.035), 0, 0]}
+              >
+                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.28} envMapIntensity={1.2} />
+              </RoundedBox>
+            ))}
+            {([1, -1] as const).map((s) => (
+              <RoundedBox
+                key={s}
+                args={[band.width + 0.14, 0.1, 0.062]}
+                radius={0.026}
+                position={[0, 0, s * band.thickness * 1.24]}
+              >
+                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.28} envMapIntensity={1.2} />
+              </RoundedBox>
+            ))}
+            <mesh rotation-z={Math.PI / 2} position-y={band.thickness * 0.7}>
+              <cylinderGeometry args={[0.022, 0.022, band.width * 0.55, 12]} />
+              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.24} />
+            </mesh>
+          </group>
+          {/* keeper: the rubber loop the tail threads back through */}
+          <group position={keeper.position} rotation-x={keeper.rotX}>
+            {([1, -1] as const).map((s) => (
+              <RoundedBox
+                key={s}
+                args={[band.tipWidth + 0.11, 0.14, 0.05]}
+                radius={0.022}
+                position={[0, 0, s * (band.thickness * 0.72 + 0.025)]}
+              >
+                <meshPhysicalMaterial color={bandColor} metalness={0} roughness={0.62} sheen={0.4} sheenRoughness={0.85} />
+              </RoundedBox>
+            ))}
+            {([1, -1] as const).map((s) => (
+              <RoundedBox
+                key={s}
+                args={[0.05, 0.14, band.thickness * 1.5]}
+                radius={0.02}
+                position={[s * (band.tipWidth / 2 + 0.03), 0, 0]}
+              >
+                <meshPhysicalMaterial color={bandColor} metalness={0} roughness={0.62} sheen={0.4} sheenRoughness={0.85} />
+              </RoundedBox>
+            ))}
+          </group>
+        </>
       )}
 
       {/* the live screen: real DOM, CSS3D-transformed onto the crystal */}

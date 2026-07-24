@@ -48,9 +48,6 @@ export type BrochureSpec = ReturnType<typeof brochureSpec>
 /** The default US letter Z-fold. */
 export const BROCHURE: BrochureSpec = brochureSpec()
 
-/** Panel aspect ratio (height / width) of the default sheet. */
-export const BROCHURE_PANEL_ASPECT = BROCHURE.panel.height / BROCHURE.panel.width
-
 /** Live regions: one repeating panel slot (front and back faces via `side`). */
 export const BROCHURE_REGIONS = [
   { name: 'panel', label: 'Panel', repeats: true },

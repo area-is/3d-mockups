@@ -54,9 +54,6 @@ export type RollupBannerSpec = ReturnType<typeof rollupBannerSpec>
 /** The default 850 x 2000 mm stand. */
 export const ROLLUP_BANNER: RollupBannerSpec = rollupBannerSpec()
 
-/** Graphic aspect ratio (height / width) of the default unit. */
-export const ROLLUP_BANNER_ASPECT = ROLLUP_BANNER.graphic.height / ROLLUP_BANNER.graphic.width
-
 /** Live regions: the visible graphic. */
 export const ROLLUP_BANNER_REGIONS = [
   { name: 'banner', label: 'Banner' },

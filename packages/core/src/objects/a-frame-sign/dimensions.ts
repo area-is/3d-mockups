@@ -12,9 +12,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the A-frame sign. */
-export const A_FRAME_SIGN_MM = 1 / 280
-
 export const A_FRAME_SIGN = {
   /** One framed panel: outer size and frame bar width/depth. */
   panel: { width: 2.143, height: 3.214, frameWidth: 0.16, frameDepth: 0.09 },
@@ -25,9 +22,6 @@ export const A_FRAME_SIGN = {
   /** Default CSS px width of the virtual face. */
   resolution: 420,
 } as const
-
-/** Face aspect ratio (height / width). */
-export const A_FRAME_SIGN_ASPECT = A_FRAME_SIGN.face.height / A_FRAME_SIGN.face.width
 
 /** Live regions: the two panels of the A. */
 export const A_FRAME_SIGN_REGIONS = [

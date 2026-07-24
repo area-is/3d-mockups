@@ -22,9 +22,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the storefront. */
-export const STOREFRONT_MM = 1 / 1100
-
 export const STOREFRONT = {
   /** Overall building: width (x), height (y), depth (z). */
   body: { width: 5.455, height: 2.85, depth: 4.0 },
@@ -47,9 +44,6 @@ export const STOREFRONT = {
   /** Default CSS px width of the virtual fascia signs. */
   resolution: 800,
 } as const
-
-/** Fascia sign aspect ratio (height / width). */
-export const STOREFRONT_SIGN_ASPECT = STOREFRONT.sign.height / STOREFRONT.sign.width
 
 /**
  * Live regions: the four fascia signs, both front display bays, the glazed

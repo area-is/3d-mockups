@@ -4,6 +4,10 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   BusMockup,
+  IPhone,
+  type IPhoneVariant,
+  Phone,
+  type GalaxyVariant,
   BusShelterMockup,
   FlipMockup,
   FoldMockup,
@@ -29,8 +33,9 @@ import {
  *
  * Params:
  *   device      tablet | monitor | flip | fold | watch | laptop
- *               | bus | van | shelter | tv | idcard | store
- *               | magazine (default tablet)
+ *               | phone | iphone | bus | van | shelter | tv | idcard
+ *               | store | magazine (default tablet)
+ *   pvariant    device variant id                  (phone, iphone)
  *   variant     device variant id                  (tablet only)
  *   colorway    retail colorway id                 | color=#hex overrides
  *   orientation portrait | landscape               (tablet)
@@ -273,6 +278,26 @@ function HarnessScene() {
       >
         {screen}
       </FoldMockup>
+    )
+  }
+
+  if (device === 'phone' || device === 'iphone') {
+    const dist = Number(params.get('dist') ?? 7.4)
+    const Device = device === 'phone' ? Phone : IPhone
+    return (
+      <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
+        <Device
+          variant={(params.get('pvariant') ?? undefined) as GalaxyVariant & IPhoneVariant}
+          colorway={colorway}
+          color={color}
+          orientation={orientation}
+          rotation={[rx, ry, 0]}
+          interactive={false}
+          dragToRotate={false}
+        >
+          {screen}
+        </Device>
+      </MockupCanvas>
     )
   }
 

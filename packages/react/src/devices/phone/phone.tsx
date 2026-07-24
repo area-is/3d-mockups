@@ -8,6 +8,7 @@ import {
   findColorway,
   SCREEN_REGIONS,
   type GalaxyVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
@@ -23,7 +24,6 @@ import {
 } from '../details'
 
 type GroupProps = ThreeElements['group']
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 

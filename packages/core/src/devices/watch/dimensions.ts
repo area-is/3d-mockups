@@ -22,19 +22,19 @@
  *   run. The Dynamic Lug band is nearly case-wide where it attaches and
  *   tapers around the wrist.
  *
- * The wristband is worn: a closed loop that hugs an invisible wrist directly
- * behind the case (product photos show the strap peeking only a few mm past
- * the case outline, wrist oval ~55 x 40 mm). It leaves the case through the
- * band slots in the top/bottom edges rather than wrapping around the back.
+ * The wristband is worn on an invisible wrist directly behind the case
+ * (product photos show the strap peeking only a few mm past the case outline,
+ * wrist oval ~55 x 40 mm). It is two straps, not a ring: each leaves the case
+ * through the band slot in its edge, and they meet at a closure on the
+ * underside of the wrist — pin-and-tuck on the Sport Band, pin buckle and
+ * keeper on the Galaxy band.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { WristLoop } from '../../geometry/strap'
 import type { MockupFraming } from '../../regions'
-
-/** World units per millimeter for the watch family. */
-export const WATCH_MM = 1 / 17.7
 
 export interface WatchSpec {
   /** Per-family construction: Apple squircle+crown, or Galaxy cushion+round display. */
@@ -75,19 +75,38 @@ export interface WatchSpec {
    */
   bandSlot?: { width: number; height: number; z: number }
   /**
-   * Wristband, worn as a closed loop hugging the wrist right behind the case.
-   * `width` is the strap width where it leaves the case; `backWidth` lets the
-   * strap taper toward the far side of the wrist (Galaxy's Dynamic Lug band).
-   * The loop is an ovoid: vertical radius eases from `ryFront` (at the case)
-   * to `ryBack`, `rz` is the depth radius around `centerZ`, and the sweep
-   * starts/ends `startAngle` degrees off the loop's front axis so the strap
-   * ends stay buried inside the case, emerging through the band slots.
+   * Wristband, worn on an invisible wrist: TWO straps, like the real product.
+   * The twelve-o'clock strap carries the closure, the six-o'clock strap runs
+   * past it and its tail is held down — never one continuous rubber ring.
+   *
+   * The loop is an ovoid (see `WristLoop`): the vertical radius eases from
+   * `ryFront` at the case to `ryBack` at the far side of the wrist, `rz` is
+   * the depth radius around `centerZ`, and both straps emerge `startAngle`
+   * degrees off the front axis so their cut ends stay buried in the case.
    */
   band: {
+    /** Width where the strap meets the case (the lug shoulder). */
+    lugWidth: number
+    /** Width along the strap's free run. */
     width: number
-    backWidth?: number
+    /** Width at the free tip — tapered straps (Galaxy's Dynamic Lug band). */
+    tipWidth: number
     thickness: number
-    loop: { ryFront: number; ryBack: number; rz: number; centerZ: number; startAngle: number }
+    /** How far the outer face domes above the nominal thickness. */
+    crown: number
+    /**
+     * `tuck` is Apple's Sport Band: no metal frame — the twelve-o'clock strap
+     * laps over the other and a small pin stud shows on its tip.
+     * `buckle` is the classic pin buckle with a keeper.
+     */
+    closure: 'tuck' | 'buckle'
+    /** Sweep angle (deg) where the closure sits on the wrist's underside. */
+    closureAngle: number
+    /** How far past the closure the six-o'clock strap's tail runs (deg). */
+    tailOverrun: number
+    /** Adjustment holes punched along the tail, as sweep angles (deg). */
+    holes: { angle: number; radius: number }[]
+    loop: WristLoop
   }
 }
 
@@ -108,10 +127,20 @@ const SERIES_11: WatchSpec = {
   speaker: [{ y: 0, length: 0.92, height: 0.06 }],
   // Sport Band slot channel in the flat top/bottom edges, offset case-back.
   bandSlot: { width: 1.37, height: 0.24, z: -0.16 },
+  // Sport Band: fills the lug slot, narrows to a 22 mm strap, and closes with
+  // the pin-and-tuck — the twelve-o'clock strap laps over the six-o'clock
+  // one, its pin stud showing on the outer face.
   band: {
-    width: 1.27,
-    thickness: 0.165,
-    loop: { ryFront: 1.62, ryBack: 1.3, rz: 1.0, centerZ: -0.72, startAngle: 32 },
+    lugWidth: 1.33,
+    width: 1.24,
+    tipWidth: 1.15,
+    thickness: 0.15,
+    crown: 0.045,
+    closure: 'tuck',
+    closureAngle: 176,
+    tailOverrun: 34,
+    holes: [],
+    loop: { ryFront: 1.6, ryBack: 1.34, rz: 1.06, centerZ: -0.7, startAngle: 30 },
   },
 }
 
@@ -134,11 +163,23 @@ const GALAXY_WATCH_8: WatchSpec = {
     { y: 0.26, length: 0.37, height: 0.05 },
     { y: -0.26, length: 0.37, height: 0.05 },
   ],
+  // Dynamic Lug band: nearly case-wide where it attaches, tapering hard
+  // around the wrist to a classic pin buckle with a keeper.
   band: {
-    width: 1.9,
-    backWidth: 1.2,
-    thickness: 0.14,
-    loop: { ryFront: 1.55, ryBack: 1.28, rz: 0.95, centerZ: -0.62, startAngle: 36 },
+    lugWidth: 1.94,
+    width: 1.44,
+    tipWidth: 1.08,
+    thickness: 0.135,
+    crown: 0.038,
+    closure: 'buckle',
+    closureAngle: 172,
+    tailOverrun: 40,
+    holes: [
+      { angle: 152, radius: 0.052 },
+      { angle: 138, radius: 0.052 },
+      { angle: 124, radius: 0.052 },
+    ],
+    loop: { ryFront: 1.55, ryBack: 1.3, rz: 1.0, centerZ: -0.62, startAngle: 34 },
   },
 }
 
@@ -167,9 +208,3 @@ export const WATCH_FRAMING = {
     return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
   },
 } as const satisfies MockupFraming<{ variant?: WatchVariant }>
-
-/** Back-compat: dimensions of the default device (Apple Watch Series 11, 46 mm). */
-export const WATCH = SERIES_11
-
-/** Display aspect ratio (height / width) of the default device. */
-export const WATCH_DISPLAY_ASPECT = WATCH.display.height / WATCH.display.width

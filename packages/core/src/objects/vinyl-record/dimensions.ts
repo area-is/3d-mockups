@@ -14,9 +14,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the vinyl record. */
-export const VINYL_RECORD_MM = 1 / 92
-
 export const VINYL_RECORD = {
   /** Square jacket. `radius` softens the corners a hair. */
   sleeve: { size: 3.402, thickness: 0.043, radius: 0.01 },
@@ -32,9 +29,6 @@ export const VINYL_RECORD = {
   /** Default CSS px width of the virtual cover; the label shares its dpi. */
   resolution: 520,
 } as const
-
-/** Cover aspect ratio (height / width) — square. */
-export const VINYL_RECORD_ASPECT = 1
 
 /** Live regions: the jacket's two faces and the disc's two center labels. */
 export const VINYL_RECORD_REGIONS = [

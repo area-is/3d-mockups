@@ -9,6 +9,7 @@ import {
   IPHONE_DEFAULT_VARIANT,
   SCREEN_REGIONS,
   type IPhoneVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
@@ -22,7 +23,6 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 

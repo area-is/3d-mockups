@@ -9,9 +9,9 @@ import {
   TABLET_DEFAULT_VARIANT,
   SCREEN_REGIONS,
   type TabletVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { createLogoGeometry } from '../logos'
 import { createWordmarkTexture } from '../wordmark'
 import { LensRing, UsbC, cutGeometry, stadiumCutter, USB_CUT_DEPTH } from '../details'

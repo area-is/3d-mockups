@@ -59,9 +59,6 @@ export type DoohTotemSpec = ReturnType<typeof doohTotemSpec>
 /** The default 1300 x 2800 mm digital 6-sheet totem. */
 export const DOOH_TOTEM: DoohTotemSpec = doohTotemSpec()
 
-/** Display aspect ratio (height / width) — portrait 9:16 at the default size. */
-export const DOOH_TOTEM_ASPECT = DOOH_TOTEM.display.height / DOOH_TOTEM.display.width
-
 /** Live regions: the two displays — real totems are double-sided. */
 export const DOOH_TOTEM_REGIONS = [
   { name: 'front', label: 'Front display' },

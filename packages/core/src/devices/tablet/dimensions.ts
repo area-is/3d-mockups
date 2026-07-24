@@ -16,9 +16,6 @@
 import type { Orientation } from '../../orientation'
 import type { CameraFraming, MockupFraming } from '../../regions'
 
-/** World units per millimeter for the tablet family. */
-export const TABLET_MM = 1 / 64
-
 export interface TabletSpec {
   /** Ultra-thin flat slab. `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: number; height: number; depth: number; radius: number; bevel: number }
@@ -362,9 +359,3 @@ export const TABLET_ULTRA_CAMERA = {
   position: [0, 0.5, 9.6],
   fov: 40,
 } as const satisfies CameraFraming
-
-/** Back-compat: dimensions of the default device (iPad Pro 13"). */
-export const TABLET = IPAD_PRO_13
-
-/** Display aspect ratio (height / width) of the default device. */
-export const TABLET_DISPLAY_ASPECT = TABLET.display.height / TABLET.display.width

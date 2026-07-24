@@ -6,6 +6,7 @@ import { SEMI_TRAILER, SEMI_TRAILER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { RoadWheel } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
@@ -152,24 +153,29 @@ function SemiTrailerImpl({
             <cylinderGeometry args={[0.045, 0.045, body.width - 0.2, 10]} />
             <meshPhysicalMaterial {...steel} />
           </mesh>
-          {/* dual tire pair per side; rim and protruding hub on the outer */}
+          {/* dual tire pair per side, on the shared road wheel: a lathed
+              carcass with bulged sidewalls and grooved tread. Only the outer
+              of each pair shows polished hardware — the inner one is buried */}
           {([1, -1] as const).map((s) => (
-            <group key={s} position={[x, wheels.centerY, 0]}>
-              {[dualOuterZ, dualInnerZ].map((z) => (
-                <mesh key={z} rotation-x={Math.PI / 2} position={[0, 0, s * z]}>
-                  <cylinderGeometry args={[wheels.radius, wheels.radius, wheels.width, 24]} />
-                  <meshPhysicalMaterial color="#15161a" metalness={0} roughness={0.95} />
-                </mesh>
-              ))}
-              <mesh rotation-x={Math.PI / 2} position={[0, 0, s * dualOuterZ]}>
-                <cylinderGeometry args={[0.115, 0.115, wheels.width + 0.006, 20]} />
-                <meshPhysicalMaterial color="#c6cad1" metalness={0.85} roughness={0.35} />
-              </mesh>
-              <mesh rotation-x={Math.PI / 2} position={[0, 0, s * (dualOuterZ + wheels.width / 2 + 0.012)]}>
-                <cylinderGeometry args={[0.05, 0.05, 0.035, 16]} />
-                <meshPhysicalMaterial color="#3c4046" metalness={0.7} roughness={0.4} />
-              </mesh>
-            </group>
+            <React.Fragment key={s}>
+              <RoadWheel
+                radius={wheels.radius}
+                width={wheels.width}
+                face={s}
+                lugs={10}
+                rimRatio={0.6}
+                position={[x, wheels.centerY, s * dualOuterZ]}
+              />
+              <RoadWheel
+                radius={wheels.radius}
+                width={wheels.width}
+                face={s}
+                lugs={10}
+                rimRatio={0.6}
+                rimColor="#3c4046"
+                position={[x, wheels.centerY, s * dualInnerZ]}
+              />
+            </React.Fragment>
           ))}
         </group>
       ))}

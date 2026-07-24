@@ -18,9 +18,6 @@
 import type { Orientation } from '../../orientation'
 import type { MockupFraming } from '../../regions'
 
-/** World units per millimeter for the Galaxy family. */
-export const GALAXY_MM = 1 / 36.66
-
 export interface GalaxyPhoneSpec {
   /** Aluminum/titanium frame + chassis. `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: number; height: number; depth: number; radius: number; bevel: number }
@@ -192,9 +189,3 @@ export const PHONE_FRAMING = {
     return (orientation === 'landscape' ? body.width : body.height) / 2
   },
 } as const satisfies MockupFraming<{ variant?: GalaxyVariant; orientation?: Orientation }>
-
-/** Back-compat: dimensions of the default device (Galaxy S26). */
-export const PHONE = S26
-
-/** Display aspect ratio (height / width) of the default device — a 19.5:9 panel. */
-export const PHONE_DISPLAY_ASPECT = PHONE.display.height / PHONE.display.width
