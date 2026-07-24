@@ -656,8 +656,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <VinylRecordMockup label={<VinylLabelArt />} back={<VinylCoverArt />} rotation={[0, -0.2, 0]}>
+        <VinylRecordMockup rotation={[0, -0.2, 0]}>
           <VinylCoverArt />
+          <VinylRecordMockup.Label><VinylLabelArt /></VinylRecordMockup.Label>
+          <VinylRecordMockup.Back><VinylCoverArt /></VinylRecordMockup.Back>
         </VinylRecordMockup>
       </DemoCard>
 
@@ -684,8 +686,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <AFrameSignMockup back={<ChalkMenuArt />} rotation={[0, -0.3, 0]}>
+        <AFrameSignMockup rotation={[0, -0.3, 0]}>
           <ChalkMenuArt />
+          <AFrameSignMockup.Back><ChalkMenuArt /></AFrameSignMockup.Back>
         </AFrameSignMockup>
       </DemoCard>
 
@@ -698,8 +701,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <DOOHTotemMockup back={<BannerArt />} rotation={[0, -0.18, 0]}>
+        <DOOHTotemMockup rotation={[0, -0.18, 0]}>
           <BannerArt />
+          <DOOHTotemMockup.Back><BannerArt /></DOOHTotemMockup.Back>
         </DOOHTotemMockup>
       </DemoCard>
 
@@ -712,8 +716,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <StorefrontMockup windows={{ frontLeft: <StorePosterArt />, frontRight: <StorePosterArt /> }} rotation={[0, -0.25, 0]}>
+        <StorefrontMockup rotation={[0, -0.25, 0]}>
           <StoreSignArt />
+          <StorefrontMockup.FrontLeft><StorePosterArt /></StorefrontMockup.FrontLeft>
+          <StorefrontMockup.FrontRight><StorePosterArt /></StorefrontMockup.FrontRight>
         </StorefrontMockup>
       </DemoCard>
 
@@ -726,8 +732,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <SemiTrailerMockup streetSide={<TrailerWrapArt />} rear={<TrailerRearArt />} rotation={[0, -0.35, 0]}>
+        <SemiTrailerMockup rotation={[0, -0.35, 0]}>
           <TrailerWrapArt />
+          <SemiTrailerMockup.StreetSide><TrailerWrapArt /></SemiTrailerMockup.StreetSide>
+          <SemiTrailerMockup.Rear><TrailerRearArt /></SemiTrailerMockup.Rear>
         </SemiTrailerMockup>
       </DemoCard>
 
@@ -740,8 +748,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <MailerBoxMockup front={<BoxPanelArt />} side={<BoxPanelArt />} rotation={[0, 0.5, 0]}>
+        <MailerBoxMockup rotation={[0, 0.5, 0]}>
           <BoxLidArt />
+          <MailerBoxMockup.Front><BoxPanelArt /></MailerBoxMockup.Front>
+          <MailerBoxMockup.Right><BoxPanelArt /></MailerBoxMockup.Right>
         </MailerBoxMockup>
       </DemoCard>
 
@@ -754,8 +764,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <ShoppingBagMockup back={<BagArt />} rotation={[0, 0.35, 0]}>
+        <ShoppingBagMockup rotation={[0, 0.35, 0]}>
           <BagArt />
+          <ShoppingBagMockup.Back><BagArt /></ShoppingBagMockup.Back>
         </ShoppingBagMockup>
       </DemoCard>
 
@@ -769,8 +780,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} back={<PosterArt />} rotation={[0, 0.25, 0]}>
+        <CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} rotation={[0, 0.25, 0]}>
           <PosterArt />
+          <CustomPanelMockup.Back><PosterArt /></CustomPanelMockup.Back>
         </CustomPanelMockup>
       </DemoCard>
 
@@ -783,15 +795,12 @@ export default function DemoScenes() {
           </>
         }
       >
-        <CustomBoxMockup
-          size={{ width: 240, height: 320, depth: 80 }}
-          back={<BoxFrontArt />}
-          left={<BoxSideArt />}
-          right={<BoxSideArt />}
-          top={<BoxTopArt />}
-          rotation={[0, -0.45, 0]}
-        >
+        <CustomBoxMockup size={{ width: 240, height: 320, depth: 80 }} rotation={[0, -0.45, 0]}>
           <BoxFrontArt />
+          <CustomBoxMockup.Back><BoxFrontArt /></CustomBoxMockup.Back>
+          <CustomBoxMockup.Left><BoxSideArt /></CustomBoxMockup.Left>
+          <CustomBoxMockup.Right><BoxSideArt /></CustomBoxMockup.Right>
+          <CustomBoxMockup.Top><BoxTopArt /></CustomBoxMockup.Top>
         </CustomBoxMockup>
       </DemoCard>
 
