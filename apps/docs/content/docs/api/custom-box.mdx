@@ -12,13 +12,14 @@ dpi.
 <ObjectDemo demo="custom-box-basic" checker />
 
 ```tsx
-<CustomBoxMockup
-  size={{ width: 240, height: 320, depth: 80 }}
-  left={<YourSide />}
-  top={<YourTop />}
-  deviceProps={{ rotation: [0, -0.45, 0] }}
->
+<CustomBoxMockup size={{ width: 240, height: 320, depth: 80 }} rotation={[0, -0.45, 0]}>
   <YourFront />
+  <CustomBoxMockup.Left>
+    <YourSide />
+  </CustomBoxMockup.Left>
+  <CustomBoxMockup.Top>
+    <YourTop />
+  </CustomBoxMockup.Top>
 </CustomBoxMockup>
 ```
 
@@ -29,17 +30,31 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `{ width, height, depth }` | required | Box size in millimeters. |
-| `back`, `left`, `right`, `top`, `bottom` | `ReactNode` | - | The other five faces; `children` is the front. |
 | `color` | `string` | `'#e8e5df'` | Stock color for unprinted faces. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
 | `resolution` | `number` | `560` | Virtual front face width in CSS px; all faces share its dpi. |
 
 `customBoxScale(size)` is exported if you need the world-units-per-mm
 factor.
 
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<CustomBoxMockup.Front>` | Front (+z) face (bare children). |
+| `<CustomBoxMockup.Back>` | Back (−z) face. |
+| `<CustomBoxMockup.Left>` | Left (−x) face. |
+| `<CustomBoxMockup.Right>` | Right (+x) face. |
+| `<CustomBoxMockup.Top>` | Top face. |
+| `<CustomBoxMockup.Bottom>` | Bottom face. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<CustomBox>`.
+
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -54,9 +69,11 @@ what stays 3D hardware.
 ```tsx
 <CustomBoxMockup
   size={{ width: 300, height: 60, depth: 300 }}
-  top={<YourLid />}
   camera={{ position: [0, 2.6, 7.0], fov: 40 }}
 >
   <YourFront />
+  <CustomBoxMockup.Top>
+    <YourLid />
+  </CustomBoxMockup.Top>
 </CustomBoxMockup>
 ```

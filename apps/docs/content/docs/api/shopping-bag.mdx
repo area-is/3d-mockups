@@ -15,7 +15,7 @@ dimensions.
 <ObjectDemo demo="bag-basic" checker />
 
 ```tsx
-<ShoppingBagMockup deviceProps={{ rotation: [0, 0.35, 0] }}>
+<ShoppingBagMockup rotation={[0, 0.35, 0]}>
   <YourBagFace />
 </ShoppingBagMockup>
 ```
@@ -26,16 +26,26 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back face design. |
 | `size` | `{ width, height, depth }` | `320×420×140` | Real size in **millimeters**. The longest edge normalizes to the stage, so any size fills the camera at true proportions. |
 | `color` | `string` | `'#c19a6b'` | Bag stock. Kraft by default; try gloss white or a brand dip. |
 | `handleColor` | `string` | `'#7d6142'` | Rope handle color. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
 | `resolution` | `number` | `460` | Virtual front face width in CSS px; height follows the bag. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<ShoppingBagMockup.Front>` | Front face (bare children). |
+| `<ShoppingBagMockup.Back>` | Back face. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<ShoppingBag>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -48,7 +58,10 @@ what stays 3D hardware.
 <ObjectDemo demo="bag-dark" />
 
 ```tsx
-<ShoppingBagMockup autoRotate color="#1e2126" handleColor="#d8d4cc" back={<YourBagFace />}>
+<ShoppingBagMockup autoRotate color="#1e2126" handleColor="#d8d4cc">
   <YourBagFace />
+  <ShoppingBagMockup.Back>
+    <YourBagFace />
+  </ShoppingBagMockup.Back>
 </ShoppingBagMockup>
 ```
