@@ -15,8 +15,9 @@ any other dimensions.
 <ObjectDemo demo="mailer-basic" checker />
 
 ```tsx
-<MailerBoxMockup front={<YourFrontPanel />} deviceProps={{ rotation: [0, 0.5, 0] }}>
+<MailerBoxMockup rotation={[0, 0.5, 0]}>
   <YourTopPanel />
+  <MailerBoxMockup.Front><YourFrontPanel /></MailerBoxMockup.Front>
 </MailerBoxMockup>
 ```
 
@@ -26,20 +27,30 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `front` | `ReactNode` | - | Front (long) panel design. |
-| `back` | `ReactNode` | - | Back (long) panel design. |
-| `side` | `ReactNode` | - | Right end panel. The wrapped tape rides over it. |
-| `left` | `ReactNode` | - | Left end panel. The wrapped tape rides over it. |
-| `bottom` | `ReactNode` | - | Bottom panel, reading from the front when flipped. |
 | `size` | `{ width, height, depth }` | `350×120×250` | Real size in **millimeters**. The longest edge normalizes to the stage, so any size fills the camera at true proportions. |
 | `color` | `string` | `'#b5915f'` | Corrugated stock. Kraft by default; try white or a brand dip. |
 | `tapeColor` | `string` | `'rgba(168, 127, 79, 0.82)'` | Packing tape color. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed panel. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed panel. |
 | `resolution` | `number` | `520` | Virtual top panel width in CSS px; other panels share its dpi. |
+
+## Regions
+
+| Slot | Panel |
+| --- | --- |
+| `<MailerBoxMockup.Top>` | Top panel — the hero face, with the tape riding over it (bare children). |
+| `<MailerBoxMockup.Front>` | Front (long) panel. |
+| `<MailerBoxMockup.Back>` | Back (long) panel. |
+| `<MailerBoxMockup.Right>` | Right end panel — the wrapped tape rides over it. |
+| `<MailerBoxMockup.Left>` | Left end panel — the wrapped tape rides over it. |
+| `<MailerBoxMockup.Bottom>` | Bottom panel, reading from the front when flipped. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<MailerBox>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -55,15 +66,13 @@ front and back — the box reads as a designed shipper from any angle.
 <ObjectDemo demo="mailer-full" />
 
 ```tsx
-<MailerBoxMockup
-  autoRotate
-  front={<BrandPanel />}
-  back={<BrandPanel />}
-  side={<HandlingMarks />}
-  left={<HandlingMarks />}
-  bottom={<RecycledStamp />}
->
+<MailerBoxMockup autoRotate>
   <YourTopPanel />
+  <MailerBoxMockup.Front><BrandPanel /></MailerBoxMockup.Front>
+  <MailerBoxMockup.Back><BrandPanel /></MailerBoxMockup.Back>
+  <MailerBoxMockup.Right><HandlingMarks /></MailerBoxMockup.Right>
+  <MailerBoxMockup.Left><HandlingMarks /></MailerBoxMockup.Left>
+  <MailerBoxMockup.Bottom><RecycledStamp /></MailerBoxMockup.Bottom>
 </MailerBoxMockup>
 ```
 
@@ -80,6 +89,6 @@ and a skewed 4×6 shipping label instead of a live top panel.
   color="#e8e4dd"
   tapeColor="rgba(210, 205, 196, 0.9)"
   camera={{ position: [0, 3.2, 6.6], fov: 40 }}
-  deviceProps={{ rotation: [0, -0.4, 0] }}
+  rotation={[0, -0.4, 0]}
 />
 ```

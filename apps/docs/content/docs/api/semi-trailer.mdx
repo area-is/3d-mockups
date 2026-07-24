@@ -23,19 +23,29 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `streetSide` | `ReactNode` | - | Wrap for the street-side (−Z) panel. |
-| `rear` | `ReactNode` | - | Panel on the rear doors — the lock rods overlay it like real hardware. |
 | `color` | `string` | `'#eef0f2'` | Box paint. Wrap trailers are usually white. |
 | `skirtColor` | `string` | matches `color` | Side-skirt paint — the thin aero panels under the box. |
-| `wrapBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
 | `resolution` | `number` | `1100` | Virtual side panel width in CSS px; the rear shares its dpi. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<SemiTrailerMockup.CurbSide>` | Curb-side (+Z) wrap panel (bare children). |
+| `<SemiTrailerMockup.StreetSide>` | Street-side (−Z) wrap panel. |
+| `<SemiTrailerMockup.Rear>` | Rear-door panel — the lock rods overlay it like real hardware. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<SemiTrailer>`.
 
 The road sits `SEMI_TRAILER.groundY` below the origin — the mockup grounds
 the shadow there automatically.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -51,7 +61,9 @@ the four rods over the print, the way a real wrap is applied around them.
 <ObjectDemo demo="trailer-rear" />
 
 ```tsx
-<SemiTrailerMockup autoRotate streetSide={<YourWrap />} rear={<YourRearPanel />}>
+<SemiTrailerMockup autoRotate>
   <YourWrap />
+  <SemiTrailerMockup.StreetSide><YourWrap /></SemiTrailerMockup.StreetSide>
+  <SemiTrailerMockup.Rear><YourRearPanel /></SemiTrailerMockup.Rear>
 </SemiTrailerMockup>
 ```

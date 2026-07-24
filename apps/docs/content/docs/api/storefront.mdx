@@ -12,14 +12,16 @@ big display glazing with a mullion, a glazed door on the right. The other
 three elevations repeat the same composition without the door — windows
 only — and each carries its own live fascia sign. Every big pane is a
 mockup surface too: both front display bays, the glazed door leaf and the
-wide center pane of each other elevation, via the `windows` prop. Ten
-live surfaces in all (the roof stays hardware).
+wide center pane of each other elevation — each its own slot. Ten live
+surfaces in all (the roof stays hardware).
 
 <ObjectDemo demo="storefront-basic" checker />
 
 ```tsx
-<StorefrontMockup windows={{ frontLeft: <YourPoster />, frontRight: <YourPoster /> }} deviceProps={{ rotation: [0, -0.25, 0] }}>
+<StorefrontMockup rotation={[0, -0.25, 0]}>
   <YourSign />
+  <StorefrontMockup.FrontLeft><YourPoster /></StorefrontMockup.FrontLeft>
+  <StorefrontMockup.FrontRight><YourPoster /></StorefrontMockup.FrontRight>
 </StorefrontMockup>
 ```
 
@@ -29,20 +31,35 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `windows` | `object` | - | Live window graphics: `frontLeft` / `frontRight` (the display bays either side of the front mullion), `door` (the glazed door leaf), and `left` / `right` / `rear` (the wide center pane of each other elevation). |
-| `leftSign` | `ReactNode` | - | Fascia sign on the left elevation (−X as you face the shop). |
-| `rightSign` | `ReactNode` | - | Fascia sign on the right elevation (+X as you face the shop). |
-| `rearSign` | `ReactNode` | - | Fascia sign on the rear elevation (−Z). |
 | `color` | `string` | `'#2e4638'` | Shopfront paint: fascia surrounds, frames, door, stall risers. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind sign and poster content. |
-| `resolution` | `number` | `800` | Virtual fascia sign width in CSS px. Window panes use fixed widths (~420–480 px). |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind sign and poster content. |
+| `resolution` | `number` | `800` | Virtual fascia sign width in CSS px. Window panes use fixed widths (~420–480 px); override per pane with each slot's `resolution`. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<StorefrontMockup.Fascia>` | Front fascia sign (bare children). |
+| `<StorefrontMockup.FrontLeft>` | Front display bay left of the mullion. |
+| `<StorefrontMockup.FrontRight>` | Front display bay right of the mullion. |
+| `<StorefrontMockup.Door>` | Glazed door leaf. |
+| `<StorefrontMockup.Left>` | Wide center pane of the left elevation (−X as you face the shop). |
+| `<StorefrontMockup.Right>` | Wide center pane of the right elevation (+X). |
+| `<StorefrontMockup.Rear>` | Wide center pane of the rear elevation (−Z). |
+| `<StorefrontMockup.LeftSign>` | Fascia sign on the left elevation. |
+| `<StorefrontMockup.RightSign>` | Fascia sign on the right elevation. |
+| `<StorefrontMockup.RearSign>` | Fascia sign on the rear elevation. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<Storefront>`.
 
 The pavement sits `STOREFRONT.standHeight` below the origin — the mockup
 grounds the shadow there automatically.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -58,21 +75,17 @@ walk around it.
 <ObjectDemo demo="storefront-around" />
 
 ```tsx
-<StorefrontMockup
-  windows={{
-    frontLeft: <YourWindow />,
-    frontRight: <YourWindow />,
-    door: <YourWindow />,
-    left: <YourWindow />,
-    right: <YourWindow />,
-    rear: <YourWindow />,
-  }}
-  leftSign={<YourSign />}
-  rightSign={<YourSign />}
-  rearSign={<YourSign />}
-  autoRotate
->
+<StorefrontMockup autoRotate>
   <YourSign />
+  <StorefrontMockup.FrontLeft><YourWindow /></StorefrontMockup.FrontLeft>
+  <StorefrontMockup.FrontRight><YourWindow /></StorefrontMockup.FrontRight>
+  <StorefrontMockup.Door><YourWindow /></StorefrontMockup.Door>
+  <StorefrontMockup.Left><YourWindow /></StorefrontMockup.Left>
+  <StorefrontMockup.Right><YourWindow /></StorefrontMockup.Right>
+  <StorefrontMockup.Rear><YourWindow /></StorefrontMockup.Rear>
+  <StorefrontMockup.LeftSign><YourSign /></StorefrontMockup.LeftSign>
+  <StorefrontMockup.RightSign><YourSign /></StorefrontMockup.RightSign>
+  <StorefrontMockup.RearSign><YourSign /></StorefrontMockup.RearSign>
 </StorefrontMockup>
 ```
 
@@ -81,7 +94,9 @@ walk around it.
 <ObjectDemo demo="storefront-paint" />
 
 ```tsx
-<StorefrontMockup color="#5c2330" windows={{ frontLeft: <YourWindow />, door: <YourWindow /> }} deviceProps={{ rotation: [0, 0.3, 0] }}>
+<StorefrontMockup color="#5c2330" rotation={[0, 0.3, 0]}>
   <YourSign />
+  <StorefrontMockup.FrontLeft><YourWindow /></StorefrontMockup.FrontLeft>
+  <StorefrontMockup.Door><YourWindow /></StorefrontMockup.Door>
 </StorefrontMockup>
 ```

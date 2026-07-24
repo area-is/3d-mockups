@@ -36,19 +36,28 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `curbSideAd` | `ReactNode` | - | Creative for the curb-side (+Z) surface — the named alternative to `children` (wins when both are set). |
-| `streetSideAd` | `ReactNode` | - | Creative for the street-side (−Z) ad surface. |
-| `rearAd` | `ReactNode` | - | Creative for the rear surface: the 21"×70" tail ad, or the whole tail with `coverage="full"`. |
-| `wrapOverWindows` | `boolean \| { curbSide?, streetSide?, rear? }` | `true` | Whether a full wrap runs over the passenger glass (perforated film) or the glass is carved out and stays visible — per surface. Doors and the driver's window always stay clear. |
-| `destinationSign` | `ReactNode \| string \| string[]` | - | Live LED sign. Strings get the built-in dot-matrix renderer (marquee / alternating pages); a node renders as-is. |
 | `color` | `string` | `'#eef0f2'` | Body paint. Transit fleets are usually white or silver. |
-| `adBackground` | `string` | `'#ffffff'` | CSS background behind your ad content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your ad content. |
 | `coverage` | `'panel' \| 'full'` | `'panel'` | `'full'` turns the entire side elevations and the tail into the live surfaces, graphics running over the passenger windows like perforated wrap film. |
+| `wrapOverWindows` | `boolean \| { curbSide?, streetSide?, rear? }` | `true` | Whether a full wrap runs over the passenger glass (perforated film) or the glass is carved out and stays visible — per surface. Doors and the driver's window always stay clear. |
 | `resolution` | `number` | `960` panel · `1920` full | Virtual side-surface width in CSS px; the rear surface shares its dpi. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<BusMockup.CurbSide>` | Curb-side (+Z) ad surface — the king-size panel, or the whole side with `coverage="full"` (bare children). |
+| `<BusMockup.StreetSide>` | Street-side (−Z) ad surface. |
+| `<BusMockup.Rear>` | Rear surface: the 21"×70" tail ad, or the whole tail with `coverage="full"`. |
+| `<BusMockup.DestinationSign>` | Live LED sign above the windshield. A string gets the built-in dot-matrix renderer (marquee when it overflows), an array of strings flips between them like an alternating sign; a node renders as-is. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<Bus>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -71,14 +80,11 @@ wrap.
 <ObjectDemo demo="bus-full" />
 
 ```tsx
-<BusMockup
-  coverage="full"
-  destinationSign={['12 EASTBROOK', 'VIA HARBOR FRONT']}
-  streetSideAd={<FullLivery />}
-  rearAd={<TailLivery />}
-  deviceProps={{ rotation: [0, 0.42, 0] }}
->
+<BusMockup coverage="full" rotation={[0, 0.42, 0]}>
   <FullLivery />
+  <BusMockup.StreetSide><FullLivery /></BusMockup.StreetSide>
+  <BusMockup.Rear><TailLivery /></BusMockup.Rear>
+  <BusMockup.DestinationSign>{['12 EASTBROOK', 'VIA HARBOR FRONT']}</BusMockup.DestinationSign>
 </BusMockup>
 ```
 
@@ -94,7 +100,11 @@ collars either way.
 <ObjectDemo demo="bus-full-clear" />
 
 ```tsx
-<BusMockup coverage="full" wrapOverWindows={false} curbSideAd={<Livery />} streetSideAd={<Livery />} rearAd={<TailLivery />} />
+<BusMockup coverage="full" wrapOverWindows={false}>
+  <Livery />
+  <BusMockup.StreetSide><Livery /></BusMockup.StreetSide>
+  <BusMockup.Rear><TailLivery /></BusMockup.Rear>
+</BusMockup>
 ```
 
 ### Rear three-quarter with the tail ad
@@ -106,20 +116,24 @@ built-in LED look isn't enough.
 <ObjectDemo demo="bus-rear" />
 
 ```tsx
-<BusMockup streetSideAd={<Creative />} rearAd={<TailAd />} destinationSign={<Route42Marquee />} deviceProps={{ rotation: [0, 2.35, 0] }}>
+<BusMockup rotation={[0, 2.35, 0]}>
   <Creative />
+  <BusMockup.StreetSide><Creative /></BusMockup.StreetSide>
+  <BusMockup.Rear><TailAd /></BusMockup.Rear>
+  <BusMockup.DestinationSign><Route42Marquee /></BusMockup.DestinationSign>
 </BusMockup>
 ```
 
 ### A liveried fleet bus
 
-`color` paints the shell; match `adBackground` to the creative for a
+`color` paints the shell; match `surfaceBackground` to the creative for a
 wrapped look. A single long string on the sign auto-scrolls.
 
 <ObjectDemo demo="bus-livery" />
 
 ```tsx
-<BusMockup color="#1d4433" adBackground="#f4c534" autoRotate destinationSign="42 GREENWAY · NEXT STOP CANAL ST">
+<BusMockup color="#1d4433" surfaceBackground="#f4c534" autoRotate>
   <YourCreative />
+  <BusMockup.DestinationSign>42 GREENWAY · NEXT STOP CANAL ST</BusMockup.DestinationSign>
 </BusMockup>
 ```

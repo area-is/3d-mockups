@@ -45,8 +45,8 @@ Every device accepts the same screen behavior props:
 | `interactive` | `boolean` | `true` | Let pointer events (clicks, scrolling, typing) reach the screen content. |
 | `dragToRotate` | `boolean` | `true` | Drags that start on the screen spin the device after about 10 px of travel; taps still click. Disable when your content needs its own drag gestures (sliders, drawing, horizontal swipes). |
 | `occlude` | `boolean \| 'blending'` | `true` | Hide content when the device faces away. `true` raycasts against the body and keeps content clickable; `'blending'` is per-pixel but disables screen interactivity. |
-| `screenBackground` | `string` | `'#000000'` | CSS background painted behind your content. |
-| `screenStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
+| `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content. |
+| `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
 ## Touch behavior
 
