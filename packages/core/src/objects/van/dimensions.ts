@@ -13,6 +13,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the van. */
 export const VAN_MM = 1 / 1050
 
@@ -69,3 +71,18 @@ export const VAN = {
 
 /** Wrap panel aspect ratio (height / width). */
 export const VAN_WRAP_ASPECT = VAN.wrap.height / VAN.wrap.width
+
+/** Live regions: wrap panels on both sides and the rear, plus the plates. */
+export const VAN_REGIONS = [
+  { name: 'curbSide', label: 'Curb-side wrap' },
+  { name: 'streetSide', label: 'Street-side wrap' },
+  { name: 'rear', label: 'Rear wrap' },
+  { name: 'licensePlate', label: 'License plate' },
+] as const satisfies readonly RegionSpec[]
+
+/** The wheels define the road plane; the shadow grounds just under them. */
+export const VAN_FRAMING = {
+  camera: { position: [0, 0.4, 10.6], fov: 40 },
+  floatIntensity: 0.5,
+  extent: () => -VAN.groundY,
+} as const satisfies MockupFraming

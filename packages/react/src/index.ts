@@ -34,6 +34,24 @@ export { ShoppingBagMockup, type ShoppingBagMockupProps } from './shopping-bag-m
 export { CustomPanelMockup, type CustomPanelMockupProps } from './custom-panel-mockup'
 export { CustomBoxMockup, type CustomBoxMockupProps } from './custom-box-mockup'
 
+// The slot machinery + wrapper factory (advanced: build your own mockup objects
+// with the same compound-slot API and stage framing the built-ins use).
+export { createMockup, type CreateMockupOptions, type MockupProps } from './create-mockup'
+export {
+  createSlot,
+  createSlots,
+  collectSlots,
+  resolveSurface,
+  type Slot,
+  type SlotProps,
+  type SlotsFor,
+  type CollectedSlots,
+  type SurfaceProps,
+  type SurfaceDefaults,
+  type ResolvedSurface,
+} from './slots'
+export { type BrochurePanelProps } from './objects/brochure/brochure'
+
 // Composable pieces: bring your own scene, or drop a device into an existing one.
 export { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
 export { LEDText, type LEDTextProps } from './led-text'
@@ -69,8 +87,48 @@ export { ShoppingBag, type ShoppingBagProps } from './objects/shopping-bag/shopp
 export { CustomPanel, type CustomPanelProps } from './objects/custom-panel/custom-panel'
 export { CustomBox, type CustomBoxProps } from './objects/custom-box/custom-box'
 
-// The framework-agnostic core: every device/object spec (PHONE, GALAXY_VARIANTS,
-// BOOK, BILLBOARD…), geometry math, screen behaviors and stage configuration.
-// Re-exported wholesale so React users need only this package — and so the same
-// names mean the same things in every future binding (Svelte, Vue, 2D renderers).
-export * from '@area-mockups/core'
+// The curated core surface: the types and pure data an app plausibly needs
+// next to the components. The FULL core (every spec constant, geometry helper,
+// screen/stage behavior) lives behind the `area-mockups/core` subpath so its
+// internals can evolve without breaking this package's semver contract.
+export type { Orientation } from '@area-mockups/core'
+export {
+  type RegionSpec,
+  type CameraFraming,
+  type MockupFraming,
+  SCREEN_REGIONS,
+} from '@area-mockups/core'
+export {
+  type Colorway,
+  GALAXY_COLORWAYS,
+  IPHONE_COLORWAYS,
+  FOLD_COLORWAYS,
+  FLIP_COLORWAYS,
+  LAPTOP_COLORWAYS,
+  TABLET_COLORWAYS,
+  WATCH_COLORWAYS,
+  MONITOR_COLORWAYS,
+  findColorway,
+} from '@area-mockups/core'
+export type {
+  GalaxyVariant,
+  IPhoneVariant,
+  LaptopVariant,
+  TabletVariant,
+  WatchVariant,
+  FoldVariant,
+  FlipVariant,
+} from '@area-mockups/core'
+export type {
+  BookSize,
+  MagazineSize,
+  BrochureSize,
+  DoohTotemSize,
+  PosterFrameSize,
+  RollupBannerSize,
+  CustomSizeMm,
+  CustomBoxSizeMm,
+  ProductBoxSizeMm,
+  MailerBoxSizeMm,
+  ShoppingBagSizeMm,
+} from '@area-mockups/core'

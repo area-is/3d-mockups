@@ -8,8 +8,10 @@
  * card and a 1000×1500 mm board both fill the default stage. The mm sizes
  * still matter — they set the aspect ratio and the relative thickness.
  *
- * Live faces: front (`children`) and back.
+ * Live faces: front (bare children) and back.
  */
+
+import type { MockupFraming, RegionSpec } from '../../regions'
 
 export interface CustomSizeMm {
   /** Panel width in millimeters. */
@@ -33,3 +35,16 @@ export const CUSTOM_PANEL = {
 export function customPanelScale(size: CustomSizeMm): number {
   return CUSTOM_PANEL.target / Math.max(size.width, size.height)
 }
+
+/** Live regions: the two faces of the panel. */
+export const CUSTOM_PANEL_REGIONS = [
+  { name: 'front', label: 'Front face' },
+  { name: 'back', label: 'Back face' },
+] as const satisfies readonly RegionSpec[]
+
+/** The panel stands on its bottom edge at half its (normalized) height. */
+export const CUSTOM_PANEL_FRAMING = {
+  camera: { position: [0, 0.5, 7.4], fov: 40 },
+  floatIntensity: 0.5,
+  extent: ({ size }) => (size.height * customPanelScale(size)) / 2,
+} as const satisfies MockupFraming<{ size: CustomSizeMm }>

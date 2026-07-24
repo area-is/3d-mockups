@@ -2,53 +2,38 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { STOREFRONT } from '@area-mockups/core'
+import { STOREFRONT, STOREFRONT_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front fascia sign design — any React node, full bleed on the sign band. */
-  children?: React.ReactNode
+export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
-   * Live window graphics — every big pane is a mockup surface. `frontLeft`
-   * and `frontRight` are the two display bays either side of the front
-   * mullion, `door` is the glazed door leaf, and `left`/`right`/`rear` are
-   * the wide center panes of the other three elevations.
+   * Region content. Bare children fill the front fascia sign; name regions
+   * explicitly with the fascia slots (`<Storefront.Fascia>`,
+   * `<Storefront.LeftSign>`, `<Storefront.RightSign>`, `<Storefront.RearSign>`)
+   * and the pane slots — `<Storefront.FrontLeft>` and `<Storefront.FrontRight>`
+   * are the two display bays either side of the front mullion,
+   * `<Storefront.Door>` is the glazed door leaf, and `<Storefront.Left>` /
+   * `<Storefront.Right>` / `<Storefront.Rear>` are the wide center panes of
+   * the other three elevations (left/right named as you face the shop).
    */
-  windows?: {
-    frontLeft?: React.ReactNode
-    frontRight?: React.ReactNode
-    door?: React.ReactNode
-    left?: React.ReactNode
-    right?: React.ReactNode
-    rear?: React.ReactNode
-  }
-  /** Fascia sign on the left elevation (−X as you face the shop). */
-  leftSign?: React.ReactNode
-  /** Fascia sign on the right elevation (+X as you face the shop). */
-  rightSign?: React.ReactNode
-  /** Fascia sign on the rear (−Z). Windows-only elevation. */
-  rearSign?: React.ReactNode
+  children?: React.ReactNode
   /** Shopfront paint (fascia surrounds, frames, door, stall risers). */
   color?: string
-  /** CSS background painted behind sign and poster content. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual fascia signs. The window poster is a fixed 420 px wide. */
+  /**
+   * CSS pixel width of the virtual fascia signs. The window panes keep their
+   * own fixed default widths; override per slot with each slot's `resolution`.
+   */
   resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How content hides when its elevation faces away from the camera.
    * `true` raycasts against the building (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each content wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -60,29 +45,33 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'> 
  * lights, glazed door with a vertical pull, corniced fascia on console
  * brackets. The other three elevations repeat the same composition without
  * the door — windows only — and each carries its own live fascia sign.
- * Every big pane is a mockup surface too (`windows`): both front display
- * bays, the glazed door leaf and the center pane of each other elevation.
+ * Every big pane is a mockup surface too: both front display bays, the
+ * glazed door leaf and the center pane of each other elevation.
  * The roof is plain hardware. No 3D asset files are loaded.
  *
  * The origin is the building center; the pavement sits
  * `STOREFRONT.standHeight` below it. Must be rendered inside a
  * react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Storefront>
+ *   <Storefront.Fascia><YourSign /></Storefront.Fascia>
+ *   <Storefront.FrontLeft><YourPoster /></Storefront.FrontLeft>
+ * </Storefront>
+ * ```
  */
-export function Storefront({
+function StorefrontImpl({
   children,
-  windows,
-  leftSign,
-  rightSign,
-  rearSign,
   color = '#2e4638',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = STOREFRONT.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: StorefrontProps) {
+  const regions = collectSlots(children, STOREFRONT_REGIONS)
   const { body, fascia, sign, sideSign, rearSign: rearSignSpec, riser, window: win, roof, standHeight } = STOREFRONT
   const wallRef = React.useRef<THREE.Mesh>(null!)
   const roofRef = React.useRef<THREE.Mesh>(null!)
@@ -124,12 +113,14 @@ export function Storefront({
   const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
 
   const screenCommon = {
+    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+  }
+  const surfaceDefaults = {
+    background: surfaceBackground,
     resolution,
-    background: faceBackground,
     interactive,
     dragToRotate,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
+    style: surfaceStyle,
   }
 
   // One windows-only elevation, built facing local +Z at `faceDist` — the
@@ -139,8 +130,8 @@ export function Storefront({
     faceDist: number,
     faceLen: number,
     signWidth: number,
-    signNode: React.ReactNode,
-    windowNode: React.ReactNode
+    signSlot: SlotProps | undefined,
+    windowSlot: SlotProps | undefined
   ) => {
     const glazeL = faceLen - 0.6
     return (
@@ -185,28 +176,29 @@ export function Storefront({
             <meshPhysicalMaterial {...paint} />
           </RoundedBox>
         ))}
-        {signNode != null && (
+        {signSlot != null && (
           <DeviceScreen
             {...screenCommon}
+            {...resolveSurface(signSlot, surfaceDefaults)}
             width={signWidth}
             height={sign.height}
             radius={sign.radius}
             position={[0, fascia.y, faceDist + 0.085]}
           >
-            {signNode}
+            {signSlot.children}
           </DeviceScreen>
         )}
         {/* live center pane between the two mullions */}
-        {windowNode != null && (
+        {windowSlot != null && (
           <DeviceScreen
             {...screenCommon}
+            {...resolveSurface(windowSlot, { ...surfaceDefaults, resolution: 420 })}
             width={(glazeL * 2) / 3 - 0.12}
             height={paneH}
             radius={0.004}
-            resolution={420}
             position={[0, paneCY, faceDist + 0.012]}
           >
-            {windowNode}
+            {windowSlot.children}
           </DeviceScreen>
         )}
       </>
@@ -334,64 +326,71 @@ export function Storefront({
       {/* front fascia sign */}
       <DeviceScreen
         {...screenCommon}
+        {...resolveSurface(regions.fascia, surfaceDefaults)}
         width={sign.width}
         height={sign.height}
         radius={sign.radius}
         position={[0, fascia.y, frontZ + 0.085]}
       >
-        {children}
+        {regions.fascia?.children}
       </DeviceScreen>
 
       {/* the two front display bays, live either side of the mullion */}
-      {windows?.frontLeft != null && (
+      {regions.frontLeft != null && (
         <DeviceScreen
           {...screenCommon}
+          {...resolveSurface(regions.frontLeft, { ...surfaceDefaults, resolution: 480 })}
           width={bayL.x1 - bayL.x0}
           height={paneH}
           radius={0.004}
-          resolution={480}
           position={[(bayL.x0 + bayL.x1) / 2, paneCY, frontZ + 0.012]}
         >
-          {windows.frontLeft}
+          {regions.frontLeft.children}
         </DeviceScreen>
       )}
-      {windows?.frontRight != null && (
+      {regions.frontRight != null && (
         <DeviceScreen
           {...screenCommon}
+          {...resolveSurface(regions.frontRight, { ...surfaceDefaults, resolution: 460 })}
           width={bayR.x1 - bayR.x0}
           height={paneH}
           radius={0.004}
-          resolution={460}
           position={[(bayR.x0 + bayR.x1) / 2, paneCY, frontZ + 0.012]}
         >
-          {windows.frontRight}
+          {regions.frontRight.children}
         </DeviceScreen>
       )}
       {/* the glazed door leaf, live above its kick rail */}
-      {windows?.door != null && (
+      {regions.door != null && (
         <DeviceScreen
           {...screenCommon}
+          {...resolveSurface(regions.door, { ...surfaceDefaults, resolution: 260 })}
           width={win.doorWidth - 0.24}
           height={windowH + riser.height - 0.36}
           radius={0.004}
-          resolution={260}
           position={[win.doorX + win.doorWidth / 2, riserTop + windowH / 2 - 0.15, frontZ + 0.062]}
         >
-          {windows.door}
+          {regions.door.children}
         </DeviceScreen>
       )}
 
       {/* ---------- windows-only elevations: right (+X), left (−X), rear (−Z),
           left/right named as you face the shop from the street ---------- */}
       <group rotation-y={Math.PI / 2}>
-        {windowedElevation(body.width / 2, body.depth, sideSign.width, rightSign, windows?.right)}
+        {windowedElevation(body.width / 2, body.depth, sideSign.width, regions.rightSign, regions.right)}
       </group>
       <group rotation-y={-Math.PI / 2}>
-        {windowedElevation(body.width / 2, body.depth, sideSign.width, leftSign, windows?.left)}
+        {windowedElevation(body.width / 2, body.depth, sideSign.width, regions.leftSign, regions.left)}
       </group>
       <group rotation-y={Math.PI}>
-        {windowedElevation(body.depth / 2, body.width, rearSignSpec.width, rearSign, windows?.rear)}
+        {windowedElevation(body.depth / 2, body.width, rearSignSpec.width, regions.rearSign, regions.rear)}
       </group>
     </group>
   )
 }
+StorefrontImpl.displayName = 'Storefront'
+
+/** The shop's compound slots, shared by `<Storefront>` and `<StorefrontMockup>`. */
+export const storefrontSlots = createSlots(STOREFRONT_REGIONS)
+
+export const Storefront = Object.assign(StorefrontImpl, storefrontSlots)

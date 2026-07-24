@@ -214,8 +214,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         extras: [
           { prop: 'coverage', label: 'coverage', kind: 'select', options: COVERAGE_OPTIONS, fallback: 'panel' },
           { prop: 'wrapOverWindows', label: 'over glass', kind: 'toggle', fallback: true },
-          { prop: 'destinationSign', label: 'sign', kind: 'text', placeholder: 'LED sign…' },
-          { prop: 'adBackground', label: 'ad bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case VanMockup:
@@ -224,8 +223,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         extras: [
           { prop: 'coverage', label: 'coverage', kind: 'select', options: COVERAGE_OPTIONS, fallback: 'panel' },
           { prop: 'wrapOverWindows', label: 'over glass', kind: 'toggle', fallback: false },
-          { prop: 'licensePlate', label: 'plate', kind: 'text', placeholder: 'plate…' },
-          { prop: 'wrapBackground', label: 'wrap bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case SemiTrailerMockup:
@@ -233,15 +231,14 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: false,
         extras: [
           { prop: 'skirtColor', label: 'skirt', kind: 'color' },
-          { prop: 'wrapBackground', label: 'wrap bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case BusShelterMockup:
       return {
         float: false,
         extras: [
-          { prop: 'arrivals', label: 'arrivals', kind: 'text', placeholder: 'LED arrivals…' },
-          { prop: 'posterBackground', label: 'poster bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case TVSetMockup:
@@ -250,7 +247,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         extras: [{ prop: 'size', label: 'inches', kind: 'range', min: 32, max: 98, step: 1, fallback: 65 }],
       }
     case StorefrontMockup:
-      return { float: false, extras: [{ prop: 'faceBackground', label: 'face bg', kind: 'color' }] }
+      return { float: false, extras: [{ prop: 'surfaceBackground', label: 'surface bg', kind: 'color' }] }
     case MagazineMockup:
       return {
         float: true,
@@ -265,17 +262,17 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'lanyardColor', label: 'lanyard', kind: 'color' },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case BillboardMockup:
-      return { float: false, extras: [{ prop: 'faceBackground', label: 'face bg', kind: 'color' }] }
+      return { float: false, extras: [{ prop: 'surfaceBackground', label: 'surface bg', kind: 'color' }] }
     case BookMockup:
       return {
         float: true,
         extras: [
           { prop: 'pageColor', label: 'pages', kind: 'color' },
-          { prop: 'coverBackground', label: 'cover bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case BrochureMockup:
@@ -283,7 +280,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'foldAngle', label: 'fold', kind: 'range', min: 0, max: 60, step: 1, fallback: 24 },
-          { prop: 'paperColor', label: 'paper', kind: 'color' },
+          { prop: 'color', label: 'paper', kind: 'color' },
         ],
       }
     case BusinessCardMockup:
@@ -291,18 +288,18 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'edgeColor', label: 'edge', kind: 'color' },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case CustomBoxMockup:
     case ProductBoxMockup:
-      return { float: true, extras: [{ prop: 'faceBackground', label: 'face bg', kind: 'color' }] }
+      return { float: true, extras: [{ prop: 'surfaceBackground', label: 'surface bg', kind: 'color' }] }
     case CustomPanelMockup:
       return {
         float: true,
         extras: [
           { prop: 'cornerRadius', label: 'corner', kind: 'range', min: 0, max: 20, step: 1, fallback: 2 },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case DOOHTotemMockup:
@@ -312,7 +309,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'openAngle', label: 'open', kind: 'range', min: 20, max: 150, step: 1, fallback: 65 },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case MailerBoxMockup:
@@ -320,7 +317,7 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'tapeColor', label: 'tape', kind: 'color' },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case PosterFrameMockup:
@@ -330,17 +327,17 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
           { prop: 'mat', label: 'mat', kind: 'toggle', fallback: false },
           { prop: 'matColor', label: 'mat color', kind: 'color' },
           { prop: 'glazing', label: 'glazing', kind: 'toggle', fallback: true },
-          { prop: 'posterBackground', label: 'poster bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case RollupBannerMockup:
-      return { float: false, extras: [{ prop: 'graphicBackground', label: 'graphic bg', kind: 'color' }] }
+      return { float: false, extras: [{ prop: 'surfaceBackground', label: 'surface bg', kind: 'color' }] }
     case ShoppingBagMockup:
       return {
         float: true,
         extras: [
           { prop: 'handleColor', label: 'handles', kind: 'color' },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case VinylRecordMockup:
@@ -348,11 +345,11 @@ function specFor(el: React.ReactElement): DeviceControlSpec | null {
         float: true,
         extras: [
           { prop: 'vinylColor', label: 'vinyl', kind: 'color' },
-          { prop: 'faceBackground', label: 'face bg', kind: 'color' },
+          { prop: 'surfaceBackground', label: 'surface bg', kind: 'color' },
         ],
       }
     case AFrameSignMockup:
-      return { float: false, extras: [{ prop: 'faceBackground', label: 'face bg', kind: 'color' }] }
+      return { float: false, extras: [{ prop: 'surfaceBackground', label: 'surface bg', kind: 'color' }] }
     case MockupCanvas:
     default:
       return null

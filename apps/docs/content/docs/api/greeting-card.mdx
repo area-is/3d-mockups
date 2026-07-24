@@ -4,15 +4,16 @@ description: A standing A7 card with four live faces — covers and inside sprea
 ---
 
 `<GreetingCard>` and `<GreetingCardMockup>` render a folded 5"×7" (A7) card
-standing like a tent, fold toward the viewer: `children` is the front cover,
-`backCover` the other outward face, and `insideLeft`/`insideRight` print the
-spread you see from behind. Each face gently shades into the crease, like
+standing like a tent, fold toward the viewer: bare children fill the front
+cover, `<GreetingCardMockup.Back>` the other outward face, and
+`<GreetingCardMockup.InsideLeft>`/`<GreetingCardMockup.InsideRight>` print
+the spread you see from behind. Each face gently shades into the crease, like
 paper actually bowing.
 
 <ObjectDemo demo="greeting-basic" checker />
 
 ```tsx
-<GreetingCardMockup float deviceProps={{ rotation: [0, -0.82, 0] }}>
+<GreetingCardMockup float rotation={[0, -0.82, 0]}>
   <Cover />
 </GreetingCardMockup>
 ```
@@ -23,16 +24,27 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `backCover` | `ReactNode` | - | The left outward face. |
-| `insideLeft`, `insideRight` | `ReactNode` | - | The inside spread. |
 | `openAngle` | `number` | `65` | Angle between the panels (display sweet spot is 60–75). |
 | `color` | `string` | `'#f6f3ec'` | Card stock: edges and unprinted faces. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
 | `resolution` | `number` | `380` | Virtual panel width in CSS px; height follows the A7 panel. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<GreetingCardMockup.Front>` | Front cover (bare children). |
+| `<GreetingCardMockup.InsideLeft>` | Inside-left panel of the spread. |
+| `<GreetingCardMockup.InsideRight>` | Inside-right panel of the spread. |
+| `<GreetingCardMockup.Back>` | Back cover — the left outward face. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<GreetingCard>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -45,7 +57,16 @@ what stays 3D hardware.
 <ObjectDemo demo="greeting-inside" />
 
 ```tsx
-<GreetingCardMockup autoRotate insideLeft={<Note />} insideRight={<Message />} backCover={<Logo />}>
+<GreetingCardMockup autoRotate>
   <Cover />
+  <GreetingCardMockup.InsideLeft>
+    <Note />
+  </GreetingCardMockup.InsideLeft>
+  <GreetingCardMockup.InsideRight>
+    <Message />
+  </GreetingCardMockup.InsideRight>
+  <GreetingCardMockup.Back>
+    <Logo />
+  </GreetingCardMockup.Back>
 </GreetingCardMockup>
 ```

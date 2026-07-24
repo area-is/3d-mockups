@@ -22,6 +22,8 @@
  * a future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { CameraFraming, MockupFraming } from '../../regions'
+
 /** World units per millimeter for the TV. */
 export const TV_MM = 1 / 258
 
@@ -92,6 +94,30 @@ export type TVSpec = ReturnType<typeof tvSpec>
 
 /** The default 65" set. */
 export const TV: TVSpec = tvSpec()
+
+/**
+ * Vertical stage lift every binding renders the TV with: the cabinet sits
+ * this far above the group origin, so the panel + feet ensemble reads
+ * visually centered on the stage origin the framing's camera and shadow are
+ * tuned for.
+ */
+export const TV_STAGE_OFFSET_Y = 0.5
+
+/**
+ * Default camera for a given diagonal: the stage pose for the 65" base set,
+ * pulled back in proportion as a larger panel widens past it. Size-dependent,
+ * so it rides beside `TV_FRAMING` rather than inside it.
+ */
+export function tvCameraFraming(size?: number): CameraFraming {
+  const spec = size === undefined ? TV : tvSpec(size)
+  return { position: [0, 0.3, 11.6 * Math.max(1, spec.body.width / TV.body.width)], fov: 40 }
+}
+
+/** The feet define the media-stand plane; the shadow grounds under them. */
+export const TV_FRAMING = {
+  floatIntensity: 0.5,
+  extent: ({ size }) => (size === undefined ? TV : tvSpec(size)).standHeight - TV_STAGE_OFFSET_Y,
+} as const satisfies MockupFraming<{ size?: number }>
 
 /** Display aspect ratio (height / width) — the 16:9 panel. */
 export const TV_DISPLAY_ASPECT = TV.display.height / TV.display.width

@@ -2,25 +2,23 @@ import * as React from 'react'
 import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MAILER_BOX, mailerBoxLayout, type MailerBoxSizeMm } from '@area-mockups/core'
+import { MAILER_BOX, MAILER_BOX_REGIONS, mailerBoxLayout, type MailerBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Top panel design — the hero face of a shipper. Tape overlays it like real tape over print. */
+export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Panel content. Bare children fill the top panel — the hero face of a
+   * shipper, with the tape overlaying it like real tape over print. Name
+   * panels explicitly with `<MailerBox.Top>`, `<MailerBox.Front>`,
+   * `<MailerBox.Back>`, `<MailerBox.Right>` / `<MailerBox.Left>` (the short
+   * end faces — the wrapped tape rides over them) and `<MailerBox.Bottom>`
+   * (oriented to read from the front when flipped).
+   */
   children?: React.ReactNode
-  /** Front (long) panel design. */
-  front?: React.ReactNode
-  /** Back (long) panel design. */
-  back?: React.ReactNode
-  /** End panel design (the right short face). The wrapped tape rides over it. */
-  side?: React.ReactNode
-  /** Left end panel design. The wrapped tape rides over it. */
-  left?: React.ReactNode
-  /** Bottom panel design — oriented to read from the front when flipped. */
-  bottom?: React.ReactNode
   /**
    * Shipper size in real millimeters: `{ width, height, depth }`. The longest
    * edge normalizes to the stage, so any size fills the default camera while
@@ -32,22 +30,12 @@ export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Packing tape color. */
   tapeColor?: string
-  /** CSS background painted behind each printed panel. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual top panel; other panels share its dpi. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your panel content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How panel content hides when that panel turns away from the camera.
    * `true` raycasts against the box (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each panel wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -58,25 +46,28 @@ export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'> {
  * like real tape over a printed box. No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <MailerBox>
+ *   <MailerBox.Top><YourTopPanel /></MailerBox.Top>
+ *   <MailerBox.Front><YourSidePanel /></MailerBox.Front>
+ * </MailerBox>
+ * ```
  */
-export function MailerBox({
+function MailerBoxImpl({
   children,
-  front,
-  back,
-  side,
-  left,
-  bottom,
   size,
   color = '#b5915f',
   tapeColor = 'rgba(168, 127, 79, 0.82)',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = MAILER_BOX.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: MailerBoxProps) {
+  const regions = collectSlots(children, MAILER_BOX_REGIONS)
   const { body, tape } = React.useMemo(
     () => mailerBoxLayout(size),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,12 +125,17 @@ export function MailerBox({
 
   const shared = {
     radius: body.radius,
-    background: faceBackground,
+    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+  }
+  const panelDefaults = {
+    background: surfaceBackground,
+    resolution,
     interactive,
     dragToRotate,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
+    style: surfaceStyle,
   }
+  // the end panels' virtual width follows the box depth at the top dpi
+  const endDefaults = { ...panelDefaults, resolution: Math.round(body.depth * pxPerUnit) }
 
   return (
     <group {...groupProps}>
@@ -175,7 +171,7 @@ export function MailerBox({
 
       {/* unprinted-state details: flap seam slabs and a skewed 4x6 label
           (hidden under the live top panel when one is mounted) */}
-      {children == null && (
+      {regions.top == null && (
         <group position={[0, body.height / 2, 0]}>
           {/* the two flaps, hinged on the long walls, meeting along the width
               — below the seam/tape planes so both stay visible */}
@@ -193,88 +189,94 @@ export function MailerBox({
       )}
 
       {/* live top panel — the seam and tape ride over the print */}
-      {children != null && (
+      {regions.top != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.top, panelDefaults)}
           width={body.width}
           height={body.depth}
-          resolution={resolution}
           position={[0, body.height / 2 + 0.004, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
           overlay={seamOverlay}
         >
-          {children}
+          {regions.top.children}
         </DeviceScreen>
       )}
 
       {/* live front (long) panel */}
-      {front != null && (
+      {regions.front != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.front, panelDefaults)}
           width={body.width}
           height={body.height}
-          resolution={resolution}
           position={[0, 0, body.depth / 2 + 0.004]}
         >
-          {front}
+          {regions.front.children}
         </DeviceScreen>
       )}
 
       {/* live back (long) panel */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.back, panelDefaults)}
           width={body.width}
           height={body.height}
-          resolution={resolution}
           position={[0, 0, -body.depth / 2 - 0.004]}
           rotation={[0, Math.PI, 0]}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
 
       {/* live bottom panel */}
-      {bottom != null && (
+      {regions.bottom != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.bottom, panelDefaults)}
           width={body.width}
           height={body.depth}
-          resolution={resolution}
           position={[0, -body.height / 2 - 0.004, 0]}
           rotation={[Math.PI / 2, 0, 0]}
         >
-          {bottom}
+          {regions.bottom.children}
         </DeviceScreen>
       )}
 
       {/* live end panels — the wrapped tape rides over them */}
-      {side != null && (
+      {regions.right != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.right, endDefaults)}
           width={body.depth}
           height={body.height}
-          resolution={Math.round(body.depth * pxPerUnit)}
           position={[body.width / 2 + 0.004, 0, 0]}
           rotation={[0, Math.PI / 2, 0]}
           overlay={tapeOverlay(true)}
         >
-          {side}
+          {regions.right.children}
         </DeviceScreen>
       )}
-      {left != null && (
+      {regions.left != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.left, endDefaults)}
           width={body.depth}
           height={body.height}
-          resolution={Math.round(body.depth * pxPerUnit)}
           position={[-body.width / 2 - 0.004, 0, 0]}
           rotation={[0, -Math.PI / 2, 0]}
           overlay={tapeOverlay(true)}
         >
-          {left}
+          {regions.left.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+MailerBoxImpl.displayName = 'MailerBox'
+
+/** The shipper's compound slots, shared by `<MailerBox>` and `<MailerBoxMockup>`. */
+export const mailerBoxSlots = createSlots(MAILER_BOX_REGIONS)
+
+export const MailerBox = Object.assign(MailerBoxImpl, mailerBoxSlots)

@@ -12,6 +12,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the brochure. */
 export const BROCHURE_MM = 1 / 60
 
@@ -48,3 +50,15 @@ export const BROCHURE: BrochureSpec = brochureSpec()
 
 /** Panel aspect ratio (height / width) of the default sheet. */
 export const BROCHURE_PANEL_ASPECT = BROCHURE.panel.height / BROCHURE.panel.width
+
+/** Live regions: one repeating panel slot (front and back faces via `side`). */
+export const BROCHURE_REGIONS = [
+  { name: 'panel', label: 'Panel', repeats: true },
+] as const satisfies readonly RegionSpec[]
+
+/** The standing brochure grounds on its bottom paper edge. */
+export const BROCHURE_FRAMING = {
+  camera: { position: [0, 0.5, 8.4], fov: 40 },
+  floatIntensity: 0.7,
+  extent: ({ size }) => (size ? brochureSpec(size) : BROCHURE).panel.height / 2,
+} as const satisfies MockupFraming<{ size?: BrochureSize }>

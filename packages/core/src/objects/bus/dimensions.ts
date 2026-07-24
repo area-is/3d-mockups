@@ -16,6 +16,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the bus. */
 export const BUS_MM = 1 / 1900
 
@@ -101,3 +103,18 @@ export const BUS = {
 
 /** Ad panel aspect ratio (height / width) — the 30x144 king size. */
 export const BUS_AD_ASPECT = BUS.ad.height / BUS.ad.width
+
+/** Live regions: ad surfaces on both sides and the tail, plus the LED sign. */
+export const BUS_REGIONS = [
+  { name: 'curbSide', label: 'Curb-side ad' },
+  { name: 'streetSide', label: 'Street-side ad' },
+  { name: 'rear', label: 'Rear ad' },
+  { name: 'destinationSign', label: 'Destination sign' },
+] as const satisfies readonly RegionSpec[]
+
+/** The wheels define the road plane; the shadow grounds just under them. */
+export const BUS_FRAMING = {
+  camera: { position: [0, 0.3, 11.8], fov: 40 },
+  floatIntensity: 0.4,
+  extent: () => -BUS.groundY,
+} as const satisfies MockupFraming

@@ -2,25 +2,22 @@ import * as React from 'react'
 import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { PRODUCT_BOX, productBoxLayout, type ProductBoxSizeMm } from '@area-mockups/core'
+import { PRODUCT_BOX, PRODUCT_BOX_REGIONS, productBoxLayout, type ProductBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front panel design — any React node, full bleed. */
+export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Panel content. Bare children fill the front panel; name panels explicitly
+   * with `<ProductBox.Front>`, `<ProductBox.Right>` (the side visible in a
+   * standard 3/4 pose), `<ProductBox.Left>`, `<ProductBox.Top>`,
+   * `<ProductBox.Bottom>` (oriented to read from the front when tipped over)
+   * and `<ProductBox.Back>`.
+   */
   children?: React.ReactNode
-  /** Right side panel design (the one visible in a standard 3/4 pose). */
-  side?: React.ReactNode
-  /** Left side panel design. */
-  left?: React.ReactNode
-  /** Top panel design. */
-  top?: React.ReactNode
-  /** Bottom panel design — oriented to read from the front when tipped over. */
-  bottom?: React.ReactNode
-  /** Back panel design. */
-  back?: React.ReactNode
   /**
    * Carton size in real millimeters: `{ width, height, depth }`. The longest
    * edge normalizes to the stage, so any size fills the default camera while
@@ -30,22 +27,12 @@ export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'> 
   size?: ProductBoxSizeMm
   /** Carton stock color — every unprinted panel and the fold edges. */
   color?: string
-  /** CSS background painted behind each printed panel. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual front panel; other panels share its dpi. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your panel content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How panel content hides when that panel turns away from the camera.
    * `true` raycasts against the carton (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each panel wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -56,24 +43,27 @@ export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'> 
  * loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <ProductBox>
+ *   <ProductBox.Front><FrontPanel /></ProductBox.Front>
+ *   <ProductBox.Right><SidePanel /></ProductBox.Right>
+ * </ProductBox>
+ * ```
  */
-export function ProductBox({
+function ProductBoxImpl({
   children,
-  side,
-  left,
-  top,
-  bottom,
-  back,
   size,
   color = '#f4f1ea',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = PRODUCT_BOX.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: ProductBoxProps) {
+  const regions = collectSlots(children, PRODUCT_BOX_REGIONS)
   const { body, flap } = React.useMemo(
     () => productBoxLayout(size),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,12 +81,17 @@ export function ProductBox({
 
   const shared = {
     radius: body.radius,
-    background: faceBackground,
+    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+  }
+  const panelDefaults = {
+    background: surfaceBackground,
+    resolution,
     interactive,
     dragToRotate,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
+    style: surfaceStyle,
   }
+  // the side panels' virtual width follows the carton depth at the front dpi
+  const sideDefaults = { ...panelDefaults, resolution: Math.round(body.depth * pxPerUnit) }
 
   return (
     <group {...groupProps}>
@@ -127,83 +122,89 @@ export function ProductBox({
       {/* front panel */}
       <DeviceScreen
         {...shared}
+        {...resolveSurface(regions.front, panelDefaults)}
         width={body.width}
         height={body.height}
-        resolution={resolution}
         position={[0, 0, body.depth / 2 + 0.003]}
       >
-        {children}
+        {regions.front?.children}
       </DeviceScreen>
 
       {/* right side panel */}
-      {side != null && (
+      {regions.right != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.right, sideDefaults)}
           width={body.depth}
           height={body.height}
-          resolution={Math.round(body.depth * pxPerUnit)}
           position={[body.width / 2 + 0.003, 0, 0]}
           rotation={[0, Math.PI / 2, 0]}
         >
-          {side}
+          {regions.right.children}
         </DeviceScreen>
       )}
 
       {/* left side panel */}
-      {left != null && (
+      {regions.left != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.left, sideDefaults)}
           width={body.depth}
           height={body.height}
-          resolution={Math.round(body.depth * pxPerUnit)}
           position={[-body.width / 2 - 0.003, 0, 0]}
           rotation={[0, -Math.PI / 2, 0]}
         >
-          {left}
+          {regions.left.children}
         </DeviceScreen>
       )}
 
       {/* top panel — oriented so its content reads from the front */}
-      {top != null && (
+      {regions.top != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.top, panelDefaults)}
           width={body.width}
           height={body.depth}
-          resolution={resolution}
           position={[0, body.height / 2 + 0.003, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
-          {top}
+          {regions.top.children}
         </DeviceScreen>
       )}
 
       {/* bottom panel */}
-      {bottom != null && (
+      {regions.bottom != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.bottom, panelDefaults)}
           width={body.width}
           height={body.depth}
-          resolution={resolution}
           position={[0, -body.height / 2 - 0.003, 0]}
           rotation={[Math.PI / 2, 0, 0]}
         >
-          {bottom}
+          {regions.bottom.children}
         </DeviceScreen>
       )}
 
       {/* back panel */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
           {...shared}
+          {...resolveSurface(regions.back, panelDefaults)}
           width={body.width}
           height={body.height}
-          resolution={resolution}
           position={[0, 0, -body.depth / 2 - 0.003]}
           rotation={[0, Math.PI, 0]}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+ProductBoxImpl.displayName = 'ProductBox'
+
+/** The carton's compound slots, shared by `<ProductBox>` and `<ProductBoxMockup>`. */
+export const productBoxSlots = createSlots(PRODUCT_BOX_REGIONS)
+
+export const ProductBox = Object.assign(ProductBoxImpl, productBoxSlots)

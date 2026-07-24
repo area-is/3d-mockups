@@ -18,8 +18,11 @@ on a virtual road plane.
 <ObjectDemo demo="van-basic" checker />
 
 ```tsx
-<VanMockup streetSide={<Livery />} rear={<RearDoors />} deviceProps={{ rotation: [0, -0.5, 0] }}>
+<VanMockup rotation={[0, -0.5, 0]}>
   <Livery />
+  <VanMockup.StreetSide><Livery /></VanMockup.StreetSide>
+  <VanMockup.Rear><RearDoors /></VanMockup.Rear>
+  <VanMockup.LicensePlate>AREA 51</VanMockup.LicensePlate>
 </VanMockup>
 ```
 
@@ -29,23 +32,32 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `curbSide` | `ReactNode` | - | Livery for the curb-side (+Z) panel — the named alternative to `children` (wins when both are set). |
-| `streetSide` | `ReactNode` | - | Livery for the street-side (−Z) wrap panel. |
-| `rear` | `ReactNode` | - | Livery for the rear doors: the between-the-taillights panel, or the whole barn-door face with `coverage="full"`. |
 | `color` | `string` | `'#eef0f2'` | Body paint. Wrap fleets are usually white. |
-| `wrapBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
-| `wrapOverWindows` | `boolean \| { curbSide?, streetSide? }` | `false` | Whether a full wrap runs over the cab door glass (perforated-film full-print look) or the glass stays clear and carved out (default — door glass is operational). |
-| `licensePlate` | `ReactNode \| string` | - | Front and rear plates. A string renders the built-in plate face; a node renders as-is. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
 | `coverage` | `'panel' \| 'full'` | `'panel'` | `'full'` covers the entire side elevations AND the whole rear face — door edge to door edge — carving out the wheel arches and door glass, while the proud hardware (mirrors, handles, door track, cab-door shut lines) draws on top of the livery via per-pixel depth compositing, like hardware remounted over the vinyl. On the rear, every taillight lamp, the third brake light and the hinge knuckles are carved to a slim install margin. Both coverages keep the barn-door shut line visible through the wrap. |
+| `wrapOverWindows` | `boolean \| { curbSide?, streetSide? }` | `false` | Whether a full wrap runs over the cab door glass (perforated-film full-print look) or the glass stays clear and carved out (default — door glass is operational). |
 | `resolution` | `number` | `900` panel · `1360` full | Virtual side-wrap width in CSS px; the rear panel shares its dpi. |
 
-`children` is the curb-side (+Z) panel; with the default `coverage="panel"`
-all three panels sit clear of the wheel arches, lights and cab glass. Rotate
-the group to pose the van; the panels stay live at any angle.
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<VanMockup.CurbSide>` | Curb-side (+Z) wrap panel (bare children). |
+| `<VanMockup.StreetSide>` | Street-side (−Z) wrap panel. |
+| `<VanMockup.Rear>` | Rear doors: the between-the-taillights panel, or the whole barn-door face with `coverage="full"`. |
+| `<VanMockup.LicensePlate>` | Front and rear plates. A string renders the built-in plate face; a node renders as-is. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<Van>`.
+
+With the default `coverage="panel"` all three wrap panels sit clear of the
+wheel arches, lights and cab glass. Rotate the group to pose the van; the
+panels stay live at any angle.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -68,8 +80,10 @@ the way remounted hardware sits on real vinyl.
 <ObjectDemo demo="van-full" />
 
 ```tsx
-<VanMockup coverage="full" streetSide={<FullLivery />} rear={<RearLivery />} deviceProps={{ rotation: [0, -0.42, 0] }}>
+<VanMockup coverage="full" rotation={[0, -0.42, 0]}>
   <FullLivery />
+  <VanMockup.StreetSide><FullLivery /></VanMockup.StreetSide>
+  <VanMockup.Rear><RearLivery /></VanMockup.Rear>
 </VanMockup>
 ```
 
@@ -81,20 +95,22 @@ clusters, street-side wrap beyond.
 <ObjectDemo demo="van-rear" />
 
 ```tsx
-<VanMockup streetSide={<Livery />} rear={<RearDoors />} deviceProps={{ rotation: [0, 2.25, 0] }}>
+<VanMockup rotation={[0, 2.25, 0]}>
   <Livery />
+  <VanMockup.StreetSide><Livery /></VanMockup.StreetSide>
+  <VanMockup.Rear><RearDoors /></VanMockup.Rear>
 </VanMockup>
 ```
 
 ### Painted body + full-color wrap
 
-Match `color` and `wrapBackground` for a fully-wrapped look — the paint
+Match `color` and `surfaceBackground` for a fully-wrapped look — the paint
 carries across the cab, nose and roof that the panel doesn't cover.
 
 <ObjectDemo demo="van-paint" />
 
 ```tsx
-<VanMockup color="#1d4433" wrapBackground="#1d4433" autoRotate>
+<VanMockup color="#1d4433" surfaceBackground="#1d4433" autoRotate>
   <YourLivery />
 </VanMockup>
 ```

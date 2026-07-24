@@ -1,35 +1,8 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { IPhone, type IPhoneProps } from './devices/iphone/iphone'
-import { IPHONE_VARIANTS } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { IPHONE_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { IPhone, iPhoneSlots, type IPhoneProps } from './devices/iphone/iphone'
 
-type InheritedDeviceProps = Pick<
-  IPhoneProps,
-  | 'variant'
-  | 'colorway'
-  | 'orientation'
-  | 'color'
-  | 'frameColor'
-  | 'screenBackground'
-  | 'resolution'
-  | 'dynamicIsland'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface IPhoneMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, an <iframe>, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<IPhoneProps, 'children'>
-}
+export type IPhoneMockupProps = MockupProps<IPhoneProps>
 
 /**
  * The one-liner: a complete, interactive 3D iPhone mockup.
@@ -39,54 +12,20 @@ export interface IPhoneMockupProps
  *   <YourApp />
  * </IPhoneMockup>
  * ```
+ *
+ * Wrap children in `<IPhoneMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <IPhoneMockup variant="pro" rotation={[0, 0.25, 0]}>
+ *   <IPhoneMockup.Screen background="#000" resolution={860}>
+ *     <MusicPlayer />
+ *   </IPhoneMockup.Screen>
+ * </IPhoneMockup>
+ * ```
  */
-export function IPhoneMockup({
-  children,
-  variant = '17',
-  colorway,
-  orientation = 'portrait',
-  color,
-  frameColor,
-  screenBackground,
-  resolution,
-  dynamicIsland,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: IPhoneMockupProps) {
-  const device = (
-    <IPhone
-      variant={variant}
-      colorway={colorway}
-      orientation={orientation}
-      color={color}
-      frameColor={frameColor}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      dynamicIsland={dynamicIsland}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </IPhone>
-  )
-
-  // Grounded by default: the shadow plane kisses the bottom edge of the body
-  // (its width when lying in landscape). Floating keeps a visible hover gap.
-  const body = IPHONE_VARIANTS[variant].body
-  const extent = orientation === 'landscape' ? body.width : body.height
-  const shadowY = canvasProps.shadowY ?? (float ? -(extent / 2 + 0.3) : -(extent / 2 + 0.05))
-
-  return (
-    <MockupCanvas {...canvasProps} shadowY={shadowY}>
-      {float ? <FloatGroup>{device}</FloatGroup> : device}
-    </MockupCanvas>
-  )
-}
+export const IPhoneMockup = createMockup({
+  object: IPhone,
+  framing: IPHONE_FRAMING,
+  slots: iPhoneSlots,
+  displayName: 'IPhoneMockup',
+})

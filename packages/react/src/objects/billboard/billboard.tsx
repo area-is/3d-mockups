@@ -2,33 +2,27 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BILLBOARD } from '@area-mockups/core'
+import { BILLBOARD, BILLBOARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** The creative — any React node. It fills the whole face, full bleed. */
+export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * The creative — any React node. It fills the whole face, full bleed;
+   * wrap in `<Billboard.Face>` to set per-surface props.
+   */
   children?: React.ReactNode
   /** Steel color (panel, pole, catwalk, light fixtures). */
   color?: string
-  /** CSS background painted behind your face content. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual face. Height follows the 14:48 bulletin. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your face content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How face content hides when the billboard faces away from the camera.
    * `true` raycasts against the panel (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -40,18 +34,25 @@ export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'> {
  * The group origin is the face center; the ground sits
  * `BILLBOARD.standHeight` below it. Must be rendered inside a
  * react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Billboard rotation={[0, -0.2, 0]}>
+ *   <Billboard.Face><YourCreative /></Billboard.Face>
+ * </Billboard>
+ * ```
  */
-export function Billboard({
+function BillboardImpl({
   children,
   color = '#2c313a',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = BILLBOARD.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: BillboardProps) {
+  const faceSlot = collectSlots(children, BILLBOARD_REGIONS).face
   const { face, panel, apron, standHeight, pole, catwalk, lights } = BILLBOARD
   const panelRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(panelRef)
@@ -175,16 +176,24 @@ export function Billboard({
         width={face.width}
         height={face.height}
         radius={face.radius}
-        resolution={resolution}
         position={[0, 0, panel.depth / 2 + 0.006]}
-        background={faceBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(faceSlot, {
+          background: surfaceBackground,
+          resolution,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
       >
-        {children}
+        {faceSlot?.children}
       </DeviceScreen>
     </group>
   )
 }
+BillboardImpl.displayName = 'Billboard'
+
+/** The bulletin's compound slots, shared by `<Billboard>` and `<BillboardMockup>`. */
+export const billboardSlots = createSlots(BILLBOARD_REGIONS)
+
+export const Billboard = Object.assign(BillboardImpl, billboardSlots)

@@ -6,8 +6,9 @@ description: A retail carton with all six panels as live print areas.
 `<ProductBox>` and `<ProductBoxMockup>` render a standing retail carton
 (190×265×55 mm — the classic cereal/software hero proportion) in satin
 coated stock with crisp fold edges and the tuck-flap seam on top. All six
-panels are live DOM — front (`children`), `side`, `left`, `top`, `bottom`
-and `back` — so a standard 3/4 pose shows three printed faces at once, all
+panels are live DOM — the front (bare children) plus the `Right`, `Left`,
+`Top`, `Bottom` and `Back` slots — so a standard 3/4 pose shows three
+printed faces at once, all
 sharing one dpi, and no pose reveals bare stock unless you want it to.
 Pass `size` (in millimeters) for a carton of any other dimensions.
 
@@ -16,8 +17,10 @@ Front, side and top, each its own live surface.
 <ObjectDemo demo="box-basic" checker />
 
 ```tsx
-<ProductBoxMockup side={<SidePanel />} top={<TopPanel />} deviceProps={{ rotation: [0, -0.5, 0] }}>
+<ProductBoxMockup rotation={[0, -0.5, 0]}>
   <FrontPanel />
+  <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
+  <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
 </ProductBoxMockup>
 ```
 
@@ -27,19 +30,28 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `side` | `ReactNode` | - | Right side panel (the one visible in a 3/4 pose). |
-| `left` | `ReactNode` | - | Left side panel. |
 | `size` | `{ width, height, depth }` | `190×265×55` | Real size in **millimeters**. The longest edge normalizes to the stage, so any size fills the camera at true proportions. |
-| `top` | `ReactNode` | - | Top panel, reading from the front. |
-| `back` | `ReactNode` | - | Back panel. |
-| `bottom` | `ReactNode` | - | Bottom panel, reading from the front when tipped. |
 | `color` | `string` | `'#f4f1ea'` | Carton stock: unprinted panels and fold edges. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed panel. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed panel. |
 | `resolution` | `number` | `480` | Virtual front-panel width in CSS px; other panels share its dpi. |
+
+## Regions
+
+| Slot | Panel |
+| --- | --- |
+| `<ProductBoxMockup.Front>` (bare children) | Front panel. |
+| `<ProductBoxMockup.Right>` | Right side panel (the one visible in a 3/4 pose). |
+| `<ProductBoxMockup.Left>` | Left side panel. |
+| `<ProductBoxMockup.Top>` | Top panel, reading from the front. |
+| `<ProductBoxMockup.Bottom>` | Bottom panel, reading from the front when tipped. |
+| `<ProductBoxMockup.Back>` | Back panel. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -55,15 +67,13 @@ back, the roast-date stamp underneath. Drag it anywhere; it stays designed.
 <ObjectDemo demo="box-full" />
 
 ```tsx
-<ProductBoxMockup
-  autoRotate
-  side={<SidePanel />}
-  left={<SidePanel />}
-  top={<TopPanel />}
-  bottom={<BatchStamp />}
-  back={<BackPanel />}
->
+<ProductBoxMockup autoRotate>
   <FrontPanel />
+  <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
+  <ProductBoxMockup.Left><SidePanel /></ProductBoxMockup.Left>
+  <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
+  <ProductBoxMockup.Bottom><BatchStamp /></ProductBoxMockup.Bottom>
+  <ProductBoxMockup.Back><BackPanel /></ProductBoxMockup.Back>
 </ProductBoxMockup>
 ```
 

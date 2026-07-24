@@ -83,17 +83,19 @@ function HarnessScene() {
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         wrapOverWindows={params.get('over') !== '0'}
         color={color}
-        destinationSign={sign ? (sign.includes('|') ? sign.split('|') : sign) : undefined}
-        streetSideAd={screen}
-        rearAd={screen}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        {sign ? (
+          <BusMockup.DestinationSign>{sign.includes('|') ? sign.split('|') : sign}</BusMockup.DestinationSign>
+        ) : null}
+        <BusMockup.StreetSide>{screen}</BusMockup.StreetSide>
+        <BusMockup.Rear>{screen}</BusMockup.Rear>
       </BusMockup>
     )
   }
@@ -104,16 +106,16 @@ function HarnessScene() {
       <VanMockup
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         color={color}
-        streetSide={screen}
-        rear={screen}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        <VanMockup.StreetSide>{screen}</VanMockup.StreetSide>
+        <VanMockup.Rear>{screen}</VanMockup.Rear>
       </VanMockup>
     )
   }
@@ -124,16 +126,24 @@ function HarnessScene() {
     const arrivalsBack = params.get('arrivalsBack')
     return (
       <BusShelterMockup
-        arrivals={arrivals ? (arrivals.includes('|') ? arrivals.split('|') : arrivals) : undefined}
-        arrivalsBack={arrivalsBack ? (arrivalsBack.includes('|') ? arrivalsBack.split('|') : arrivalsBack) : undefined}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        {arrivals ? (
+          <BusShelterMockup.Arrivals>
+            {arrivals.includes('|') ? arrivals.split('|') : arrivals}
+          </BusShelterMockup.Arrivals>
+        ) : null}
+        {arrivalsBack ? (
+          <BusShelterMockup.ArrivalsBack>
+            {arrivalsBack.includes('|') ? arrivalsBack.split('|') : arrivalsBack}
+          </BusShelterMockup.ArrivalsBack>
+        ) : null}
       </BusShelterMockup>
     )
   }
@@ -148,7 +158,7 @@ function HarnessScene() {
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
       </TVSetMockup>
@@ -159,18 +169,23 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 12)
     return (
       <StorefrontMockup
-        windows={{ frontLeft: screen, frontRight: screen, door: screen, left: screen, right: screen, rear: screen }}
-        leftSign={screen}
-        rightSign={screen}
-        rearSign={screen}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        <StorefrontMockup.FrontLeft>{screen}</StorefrontMockup.FrontLeft>
+        <StorefrontMockup.FrontRight>{screen}</StorefrontMockup.FrontRight>
+        <StorefrontMockup.Door>{screen}</StorefrontMockup.Door>
+        <StorefrontMockup.Left>{screen}</StorefrontMockup.Left>
+        <StorefrontMockup.Right>{screen}</StorefrontMockup.Right>
+        <StorefrontMockup.Rear>{screen}</StorefrontMockup.Rear>
+        <StorefrontMockup.LeftSign>{screen}</StorefrontMockup.LeftSign>
+        <StorefrontMockup.RightSign>{screen}</StorefrontMockup.RightSign>
+        <StorefrontMockup.RearSign>{screen}</StorefrontMockup.RearSign>
       </StorefrontMockup>
     )
   }
@@ -180,16 +195,16 @@ function HarnessScene() {
     return (
       <MagazineMockup
         glossy={params.get('glossy') === '1'}
-        back={params.get('back') === '1' ? screen : undefined}
-        spine={params.get('spine') === '0' ? undefined : screen}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        {params.get('back') === '1' ? <MagazineMockup.Back>{screen}</MagazineMockup.Back> : null}
+        {params.get('spine') === '0' ? null : <MagazineMockup.Spine>{screen}</MagazineMockup.Spine>}
       </MagazineMockup>
     )
   }
@@ -198,15 +213,15 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 6)
     return (
       <IDCardMockup
-        back={params.get('back') === '1' ? screen : undefined}
         interactive={false}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
+        {params.get('back') === '1' ? <IDCardMockup.Back>{screen}</IDCardMockup.Back> : null}
       </IDCardMockup>
     )
   }
@@ -218,7 +233,7 @@ function HarnessScene() {
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
       </MonitorMockup>
@@ -236,7 +251,7 @@ function HarnessScene() {
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
       </FlipMockup>
@@ -254,7 +269,7 @@ function HarnessScene() {
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
-        deviceProps={{ rotation: [rx, ry, 0] }}
+        rotation={[rx, ry, 0]}
       >
         {screen}
       </FoldMockup>

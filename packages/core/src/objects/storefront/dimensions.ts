@@ -11,7 +11,7 @@
  * - the other three sides (+X, −X, −Z): the same composition without the
  *   door — windows only — each carrying its own live fascia sign.
  *
- * Live surfaces: the four fascia signs (front `children` plus
+ * Live surfaces: the four fascia signs (the front `fascia` region plus
  * left/right/rear), both front display bays, the glazed door leaf and the
  * center pane of each other elevation — every elevation is mockup-able
  * (the roof is not).
@@ -19,6 +19,8 @@
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
+
+import type { MockupFraming, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the storefront. */
 export const STOREFRONT_MM = 1 / 1100
@@ -48,3 +50,27 @@ export const STOREFRONT = {
 
 /** Fascia sign aspect ratio (height / width). */
 export const STOREFRONT_SIGN_ASPECT = STOREFRONT.sign.height / STOREFRONT.sign.width
+
+/**
+ * Live regions: the four fascia signs, both front display bays, the glazed
+ * door leaf and the center pane of each windows-only elevation.
+ */
+export const STOREFRONT_REGIONS = [
+  { name: 'fascia', label: 'Front fascia sign' },
+  { name: 'frontLeft', label: 'Front-left display bay' },
+  { name: 'frontRight', label: 'Front-right display bay' },
+  { name: 'door', label: 'Door glass' },
+  { name: 'left', label: 'Left window pane' },
+  { name: 'right', label: 'Right window pane' },
+  { name: 'rear', label: 'Rear window pane' },
+  { name: 'leftSign', label: 'Left fascia sign' },
+  { name: 'rightSign', label: 'Right fascia sign' },
+  { name: 'rearSign', label: 'Rear fascia sign' },
+] as const satisfies readonly RegionSpec[]
+
+/** The façade stands on the pavement. */
+export const STOREFRONT_FRAMING = {
+  camera: { position: [0, 0.4, 10.6], fov: 40 },
+  floatIntensity: 0.35,
+  extent: () => STOREFRONT.standHeight,
+} as const satisfies MockupFraming

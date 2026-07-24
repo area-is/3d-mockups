@@ -1,92 +1,26 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Storefront, type StorefrontProps } from './objects/storefront/storefront'
-import { STOREFRONT } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { STOREFRONT_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Storefront, storefrontSlots, type StorefrontProps } from './objects/storefront/storefront'
 
-type InheritedObjectProps = Pick<
-  StorefrontProps,
-  | 'windows'
-  | 'leftSign'
-  | 'rightSign'
-  | 'rearSign'
-  | 'color'
-  | 'faceBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface StorefrontMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** Fascia sign design — any React node. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<StorefrontProps, 'children'>
-}
+export type StorefrontMockupProps = MockupProps<StorefrontProps>
 
 /**
  * The one-liner: a complete, interactive free-standing 3D shop mockup with
- * live fascia signs on all four glazed elevations plus the window poster.
+ * live fascia signs on all four glazed elevations plus every big window pane.
  *
  * ```tsx
- * <StorefrontMockup windows={{ frontLeft: <YourPoster /> }} rearSign={<YourSign />}>
+ * <StorefrontMockup>
  *   <YourSign />
+ *   <StorefrontMockup.FrontLeft><YourPoster /></StorefrontMockup.FrontLeft>
+ *   <StorefrontMockup.RearSign><YourSign /></StorefrontMockup.RearSign>
  * </StorefrontMockup>
  * ```
+ *
+ * Bare children are shorthand for the front fascia sign.
  */
-export function StorefrontMockup({
-  children,
-  windows,
-  leftSign,
-  rightSign,
-  rearSign,
-  color,
-  faceBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: StorefrontMockupProps) {
-  const object = (
-    <Storefront
-      windows={windows}
-      leftSign={leftSign}
-      rightSign={rightSign}
-      rearSign={rearSign}
-      color={color}
-      faceBackground={faceBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Storefront>
-  )
-
-  // The façade stands on the pavement; ground the shadow just under it.
-  const groundY = -STOREFRONT.standHeight
-  const shadowY = canvasProps.shadowY ?? (float ? groundY - 0.25 : groundY - 0.02)
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.4, 10.6], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.35}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const StorefrontMockup = createMockup({
+  object: Storefront,
+  framing: STOREFRONT_FRAMING,
+  slots: storefrontSlots,
+  displayName: 'StorefrontMockup',
+})

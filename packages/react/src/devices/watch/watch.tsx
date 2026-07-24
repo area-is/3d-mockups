@@ -2,16 +2,27 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { WATCH_COLORWAYS, findColorway, WATCH_VARIANTS, type WatchVariant } from '@area-mockups/core'
+import {
+  WATCH_COLORWAYS,
+  findColorway,
+  WATCH_VARIANTS,
+  WATCH_DEFAULT_VARIANT,
+  SCREEN_REGIONS,
+  type WatchVariant,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape, gearShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface WatchProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the watch screen: React components, a <video>… */
+export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the watch screen: React components, a <video>…
+   * Wrap in `<Watch.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /**
    * Which watch to render, at true relative sizes: `series11` (Apple Watch
@@ -29,31 +40,18 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Band colorway (Sport-Band-style closed loop). Defaults to a dark band. */
   bandColor?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the virtual display. The default matches the device's
    * logical grid: 208 gives 208×248 on the Apple Watch; 240 gives a round
    * 240×240 on the Galaxy Watch — so content lays out like on the real device.
    */
   resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the case (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -68,20 +66,21 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'> {
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Watch({
+function WatchImpl({
   children,
-  variant = 'series11',
+  variant = WATCH_DEFAULT_VARIANT,
   colorway,
   color: colorProp,
   bandColor = '#2a2c31',
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: WatchProps) {
+  const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = WATCH_VARIANTS[variant]
   const retail = findColorway(WATCH_COLORWAYS[variant], colorway)
   const color = colorProp ?? retail?.color ?? '#1c1d21'
@@ -475,16 +474,24 @@ export function Watch({
         width={display.width}
         height={display.height}
         radius={display.radius}
-        resolution={res}
         position={[0, 0, faceZ + 0.006]}
-        background={screenBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(screen, {
+          background: surfaceBackground,
+          resolution: res,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
       >
-        {children}
+        {screen?.children}
       </DeviceScreen>
     </group>
   )
 }
+WatchImpl.displayName = 'Watch'
+
+/** The device's compound slots, shared by `<Watch>` and `<WatchMockup>`. */
+export const watchSlots = createSlots(SCREEN_REGIONS)
+
+export const Watch = Object.assign(WatchImpl, watchSlots)

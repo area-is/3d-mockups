@@ -13,7 +13,7 @@ floor.
 <ObjectDemo demo="banner-basic" checker />
 
 ```tsx
-<RollupBannerMockup deviceProps={{ rotation: [0, 0.18, 0] }}>
+<RollupBannerMockup rotation={[0, 0.18, 0]}>
   <YourBannerArt />
 </RollupBannerMockup>
 ```
@@ -26,8 +26,14 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- | --- | --- |
 | `size` | `{ width?, height? }` | `850×2000` | Physical graphic in mm — e.g. `{ width: 1000 }` for the wide stand. The cassette resizes with it. |
 | `color` | `string` | `'#b9bdc4'` | Hardware color: cassette, feet, pole, top rail. |
-| `graphicBackground` | `string` | `'#ffffff'` | CSS background behind your graphic content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your graphic content. |
 | `resolution` | `number` | `420` | Virtual graphic width in CSS px; height follows the 850×2000 sheet. |
+
+## Regions
+
+One region: the graphic (bare children). Use the explicit
+`<RollupBannerMockup.Banner>` slot when you want per-surface overrides —
+`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
 
 ## Mockup-able areas
 

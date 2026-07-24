@@ -13,6 +13,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the greeting card. */
 export const GREETING_CARD_MM = 1 / 56
 
@@ -27,3 +29,18 @@ export const GREETING_CARD = {
 
 /** Panel aspect ratio (height / width). */
 export const GREETING_CARD_ASPECT = GREETING_CARD.panel.height / GREETING_CARD.panel.width
+
+/** Live regions: the four printable faces, front cover first. */
+export const GREETING_CARD_REGIONS = [
+  { name: 'front', label: 'Front cover' },
+  { name: 'insideLeft', label: 'Inside left' },
+  { name: 'insideRight', label: 'Inside right' },
+  { name: 'back', label: 'Back cover' },
+] as const satisfies readonly RegionSpec[]
+
+/** The tent-standing card grounds on its bottom panel edges. */
+export const GREETING_CARD_FRAMING = {
+  camera: { position: [0, 0.5, 7.6], fov: 40 },
+  floatIntensity: 0.6,
+  extent: () => GREETING_CARD.panel.height / 2,
+} as const satisfies MockupFraming

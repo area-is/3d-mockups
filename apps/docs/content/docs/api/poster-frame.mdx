@@ -13,7 +13,7 @@ a live 540×721 DOM surface.
 <ObjectDemo demo="poster-basic" checker />
 
 ```tsx
-<PosterFrameMockup deviceProps={{ rotation: [0, 0.25, 0] }}>
+<PosterFrameMockup rotation={[0, 0.25, 0]}>
   <YourPosterArt />
 </PosterFrameMockup>
 ```
@@ -29,8 +29,14 @@ Beyond the [shared screen props](/docs/screen-content):
 | `mat` | `boolean` | `false` | Mount the art behind a 2.5" gallery matboard. |
 | `matColor` | `string` | `'#f6f3ec'` | Matboard color. |
 | `glazing` | `boolean` | `true` | Soft acrylic sheen over the art. |
-| `posterBackground` | `string` | `'#ffffff'` | CSS background behind your poster content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your poster content. |
 | `resolution` | `number` | `540` | Virtual art width in CSS px; height follows its aspect. |
+
+## Regions
+
+One region: the visible sheet (bare children). Use the explicit
+`<PosterFrameMockup.Poster>` slot when you want per-surface overrides —
+`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
 
 ## Mockup-able areas
 
@@ -49,7 +55,7 @@ what stays 3D hardware.
 <ObjectDemo demo="poster-oak" />
 
 ```tsx
-<PosterFrameMockup color="#b98d5f" posterBackground="#f7f2e8" float>
+<PosterFrameMockup color="#b98d5f" surfaceBackground="#f7f2e8" float>
   <YourPosterArt />
 </PosterFrameMockup>
 ```

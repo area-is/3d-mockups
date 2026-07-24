@@ -2,50 +2,34 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BUS_SHELTER } from '@area-mockups/core'
+import { BUS_SHELTER, BUS_SHELTER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** 6-sheet creative on the outward lightbox face — any React node, full bleed. */
+export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Region content. Bare children fill the outward 6-sheet lightbox face;
+   * name regions explicitly with `<BusShelter.Poster>`, `<BusShelter.Inner>`
+   * (the waiting-area lightbox face), `<BusShelter.Arrivals>` and
+   * `<BusShelter.ArrivalsBack>`. The arrivals slots take an array of strings
+   * for the built-in dot-matrix LED board (one row per arrival, rows scroll
+   * when they overflow), a single string for a one-line message — or any
+   * React node for full custom control; the waiting-area face mirrors
+   * `<BusShelter.Arrivals>` unless `<BusShelter.ArrivalsBack>` is given.
+   */
   children?: React.ReactNode
-  /** Creative on the inward (waiting-area) lightbox face. */
-  inner?: React.ReactNode
-  /**
-   * Live RTPI arrivals display hanging under the roof — bus times, service
-   * alerts, anything. Renders on a dark board facing the street. Pass an
-   * array of strings for the built-in dot-matrix LED board (one row per
-   * arrival, rows scroll when they overflow), a single string for a one-line
-   * message — or any React node for full custom control.
-   */
-  arrivals?: React.ReactNode | string | string[]
-  /**
-   * The waiting-area face of the arrivals board. By default it mirrors
-   * `arrivals` — set this (text, string array or a custom node) to show
-   * different content on the back.
-   */
-  arrivalsBack?: React.ReactNode | string | string[]
   /** Street-furniture steel color (roof, posts, frames, bench). */
   color?: string
-  /** CSS background painted behind the poster content (backlit white). */
-  posterBackground?: string
-  /** CSS pixel width of the virtual poster. Height follows the 6-sheet. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your poster content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How poster content hides when its face turns away from the camera.
    * `true` raycasts against the lightbox (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each poster wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -58,21 +42,26 @@ export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'> 
  * `BUS_SHELTER.standHeight` below it. The lightbox faces ±X (along the
  * sidewalk) — pose the shelter in three-quarter view to feature it. Must be
  * rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <BusShelter>
+ *   <BusShelter.Poster><YourPoster /></BusShelter.Poster>
+ *   <BusShelter.Arrivals>{['12  City Centre  3 min', '7  Station  9 min']}</BusShelter.Arrivals>
+ * </BusShelter>
+ * ```
  */
-export function BusShelter({
+function BusShelterImpl({
   children,
-  inner,
-  arrivals,
-  arrivalsBack,
   color = '#2f333a',
-  posterBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = BUS_SHELTER.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: BusShelterProps) {
+  const regions = collectSlots(children, BUS_SHELTER_REGIONS)
   const { body, roof, backGlass, post, bench, lightbox, poster, flag, display, standHeight } = BUS_SHELTER
   const boxRef = React.useRef<THREE.Mesh>(null!)
   // The roof and the arrivals board's housing must occlude too — without
@@ -84,7 +73,7 @@ export function BusShelter({
 
   // Plain strings become the built-in LED arrivals board — an array is one
   // row per arrival; custom nodes pass straight through.
-  const toBoard = (content: React.ReactNode | string | string[]) =>
+  const toBoard = (content: React.ReactNode) =>
     isLedText(content) ? (
       <LEDText
         text={content}
@@ -96,9 +85,9 @@ export function BusShelter({
     ) : (
       content
     )
-  const board = toBoard(arrivals)
+  const board = toBoard(regions.arrivals?.children)
   // The waiting-area face mirrors the street face unless overridden.
-  const backBoard = arrivalsBack === undefined ? board : toBoard(arrivalsBack)
+  const backBoard = regions.arrivalsBack === undefined ? board : toBoard(regions.arrivalsBack.children)
 
   const glassMaterial = (
     <meshPhysicalMaterial
@@ -116,16 +105,26 @@ export function BusShelter({
   const roofY = body.height / 2 - roof.thickness / 2
   const floorY = -standHeight
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
+  // The arrivals board is a dark LED surface at the display's own resolution.
+  const boardDefaults = {
+    background: '#0b0c0e',
+    resolution: display.resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const posterProps = {
     width: poster.width,
     height: poster.height,
     radius: poster.radius,
-    resolution,
-    background: posterBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -190,7 +189,7 @@ export function BusShelter({
       </group>
 
       {/* RTPI arrivals display hanging under the roof near the front edge */}
-      {board != null && (
+      {regions.arrivals != null && (
         <group position={[display.x, roofY - roof.thickness / 2 - display.drop - display.height / 2 - 0.05, body.depth / 2 - 0.3]}>
           {([1, -1] as const).map((s) => (
             <mesh key={s} position={[s * (display.width / 2 - 0.12), display.height / 2 + 0.05 + display.drop / 2, 0]}>
@@ -205,17 +204,13 @@ export function BusShelter({
             width={display.width}
             height={display.height}
             radius={0.01}
-            resolution={display.resolution}
+            {...resolveSurface(regions.arrivals, boardDefaults)}
             position={[0, 0, 0.049]}
-            background="#0b0c0e"
-            interactive={interactive}
-            dragToRotate={dragToRotate}
             // Per-pixel blending: the hanging board sits INSIDE the shelter,
             // so pillars, glass frames and the roof edge cross in front of it
             // at many angles — raycast's all-or-nothing hide either blanks
             // the whole board or lets the LED text pierce a thin pillar.
             occlude={occlude === false ? undefined : 'blending'}
-            screenStyle={screenStyle}
           >
             {board}
           </DeviceScreen>
@@ -225,14 +220,10 @@ export function BusShelter({
               width={display.width}
               height={display.height}
               radius={0.01}
-              resolution={display.resolution}
+              {...resolveSurface(regions.arrivalsBack, boardDefaults)}
               position={[0, 0, -0.049]}
               rotation={[0, Math.PI, 0]}
-              background="#0b0c0e"
-              interactive={interactive}
-              dragToRotate={dragToRotate}
               occlude={occlude === false ? undefined : 'blending'}
-              screenStyle={screenStyle}
             >
               {backBoard}
             </DeviceScreen>
@@ -262,15 +253,31 @@ export function BusShelter({
         ))}
 
         {/* live 6-sheet posters, outward (+X) and inward (−X) */}
-        <DeviceScreen {...posterProps} position={[lightbox.depth / 2 + 0.006, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-          {children}
+        <DeviceScreen
+          {...posterProps}
+          {...resolveSurface(regions.poster, surfaceDefaults)}
+          position={[lightbox.depth / 2 + 0.006, 0, 0]}
+          rotation={[0, Math.PI / 2, 0]}
+        >
+          {regions.poster?.children}
         </DeviceScreen>
-        {inner != null && (
-          <DeviceScreen {...posterProps} position={[-lightbox.depth / 2 - 0.006, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-            {inner}
+        {regions.inner != null && (
+          <DeviceScreen
+            {...posterProps}
+            {...resolveSurface(regions.inner, surfaceDefaults)}
+            position={[-lightbox.depth / 2 - 0.006, 0, 0]}
+            rotation={[0, -Math.PI / 2, 0]}
+          >
+            {regions.inner.children}
           </DeviceScreen>
         )}
       </group>
     </group>
   )
 }
+BusShelterImpl.displayName = 'BusShelter'
+
+/** The shelter's compound slots, shared by `<BusShelter>` and `<BusShelterMockup>`. */
+export const busShelterSlots = createSlots(BUS_SHELTER_REGIONS)
+
+export const BusShelter = Object.assign(BusShelterImpl, busShelterSlots)

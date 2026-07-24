@@ -11,6 +11,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the ID card. */
 export const ID_CARD_MM = 1 / 32
 
@@ -57,3 +59,23 @@ export const ID_CARD = {
 
 /** Printable face aspect ratio (height / width). */
 export const ID_CARD_FACE_ASPECT = ID_CARD.face.height / ID_CARD.face.width
+
+/** Live regions: the two faces of the badge. */
+export const ID_CARD_REGIONS = [
+  { name: 'front', label: 'Front face' },
+  { name: 'back', label: 'Back face' },
+] as const satisfies readonly RegionSpec[]
+
+/**
+ * Vertical offset that centers the badge (card + hook, with the straps
+ * running out of the top of the frame) on the stage origin.
+ */
+export const ID_CARD_STAGE_OFFSET_Y = -0.35
+
+/** The (stage-offset) badge grounds on the card's bottom edge. */
+export const ID_CARD_FRAMING = {
+  camera: { position: [0, 0.35, 6.2], fov: 40 },
+  floatIntensity: 0.6,
+  extent: () => ID_CARD.body.height / 2 - ID_CARD_STAGE_OFFSET_Y,
+  contactGap: 0.05,
+} as const satisfies MockupFraming

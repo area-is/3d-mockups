@@ -6,12 +6,14 @@
  * seam that wraps down both ends. Normalized to ~78 mm per world unit so the
  * box is 4.49 units wide.
  *
- * Live faces: top (`children`, tape rendered as a DOM overlay so it stays
- * over your print), front and end panels.
+ * Live faces: top (the primary region — tape rendered as a DOM overlay so it
+ * stays over your print), front and end panels.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
+
+import type { MockupFraming, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the mailer box. */
 export const MAILER_BOX_MM = 1 / 78
@@ -61,3 +63,20 @@ export function mailerBoxLayout(size: MailerBoxSizeMm = MAILER_BOX_SIZE_MM): Mai
     tape: { width: Math.min(48 * scale, width * 0.25) },
   }
 }
+
+/** Live regions: all six panels, the top (the shipper's hero face) first. */
+export const MAILER_BOX_REGIONS = [
+  { name: 'top', label: 'Top panel' },
+  { name: 'front', label: 'Front panel' },
+  { name: 'back', label: 'Back panel' },
+  { name: 'right', label: 'Right end panel' },
+  { name: 'left', label: 'Left end panel' },
+  { name: 'bottom', label: 'Bottom panel' },
+] as const satisfies readonly RegionSpec[]
+
+/** The box sits on the table at half its (normalized) height. */
+export const MAILER_BOX_FRAMING = {
+  camera: { position: [0, 0.8, 7.6], fov: 40 },
+  floatIntensity: 0.6,
+  extent: ({ size }) => mailerBoxLayout(size).body.height / 2,
+} as const satisfies MockupFraming<{ size?: MailerBoxSizeMm }>

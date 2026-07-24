@@ -1,17 +1,20 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { SHOPPING_BAG, shoppingBagLayout, type ShoppingBagSizeMm } from '@area-mockups/core'
+import { SHOPPING_BAG, SHOPPING_BAG_REGIONS, shoppingBagLayout, type ShoppingBagSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front face design — any React node, full bleed edge to edge. */
+export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Face designs, full bleed edge to edge. Bare children fill the front
+   * face; name faces explicitly with `<ShoppingBag.Front>` and
+   * `<ShoppingBag.Back>`.
+   */
   children?: React.ReactNode
-  /** Back face design. */
-  back?: React.ReactNode
   /**
    * Bag size in real millimeters: `{ width, height, depth }`. The longest
    * edge normalizes to the stage, so any size fills the default camera
@@ -23,22 +26,12 @@ export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>
   color?: string
   /** Rope handle color. */
   handleColor?: string
-  /** CSS background painted behind each printed face. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual front face. Height follows the bag. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your face content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How face content hides when that face turns away from the camera.
    * `true` raycasts against the bag walls (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -51,21 +44,28 @@ export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>
  * loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <ShoppingBag>
+ *   <ShoppingBag.Front><YourBagFace /></ShoppingBag.Front>
+ *   <ShoppingBag.Back><BackFace /></ShoppingBag.Back>
+ * </ShoppingBag>
+ * ```
  */
-export function ShoppingBag({
+function ShoppingBagImpl({
   children,
-  back,
   size,
   color = '#c19a6b',
   handleColor = '#7d6142',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = SHOPPING_BAG.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: ShoppingBagProps) {
+  const regions = collectSlots(children, SHOPPING_BAG_REGIONS)
   const { body, wall, gusset, handle } = React.useMemo(
     () => shoppingBagLayout(size),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,16 +159,18 @@ export function ShoppingBag({
   }, [body])
   React.useEffect(() => () => bottomTexture?.dispose(), [bottomTexture])
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const faceProps = {
     width: body.width,
     height: body.height,
     radius: body.radius,
-    resolution,
-    background: faceBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   // handle hardware hangs from the rim in proportion to the handle itself
@@ -229,16 +231,31 @@ export function ShoppingBag({
       ))}
 
       {/* live front face — full bleed to the top edge */}
-      <DeviceScreen {...faceProps} position={[0, 0, body.depth / 2 + 0.004]}>
-        {children}
+      <DeviceScreen
+        {...faceProps}
+        {...resolveSurface(regions.front, surfaceDefaults)}
+        position={[0, 0, body.depth / 2 + 0.004]}
+      >
+        {regions.front?.children}
       </DeviceScreen>
 
       {/* live back face */}
-      {back != null && (
-        <DeviceScreen {...faceProps} position={[0, 0, -body.depth / 2 - 0.004]} rotation={[0, Math.PI, 0]}>
-          {back}
+      {regions.back != null && (
+        <DeviceScreen
+          {...faceProps}
+          {...resolveSurface(regions.back, surfaceDefaults)}
+          position={[0, 0, -body.depth / 2 - 0.004]}
+          rotation={[0, Math.PI, 0]}
+        >
+          {regions.back.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+ShoppingBagImpl.displayName = 'ShoppingBag'
+
+/** The bag's compound slots, shared by `<ShoppingBag>` and `<ShoppingBagMockup>`. */
+export const shoppingBagSlots = createSlots(SHOPPING_BAG_REGIONS)
+
+export const ShoppingBag = Object.assign(ShoppingBagImpl, shoppingBagSlots)

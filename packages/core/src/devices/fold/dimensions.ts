@@ -20,6 +20,9 @@
  * ratio ~1.11); folded 158.4 x 72.8 x 8.9 mm (6.5" 2520x1080 cover, ratio ~2.32).
  */
 
+import type { Orientation } from '../../orientation'
+import type { MockupFraming } from '../../regions'
+
 /** The rear camera cluster in one pose's own back-face coordinates. */
 interface FoldRearCamera {
   /** Light pedestal plate under the pill (scan: 19.8 x 52.1 mm, 2.7 mm proud). */
@@ -171,6 +174,36 @@ export const FOLD_VARIANTS: Record<'fold7', FoldSpec> = {
 }
 
 export type FoldVariant = keyof typeof FOLD_VARIANTS
+
+/** The variant every binding defaults to. */
+export const FOLD_DEFAULT_VARIANT: FoldVariant = 'fold7'
+
+/**
+ * Grounded by default: the shadow plane kisses the bottom edge of the body —
+ * the halves' folded extent at partial angles in landscape.
+ */
+export const FOLD_FRAMING = {
+  contactGap: 0.05,
+  extent: ({ variant, open, openAngle, orientation }) => {
+    const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
+    const angle =
+      openAngle === undefined ? ((open ?? true) ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
+    const state = angle > 3 ? spec.open : spec.closed
+    const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
+    const extent =
+      orientation === 'landscape'
+        ? angle > 3 && angle < 177
+          ? state.body.width * foldCos
+          : state.body.width
+        : state.body.height
+    return extent / 2
+  },
+} as const satisfies MockupFraming<{
+  variant?: FoldVariant
+  open?: boolean
+  openAngle?: number
+  orientation?: Orientation
+}>
 
 /** Back-compat / default device. */
 export const FOLD = FOLD7

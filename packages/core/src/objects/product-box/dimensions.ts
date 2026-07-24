@@ -11,6 +11,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the product box. */
 export const PRODUCT_BOX_MM = 1 / 62
 
@@ -59,3 +61,20 @@ export function productBoxLayout(size: ProductBoxSizeMm = PRODUCT_BOX_SIZE_MM): 
     flap: { backGap: Math.min(PRODUCT_BOX.flap.backGap, depth * 0.113), lift: PRODUCT_BOX.flap.lift },
   }
 }
+
+/** Live regions: all six panels, front first. */
+export const PRODUCT_BOX_REGIONS = [
+  { name: 'front', label: 'Front panel' },
+  { name: 'right', label: 'Right panel' },
+  { name: 'left', label: 'Left panel' },
+  { name: 'top', label: 'Top panel' },
+  { name: 'bottom', label: 'Bottom panel' },
+  { name: 'back', label: 'Back panel' },
+] as const satisfies readonly RegionSpec[]
+
+/** The carton stands on the ground plane at half its (normalized) height. */
+export const PRODUCT_BOX_FRAMING = {
+  camera: { position: [0, 0.6, 8.2], fov: 40 },
+  floatIntensity: 0.7,
+  extent: ({ size }) => productBoxLayout(size).body.height / 2,
+} as const satisfies MockupFraming<{ size?: ProductBoxSizeMm }>

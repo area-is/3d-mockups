@@ -2,10 +2,11 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BUS, clipCircle, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import { BUS, BUS_REGIONS, clipCircle, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
@@ -195,36 +196,24 @@ function buildFullRearClip(pxPerUnit: number, overWindows: boolean): string {
   return (outline + lamps + windowHole).trim()
 }
 
-export interface BusProps extends Omit<GroupProps, 'children' | 'color'> {
+export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
-   * Creative for the curb-side (+Z) ad surface — any React node, full bleed.
-   * The king-size panel by default; the whole side with `coverage="full"`.
+   * Creative for the ad surfaces. Bare children fill the curb-side (+Z)
+   * surface — the king-size panel by default, the whole side with
+   * `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
+   * `<Bus.StreetSide>`, `<Bus.Rear>` and `<Bus.DestinationSign>`. Inside
+   * `<Bus.DestinationSign>`, a string (scrolls as a marquee when it
+   * overflows) or an array of strings (flips between them like a real
+   * alternating sign) gets the built-in dot-matrix LED renderer — any other
+   * React node renders as-is for full custom control.
    */
   children?: React.ReactNode
-  /**
-   * Creative for the curb-side (+Z) ad surface — the named alternative to
-   * `children`, symmetric with `streetSideAd`. Wins when both are given.
-   */
-  curbSideAd?: React.ReactNode
-  /** Creative for the street-side (−Z) ad surface. */
-  streetSideAd?: React.ReactNode
-  /**
-   * Creative for the rear ad surface on the engine door: the 21"x70" tail-ad
-   * panel by default, or the whole tail with `coverage="full"`.
-   */
-  rearAd?: React.ReactNode
-  /**
-   * Live LED destination sign in the dark band above the windshield. Pass a
-   * string (scrolls as a marquee when it overflows) or an array of strings
-   * (flips between them like a real alternating sign) for the built-in
-   * dot-matrix LED renderer — or any React node for full custom control.
-   */
-  destinationSign?: React.ReactNode | string | string[]
   /** Body paint. Transit fleets are usually white or silver. */
   color?: string
-  /** CSS background painted behind your ad content. */
-  adBackground?: string
-  /** CSS pixel width of the virtual ad surface. Height follows its aspect. */
+  /**
+   * CSS pixel width of the virtual ad surface. Height follows its aspect;
+   * the default tracks `coverage` (king-size panel dpi, or the full wrap's).
+   */
   resolution?: number
   /**
    * How much of the bus the live ad surfaces cover. `'panel'` (default) is
@@ -246,18 +235,12 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'> {
    * (doors, driver's window) is always carved out regardless.
    */
   wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean; rear?: boolean }
-  /** Let pointer events (clicks, scrolling, typing) reach your ad content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How ad content hides when the bus faces away from the camera.
    * `true` raycasts against the shell (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the ad wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -276,24 +259,28 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'> {
  * The origin is the body center; the road sits `BUS.groundY` below it. The
  * ad panel faces +Z. Must be rendered inside a react-three-fiber `<Canvas>`
  * (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Bus rotation={[0, -0.4, 0]}>
+ *   <YourCreative />
+ *   <Bus.DestinationSign>52 DOWNTOWN</Bus.DestinationSign>
+ * </Bus>
+ * ```
  */
-export function Bus({
+function BusImpl({
   children,
-  curbSideAd,
-  streetSideAd,
-  rearAd,
-  destinationSign,
   color = '#eef0f2',
-  adBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution,
   coverage = 'panel',
   wrapOverWindows = true,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: BusProps) {
+  const regions = collectSlots(children, BUS_REGIONS)
   const {
     body,
     skirtY,
@@ -322,7 +309,6 @@ export function Bus({
   // The ad rect the DeviceScreens cover: the classic king-size panel, or the
   // whole side elevation with the operational glass carved out via clip-path.
   const fullWrap = coverage === 'full'
-  const curbAd = curbSideAd ?? children
   const over =
     typeof wrapOverWindows === 'boolean'
       ? { curbSide: wrapOverWindows, streetSide: wrapOverWindows, rear: wrapOverWindows }
@@ -332,23 +318,30 @@ export function Bus({
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
+  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
+  const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
-  const rearResolution = Math.round(rearSpec.width * (sideResolution / side.width))
+  const rearSurface = resolveSurface(regions.rear, {
+    ...surfaceDefaults,
+    resolution: Math.round(rearSpec.width * (sideResolution / side.width)),
+  })
+  // Clips are built at each surface's resolved resolution, so a slot-level
+  // `resolution` override keeps the carve aligned with its wrap.
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
-    const pxPerUnit = sideResolution / FULL_SIDE.width
     return {
-      curb: `path("${buildFullSideClip(pxPerUnit, false, over.curbSide)}")`,
-      street: `path("${buildFullSideClip(pxPerUnit, true, over.streetSide)}")`,
+      curb: `path("${buildFullSideClip(curbSurface.resolution / FULL_SIDE.width, false, over.curbSide)}")`,
+      street: `path("${buildFullSideClip(streetSurface.resolution / FULL_SIDE.width, true, over.streetSide)}")`,
     }
-  }, [fullWrap, sideResolution, over.curbSide, over.streetSide])
+  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
   const rearClip = React.useMemo(() => {
     if (!fullWrap) return null
-    return `path("${buildFullRearClip(rearResolution / rearFull.width, over.rear)}")`
-  }, [fullWrap, rearResolution, rearFull.width, over.rear])
-  const curbStyle = sideClip ? { clipPath: sideClip.curb, ...screenStyle } : screenStyle
-  const streetStyle = sideClip ? { clipPath: sideClip.street, ...screenStyle } : screenStyle
-  const rearStyle = rearClip ? { clipPath: rearClip, ...screenStyle } : screenStyle
+    return `path("${buildFullRearClip(rearSurface.resolution / rearFull.width, over.rear)}")`
+  }, [fullWrap, rearSurface.resolution, rearFull.width, over.rear])
+  const curbStyle = sideClip ? { clipPath: sideClip.curb, ...curbSurface.screenStyle } : curbSurface.screenStyle
+  const streetStyle = sideClip ? { clipPath: sideClip.street, ...streetSurface.screenStyle } : streetSurface.screenStyle
+  const rearStyle = rearClip ? { clipPath: rearClip, ...rearSurface.screenStyle } : rearSurface.screenStyle
 
   // Depth occluders for the full-coverage sides: the wrap outline as real
   // geometry with the same glass carves as the clip, so per-pixel blending
@@ -412,7 +405,9 @@ export function Bus({
 
   // Plain strings become the built-in LED destination sign; custom nodes
   // pass straight through.
-  const sign = isLedText(destinationSign) ? <LEDText text={destinationSign} /> : destinationSign
+  const signSlot = regions.destinationSign
+  const signContent = signSlot?.children
+  const sign = isLedText(signContent) ? <LEDText text={signContent} /> : signContent
 
   const shellGeometry = React.useMemo(() => {
     const s = busProfileShape()
@@ -487,19 +482,15 @@ export function Bus({
         </mesh>
 
         {/* live LED destination sign inside the fascia */}
-        {sign != null && (
+        {signSlot != null && (
           <DeviceScreen
             width={destination.width}
             height={destination.height}
             radius={0.01}
-            resolution={480}
+            {...resolveSurface(signSlot, { ...surfaceDefaults, background: '#0a0a08', resolution: 480 })}
             position={[0.016, destination.y - frontBand.mid[1], 0]}
             rotation={[0, Math.PI / 2, 0]}
-            background="#0a0a08"
-            interactive={interactive}
-            dragToRotate={dragToRotate}
             occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-            screenStyle={screenStyle}
           >
             {sign}
           </DeviceScreen>
@@ -512,7 +503,7 @@ export function Bus({
           the window carve-out. */}
       {[1, -1].map((s) => {
         const wrapped =
-          fullWrap && (s === 1 ? curbAd != null && over.curbSide : streetSideAd != null && over.streetSide)
+          fullWrap && (s === 1 ? regions.curbSide != null && over.curbSide : regions.streetSide != null && over.streetSide)
         if (wrapped) return null
         return (
           <RoundedBox
@@ -744,50 +735,47 @@ export function Bus({
         width={side.width}
         height={side.height}
         radius={side.radius}
-        resolution={sideResolution}
+        {...curbSurface}
         position={[side.x, side.y, body.width / 2 + 0.008]}
-        background={adBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         {...sideScreenOcclusion(sideOccluderGeometries?.curb)}
         screenStyle={curbStyle}
       >
-        {curbAd}
+        {regions.curbSide?.children}
       </DeviceScreen>
-      {streetSideAd != null && (
+      {regions.streetSide != null && (
         <DeviceScreen
           width={side.width}
           height={side.height}
           radius={side.radius}
-          resolution={sideResolution}
+          {...streetSurface}
           position={[side.x, side.y, -body.width / 2 - 0.008]}
           rotation={[0, Math.PI, 0]}
-          background={adBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           {...sideScreenOcclusion(sideOccluderGeometries?.street)}
           screenStyle={streetStyle}
         >
-          {streetSideAd}
+          {regions.streetSide.children}
         </DeviceScreen>
       )}
-      {rearAd != null && (
+      {regions.rear != null && (
         <DeviceScreen
           width={rearSpec.width}
           height={rearSpec.height}
           radius={rearSpec.radius}
-          resolution={rearResolution}
+          {...rearSurface}
           position={[-body.length / 2 - (fullWrap ? 0.029 : 0.028), rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          background={adBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
           screenStyle={rearStyle}
         >
-          {rearAd}
+          {regions.rear.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+BusImpl.displayName = 'Bus'
+
+/** The bus's compound slots, shared by `<Bus>` and `<BusMockup>`. */
+export const busSlots = createSlots(BUS_REGIONS)
+
+export const Bus = Object.assign(BusImpl, busSlots)

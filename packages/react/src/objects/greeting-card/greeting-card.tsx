@@ -1,41 +1,31 @@
 import * as React from 'react'
 import type * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { GREETING_CARD } from '@area-mockups/core'
+import { GREETING_CARD, GREETING_CARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front cover design — any React node, full bleed. */
+export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Face content. Bare children fill the front cover; name faces explicitly
+   * with `<GreetingCard.Front>`, `<GreetingCard.InsideLeft>`,
+   * `<GreetingCard.InsideRight>` and `<GreetingCard.Back>` (the left outer
+   * face). Orbit around to see the inside spread.
+   */
   children?: React.ReactNode
-  /** Back cover design (the left outer face). */
-  backCover?: React.ReactNode
-  /** Inside spread, left page — orbit around to see it. */
-  insideLeft?: React.ReactNode
-  /** Inside spread, right page. */
-  insideRight?: React.ReactNode
   /** Opening angle in degrees between the panels. `180` lays the card flat. */
   openAngle?: number
   /** Card stock color — edges and unprinted faces. */
   color?: string
-  /** CSS background painted behind each printed face. */
-  faceBackground?: string
-  /** CSS pixel width of one virtual panel face. Height follows the A7 panel. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your face content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How face content hides when that face turns away from the camera.
    * `true` raycasts against the panels (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -45,22 +35,28 @@ export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'
  * loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <GreetingCard>
+ *   <GreetingCard.Front><Cover /></GreetingCard.Front>
+ *   <GreetingCard.InsideLeft><Note /></GreetingCard.InsideLeft>
+ *   <GreetingCard.InsideRight><Art /></GreetingCard.InsideRight>
+ * </GreetingCard>
+ * ```
  */
-export function GreetingCard({
+function GreetingCardImpl({
   children,
-  backCover,
-  insideLeft,
-  insideRight,
   openAngle = GREETING_CARD.openAngle,
   color = '#f6f3ec',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = GREETING_CARD.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: GreetingCardProps) {
+  const regions = collectSlots(children, GREETING_CARD_REGIONS)
   const { panel } = GREETING_CARD
   const leftRef = React.useRef<THREE.Mesh>(null!)
   const rightRef = React.useRef<THREE.Mesh>(null!)
@@ -73,9 +69,9 @@ export function GreetingCard({
   const spineZ = (half * Math.sin(a)) / 1
   const panels = [
     // left panel (back cover outward)
-    { x: -half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: -a, ref: leftRef, outer: backCover, inner: insideRight },
+    { x: -half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: -a, ref: leftRef, outer: regions.back, inner: regions.insideRight },
     // right panel (front cover outward)
-    { x: half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: a, ref: rightRef, outer: children, inner: insideLeft },
+    { x: half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: a, ref: rightRef, outer: regions.front, inner: regions.insideLeft },
   ]
 
   // paper bows into the crease: darken each face gently toward the spine
@@ -92,16 +88,18 @@ export function GreetingCard({
     />
   )
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const screenProps = {
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    resolution,
-    background: faceBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -125,10 +123,11 @@ export function GreetingCard({
           {outer != null && (
             <DeviceScreen
               {...screenProps}
+              {...resolveSurface(outer, surfaceDefaults)}
               position={[0, 0, panel.thickness / 2 + 0.003]}
               overlay={creaseShade(i === 0 ? 'right' : 'left')}
             >
-              {outer}
+              {outer.children}
             </DeviceScreen>
           )}
 
@@ -136,11 +135,12 @@ export function GreetingCard({
           {inner != null && (
             <DeviceScreen
               {...screenProps}
+              {...resolveSurface(inner, surfaceDefaults)}
               position={[0, 0, -panel.thickness / 2 - 0.003]}
               rotation={[0, Math.PI, 0]}
               overlay={creaseShade(i === 0 ? 'left' : 'right')}
             >
-              {inner}
+              {inner.children}
             </DeviceScreen>
           )}
         </group>
@@ -148,3 +148,9 @@ export function GreetingCard({
     </group>
   )
 }
+GreetingCardImpl.displayName = 'GreetingCard'
+
+/** The card's compound slots, shared by `<GreetingCard>` and `<GreetingCardMockup>`. */
+export const greetingCardSlots = createSlots(GREETING_CARD_REGIONS)
+
+export const GreetingCard = Object.assign(GreetingCardImpl, greetingCardSlots)

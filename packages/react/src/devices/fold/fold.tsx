@@ -1,7 +1,14 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { FOLD_COLORWAYS, findColorway, FOLD_VARIANTS, type FoldVariant } from '@area-mockups/core'
+import {
+  FOLD_COLORWAYS,
+  findColorway,
+  FOLD_VARIANTS,
+  FOLD_DEFAULT_VARIANT,
+  SCREEN_REGIONS,
+  type FoldVariant,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import {
@@ -17,11 +24,15 @@ import {
 } from '../details'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface FoldProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the active display: React components, an <iframe>, a <video>… */
+export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the active display: React components, an <iframe>, a
+   * <video>… Wrap in `<Fold.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /** Which Galaxy Z Fold device to render. */
   variant?: FoldVariant
@@ -59,8 +70,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the active display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution for
@@ -69,23 +78,12 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'> {
   resolution?: number
   /** Show the front-camera punch-hole overlay. */
   punchHole?: boolean
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the body (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (a fold half / the open body). */
@@ -113,24 +111,25 @@ function slabGeometry(width: number, height: number, radius: number, depth: numb
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Fold({
+function FoldImpl({
   children,
-  variant = 'fold7',
+  variant = FOLD_DEFAULT_VARIANT,
   open = true,
   openAngle,
   orientation = 'portrait',
   colorway,
   color: colorProp,
   frameColor: frameColorProp,
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution,
   punchHole = true,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: FoldProps) {
+  const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FOLD_VARIANTS[variant]
   const retail = findColorway(FOLD_COLORWAYS[variant], colorway)
   const color = colorProp ?? retail?.color ?? '#3a3d42'
@@ -480,14 +479,16 @@ export function Fold({
       width={landscape ? display.height : display.width}
       height={landscape ? display.width : display.height}
       radius={display.radius}
-      resolution={res}
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      background={screenBackground}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
       occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-      screenStyle={screenStyle}
+      {...resolveSurface(screenSlot, {
+        background: surfaceBackground,
+        resolution: res,
+        interactive,
+        dragToRotate,
+        style: surfaceStyle,
+      })}
       overlay={
         <>
           {mode === 'open' && creaseOverlay}
@@ -495,7 +496,7 @@ export function Fold({
         </>
       }
     >
-      {children}
+      {screenSlot?.children}
     </DeviceScreen>
   )
 
@@ -554,14 +555,17 @@ export function Fold({
           width={landscape ? display.height : display.width / 2}
           height={landscape ? display.width / 2 : display.height}
           radius={radius}
-          resolution={landscape ? res : res / 2}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          background={screenBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
+          {...resolveSurface(screenSlot, {
+            background: surfaceBackground,
+            // each half pane carries half the virtual display's width
+            resolution: landscape ? res : res / 2,
+            interactive,
+            dragToRotate,
+            style: surfaceStyle,
+          })}
         >
           <div
             style={{
@@ -572,7 +576,7 @@ export function Fold({
               height: landscape ? '200%' : '100%',
             }}
           >
-            {children}
+            {screenSlot?.children}
             {creaseOverlay}
             {punchHole && punchHoleOverlay}
           </div>
@@ -884,3 +888,9 @@ export function Fold({
     </group>
   )
 }
+FoldImpl.displayName = 'Fold'
+
+/** The device's compound slots, shared by `<Fold>` and `<FoldMockup>`. */
+export const foldSlots = createSlots(SCREEN_REGIONS)
+
+export const Fold = Object.assign(FoldImpl, foldSlots)

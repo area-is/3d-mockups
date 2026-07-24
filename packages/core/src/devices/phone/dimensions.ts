@@ -15,6 +15,9 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { Orientation } from '../../orientation'
+import type { MockupFraming } from '../../regions'
+
 /** World units per millimeter for the Galaxy family. */
 export const GALAXY_MM = 1 / 36.66
 
@@ -177,6 +180,18 @@ export const GALAXY_VARIANTS: Record<'s26' | 's26ultra', GalaxyPhoneSpec> = {
 }
 
 export type GalaxyVariant = keyof typeof GALAXY_VARIANTS
+
+/** The variant every binding defaults to. */
+export const GALAXY_DEFAULT_VARIANT: GalaxyVariant = 's26'
+
+/** Grounded on the bottom edge of the body (its side edge in landscape). */
+export const PHONE_FRAMING = {
+  contactGap: 0.05,
+  extent: ({ variant, orientation }) => {
+    const body = GALAXY_VARIANTS[variant ?? GALAXY_DEFAULT_VARIANT].body
+    return (orientation === 'landscape' ? body.width : body.height) / 2
+  },
+} as const satisfies MockupFraming<{ variant?: GalaxyVariant; orientation?: Orientation }>
 
 /** Back-compat: dimensions of the default device (Galaxy S26). */
 export const PHONE = S26

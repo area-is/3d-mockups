@@ -2,39 +2,30 @@ import * as React from 'react'
 import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { SEMI_TRAILER } from '@area-mockups/core'
+import { SEMI_TRAILER, SEMI_TRAILER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Wrap for the curb-side (+Z) panel — any React node, full bleed. */
+export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Wrap content. Bare children fill the curb-side (+Z) panel; name panels
+   * explicitly with `<SemiTrailer.CurbSide>`, `<SemiTrailer.StreetSide>` and
+   * `<SemiTrailer.Rear>` (the rear-door panel, between the lock rods).
+   */
   children?: React.ReactNode
-  /** Wrap for the street-side (−Z) panel. */
-  streetSide?: React.ReactNode
-  /** Panel on the rear doors, between the lock rods. */
-  rear?: React.ReactNode
   /** Box paint. Wrap trailers are usually white. */
   color?: string
   /** Side-skirt paint. Defaults to the box `color`. */
   skirtColor?: string
-  /** CSS background painted behind your wrap content. */
-  wrapBackground?: string
-  /** CSS pixel width of the virtual side panel. The rear shares its dpi. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your wrap content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How wrap content hides when the trailer faces away from the camera.
    * `true` raycasts against the box (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each wrap wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -47,21 +38,27 @@ export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'>
  * The origin is the box center; the road sits `SEMI_TRAILER.groundY` below
  * it. Must be rendered inside a react-three-fiber `<Canvas>` (or
  * `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <SemiTrailer>
+ *   <YourWrap />
+ *   <SemiTrailer.Rear><RearDoors /></SemiTrailer.Rear>
+ * </SemiTrailer>
+ * ```
  */
-export function SemiTrailer({
+function SemiTrailerImpl({
   children,
-  streetSide,
-  rear,
   color = '#eef0f2',
   skirtColor,
-  wrapBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = SEMI_TRAILER.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: SemiTrailerProps) {
+  const regions = collectSlots(children, SEMI_TRAILER_REGIONS)
   const { body, groundY, wheels, landingGear, side, rear: rearSpec } = SEMI_TRAILER
   const boxRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(boxRef)
@@ -72,12 +69,9 @@ export function SemiTrailer({
   const dualOuterZ = body.width / 2 - 0.03 - wheels.width / 2
   const dualInnerZ = dualOuterZ - wheels.width - wheels.dualGap
 
+  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
   const wrapProps = {
-    background: wrapBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -303,34 +297,38 @@ export function SemiTrailer({
       {/* the live wraps: both smooth sides and the rear doors */}
       <DeviceScreen
         {...wrapProps}
+        {...resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution })}
         width={side.width}
         height={side.height}
         radius={side.radius}
-        resolution={resolution}
         position={[0, 0.02, body.width / 2 + 0.006]}
       >
-        {children}
+        {regions.curbSide?.children}
       </DeviceScreen>
-      {streetSide != null && (
+      {regions.streetSide != null && (
         <DeviceScreen
           {...wrapProps}
+          {...resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution })}
           width={side.width}
           height={side.height}
           radius={side.radius}
-          resolution={resolution}
           position={[0, 0.02, -body.width / 2 - 0.006]}
           rotation={[0, Math.PI, 0]}
         >
-          {streetSide}
+          {regions.streetSide.children}
         </DeviceScreen>
       )}
-      {rear != null && (
+      {regions.rear != null && (
         <DeviceScreen
           {...wrapProps}
+          {...resolveSurface(regions.rear, {
+            ...surfaceDefaults,
+            // the rear panel shares the side panel's dpi
+            resolution: Math.round(resolution * (rearSpec.width / side.width)),
+          })}
           width={rearSpec.width}
           height={rearSpec.height}
           radius={rearSpec.radius}
-          resolution={Math.round(resolution * (rearSpec.width / side.width))}
           position={[-body.length / 2 - 0.03, 0.02, 0]}
           rotation={[0, -Math.PI / 2, 0]}
           overlay={
@@ -353,9 +351,15 @@ export function SemiTrailer({
             </div>
           }
         >
-          {rear}
+          {regions.rear.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+SemiTrailerImpl.displayName = 'SemiTrailer'
+
+/** The trailer's compound slots, shared by `<SemiTrailer>` and `<SemiTrailerMockup>`. */
+export const semiTrailerSlots = createSlots(SEMI_TRAILER_REGIONS)
+
+export const SemiTrailer = Object.assign(SemiTrailerImpl, semiTrailerSlots)

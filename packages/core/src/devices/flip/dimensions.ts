@@ -18,6 +18,9 @@
  * folded 85.5 x 75.2 x 13.7 mm (4.1" 948x1048 cover wrapping the cameras).
  */
 
+import type { Orientation } from '../../orientation'
+import type { MockupFraming } from '../../regions'
+
 export interface FlipSpec {
   /** Unfolded tall phone. */
   open: {
@@ -131,6 +134,39 @@ export const FLIP_VARIANTS: Record<'flip7', FlipSpec> = {
 }
 
 export type FlipVariant = keyof typeof FLIP_VARIANTS
+
+/** The variant every binding defaults to. */
+export const FLIP_DEFAULT_VARIANT: FlipVariant = 'flip7'
+
+/**
+ * Grounded by default: the shadow plane kisses the bottom of the body — the
+ * hinge band when folded, the halves' folded extent at partial angles.
+ */
+export const FLIP_FRAMING = {
+  contactGap: 0.05,
+  extent: ({ variant, open, openAngle, orientation }) => {
+    const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
+    const angle =
+      openAngle === undefined ? ((open ?? true) ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
+    const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
+    const extent =
+      orientation === 'landscape'
+        ? angle > 3
+          ? spec.open.body.width
+          : spec.closed.body.width
+        : angle >= 177
+          ? spec.open.body.height
+          : angle <= 3
+            ? spec.closed.body.height + spec.hinge.overhang * 2
+            : spec.closed.body.height * 2 * foldCos
+    return extent / 2
+  },
+} as const satisfies MockupFraming<{
+  variant?: FlipVariant
+  open?: boolean
+  openAngle?: number
+  orientation?: Orientation
+}>
 
 /** Back-compat / default device. */
 export const FLIP = FLIP7

@@ -21,7 +21,7 @@ panel ends and grow only mildly across the range.
 <ObjectDemo demo="tv-basic" checker />
 
 ```tsx
-<TVSetMockup deviceProps={{ rotation: [0, -0.22, 0] }}>
+<TVSetMockup rotation={[0, -0.22, 0]}>
   <YourShowreel />
 </TVSetMockup>
 ```
@@ -38,11 +38,9 @@ Beyond the [shared screen props](/docs/screen-content):
 
 There is no `orientation` prop; it lives on a media stand.
 
-## Example
-
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

@@ -2,25 +2,23 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MAGAZINE, magazineSpec, type MagazineSize } from '@area-mockups/core'
+import { MAGAZINE, MAGAZINE_REGIONS, magazineSpec, type MagazineSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Cover art — any React node. It fills the whole front cover, full bleed. */
-  children?: React.ReactNode
-  /** Back cover design — full bleed, on the same cover stock. */
-  back?: React.ReactNode
+export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
-   * Spine print — the narrow bound-edge strip where magazines carry the
-   * title and issue number. Content is rotated to read top-to-bottom like
-   * a real shelf spine: your DOM's left edge lands at the spine's top and
-   * its top edge faces the front cover.
+   * Cover art — full bleed on the front cover. Bare children fill the front
+   * cover; name faces explicitly with `<Magazine.Cover>`, `<Magazine.Back>`
+   * and `<Magazine.Spine>`. Spine content is rotated to read top-to-bottom
+   * like a real shelf spine: your DOM's left edge lands at the spine's top
+   * and its top edge faces the front cover.
    */
-  spine?: React.ReactNode
+  children?: React.ReactNode
   /**
    * Physical trim size in millimeters, e.g. `{ width: 210, height: 297 }`
    * for A4 or `{ thickness: 12 }` for a thick issue. Defaults to the
@@ -37,22 +35,12 @@ export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'> {
    * is matte paper, flat under any light.
    */
   glossy?: boolean
-  /** CSS background painted behind your cover content. */
-  coverBackground?: string
-  /** CSS pixel width of the virtual cover. Height follows the trim aspect. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your cover content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How cover content hides when the magazine faces away from the camera.
    * `true` raycasts against the page block (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the cover wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -62,23 +50,29 @@ export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'> {
  * asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Magazine glossy>
+ *   <Magazine.Cover><CoverArt /></Magazine.Cover>
+ *   <Magazine.Back><BackAd /></Magazine.Back>
+ * </Magazine>
+ * ```
  */
-export function Magazine({
+function MagazineImpl({
   children,
-  back,
-  spine,
   size,
   pageColor = '#fbfaf7',
   backColor = '#e9e7e2',
   glossy = false,
-  coverBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = MAGAZINE.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: MagazineProps) {
+  const regions = collectSlots(children, MAGAZINE_REGIONS)
   const { body, cover } = React.useMemo(
     () => (size ? magazineSpec(size) : MAGAZINE),
     [size?.width, size?.height, size?.thickness]
@@ -125,6 +119,16 @@ export function Magazine({
 
   React.useEffect(() => () => backGeometry.dispose(), [backGeometry])
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
+  const screenOcclude =
+    occlude === true ? otherOccludeRefs : occlude === 'blending' ? ('blending' as const) : undefined
+
   return (
     <group {...groupProps}>
       {/* trimmed page block — the paper edges you see on the three open sides */}
@@ -150,38 +154,30 @@ export function Magazine({
 
       {/* the live cover: real DOM, CSS3D-transformed onto the front */}
       <DeviceScreen
+        {...resolveSurface(regions.cover, surfaceDefaults)}
         width={cover.width}
         height={cover.height}
         radius={cover.radius}
-        resolution={resolution}
         position={[0, 0, body.thickness / 2 + 0.004]}
-        background={coverBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
-        occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        occlude={screenOcclude}
         overlay={glossOverlay}
       >
-        {children}
+        {regions.cover?.children}
       </DeviceScreen>
 
       {/* live back cover — same stock, same sheen */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
+          {...resolveSurface(regions.back, surfaceDefaults)}
           width={cover.width}
           height={cover.height}
           radius={cover.radius}
-          resolution={resolution}
           position={[0, 0, -body.thickness / 2 - 0.004]}
           rotation={[0, Math.PI, 0]}
-          background={coverBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
+          occlude={screenOcclude}
           overlay={glossOverlay}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
 
@@ -190,24 +186,29 @@ export function Magazine({
           the spine's top, DOM top faces the front cover. Rendered at 3x
           the cover dpi: at print scale the strip is only a few mm tall,
           and small type needs the extra pixels to stay crisp. */}
-      {spine != null && (
+      {regions.spine != null && (
         <DeviceScreen
+          {...resolveSurface(regions.spine, {
+            ...surfaceDefaults,
+            resolution: Math.round(resolution * 3 * ((body.height - 0.008) / cover.width)),
+          })}
           width={body.height - 0.008}
           height={body.thickness - 0.004}
           radius={0.006}
-          resolution={Math.round(resolution * 3 * ((body.height - 0.008) / cover.width))}
           position={[-body.width / 2 - 0.01, 0, 0]}
           rotation={[0, -Math.PI / 2, -Math.PI / 2]}
-          background={coverBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
+          occlude={screenOcclude}
           overlay={glossOverlay}
         >
-          {spine}
+          {regions.spine.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+MagazineImpl.displayName = 'Magazine'
+
+/** The magazine's compound slots, shared by `<Magazine>` and `<MagazineMockup>`. */
+export const magazineSlots = createSlots(MAGAZINE_REGIONS)
+
+export const Magazine = Object.assign(MagazineImpl, magazineSlots)

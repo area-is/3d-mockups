@@ -21,7 +21,7 @@ desk plane.
 <ObjectDemo demo="monitor-basic" checker />
 
 ```tsx
-<MonitorMockup deviceProps={{ rotation: [0, -0.25, 0] }}>
+<MonitorMockup rotation={[0, -0.25, 0]}>
   <YourDesktopApp />
 </MonitorMockup>
 ```
@@ -37,6 +37,12 @@ Beyond the [shared screen props](/docs/screen-content):
 | `resolution` | `number` | `2560` | Virtual display width; 2560 gives 2560×1440, the Studio Display's logical desktop, so real desktop layouts apply. |
 
 There is no `orientation` prop; it lives on a desk.
+
+## Regions
+
+One region: the display (bare children). Use the explicit
+`<MonitorMockup.Screen>` slot when you want per-surface overrides —
+`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
 
 ## Mockup-able areas
 

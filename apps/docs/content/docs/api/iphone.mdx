@@ -12,7 +12,7 @@ single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 <ObjectDemo demo="iphone-pro" checker />
 
 ```tsx
-<IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" deviceProps={{ rotation: [0, 0.25, 0] }}>
+<IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, 0.25, 0]}>
   <MusicPlayer />
 </IPhoneMockup>
 ```
@@ -78,7 +78,7 @@ The biggest body in the family — full-width plateau, top-edge RF window, and a
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

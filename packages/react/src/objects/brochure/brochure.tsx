@@ -1,26 +1,30 @@
 import * as React from 'react'
 import type * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { BROCHURE, brochureSpec, type BrochureSize } from '@area-mockups/core'
+import { BROCHURE, BROCHURE_REGIONS, brochureSpec, type BrochureSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlot, resolveSurface, type SlotProps, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Shorthand for the first (left) panel's content. */
+export interface BrochurePanelProps extends SlotProps {
+  /**
+   * Which face of the sheet this panel prints on: `front` (default) or
+   * `back`. Panels fill left to right in document order — back panels left
+   * to right as seen from BEHIND, matching how a real tri-fold is imposed.
+   */
+  side?: 'front' | 'back'
+}
+
+export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Panel content: repeat `<Brochure.Panel>` left to right (up to three per
+   * side; add `side="back"` for the reverse faces). Bare children are
+   * shorthand for the first (left) front panel. Panels left out show bare
+   * `color` stock; front panels default to `surfaceBackground`.
+   */
   children?: React.ReactNode
-  /**
-   * Content per panel, left to right. Takes precedence over `children` where
-   * provided; panels left undefined show `panelBackground`.
-   */
-  panels?: [React.ReactNode?, React.ReactNode?, React.ReactNode?]
-  /**
-   * Content for the reverse side of each panel, left to right as seen from
-   * the BACK. A real tri-fold is printed on all six faces; panels left
-   * undefined show bare `paperColor` stock.
-   */
-  backPanels?: [React.ReactNode?, React.ReactNode?, React.ReactNode?]
   /**
    * One panel's physical size in millimeters, e.g.
    * `{ width: 99, height: 210 }` for an A4 tri-fold. Defaults to the US
@@ -29,49 +33,46 @@ export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'> {
   size?: BrochureSize
   /** Zig-zag fold angle in degrees. `0` lays the sheet out flat. */
   foldAngle?: number
-  /** Paper color of the panel backs and edges. */
-  paperColor?: string
-  /** CSS background painted behind each panel's content. */
-  panelBackground?: string
-  /** CSS pixel width of one virtual panel. Height follows the panel aspect. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your panel content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
+  /** Paper stock color of the panel backs and edges. */
+  color?: string
   /**
    * How panel content hides when the brochure faces away from the camera.
    * `true` raycasts against the panels (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each panel wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
  * A procedurally built standing tri-fold brochure: three letter-fold panels in
  * a zig-zag accordion, each one a live full-bleed DOM surface. Pass one node
- * as `children` for the front panel, or an array of three via `panels`.
+ * as `children` for the front panel, or repeat `<Brochure.Panel>` for more.
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Brochure>
+ *   <Brochure.Panel><Front /></Brochure.Panel>
+ *   <Brochure.Panel><Middle /></Brochure.Panel>
+ *   <Brochure.Panel side="back"><Back /></Brochure.Panel>
+ * </Brochure>
+ * ```
  */
-export function Brochure({
+function BrochureImpl({
   children,
-  panels,
-  backPanels,
   size,
   foldAngle = BROCHURE.foldAngle,
-  paperColor = '#f5f4f0',
-  panelBackground = '#ffffff',
+  color = '#f5f4f0',
+  surfaceBackground = '#ffffff',
   resolution = BROCHURE.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: BrochureProps) {
+  const paperColor = color
   const { panel } = React.useMemo(
     () => (size ? brochureSpec(size) : BROCHURE),
     [size?.width, size?.height]
@@ -99,20 +100,25 @@ export function Brochure({
     hinge = { x: hinge.x + dir.x * panel.width, z: hinge.z + dir.z * panel.width }
   })
 
-  const content = [panels?.[0] ?? children, panels?.[1], panels?.[2]]
-  // back faces, indexed so backPanels reads left-to-right when viewed from behind
-  const backContent = [backPanels?.[2], backPanels?.[1], backPanels?.[0]]
+  const panelSlots = (collectSlots(children, BROCHURE_REGIONS).panel ?? []) as BrochurePanelProps[]
+  const fronts = panelSlots.filter((slot) => slot.side !== 'back')
+  const backs = panelSlots.filter((slot) => slot.side === 'back')
+  const content = [fronts[0], fronts[1], fronts[2]]
+  // back faces, indexed so back panels read left-to-right when viewed from behind
+  const backContent = [backs[2], backs[1], backs[0]]
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const screenProps = {
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    resolution,
-    background: panelBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   /**
@@ -158,21 +164,23 @@ export function Brochure({
           {/* the live panel: real DOM, CSS3D-transformed onto the front face */}
           <DeviceScreen
             {...screenProps}
+            {...resolveSurface(content[i], surfaceDefaults)}
             position={[0, 0, panel.thickness / 2 + 0.003]}
             overlay={foldShade(yaw)}
           >
-            {content[i]}
+            {content[i]?.children}
           </DeviceScreen>
 
           {/* reverse side — only mounted when there's a design for it */}
           {backContent[i] != null && (
             <DeviceScreen
               {...screenProps}
+              {...resolveSurface(backContent[i], surfaceDefaults)}
               position={[0, 0, -panel.thickness / 2 - 0.003]}
               rotation={[0, Math.PI, 0]}
               overlay={foldShade(-yaw)}
             >
-              {backContent[i]}
+              {backContent[i]?.children}
             </DeviceScreen>
           )}
         </group>
@@ -180,3 +188,11 @@ export function Brochure({
     </group>
   )
 }
+BrochureImpl.displayName = 'Brochure'
+
+/** The brochure's compound slots, shared by `<Brochure>` and `<BrochureMockup>`. */
+export const brochureSlots = {
+  Panel: createSlot<BrochurePanelProps>('panel', 'Panel'),
+}
+
+export const Brochure = Object.assign(BrochureImpl, brochureSlots)

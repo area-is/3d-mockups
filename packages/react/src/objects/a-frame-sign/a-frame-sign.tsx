@@ -2,36 +2,28 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { A_FRAME_SIGN } from '@area-mockups/core'
+import { A_FRAME_SIGN, A_FRAME_SIGN_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front panel design — any React node, full bleed inside the frame. */
+export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Panel content. Bare children fill the front panel; name panels explicitly
+   * with `<AFrameSign.Front>` and `<AFrameSign.Back>`.
+   */
   children?: React.ReactNode
-  /** Back panel design (the other side of the A). */
-  back?: React.ReactNode
   /** Frame color — classic dark-stained wood by default. */
   color?: string
-  /** CSS background painted behind each panel (chalkboard black works well). */
-  faceBackground?: string
-  /** CSS pixel width of the virtual face. Height follows the 600x900 panel. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your panel content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How panel content hides when that panel turns away from the camera.
    * `true` raycasts against the panels (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each panel wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -44,19 +36,26 @@ export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'> 
  * The origin is mid-height between the panels; the pavement sits at the leg
  * bottoms. Must be rendered inside a react-three-fiber `<Canvas>` (or
  * `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <AFrameSign>
+ *   <AFrameSign.Front><MenuBoard /></AFrameSign.Front>
+ *   <AFrameSign.Back><HoursBoard /></AFrameSign.Back>
+ * </AFrameSign>
+ * ```
  */
-export function AFrameSign({
+function AFrameSignImpl({
   children,
-  back,
   color = '#4a3826',
-  faceBackground = '#20241f',
+  surfaceBackground = '#20241f',
   resolution = A_FRAME_SIGN.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: AFrameSignProps) {
+  const regions = collectSlots(children, A_FRAME_SIGN_REGIONS)
   const { panel, face, splayAngle } = A_FRAME_SIGN
   const frontRef = React.useRef<THREE.Mesh>(null!)
   const backRef = React.useRef<THREE.Mesh>(null!)
@@ -97,16 +96,18 @@ export function AFrameSign({
   // on the original pavement line
   const legDrop = 0.143
   const legLift = legDrop * Math.cos(tilt)
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const screenProps = {
     width: face.width,
     height: face.height,
     radius: face.radius,
-    resolution,
-    background: faceBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -115,6 +116,7 @@ export function AFrameSign({
         // dir -1 leans toward the viewer (the front face); tops meet at the
         // hinge and bottoms splay apart into the A stance
         const isFront = dir === -1
+        const slot = isFront ? regions.front : regions.back
         return (
           <group
             key={dir}
@@ -143,10 +145,11 @@ export function AFrameSign({
             {/* live face */}
             <DeviceScreen
               {...screenProps}
+              {...resolveSurface(slot, surfaceDefaults)}
               position={[0, 0, isFront ? panel.frameDepth / 2 - 0.02 : -(panel.frameDepth / 2 - 0.02)]}
               rotation={isFront ? [0, 0, 0] : [0, Math.PI, 0]}
             >
-              {isFront ? children : back}
+              {slot?.children}
             </DeviceScreen>
           </group>
         )
@@ -171,3 +174,9 @@ export function AFrameSign({
     </group>
   )
 }
+AFrameSignImpl.displayName = 'AFrameSign'
+
+/** The sign's compound slots, shared by `<AFrameSign>` and `<AFrameSignMockup>`. */
+export const aFrameSignSlots = createSlots(A_FRAME_SIGN_REGIONS)
+
+export const AFrameSign = Object.assign(AFrameSignImpl, aFrameSignSlots)

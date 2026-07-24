@@ -2,9 +2,10 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { VAN, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
@@ -294,26 +295,22 @@ function buildRearClip(pxPerUnit: number, full: boolean): string {
   return (outline + slit + lamps + brake + hinges).trim()
 }
 
-export interface VanProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Livery for the curb-side (+Z) wrap panel — any React node, full bleed. */
+export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Livery content. Bare children fill the curb-side (+Z) wrap panel; name
+   * regions explicitly with `<Van.CurbSide>`, `<Van.StreetSide>`, `<Van.Rear>`
+   * and `<Van.LicensePlate>`. A string inside `<Van.LicensePlate>` renders
+   * the built-in plate face (dark plate type on the white blank); any React
+   * node renders as-is on both plates.
+   */
   children?: React.ReactNode
-  /**
-   * Livery for the curb-side (+Z) wrap panel — the named alternative to
-   * `children`, symmetric with `streetSide`. Wins when both are given.
-   */
-  curbSide?: React.ReactNode
-  /** Livery for the street-side (−Z) wrap panel. */
-  streetSide?: React.ReactNode
-  /**
-   * Livery for the rear doors: the panel between the taillight clusters by
-   * default, or the whole barn-door face with `coverage="full"`.
-   */
-  rear?: React.ReactNode
   /** Body paint. Wrap fleets are usually white. */
   color?: string
-  /** CSS background painted behind your wrap content. */
-  wrapBackground?: string
-  /** CSS pixel width of the virtual wrap panel. Height follows the panel aspect. */
+  /**
+   * CSS pixel width of the virtual wrap panel. Height follows the panel
+   * aspect; the default tracks `coverage` (panel dpi, or its full-side
+   * equivalent).
+   */
   resolution?: number
   /**
    * How much of the van the live wraps cover. `'panel'` (default) is the
@@ -334,22 +331,11 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'> {
    */
   wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean }
   /**
-   * License plates, front and rear. A string renders the built-in plate
-   * (dark plate type on the white blank); any React node renders as-is.
-   */
-  licensePlate?: React.ReactNode | string
-  /** Let pointer events (clicks, scrolling, typing) reach your wrap content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
-  /**
    * How wrap content hides when the van faces away from the camera.
    * `true` raycasts against the shell (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the wrap wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -365,24 +351,29 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'> {
  * The origin is the body center; the road sits `VAN.groundY` below it. The
  * wrap panel faces +Z. Must be rendered inside a react-three-fiber `<Canvas>`
  * (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Van coverage="full">
+ *   <YourLivery />
+ *   <Van.Rear><RearDoors /></Van.Rear>
+ *   <Van.LicensePlate>AREA 51</Van.LicensePlate>
+ * </Van>
+ * ```
  */
-export function Van({
+function VanImpl({
   children,
-  curbSide,
-  streetSide,
-  rear,
   color = '#eef0f2',
-  wrapBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution,
   coverage = 'panel',
   wrapOverWindows = false,
-  licensePlate,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: VanProps) {
+  const regions = collectSlots(children, VAN_REGIONS)
   const { body, rockerY, wheels, profile, wrap, rear: rearPanel, rearFull } = VAN
   const shellRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(shellRef)
@@ -395,11 +386,12 @@ export function Van({
   // The side rect the DeviceScreens cover: the classic mid-panel, or the
   // whole side elevation with the hardware carved out via clip-path.
   const fullWrap = coverage === 'full'
-  const curbLivery = curbSide ?? children
+  const plateSlot = regions.licensePlate
+  const plateContent = plateSlot?.children
   // A string becomes the built-in plate face (plate type on the white
   // blank); custom nodes render as-is on both plates.
   const plateFace =
-    licensePlate == null ? null : typeof licensePlate === 'string' ? (
+    typeof plateContent === 'string' ? (
       <div
         style={{
           width: '100%',
@@ -424,11 +416,11 @@ export function Van({
             whiteSpace: 'pre',
           }}
         >
-          {licensePlate}
+          {plateContent}
         </span>
       </div>
     ) : (
-      licensePlate
+      plateContent
     )
   const over =
     typeof wrapOverWindows === 'boolean'
@@ -439,23 +431,30 @@ export function Van({
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
   const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
+  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
+  const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear panel shares the side wrap's dpi.
-  const rearResolution = Math.round(rearSpec.width * (sideResolution / side.width))
+  const rearSurface = resolveSurface(regions.rear, {
+    ...surfaceDefaults,
+    resolution: Math.round(rearSpec.width * (sideResolution / side.width)),
+  })
+  // Clips are built at each surface's resolved resolution, so a slot-level
+  // `resolution` override keeps the carve aligned with its wrap.
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
-    const pxPerUnit = sideResolution / FULL_WRAP.width
     return {
-      curb: `path("${buildFullWrapClip(pxPerUnit, false, over.curbSide)}")`,
-      street: `path("${buildFullWrapClip(pxPerUnit, true, over.streetSide)}")`,
+      curb: `path("${buildFullWrapClip(curbSurface.resolution / FULL_WRAP.width, false, over.curbSide)}")`,
+      street: `path("${buildFullWrapClip(streetSurface.resolution / FULL_WRAP.width, true, over.streetSide)}")`,
     }
-  }, [fullWrap, sideResolution, over.curbSide, over.streetSide])
+  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
   const rearClip = React.useMemo(
-    () => `path("${buildRearClip(rearResolution / rearSpec.width, fullWrap)}")`,
-    [fullWrap, rearResolution, rearSpec.width]
+    () => `path("${buildRearClip(rearSurface.resolution / rearSpec.width, fullWrap)}")`,
+    [fullWrap, rearSurface.resolution, rearSpec.width]
   )
-  const curbStyle = sideClip ? { clipPath: sideClip.curb, ...screenStyle } : screenStyle
-  const streetStyle = sideClip ? { clipPath: sideClip.street, ...screenStyle } : screenStyle
-  const rearStyle = { clipPath: rearClip, ...screenStyle }
+  const curbStyle = sideClip ? { clipPath: sideClip.curb, ...curbSurface.screenStyle } : curbSurface.screenStyle
+  const streetStyle = sideClip ? { clipPath: sideClip.street, ...streetSurface.screenStyle } : streetSurface.screenStyle
+  const rearStyle = { clipPath: rearClip, ...rearSurface.screenStyle }
 
   // Depth occluders for the full-coverage sides: the wrap outline as real
   // geometry (door glass carved when the wrap keeps clear of it), so
@@ -586,7 +585,8 @@ export function Van({
           z that leaves the outer face ~10mm proud of the shell — or recessed
           beneath the wrap plane when that side's wrap covers the glass. */}
       {[1, -1].map((side) => {
-        const covered = fullWrap && (side === 1 ? over.curbSide && curbLivery != null : over.streetSide && streetSide != null)
+        const covered =
+          fullWrap && (side === 1 ? over.curbSide && regions.curbSide != null : over.streetSide && regions.streetSide != null)
         // The 0.02 extrusion always runs +z, so each side's base leaves the
         // outer face ~10mm proud — or tucked under the wrap plane when the
         // wrap covers the glass.
@@ -756,19 +756,15 @@ export function Van({
       <RoundedBox args={[0.03, 0.13, 0.52]} radius={0.012} position={[2.82, -0.42, 0]}>
         <meshPhysicalMaterial color="#dfe2e6" metalness={0.1} roughness={0.5} />
       </RoundedBox>
-      {plateFace != null && (
+      {plateSlot != null && (
         <DeviceScreen
           width={0.5}
           height={0.12}
           radius={0.008}
-          resolution={200}
+          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 200 })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
-          background="#f4f6f8"
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
         >
           {plateFace}
         </DeviceScreen>
@@ -860,19 +856,15 @@ export function Van({
       <RoundedBox args={[0.014, 0.125, 0.27]} radius={0.008} position={[-2.834, -0.78, -0.3]}>
         <meshPhysicalMaterial color="#e6e9ed" metalness={0.05} roughness={0.5} />
       </RoundedBox>
-      {plateFace != null && (
+      {plateSlot != null && (
         <DeviceScreen
           width={0.26}
           height={0.115}
           radius={0.006}
-          resolution={160}
+          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 160 })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
-          background="#f4f6f8"
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
         >
           {plateFace}
         </DeviceScreen>
@@ -901,50 +893,47 @@ export function Van({
         width={side.width}
         height={side.height}
         radius={side.radius}
-        resolution={sideResolution}
+        {...curbSurface}
         position={[side.x, side.y, body.width / 2 + 0.008]}
-        background={wrapBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         {...sideScreenOcclusion(sideOccluderGeometries?.curb)}
         screenStyle={curbStyle}
       >
-        {curbLivery}
+        {regions.curbSide?.children}
       </DeviceScreen>
-      {streetSide != null && (
+      {regions.streetSide != null && (
         <DeviceScreen
           width={side.width}
           height={side.height}
           radius={side.radius}
-          resolution={sideResolution}
+          {...streetSurface}
           position={[side.x, side.y, -body.width / 2 - 0.008]}
           rotation={[0, Math.PI, 0]}
-          background={wrapBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           {...sideScreenOcclusion(sideOccluderGeometries?.street)}
           screenStyle={streetStyle}
         >
-          {streetSide}
+          {regions.streetSide.children}
         </DeviceScreen>
       )}
-      {rear != null && (
+      {regions.rear != null && (
         <DeviceScreen
           width={rearSpec.width}
           height={rearSpec.height}
           radius={rearSpec.radius}
-          resolution={rearResolution}
+          {...rearSurface}
           position={[-body.length / 2 - 0.026, rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          background={wrapBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
           screenStyle={rearStyle}
         >
-          {rear}
+          {regions.rear.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+VanImpl.displayName = 'Van'
+
+/** The van's compound slots, shared by `<Van>` and `<VanMockup>`. */
+export const vanSlots = createSlots(VAN_REGIONS)
+
+export const Van = Object.assign(VanImpl, vanSlots)

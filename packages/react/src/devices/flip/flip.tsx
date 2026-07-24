@@ -2,7 +2,14 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { FLIP_COLORWAYS, findColorway, FLIP_VARIANTS, type FlipVariant } from '@area-mockups/core'
+import {
+  FLIP_COLORWAYS,
+  findColorway,
+  FLIP_VARIANTS,
+  FLIP_DEFAULT_VARIANT,
+  SCREEN_REGIONS,
+  type FlipVariant,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import {
@@ -18,11 +25,15 @@ import {
 } from '../details'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface FlipProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the active display: React components, an <iframe>, a <video>… */
+export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the active display: React components, an <iframe>, a
+   * <video>… Wrap in `<Flip.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /** Which Galaxy Z Flip device to render. */
   variant?: FlipVariant
@@ -59,8 +70,6 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the active display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution for
@@ -69,23 +78,12 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'> {
   resolution?: number
   /** Show the front-camera punch-hole overlay (open pose only). */
   punchHole?: boolean
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the body (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (one flip half / body). */
@@ -126,24 +124,25 @@ function freeEdgeCutters(
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Flip({
+function FlipImpl({
   children,
-  variant = 'flip7',
+  variant = FLIP_DEFAULT_VARIANT,
   open = true,
   openAngle,
   orientation = 'portrait',
   colorway,
   color: colorProp,
   frameColor: frameColorProp,
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution,
   punchHole = true,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: FlipProps) {
+  const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FLIP_VARIANTS[variant]
   const retail = findColorway(FLIP_COLORWAYS[variant], colorway)
   const color = colorProp ?? retail?.color ?? '#22252b'
@@ -491,14 +490,16 @@ export function Flip({
       width={landscape ? display.height : display.width}
       height={landscape ? display.width : display.height}
       radius={display.radius}
-      resolution={res}
       position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      background={screenBackground}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
       occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-      screenStyle={screenStyle}
+      {...resolveSurface(screenSlot, {
+        background: surfaceBackground,
+        resolution: res,
+        interactive,
+        dragToRotate,
+        style: surfaceStyle,
+      })}
       overlay={
         mode === 'open' && punchHole ? (
           punchHoleOverlay
@@ -527,7 +528,7 @@ export function Flip({
         ) : undefined
       }
     >
-      {children}
+      {screenSlot?.children}
     </DeviceScreen>
   )
 
@@ -578,14 +579,17 @@ export function Flip({
           width={landscape ? display.height / 2 : display.width}
           height={landscape ? display.width : display.height / 2}
           radius={radius}
-          resolution={landscape ? res / 2 : res}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          background={screenBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
+          {...resolveSurface(screenSlot, {
+            background: surfaceBackground,
+            // each half pane carries half the virtual display's height
+            resolution: landscape ? res / 2 : res,
+            interactive,
+            dragToRotate,
+            style: surfaceStyle,
+          })}
           overlay={
             <>
               {upper && punchHole ? punchHoleOverlay : null}
@@ -617,7 +621,7 @@ export function Flip({
               height: landscape ? '100%' : '200%',
             }}
           >
-            {children}
+            {screenSlot?.children}
           </div>
         </DeviceScreen>
       )
@@ -806,6 +810,12 @@ export function Flip({
     </group>
   )
 }
+FlipImpl.displayName = 'Flip'
+
+/** The device's compound slots, shared by `<Flip>` and `<FlipMockup>`. */
+export const flipSlots = createSlots(SCREEN_REGIONS)
+
+export const Flip = Object.assign(FlipImpl, flipSlots)
 
 /** The cover screen shows near-black glass when off, tinted faintly by the colorway. */
 function coverOffColor(color: string): string {

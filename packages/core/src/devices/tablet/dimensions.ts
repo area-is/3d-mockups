@@ -13,6 +13,9 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { Orientation } from '../../orientation'
+import type { CameraFraming, MockupFraming } from '../../regions'
+
 /** World units per millimeter for the tablet family. */
 export const TABLET_MM = 1 / 64
 
@@ -339,6 +342,26 @@ export const TABLET_VARIANTS: Record<
 }
 
 export type TabletVariant = keyof typeof TABLET_VARIANTS
+
+/** The variant every binding defaults to. */
+export const TABLET_DEFAULT_VARIANT: TabletVariant = 'ipadpro13'
+
+/** Grounded on the bottom edge of the body (its side edge in landscape). */
+export const TABLET_FRAMING = {
+  camera: { position: [0, 0.5, 8.6], fov: 40 },
+  floatIntensity: 0.8,
+  contactGap: 0.05,
+  extent: ({ variant, orientation }) => {
+    const body = TABLET_VARIANTS[variant ?? TABLET_DEFAULT_VARIANT].body
+    return (orientation === 'landscape' ? body.width : body.height) / 2
+  },
+} as const satisfies MockupFraming<{ variant?: TabletVariant; orientation?: Orientation }>
+
+/** The 14.6" Tab Ultra needs a bit more camera room than the iPads. */
+export const TABLET_ULTRA_CAMERA = {
+  position: [0, 0.5, 9.6],
+  fov: 40,
+} as const satisfies CameraFraming
 
 /** Back-compat: dimensions of the default device (iPad Pro 13"). */
 export const TABLET = IPAD_PRO_13

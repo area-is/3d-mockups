@@ -21,8 +21,8 @@ export default function HeroPhoneScene() {
       shadows={false}
       color="#12151c"
       frameColor="#565b64"
-      screenBackground="#070a0f"
-      deviceProps={{ rotation: [0, -0.3, 0] }}
+      surfaceBackground="#070a0f"
+      rotation={[0, -0.3, 0]}
     >
       <StrideApp />
     </PhoneMockup>

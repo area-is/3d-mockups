@@ -1,33 +1,8 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Watch, type WatchProps } from './devices/watch/watch'
-import { WATCH_VARIANTS } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { WATCH_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Watch, watchSlots, type WatchProps } from './devices/watch/watch'
 
-type InheritedDeviceProps = Pick<
-  WatchProps,
-  | 'variant'
-  | 'colorway'
-  | 'color'
-  | 'bandColor'
-  | 'screenBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface WatchMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<WatchProps, 'children'>
-}
+export type WatchMockupProps = MockupProps<WatchProps>
 
 /**
  * The one-liner: a complete, interactive 3D smartwatch mockup — Apple Watch
@@ -38,54 +13,20 @@ export interface WatchMockupProps
  *   <YourWatchFace />
  * </WatchMockup>
  * ```
+ *
+ * Wrap children in `<WatchMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <WatchMockup rotation={[0, 0.25, 0]}>
+ *   <WatchMockup.Screen background="#000" resolution={416}>
+ *     <YourWatchFace />
+ *   </WatchMockup.Screen>
+ * </WatchMockup>
+ * ```
  */
-export function WatchMockup({
-  children,
-  variant = 'series11',
-  colorway,
-  color,
-  bandColor,
-  screenBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: WatchMockupProps) {
-  const device = (
-    <Watch
-      variant={variant}
-      colorway={colorway}
-      color={color}
-      bandColor={bandColor}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Watch>
-  )
-
-  // Grounded under the bottom of the band loop; floating keeps a hover gap.
-  const spec = WATCH_VARIANTS[variant]
-  const loop = spec.band.loop
-  const extent = (loop.ryFront + loop.ryBack) / 2 + spec.band.thickness / 2
-  const shadowY = canvasProps.shadowY ?? (float ? -(extent + 0.25) : -(extent + 0.05))
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.4, 6.9], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.6}>{device}</FloatGroup> : device}
-    </MockupCanvas>
-  )
-}
+export const WatchMockup = createMockup({
+  object: Watch,
+  framing: WATCH_FRAMING,
+  slots: watchSlots,
+  displayName: 'WatchMockup',
+})

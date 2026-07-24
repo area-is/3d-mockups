@@ -1,90 +1,24 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { VinylRecord, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
-import { VINYL_RECORD } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { VINYL_RECORD_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { VinylRecord, vinylRecordSlots, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
 
-type InheritedObjectProps = Pick<
-  VinylRecordProps,
-  | 'back'
-  | 'label'
-  | 'backLabel'
-  | 'vinylColor'
-  | 'color'
-  | 'faceBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface VinylRecordMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** Album cover art — any React node. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<VinylRecordProps, 'children'>
-}
+export type VinylRecordMockupProps = MockupProps<VinylRecordProps>
 
 /**
- * The one-liner: a complete, interactive 3D vinyl LP mockup: live cover, back and disc label.
+ * The one-liner: a complete, interactive 3D vinyl LP mockup: live cover, back and disc labels.
  *
  * ```tsx
- * <VinylRecordMockup label={<Label />} float>
- *   <CoverArt />
+ * <VinylRecordMockup float>
+ *   <VinylRecordMockup.Cover><CoverArt /></VinylRecordMockup.Cover>
+ *   <VinylRecordMockup.Label><SideALabel /></VinylRecordMockup.Label>
  * </VinylRecordMockup>
  * ```
+ *
+ * Bare children are shorthand for the jacket front cover.
  */
-export function VinylRecordMockup({
-  children,
-  back,
-  label,
-  backLabel,
-  vinylColor,
-  color,
-  faceBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: VinylRecordMockupProps) {
-  const object = (
-    <VinylRecord
-      back={back}
-      label={label}
-      backLabel={backLabel}
-      vinylColor={vinylColor}
-      color={color}
-      faceBackground={faceBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </VinylRecord>
-  )
-
-  const half = VINYL_RECORD.sleeve.size / 2
-  const shadowY = canvasProps.shadowY ?? (float ? -(half + 0.3) : -(half + 0.05))
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.4, 8.4], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.7}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const VinylRecordMockup = createMockup({
+  object: VinylRecord,
+  framing: VINYL_RECORD_FRAMING,
+  slots: vinylRecordSlots,
+  displayName: 'VinylRecordMockup',
+})

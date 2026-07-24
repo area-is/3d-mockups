@@ -61,24 +61,35 @@ next to them — see the API reference section in the sidebar.
 
 ## Multiple live surfaces
 
-Several objects host more than one surface:
+Several objects host more than one surface. Bare children fill the object's
+primary surface; name any other region with its compound slot — the same
+pattern the devices use. Slots must be direct children of the mockup.
 
-- **`Brochure`** renders three panels in a standing zig-zag. Pass one node as
-  `children` for the first panel, or all three via
-  `panels={[<Front />, <Middle />, <Back />]}` — and print the reverse side
-  with `backPanels`. `foldAngle={0}` lays the sheet flat.
-- **`BusinessCard`** and **`IDCard`** take `children` for the front and
-  `back` for the reverse — spin them around to see it.
-- **`ProductBox`** prints up to four panels: `children` (front), `side`,
-  `top` and `back`, all sharing one dpi.
+```tsx
+<ProductBoxMockup rotation={[0, -0.5, 0]}>
+  <FrontPanel /> {/* bare children fill the front */}
+  <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
+  <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
+</ProductBoxMockup>
+```
+
+- **`Brochure`** renders three panels in a standing zig-zag. Repeat the
+  `<Brochure.Panel>` slot to fill them left to right, and add `side="back"`
+  to print the reverse faces. `foldAngle={0}` lays the sheet flat.
+- **`BusinessCard`** and **`IDCard`** take bare children for the front and
+  `<BusinessCard.Back>` / `<IDCard.Back>` for the reverse — spin them around
+  to see it.
+- **`ProductBox`** prints all six panels: bare children (front) plus the
+  `<ProductBox.Right>`, `<ProductBox.Left>`, `<ProductBox.Top>`,
+  `<ProductBox.Bottom>` and `<ProductBox.Back>` slots, all sharing one dpi.
 - **`Bus`** pairs the king-size ad panel with an optional live LED
-  `destinationSign` above the windshield.
-- **`SemiTrailer`** wraps both 53 ft sides plus the rear doors — the door
-  panel sits under a lock-rod overlay like a real wrap.
+  `<Bus.DestinationSign>` above the windshield.
+- **`SemiTrailer`** wraps both 53 ft sides plus the rear doors — the
+  `<SemiTrailer.Rear>` panel sits under a lock-rod overlay like a real wrap.
 - **`MailerBox`** prints the top, front and end panels, with the packing
   tape overlaid on your print.
-- **`Storefront`** pairs the fascia sign (`children`) with live `windows`
-  in the display glazing.
+- **`Storefront`** pairs the fascia sign (bare children) with live display
+  panes — `<Storefront.FrontLeft>` and the other window slots.
 - **`CustomBox`** prints all six faces of any-size rectangular boxes at one
   shared dpi.
 

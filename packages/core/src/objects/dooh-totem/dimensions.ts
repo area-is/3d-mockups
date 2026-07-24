@@ -11,6 +11,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the DOOH totem. */
 export const DOOH_TOTEM_MM = 1 / 700
 
@@ -59,3 +61,16 @@ export const DOOH_TOTEM: DoohTotemSpec = doohTotemSpec()
 
 /** Display aspect ratio (height / width) — portrait 9:16 at the default size. */
 export const DOOH_TOTEM_ASPECT = DOOH_TOTEM.display.height / DOOH_TOTEM.display.width
+
+/** Live regions: the two displays — real totems are double-sided. */
+export const DOOH_TOTEM_REGIONS = [
+  { name: 'front', label: 'Front display' },
+  { name: 'back', label: 'Back display' },
+] as const satisfies readonly RegionSpec[]
+
+/** The plinth defines the pavement, `standHeight` below the enclosure center. */
+export const DOOH_TOTEM_FRAMING = {
+  camera: { position: [0, 0.4, 9.2], fov: 40 },
+  floatIntensity: 0.4,
+  extent: ({ size }) => (size ? doohTotemSpec(size) : DOOH_TOTEM).standHeight,
+} as const satisfies MockupFraming<{ size?: DoohTotemSize }>

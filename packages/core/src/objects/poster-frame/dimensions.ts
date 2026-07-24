@@ -13,6 +13,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the poster frame. */
 export const POSTER_FRAME_MM = 1 / 140
 
@@ -59,3 +61,19 @@ export const POSTER_FRAME: PosterFrameSpec = posterFrameSpec()
 
 /** Visible opening aspect ratio (height / width) of the default sheet. */
 export const POSTER_FRAME_ASPECT = POSTER_FRAME.opening.height / POSTER_FRAME.opening.width
+
+/** Live regions: the poster behind the glazing. */
+export const POSTER_FRAME_REGIONS = [
+  { name: 'poster', label: 'Poster' },
+] as const satisfies readonly RegionSpec[]
+
+/** The framed poster grounds on the molding's bottom edge. */
+export const POSTER_FRAME_FRAMING = {
+  camera: { position: [0, 0.5, 8.8], fov: 40 },
+  floatIntensity: 0.7,
+  extent: ({ size }) => {
+    const spec = size ? posterFrameSpec(size) : POSTER_FRAME
+    return (spec.poster.height + spec.frame.width * 2) / 2
+  },
+  contactGap: 0.05,
+} as const satisfies MockupFraming<{ size?: PosterFrameSize }>

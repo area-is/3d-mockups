@@ -12,6 +12,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming } from '../../regions'
+
 /** World units per millimeter for the laptop family. */
 export const LAPTOP_MM = 1 / 72.4
 
@@ -250,6 +252,30 @@ export const LAPTOP_VARIANTS: Record<'air13' | 'air15' | 'pro14' | 'pro16', Lapt
 }
 
 export type LaptopVariant = keyof typeof LAPTOP_VARIANTS
+
+/** The variant every binding defaults to. */
+export const LAPTOP_DEFAULT_VARIANT: LaptopVariant = 'air13'
+
+/**
+ * Vertical offset baked into the laptop model: it rides this far down so the
+ * opened pose (deck + raised lid) sits visually centered on the group origin
+ * the stage camera and shadow are tuned for.
+ */
+export const LAPTOP_STAGE_OFFSET_Y = -1.15
+
+/**
+ * Grounded just under the rubber feet: the ground line sits 0.024 below the
+ * offset base slab. The extent is rebased −0.056 so the shared float gap
+ * reproduces the stage's original 0.22 hover clearance, with the grounded
+ * line restored by the 0.08 contact gap.
+ */
+export const LAPTOP_FRAMING = {
+  camera: { position: [0, 0.9, 9.6], fov: 40 },
+  floatIntensity: 0.7,
+  contactGap: 0.08,
+  extent: ({ variant }) =>
+    -LAPTOP_STAGE_OFFSET_Y + LAPTOP_VARIANTS[variant ?? LAPTOP_DEFAULT_VARIANT].base.thickness / 2 - 0.056,
+} as const satisfies MockupFraming<{ variant?: LaptopVariant }>
 
 /** Back-compat: dimensions of the default device (MacBook Air 13"). */
 export const LAPTOP = MACBOOK_AIR_13

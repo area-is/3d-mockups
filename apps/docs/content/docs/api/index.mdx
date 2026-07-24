@@ -26,13 +26,22 @@ props, all of its device's appearance props, and:
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Screen content: any React node, iframe, or video. |
 | `float` | `boolean` | `false` | Gentle floating idle animation for the device. |
-| `deviceProps` | device props | - | Extra props forwarded to the device group: `position`, `rotation`, `scale`, and so on. |
+| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<PhoneMockup rotation={[0, -0.25, 0]}>`). |
+
+## Regions and slots
+
+Bare children always fill a mockup's **primary region** — a phone's screen, a
+book's front cover. Objects with more printable surfaces expose each extra
+region as a compound slot on the component (`<AFrameSignMockup.Back>`,
+`<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
+section. Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults.
 
 ## Shared screen props
 
 Every device (and therefore every mockup) accepts the screen behavior props
 documented in [Screen content](/docs/screen-content): `interactive`,
-`dragToRotate`, `occlude`, `screenBackground`, `screenStyle`, and `resolution`.
+`dragToRotate`, `occlude`, `surfaceBackground`, `surfaceStyle`, and `resolution`.
 
 Devices also accept all react-three-fiber group props (`position`, `rotation`,
 `scale`) when rendered inside a canvas.

@@ -15,7 +15,7 @@ jacket's palette so the spine and back board feel like the same book.
 <ObjectDemo demo="book-basic" checker />
 
 ```tsx
-<BookMockup color="#16324a" deviceProps={{ rotation: [0, 0.35, 0] }}>
+<BookMockup color="#16324a" rotation={[0, 0.35, 0]}>
   <YourCoverArt />
 </BookMockup>
 ```
@@ -26,20 +26,29 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back cover design — fills the back board, full bleed. |
 | `size` | `{ width?, height?, thickness? }` | `156×234×27` | Physical trim in mm — e.g. `{ width: 216, height: 279 }` for a letter-size art book, `{ thickness: 45 }` for a fat novel. |
-| `spine` | `ReactNode` | - | Spine design — a tall strip on the backbone crown. |
 | `color` | `string` | `'#1f3a5f'` | Cloth color: spine, back board, and board edges. |
 | `pageColor` | `string` | `'#f4eede'` | Paper color of the page block edges. |
-| `coverBackground` | `string` | `'#ffffff'` | CSS background behind your cover content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your cover content. |
 | `resolution` | `number` | `480` | Virtual cover width in CSS px; height follows the board aspect. |
 
-The screen-background prop is named `coverBackground` here — on a book it
-paints paper, not glass. Every example below is live: drag to spin it.
+Every example below is live: drag to spin it.
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<BookMockup.Cover>` | Front cover (bare children) — fills the front board, full bleed. |
+| `<BookMockup.Back>` | Back cover — fills the back board, full bleed. |
+| `<BookMockup.Spine>` | Spine — a tall strip on the backbone crown. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<Book>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -49,15 +58,21 @@ what stays 3D hardware.
 
 ### Every surface printed
 
-`back` and `spine` complete the case: blurb and barcode on the back board,
-the title reading down the spine — the whole book stays designed as it
-turns.
+The `.Back` and `.Spine` slots complete the case: blurb and barcode on the
+back board, the title reading down the spine — the whole book stays designed
+as it turns.
 
 <ObjectDemo demo="book-full" />
 
 ```tsx
-<BookMockup autoRotate color="#16324a" back={<BackBoard />} spine={<SpineStrip />}>
+<BookMockup autoRotate color="#16324a">
   <YourCoverArt />
+  <BookMockup.Back>
+    <BackBoard />
+  </BookMockup.Back>
+  <BookMockup.Spine>
+    <SpineStrip />
+  </BookMockup.Spine>
 </BookMockup>
 ```
 

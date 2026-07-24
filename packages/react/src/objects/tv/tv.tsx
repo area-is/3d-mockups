@@ -2,15 +2,19 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { TV, tvSpec } from '@area-mockups/core'
+import { TV, TV_STAGE_OFFSET_Y, SCREEN_REGIONS, tvSpec } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface TVProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the TV: React components, an <iframe>, a <video>… */
+export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the TV: React components, an <iframe>, a <video>…
+   * Wrap in `<TVSet.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /**
    * Diagonal size in inches, clamped to `TV_MIN_INCHES`..`TV_MAX_INCHES`
@@ -22,22 +26,14 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'> {
   size?: number
   /** Enclosure colorway (frame, back, feet). */
   color?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /** CSS pixel width of the virtual display. 1920 gives 1920×1080. */
   resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the TV faces away from the camera.
    * `true` raycasts against the enclosure (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -49,22 +45,25 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'> {
  * stands. The screen is a live 1920×1080 DOM surface. No 3D asset files
  * are loaded.
  *
- * The origin is the panel center; the media-stand plane sits
- * `standHeight` below it. Must be rendered inside a react-three-fiber
- * `<Canvas>` (or `<MockupCanvas>`).
+ * The TV renders lifted `TV_STAGE_OFFSET_Y` above the group origin, so the
+ * panel + feet ensemble is visually centered on it (the stage pose the
+ * framing's camera and shadow expect); the media-stand plane sits
+ * `standHeight` below the lifted panel center. Must be rendered inside a
+ * react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function TVSet({
+function TVSetImpl({
   children,
   size,
   color = '#15171b',
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution = TV.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: TVProps) {
+  const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = React.useMemo(() => (size === undefined ? TV : tvSpec(size)), [size])
   const { body, display, backBulge, feet, portBay } = spec
   const bodyRef = React.useRef<THREE.Mesh>(null!)
@@ -205,6 +204,8 @@ export function TVSet({
   React.useEffect(() => () => bayFloorGeometry.dispose(), [bayFloorGeometry])
 
   return (
+    /* the stage lift centering the panel + feet ensemble on the group origin */
+    <group position-y={TV_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure, dropped by the chin offset so the display stays centered */}
       <mesh ref={bodyRef} geometry={bodyGeometry} position={[0, body.centerY, 0]}>
@@ -325,13 +326,15 @@ export function TVSet({
         width={display.width}
         height={display.height}
         radius={display.radius}
-        resolution={resolution}
         position={[0, 0, body.depth / 2 + 0.004]}
-        background={screenBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(screen, {
+          background: surfaceBackground,
+          resolution,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
         overlay={
           <div
             aria-hidden
@@ -346,8 +349,15 @@ export function TVSet({
           />
         }
       >
-        {children}
+        {screen?.children}
       </DeviceScreen>
+    </group>
     </group>
   )
 }
+TVSetImpl.displayName = 'TVSet'
+
+/** The object's compound slots, shared by `<TVSet>` and `<TVSetMockup>`. */
+export const tvSetSlots = createSlots(SCREEN_REGIONS)
+
+export const TVSet = Object.assign(TVSetImpl, tvSetSlots)

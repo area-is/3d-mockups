@@ -10,6 +10,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the A-frame sign. */
 export const A_FRAME_SIGN_MM = 1 / 280
 
@@ -26,3 +28,17 @@ export const A_FRAME_SIGN = {
 
 /** Face aspect ratio (height / width). */
 export const A_FRAME_SIGN_ASPECT = A_FRAME_SIGN.face.height / A_FRAME_SIGN.face.width
+
+/** Live regions: the two panels of the A. */
+export const A_FRAME_SIGN_REGIONS = [
+  { name: 'front', label: 'Front panel' },
+  { name: 'back', label: 'Back panel' },
+] as const satisfies readonly RegionSpec[]
+
+/** The splayed legs define the pavement; the sign stands on its leg tips. */
+export const A_FRAME_SIGN_FRAMING = {
+  camera: { position: [0, 0.5, 7.8], fov: 40 },
+  floatIntensity: 0.5,
+  extent: () =>
+    (A_FRAME_SIGN.panel.height / 2) * Math.cos((A_FRAME_SIGN.splayAngle * Math.PI) / 180),
+} as const satisfies MockupFraming

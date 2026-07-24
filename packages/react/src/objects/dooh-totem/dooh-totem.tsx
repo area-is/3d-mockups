@@ -2,18 +2,21 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { DOOH_TOTEM, doohTotemSpec, type DoohTotemSize } from '@area-mockups/core'
+import { DOOH_TOTEM, DOOH_TOTEM_REGIONS, doohTotemSpec, type DoohTotemSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** The creative — any React node on the portrait 9:16 display. */
+export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * The creative on the portrait 9:16 displays. Bare children fill the front
+   * display; name displays explicitly with `<DOOHTotem.Front>` and
+   * `<DOOHTotem.Back>` (real totems are double-sided).
+   */
   children?: React.ReactNode
-  /** Creative on the back (−Z) display — real totems are double-sided. */
-  back?: React.ReactNode
   /**
    * Physical enclosure size in millimeters, e.g.
    * `{ width: 1100, height: 2500 }` for a slimmer kiosk. Defaults to the
@@ -23,48 +26,45 @@ export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'> {
   size?: DoohTotemSize
   /** Enclosure colorway (street-furniture dark gray by default). */
   color?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
-  /** CSS pixel width of the virtual display. 540 gives 540×960. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the totem faces away from the camera.
    * `true` raycasts against the enclosure (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
  * A procedurally built digital out-of-home totem (digital 6-sheet class): a
  * rounded street-furniture enclosure running full-width into a kick plinth,
  * ventilation louvres, cover glass on both faces, and a live portrait 9:16
- * display behind the front glass (plus an optional `back` display — real
+ * display behind the front glass (plus an optional back display — real
  * units are double-sided). No 3D asset files are loaded.
  *
  * The origin is the enclosure center; the pavement sits
  * `DOOH_TOTEM.standHeight` below it. Must be rendered inside a
  * react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <DOOHTotem>
+ *   <DOOHTotem.Front><YourCreative /></DOOHTotem.Front>
+ *   <DOOHTotem.Back><NightCreative /></DOOHTotem.Back>
+ * </DOOHTotem>
+ * ```
  */
-export function DOOHTotem({
+function DOOHTotemImpl({
   children,
-  back,
   size,
   color = '#2f333a',
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution = DOOH_TOTEM.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: DOOHTotemProps) {
+  const regions = collectSlots(children, DOOH_TOTEM_REGIONS)
   const { body, glass, display, plinth, louvre, standHeight } = React.useMemo(
     () => (size ? doohTotemSpec(size) : DOOH_TOTEM),
     [size?.width, size?.height]
@@ -103,16 +103,18 @@ export function DOOHTotem({
     }
   }, [bodyGeometry, glassGeometry])
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const screenProps = {
     width: display.width,
     height: display.height,
     radius: display.radius,
-    resolution,
-    background: screenBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -160,20 +162,31 @@ export function DOOHTotem({
       </RoundedBox>
 
       {/* the live portrait display, just behind the front cover glass */}
-      <DeviceScreen {...screenProps} position={[0, 0, body.depth / 2 + 0.002]}>
-        {children}
+      <DeviceScreen
+        {...screenProps}
+        {...resolveSurface(regions.front, surfaceDefaults)}
+        position={[0, 0, body.depth / 2 + 0.002]}
+      >
+        {regions.front?.children}
       </DeviceScreen>
 
       {/* the back display — real totems are double-sided */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
           {...screenProps}
+          {...resolveSurface(regions.back, surfaceDefaults)}
           position={[0, 0, -(body.depth / 2 + 0.002)]}
           rotation={[0, Math.PI, 0]}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+DOOHTotemImpl.displayName = 'DOOHTotem'
+
+/** The totem's compound slots, shared by `<DOOHTotem>` and `<DOOHTotemMockup>`. */
+export const doohTotemSlots = createSlots(DOOH_TOTEM_REGIONS)
+
+export const DOOHTotem = Object.assign(DOOHTotemImpl, doohTotemSlots)

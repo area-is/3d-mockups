@@ -2,33 +2,26 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { ID_CARD, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import { ID_CARD, ID_CARD_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'> {
+export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
-   * Front face design — any React node, full bleed over the WHOLE card
-   * (punch strip included); the slot punch is carved out of the live area.
+   * Face designs — full bleed over the WHOLE card (punch strip included);
+   * the slot punch is carved out of the live area. Bare children fill the
+   * front face; name faces explicitly with `<IDCard.Front>` and
+   * `<IDCard.Back>` (plain stock when the back is omitted).
    */
   children?: React.ReactNode
-  /** Back face design. Spin the badge around to see it (plain stock if omitted). */
-  back?: React.ReactNode
   /** Card stock color — the edges and the inside of the punched slot. */
   color?: string
   /** Woven lanyard strap color. */
   lanyardColor?: string
-  /** CSS background painted behind your face content. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual face. Height follows the printable area. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your face content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How face content composites against the 3D hardware. `'blending'`
    * (default) uses per-pixel depth blending, so the J-hook pierced through
@@ -38,8 +31,6 @@ export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'> {
    * disables hiding entirely.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -52,20 +43,27 @@ export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'> {
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <IDCard>
+ *   <IDCard.Front><BadgeFront /></IDCard.Front>
+ *   <IDCard.Back><BadgeBack /></IDCard.Back>
+ * </IDCard>
+ * ```
  */
-export function IDCard({
+function IDCardImpl({
   children,
-  back,
   color = '#f4f5f7',
   lanyardColor = '#b3223a',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = 'blending',
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: IDCardProps) {
+  const regions = collectSlots(children, ID_CARD_REGIONS)
   const { body, slot, face, hook, strap } = ID_CARD
   const cardRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(cardRef)
@@ -119,28 +117,32 @@ export function IDCard({
 
   // Full-bleed live faces with the real slot punched out of the DOM too:
   // the face outline traced one way, the stadium hole the other, so the
-  // nonzero fill rule carves it (same numbers as the 3D card's punch).
-  const slotClip = React.useMemo(() => {
-    const ppu = resolution / face.width
-    const P = (x: number, y: number) =>
-      `${((x + face.width / 2) * ppu).toFixed(2)} ${((face.height / 2 - y) * ppu).toFixed(2)}`
-    const R = (u: number) => `${(u * ppu).toFixed(2)}`
-    const outline = clipRoundedRectOutline(P, R, 1, {
-      minX: -face.width / 2,
-      minY: -face.height / 2,
-      maxX: face.width / 2,
-      maxY: face.height / 2,
-      r: face.radius,
-    })
-    const hole = clipRoundedRect(P, R, 1, {
-      minX: -slot.width / 2,
-      minY: slot.centerY - slot.height / 2,
-      maxX: slot.width / 2,
-      maxY: slot.centerY + slot.height / 2,
-      r: slot.height / 2,
-    })
-    return `path("${(outline + hole).trim()}")`
-  }, [face, slot, resolution])
+  // nonzero fill rule carves it (same numbers as the 3D card's punch). Built
+  // per face because a slot's `resolution` override changes the px grid.
+  const slotClip = React.useCallback(
+    (res: number) => {
+      const ppu = res / face.width
+      const P = (x: number, y: number) =>
+        `${((x + face.width / 2) * ppu).toFixed(2)} ${((face.height / 2 - y) * ppu).toFixed(2)}`
+      const R = (u: number) => `${(u * ppu).toFixed(2)}`
+      const outline = clipRoundedRectOutline(P, R, 1, {
+        minX: -face.width / 2,
+        minY: -face.height / 2,
+        maxX: face.width / 2,
+        maxY: face.height / 2,
+        r: face.radius,
+      })
+      const hole = clipRoundedRect(P, R, 1, {
+        minX: -slot.width / 2,
+        minY: slot.centerY - slot.height / 2,
+        maxX: slot.width / 2,
+        maxY: slot.centerY + slot.height / 2,
+        r: slot.height / 2,
+      })
+      return `path("${(outline + hole).trim()}")`
+    },
+    [face, slot]
+  )
 
   // The flat J profile: an annular arc open at the upper right (the mouth),
   // extruded at stamped-steel thickness.
@@ -193,17 +195,21 @@ export function IDCard({
   }, [face, slot])
   React.useEffect(() => () => faceOccluderGeometry.dispose(), [faceOccluderGeometry])
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
+  const front = resolveSurface(regions.front, surfaceDefaults)
+  const back = resolveSurface(regions.back, surfaceDefaults)
   const faceProps = {
     width: face.width,
     height: face.height,
     radius: face.radius,
-    resolution,
-    background: faceBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
     occluderGeometry: faceOccluderGeometry,
-    screenStyle: { ...screenStyle, clipPath: slotClip },
   }
 
   return (
@@ -273,20 +279,33 @@ export function IDCard({
       ))}
 
       {/* live front face — full bleed over the whole card, slot carved out */}
-      <DeviceScreen {...faceProps} position={[0, face.offsetY, body.thickness / 2 + 0.003]}>
-        {children}
+      <DeviceScreen
+        {...faceProps}
+        {...front}
+        screenStyle={{ ...front.screenStyle, clipPath: slotClip(front.resolution) }}
+        position={[0, face.offsetY, body.thickness / 2 + 0.003]}
+      >
+        {regions.front?.children}
       </DeviceScreen>
 
       {/* live back face — only mounted when there's a design for it */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
           {...faceProps}
+          {...back}
+          screenStyle={{ ...back.screenStyle, clipPath: slotClip(back.resolution) }}
           position={[0, face.offsetY, -body.thickness / 2 - 0.003]}
           rotation={[0, Math.PI, 0]}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+IDCardImpl.displayName = 'IDCard'
+
+/** The badge's compound slots, shared by `<IDCard>` and `<IDCardMockup>`. */
+export const idCardSlots = createSlots(ID_CARD_REGIONS)
+
+export const IDCard = Object.assign(IDCardImpl, idCardSlots)

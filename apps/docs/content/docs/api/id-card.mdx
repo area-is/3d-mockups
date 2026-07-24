@@ -20,7 +20,7 @@ around a real opening.
 <ObjectDemo demo="idcard-basic" checker />
 
 ```tsx
-<IDCardMockup float deviceProps={{ rotation: [0, -0.25, 0.04] }}>
+<IDCardMockup float rotation={[0, -0.25, 0.04]}>
   <BadgeFront />
 </IDCardMockup>
 ```
@@ -31,16 +31,26 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back face design. Plain stock when omitted. |
 | `color` | `string` | `'#f4f5f7'` | Card stock: the edges and the inside of the punched slot. |
 | `lanyardColor` | `string` | `'#b3223a'` | Woven strap color (lanyards come in saturated solids). |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
 | `resolution` | `number` | `420` | Virtual face width in CSS px; height follows the full card. |
 | `occlude` | `boolean \| 'blending'` | `'blending'` | Per-pixel depth blending by default, so the pierced J-hook crosses in front of the printed face where it physically does. `true` = raycast hiding, `false` = off. |
 
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<IDCardMockup.Front>` | Front face — full bleed over the whole card, slot punch carved out (bare children). |
+| `<IDCardMockup.Back>` | Back face — plain stock when omitted. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<IDCard>`.
+
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -50,13 +60,17 @@ what stays 3D hardware.
 
 ### Both sides, on a corporate lanyard
 
-`lanyardColor` takes any CSS color; `back` prints the reverse — barcodes,
-return-if-found text, wifi credentials for the office guest network…
+`lanyardColor` takes any CSS color; `<IDCardMockup.Back>` prints the reverse
+— barcodes, return-if-found text, wifi credentials for the office guest
+network…
 
 <ObjectDemo demo="idcard-back" />
 
 ```tsx
-<IDCardMockup autoRotate autoRotateSpeed={2} lanyardColor="#1d4ed8" back={<BadgeBack />}>
+<IDCardMockup autoRotate autoRotateSpeed={2} lanyardColor="#1d4ed8">
   <BadgeFront />
+  <IDCardMockup.Back>
+    <BadgeBack />
+  </IDCardMockup.Back>
 </IDCardMockup>
 ```

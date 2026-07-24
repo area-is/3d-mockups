@@ -1,88 +1,25 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { BusShelter, type BusShelterProps } from './objects/bus-shelter/bus-shelter'
-import { BUS_SHELTER } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { BUS_SHELTER_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { BusShelter, busShelterSlots, type BusShelterProps } from './objects/bus-shelter/bus-shelter'
 
-type InheritedObjectProps = Pick<
-  BusShelterProps,
-  | 'inner'
-  | 'arrivals'
-  | 'arrivalsBack'
-  | 'color'
-  | 'posterBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface BusShelterMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** 6-sheet creative on the outward lightbox face — any React node. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<BusShelterProps, 'children'>
-}
+export type BusShelterMockupProps = MockupProps<BusShelterProps>
 
 /**
- * The one-liner: a complete, interactive 3D transit shelter mockup with a backlit live 6-sheet.
+ * The one-liner: a complete, interactive 3D transit shelter mockup with a
+ * backlit live 6-sheet and an RTPI arrivals board.
  *
  * ```tsx
- * <BusShelterMockup deviceProps={{ rotation: [0, 0.6, 0] }}>
- *   <YourPoster />
+ * <BusShelterMockup rotation={[0, 0.6, 0]}>
+ *   <BusShelterMockup.Poster><YourPoster /></BusShelterMockup.Poster>
+ *   <BusShelterMockup.Arrivals>{['12  City Centre  3 min']}</BusShelterMockup.Arrivals>
  * </BusShelterMockup>
  * ```
+ *
+ * Bare children are shorthand for the outward 6-sheet poster.
  */
-export function BusShelterMockup({
-  children,
-  inner,
-  arrivals,
-  arrivalsBack,
-  color,
-  posterBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: BusShelterMockupProps) {
-  const object = (
-    <BusShelter
-      inner={inner}
-      arrivals={arrivals}
-      arrivalsBack={arrivalsBack}
-      color={color}
-      posterBackground={posterBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </BusShelter>
-  )
-
-  // The posts define the pavement; ground the shadow just under them.
-  const groundY = -BUS_SHELTER.standHeight
-  const shadowY = canvasProps.shadowY ?? (float ? groundY - 0.25 : groundY - 0.02)
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.4, 11.4], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.35}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const BusShelterMockup = createMockup({
+  object: BusShelter,
+  framing: BUS_SHELTER_FRAMING,
+  slots: busShelterSlots,
+  displayName: 'BusShelterMockup',
+})

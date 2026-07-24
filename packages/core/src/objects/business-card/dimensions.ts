@@ -9,6 +9,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the business card. */
 export const BUSINESS_CARD_MM = 1 / 26
 
@@ -28,3 +30,17 @@ export const BUSINESS_CARD = {
 
 /** Face aspect ratio (height / width). */
 export const BUSINESS_CARD_FACE_ASPECT = BUSINESS_CARD.face.height / BUSINESS_CARD.face.width
+
+/** Live regions: the two faces of the card. */
+export const BUSINESS_CARD_REGIONS = [
+  { name: 'front', label: 'Front face' },
+  { name: 'back', label: 'Back face' },
+] as const satisfies readonly RegionSpec[]
+
+/** The card grounds on its long bottom edge. */
+export const BUSINESS_CARD_FRAMING = {
+  camera: { position: [0, 0.3, 5.6], fov: 40 },
+  floatIntensity: 0.6,
+  extent: () => BUSINESS_CARD.body.height / 2,
+  contactGap: 0.05,
+} as const satisfies MockupFraming

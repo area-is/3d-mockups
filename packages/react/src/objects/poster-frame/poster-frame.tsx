@@ -1,15 +1,19 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { POSTER_FRAME, posterFrameSpec, type PosterFrameSize } from '@area-mockups/core'
+import { POSTER_FRAME, POSTER_FRAME_REGIONS, posterFrameSpec, type PosterFrameSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Poster art — any React node. It fills the visible opening, full bleed. */
+export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Poster art — any React node. It fills the visible opening, full bleed;
+   * wrap in `<PosterFrame.Poster>` to set per-surface props.
+   */
   children?: React.ReactNode
   /**
    * Physical sheet size in millimeters, e.g. `{ width: 610, height: 914 }`
@@ -25,22 +29,12 @@ export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>
   matColor?: string
   /** Simulated glazing: a soft acrylic sheen over the art. */
   glazing?: boolean
-  /** CSS background painted behind your poster content. */
-  posterBackground?: string
-  /** CSS pixel width of the virtual art area. Height follows its aspect. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your poster content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How poster content hides when the frame faces away from the camera.
    * `true` raycasts against the frame and backing (fast, interactive).
    * `'blending'` uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the poster wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -51,22 +45,29 @@ export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <PosterFrame color="#22262e">
+ *   <PosterFrame.Poster><YourPosterArt /></PosterFrame.Poster>
+ * </PosterFrame>
+ * ```
  */
-export function PosterFrame({
+function PosterFrameImpl({
   children,
   size,
   color = '#22262e',
   mat = false,
   matColor = '#f6f3ec',
   glazing = true,
-  posterBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = POSTER_FRAME.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: PosterFrameProps) {
+  const posterSlot = collectSlots(children, POSTER_FRAME_REGIONS).poster
   const { poster, opening, frame, recess, matWidth } = React.useMemo(
     () => (size ? posterFrameSpec(size) : POSTER_FRAME),
     [size?.width, size?.height]
@@ -188,13 +189,15 @@ export function PosterFrame({
         width={art.width}
         height={art.height}
         radius={mat ? 0.002 : opening.radius}
-        resolution={resolution}
         position={[0, 0, sheetZ]}
-        background={posterBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(posterSlot, {
+          background: surfaceBackground,
+          resolution,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
         overlay={
           glazing ? (
             <div
@@ -211,8 +214,14 @@ export function PosterFrame({
           ) : undefined
         }
       >
-        {children}
+        {posterSlot?.children}
       </DeviceScreen>
     </group>
   )
 }
+PosterFrameImpl.displayName = 'PosterFrame'
+
+/** The frame's compound slots, shared by `<PosterFrame>` and `<PosterFrameMockup>`. */
+export const posterFrameSlots = createSlots(POSTER_FRAME_REGIONS)
+
+export const PosterFrame = Object.assign(PosterFrameImpl, posterFrameSlots)

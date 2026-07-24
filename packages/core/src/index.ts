@@ -6,8 +6,18 @@
 // `@area-mockups/svelte`, `@area-mockups/vue` later) are thin layers that feed
 // this data into their renderer. See ARCHITECTURE.md at the repo root.
 
-/** A device/mockup orientation shared by every binding. */
-export type Orientation = 'portrait' | 'landscape'
+export type { Orientation } from './orientation'
+
+// Region registry + per-object stage framing (pure data + pure math).
+export {
+  type RegionSpec,
+  SCREEN_REGIONS,
+  type CameraFraming,
+  type MockupFraming,
+  FLOAT_SHADOW_GAP,
+  CONTACT_SHADOW_GAP,
+  framedShadowY,
+} from './regions'
 
 // Geometry math.
 export { roundedRectShape } from './geometry/rounded-rect'

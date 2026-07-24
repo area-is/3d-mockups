@@ -2,39 +2,31 @@ import * as React from 'react'
 import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { CUSTOM_PANEL, customPanelScale, type CustomSizeMm } from '@area-mockups/core'
+import { CUSTOM_PANEL, CUSTOM_PANEL_REGIONS, customPanelScale, type CustomSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Front face design — any React node, full bleed. */
+export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Face designs, full bleed. Bare children fill the front face; name faces
+   * explicitly with `<CustomPanel.Front>` and `<CustomPanel.Back>`.
+   */
   children?: React.ReactNode
   /** Panel size in real millimeters: `{ width, height, thickness? }`. */
   size: CustomSizeMm
-  /** Back face design. */
-  back?: React.ReactNode
-  /** Stock color (edges, and the back when no `back` content is set). */
+  /** Stock color (edges, and the back when no back content is set). */
   color?: string
   /** Corner rounding in millimeters. */
   cornerRadius?: number
-  /** CSS background painted behind each printed face. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual front face. Height follows the panel. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your face content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How face content hides when that face turns away from the camera.
    * `true` raycasts against the panel (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -45,21 +37,28 @@ export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <CustomPanel size={{ width: 600, height: 900, thickness: 5 }}>
+ *   <CustomPanel.Front><YourArtwork /></CustomPanel.Front>
+ *   <CustomPanel.Back><BackArtwork /></CustomPanel.Back>
+ * </CustomPanel>
+ * ```
  */
-export function CustomPanel({
+function CustomPanelImpl({
   children,
   size,
-  back,
   color = '#f2f1ed',
   cornerRadius = 2,
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = CUSTOM_PANEL.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: CustomPanelProps) {
+  const regions = collectSlots(children, CUSTOM_PANEL_REGIONS)
   const scale = customPanelScale(size)
   const w = size.width * scale
   const h = size.height * scale
@@ -69,16 +68,18 @@ export function CustomPanel({
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(bodyRef)
 
+  const surfaceDefaults = {
+    background: surfaceBackground,
+    resolution,
+    interactive,
+    dragToRotate,
+    style: surfaceStyle,
+  }
   const faceProps = {
     width: w,
     height: h,
     radius: Math.max(radius, 0),
-    resolution,
-    background: faceBackground,
-    interactive,
-    dragToRotate,
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   return (
@@ -87,14 +88,29 @@ export function CustomPanel({
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.65} />
       </RoundedBox>
 
-      <DeviceScreen {...faceProps} position={[0, 0, t / 2 + 0.003]}>
-        {children}
+      <DeviceScreen
+        {...faceProps}
+        {...resolveSurface(regions.front, surfaceDefaults)}
+        position={[0, 0, t / 2 + 0.003]}
+      >
+        {regions.front?.children}
       </DeviceScreen>
-      {back != null && (
-        <DeviceScreen {...faceProps} position={[0, 0, -t / 2 - 0.003]} rotation={[0, Math.PI, 0]}>
-          {back}
+      {regions.back != null && (
+        <DeviceScreen
+          {...faceProps}
+          {...resolveSurface(regions.back, surfaceDefaults)}
+          position={[0, 0, -t / 2 - 0.003]}
+          rotation={[0, Math.PI, 0]}
+        >
+          {regions.back.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+CustomPanelImpl.displayName = 'CustomPanel'
+
+/** The panel's compound slots, shared by `<CustomPanel>` and `<CustomPanelMockup>`. */
+export const customPanelSlots = createSlots(CUSTOM_PANEL_REGIONS)
+
+export const CustomPanel = Object.assign(CustomPanelImpl, customPanelSlots)

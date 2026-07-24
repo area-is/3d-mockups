@@ -2,15 +2,19 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { ROLLUP_BANNER, rollupBannerSpec, type RollupBannerSize } from '@area-mockups/core'
+import { ROLLUP_BANNER, ROLLUP_BANNER_REGIONS, rollupBannerSpec, type RollupBannerSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Banner graphic — any React node. It fills the visible graphic, full bleed. */
+export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Banner graphic — any React node. It fills the visible graphic, full
+   * bleed; wrap in `<RollupBanner.Banner>` to set per-surface props.
+   */
   children?: React.ReactNode
   /**
    * Physical graphic size in millimeters, e.g. `{ width: 1000 }` for a wide
@@ -20,22 +24,12 @@ export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'
   size?: RollupBannerSize
   /** Hardware color (cassette, pole, top rail). Brushed aluminum by default. */
   color?: string
-  /** CSS background painted behind your graphic content. */
-  graphicBackground?: string
-  /** CSS pixel width of the virtual graphic. Height follows the 850x2000 sheet. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your graphic content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How graphic content hides when the banner faces away from the camera.
    * `true` raycasts against the backing (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the graphic wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -48,19 +42,26 @@ export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'
  * The origin is the graphic center; the floor sits
  * `ROLLUP_BANNER.standHeight` below it. Must be rendered inside a
  * react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <RollupBanner>
+ *   <RollupBanner.Banner><YourBannerArt /></RollupBanner.Banner>
+ * </RollupBanner>
+ * ```
  */
-export function RollupBanner({
+function RollupBannerImpl({
   children,
   size,
   color = '#b9bdc4',
-  graphicBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = ROLLUP_BANNER.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: RollupBannerProps) {
+  const bannerSlot = collectSlots(children, ROLLUP_BANNER_REGIONS).banner
   const { graphic, cassette, pole, rail, standHeight } = React.useMemo(
     () => (size ? rollupBannerSpec(size) : ROLLUP_BANNER),
     [size?.width, size?.height]
@@ -133,16 +134,24 @@ export function RollupBanner({
         width={graphic.width}
         height={graphic.height}
         radius={graphic.radius}
-        resolution={resolution}
         position={[0, 0, 0.002]}
-        background={graphicBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(bannerSlot, {
+          background: surfaceBackground,
+          resolution,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
       >
-        {children}
+        {bannerSlot?.children}
       </DeviceScreen>
     </group>
   )
 }
+RollupBannerImpl.displayName = 'RollupBanner'
+
+/** The stand's compound slots, shared by `<RollupBanner>` and `<RollupBannerMockup>`. */
+export const rollupBannerSlots = createSlots(ROLLUP_BANNER_REGIONS)
+
+export const RollupBanner = Object.assign(RollupBannerImpl, rollupBannerSlots)

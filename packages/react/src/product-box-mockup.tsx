@@ -1,97 +1,26 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { ProductBox, type ProductBoxProps } from './objects/product-box/product-box'
-import { productBoxLayout } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { PRODUCT_BOX_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { ProductBox, productBoxSlots, type ProductBoxProps } from './objects/product-box/product-box'
 
-type InheritedObjectProps = Pick<
-  ProductBoxProps,
-  | 'side'
-  | 'left'
-  | 'top'
-  | 'bottom'
-  | 'back'
-  | 'size'
-  | 'color'
-  | 'faceBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface ProductBoxMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** Front panel design — any React node. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<ProductBoxProps, 'children'>
-}
+export type ProductBoxMockupProps = MockupProps<ProductBoxProps>
 
 /**
- * The one-liner: a complete, interactive 3D product carton mockup with live
- * front, side, top and back panels.
+ * The one-liner: a complete, interactive 3D product carton mockup with all
+ * six panels live.
  *
  * ```tsx
- * <ProductBoxMockup side={<SidePanel />} top={<TopPanel />} deviceProps={{ rotation: [0, -0.5, 0] }}>
+ * <ProductBoxMockup rotation={[0, -0.5, 0]}>
  *   <FrontPanel />
+ *   <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
+ *   <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
  * </ProductBoxMockup>
  * ```
+ *
+ * Bare children are shorthand for the front panel.
  */
-export function ProductBoxMockup({
-  children,
-  side,
-  left,
-  top,
-  bottom,
-  back,
-  size,
-  color,
-  faceBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: ProductBoxMockupProps) {
-  const object = (
-    <ProductBox
-      side={side}
-      left={left}
-      top={top}
-      bottom={bottom}
-      back={back}
-      size={size}
-      color={color}
-      faceBackground={faceBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </ProductBox>
-  )
-
-  const half = productBoxLayout(size).body.height / 2
-  const shadowY = canvasProps.shadowY ?? (float ? -(half + 0.3) : -(half + 0.02))
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.6, 8.2], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.7}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const ProductBoxMockup = createMockup({
+  object: ProductBox,
+  framing: PRODUCT_BOX_FRAMING,
+  slots: productBoxSlots,
+  displayName: 'ProductBoxMockup',
+})

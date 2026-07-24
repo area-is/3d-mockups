@@ -31,6 +31,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming } from '../../regions'
+
 /** World units per millimeter for the watch family. */
 export const WATCH_MM = 1 / 17.7
 
@@ -146,6 +148,25 @@ export const WATCH_VARIANTS: Record<'series11' | 'watch8', WatchSpec> = {
 }
 
 export type WatchVariant = keyof typeof WATCH_VARIANTS
+
+/** The variant every binding defaults to. */
+export const WATCH_DEFAULT_VARIANT: WatchVariant = 'series11'
+
+/**
+ * Grounded under the bottom of the worn band loop. The extent is rebased
+ * −0.05 so the shared float gap reproduces the stage's original 0.25 hover
+ * clearance, with the grounded line (0.05 under the strap) restored by the
+ * 0.1 contact gap.
+ */
+export const WATCH_FRAMING = {
+  camera: { position: [0, 0.4, 6.9], fov: 40 },
+  floatIntensity: 0.6,
+  contactGap: 0.1,
+  extent: ({ variant }) => {
+    const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
+    return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
+  },
+} as const satisfies MockupFraming<{ variant?: WatchVariant }>
 
 /** Back-compat: dimensions of the default device (Apple Watch Series 11, 46 mm). */
 export const WATCH = SERIES_11

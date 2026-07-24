@@ -10,6 +10,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the billboard. */
 export const BILLBOARD_MM = 1 / 2814
 
@@ -37,3 +39,21 @@ export const BILLBOARD = {
 
 /** Face aspect ratio (height / width) — the 14:48 bulletin. */
 export const BILLBOARD_FACE_ASPECT = BILLBOARD.face.height / BILLBOARD.face.width
+
+/** Live regions: the advertising face. */
+export const BILLBOARD_REGIONS = [
+  { name: 'face', label: 'Face' },
+] as const satisfies readonly RegionSpec[]
+
+/**
+ * Vertical offset that keeps the billboard (face + pole) visually centered on
+ * the stage origin the camera and shadow are tuned for.
+ */
+export const BILLBOARD_STAGE_OFFSET_Y = 1.1
+
+/** The pole base of the (stage-offset) billboard defines the ground plane. */
+export const BILLBOARD_FRAMING = {
+  camera: { position: [0, 0.2, 13.6], fov: 40 },
+  floatIntensity: 0.4,
+  extent: () => BILLBOARD.standHeight - BILLBOARD_STAGE_OFFSET_Y,
+} as const satisfies MockupFraming

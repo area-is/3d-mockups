@@ -39,6 +39,15 @@ What that puts in the core today:
   dimensions, display panels, camera layouts, per-variant data for every device and
   object. Pure data with zero imports; also intended to drive the planned 2D
   (CSS/SVG) renderers.
+- **Regions & framing** (`src/regions.ts` + each spec's `*_REGIONS` / `*_FRAMING`) —
+  every live surface a device/object exposes, declared as pure data next to its
+  dimensions. Region names are the cross-binding API contract: React derives its
+  compound slots from them (`front` → `<AFrameSign.Front>`), Svelte/Vue bindings map
+  the same names onto native slots (`slot="front"`, `#front`), and docs can be
+  generated from them. The first region is the primary one — bare children render
+  there. `*_FRAMING` is the per-object stage math (camera pose, float intensity, the
+  ground line under the object) that wrappers used to hand-code; `framedShadowY`
+  turns it into the contact-shadow plane's Y in any binding.
 - **Geometry math** (`src/geometry`) — e.g. `roundedRectShape`, returning plain
   three.js values any renderer can consume.
 - **Screen behaviors** (`src/screen`) — everything that makes the live DOM screen
@@ -65,8 +74,14 @@ What stays in a binding (React's versions in parentheses):
 - The **device/object scene components** — declarative meshes built from core specs
   (`devices/*/*.tsx`, `objects/*/*.tsx`), plus per-device DOM overlays (punch hole,
   notch) computed from the same specs.
-- The **one-liner mockup wrappers** (`*-mockup.tsx`) composing canvas + device and
-  per-object framing (camera distance, shadow grounding).
+- The **slot machinery** (`slots.tsx`): the compound-slot components generated from
+  core region lists (`createSlots`), the children scan that routes slot elements to
+  regions and bare children to the primary region (`collectSlots`), and the
+  per-surface prop merge (`resolveSurface`).
+- The **one-liner mockup wrappers** (`*-mockup.tsx`) — each a `createMockup(...)`
+  call (`create-mockup.tsx`) wiring the scene component to its core framing. The
+  factory owns the stage-prop/object-prop split, so wrappers carry no per-prop
+  forwarding and objects can grow props without wrapper edits.
 
 ## The binding contract
 
@@ -88,10 +103,13 @@ A new binding (say `@area-mockups/svelte`) implements four pieces, in order:
 3. **Devices/objects** — port scene components one at a time from
    `packages/react/src/devices` and `objects`. All numbers come from core specs, so a
    port is a mechanical JSX → framework-template translation; visual parity means
-   using the same specs, materials and transforms.
-4. **Wrappers** — the one-liner mockups (`PhoneMockup`…), including each object's
-   camera/shadow framing (copy the small per-object math from the React wrappers
-   until it graduates into core).
+   using the same specs, materials and transforms. Map each spec's `*_REGIONS` onto
+   the framework's native slot mechanism (Svelte `<svelte:fragment slot="front">`,
+   Vue `#front`) with the same names and the same bare-children-→-primary shorthand.
+4. **Wrappers** — the one-liner mockups (`PhoneMockup`…). All per-object stage math
+   comes from the core `*_FRAMING` specs (camera via `framing.camera`, shadow via
+   `framedShadowY`, float via `framing.floatIntensity`) — a binding writes one
+   generic factory like React's `create-mockup.tsx`, not per-object arithmetic.
 
 The float animation is `floatPose` sampled once per frame — run it *before* the orbit
 controls and HTML bridge update (r3f frame priority -2) so the DOM screen never
@@ -145,6 +163,7 @@ change only, no API change.
   `buildPhoneChassis(spec)`-style factories) can migrate from binding scene
   components into `core/src/devices/*` over time, shrinking each binding further.
   Extract on second use — when the second binding lands, whatever it would copy
-  from React is what moves down.
+  from React is what moves down. (Framing and region registries already made this
+  move; geometry is next.)
 - **2D renderers**: the same specs are designed to drive CSS/SVG mockups that share
-  the public API (`PhoneMockup` etc.) without WebGL.
+  the public API (`PhoneMockup` etc., including the compound slots) without WebGL.

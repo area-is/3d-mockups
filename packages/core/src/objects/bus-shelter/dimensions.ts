@@ -13,6 +13,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the bus shelter. */
 export const BUS_SHELTER_MM = 1 / 700
 
@@ -43,3 +45,18 @@ export const BUS_SHELTER = {
 
 /** Poster aspect ratio (height / width) — the 6-sheet. */
 export const BUS_SHELTER_POSTER_ASPECT = BUS_SHELTER.poster.height / BUS_SHELTER.poster.width
+
+/** Live regions: both lightbox faces plus the two arrivals-board faces. */
+export const BUS_SHELTER_REGIONS = [
+  { name: 'poster', label: '6-sheet poster' },
+  { name: 'inner', label: 'Inner poster' },
+  { name: 'arrivals', label: 'Arrivals board' },
+  { name: 'arrivalsBack', label: 'Arrivals board (back)' },
+] as const satisfies readonly RegionSpec[]
+
+/** The posts define the pavement; the shelter stands on it. */
+export const BUS_SHELTER_FRAMING = {
+  camera: { position: [0, 0.4, 11.4], fov: 40 },
+  floatIntensity: 0.35,
+  extent: () => BUS_SHELTER.standHeight,
+} as const satisfies MockupFraming

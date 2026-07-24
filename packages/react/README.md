@@ -9,8 +9,8 @@ videos play, iframes scroll.
   Air 13" and MacBook Pro 14" (M5), iPad Pro 13"/11" (M5), Galaxy Tab S11 / S11 Ultra, an
   Apple Watch Series 11 and a Studio Display-style 27" monitor, all procedurally generated
   at runtime. No GLB files, no
-  hosting, no pop-in — importing one device family costs 7.3–44.7 KB gzipped (the whole
-  library, 17 devices + 24 objects: 82.0 KB), peers excluded. The phone, foldable, and
+  hosting, no pop-in — importing one mockup costs 6.9–48.1 KB gzipped (the whole
+  library: 96.8 KB), peers excluded. The phone, foldable, and
   laptop families carry a small CSG engine that machines their ports and speaker/mic
   holes into the chassis as real cavities; it tree-shakes away for every other mockup.
 - **True-to-device screens** — each virtual display matches the real device's logical
@@ -55,12 +55,47 @@ Drag anywhere — body, background, or the screen itself — to orbit; taps and 
 screen still go to your content. In Next.js, load it client-side only
 (`dynamic(() => import('./mockup'), { ssr: false })`).
 
+## Regions & slots
+
+Bare children always fill a mockup's **primary region** (a phone's screen, a book's
+cover). Objects with more printable surfaces expose each one as a **compound slot** —
+type `AFrameSignMockup.` and your editor lists exactly the regions the object has:
+
+```tsx
+<AFrameSignMockup autoRotate>
+  <AFrameSignMockup.Front>
+    <MenuBoard />
+  </AFrameSignMockup.Front>
+  <AFrameSignMockup.Back background="#20241f" interactive={false}>
+    <HoursBoard />
+  </AFrameSignMockup.Back>
+</AFrameSignMockup>
+```
+
+Every slot takes per-surface overrides — `background`, `resolution`, `interactive`,
+`dragToRotate`, `style` — over the mockup-level defaults (`surfaceBackground`,
+`resolution`, `interactive`, `dragToRotate`, `surfaceStyle`). Repeating regions
+collect in document order:
+
+```tsx
+<BrochureMockup>
+  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
+  <BrochureMockup.Panel side="back"><Back /></BrochureMockup.Panel>
+</BrochureMockup>
+```
+
+The same slots exist on the raw scene components (`<AFrameSign.Front>` inside your own
+r3f scene). Slots must be direct children of their mockup (fragments are fine); region
+names come from each object's spec in the core, so every future binding shares them.
+
 ## Components
 
 ### `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<TabletMockup>` / `<WatchMockup>` / `<MonitorMockup>` — all-in-one
 
-Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float` (idle
-floating animation) and `deviceProps` (position/rotation/scale forwarded to the device).
+Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float`
+(idle floating animation). Transforms are first-class: `position`, `rotation` and `scale`
+flow straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 
 ### `<MockupCanvas>` — the stage
 
@@ -87,7 +122,7 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | `children` | `ReactNode` | — | Screen content |
 | `color` | `string` | `'#101216'` | Back-panel colorway |
 | `frameColor` | `string` | `'#4a4f59'` | Frame, buttons, camera rings |
-| `screenBackground` | `string` | `'#000000'` | CSS background behind your content |
+| `surfaceBackground` | `string` | `'#000000'` | CSS background behind your content |
 | `variant` | `'s26' \| 's26ultra'` | `'s26'` | Which Galaxy S26-family device (true relative sizes + per-model cameras) |
 | `colorway` | `string` | — | Retail colorway id (see `GALAXY_COLORWAYS` — every device family ships its catalog); presets `color`/`frameColor`, explicit props override |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |
@@ -96,7 +131,7 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | `interactive` | `boolean` | `true` | Let pointer events reach the screen |
 | `dragToRotate` | `boolean` | `true` | Drags starting on the screen spin the device (taps still click) |
 | `occlude` | `boolean \| 'blending'` | `true` | Hide content when the device faces away |
-| `screenStyle` | `CSSProperties` | — | Extra styles for the screen wrapper |
+| `surfaceStyle` | `CSSProperties` | — | Extra styles for the screen wrapper |
 
 ### `<IPhone>` — iPhone 17 family
 
@@ -108,7 +143,7 @@ LiDAR (Pro / Pro Max).
 
 ### `<Laptop>` — MacBook Air 13" / MacBook Pro 14" (M5)-style
 
-Same screen/interaction API (`interactive`, `dragToRotate`, `occlude`, `screenStyle`), plus
+Same screen/interaction API (`interactive`, `dragToRotate`, `occlude`, `surfaceStyle`), plus
 `notch` (camera notch overlay), `openAngle` (lid angle, default `110`), and `resolution`
 defaulting to the variant's scaled desktop (Air 1280×832, Pro 14 1512×982 — desktop breakpoints
 apply). `color` sets the aluminum finish (Sky Blue `#aec6d9`, Starlight `#e8e0d4`,
@@ -161,17 +196,20 @@ camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive p
 cord's circular recess framed by the stand's cable hole and, faithfully, no power
 button.
 
-Renderer-agnostic device specs are exported as `GALAXY_VARIANTS`, `IPHONE_VARIANTS`,
-`TABLET_VARIANTS`, `PHONE`, `IPHONE`, `LAPTOP`, `TABLET`, `WATCH` and `MONITOR` — the
-same data will drive the planned 2D (CSS/SVG) renderers.
+Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `TABLET_VARIANTS`,
+`PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
+available from the `area-mockups/core` subpath — the same data will drive the planned
+2D (CSS/SVG) renderers.
 
 ## Architecture
 
 `area-mockups` is the **React binding** of a framework-agnostic core. All device/object
-specs, geometry math and shared screen/stage behaviors live in
+specs, region registries, stage framing, geometry math and shared screen/stage behaviors
+live in
 [`@area-mockups/core`](https://github.com/subwaymatch/area-mockups/tree/main/packages/core)
-(bundled into this package — nothing extra to install) and are re-exported from
-`area-mockups`. Svelte and Vue bindings sharing the same core are planned; see
+(bundled into this package — nothing extra to install). The main entry re-exports a
+curated slice (variants, colorways, size types); the full core surface is available from
+`area-mockups/core`. Svelte and Vue bindings sharing the same core are planned; see
 [ARCHITECTURE.md](https://github.com/subwaymatch/area-mockups/blob/main/ARCHITECTURE.md).
 
 ## Docs & demos

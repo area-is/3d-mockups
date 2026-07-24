@@ -12,7 +12,7 @@ retail hardware.
 <ObjectDemo demo="phone-basic" checker />
 
 ```tsx
-<PhoneMockup color="#15171d" frameColor="#4d5260" deviceProps={{ rotation: [0, -0.25, 0] }}>
+<PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
   <TapCounter />
 </PhoneMockup>
 ```
@@ -31,6 +31,12 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 | `frameColor` | `string` | `'#4a4f59'` | Metal frame, buttons, and camera rings. |
 | `punchHole` | `boolean` | `true` | Front camera punch hole overlay. |
 | `resolution` | `number` | per variant | CSS pixel width of the virtual display; height follows the panel aspect (360 gives 360×780 on the S26). |
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<PhoneMockup.Screen>` slot when you want per-surface overrides —
+`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
 
 ## Colorways
 
@@ -55,7 +61,7 @@ Every example is live: drag to spin it, and the screens really work.
 <ObjectDemo demo="phone-lock" />
 
 ```tsx
-<PhoneMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" screenBackground="#000">
+<PhoneMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
   <LockScreen />
 </PhoneMockup>
 ```

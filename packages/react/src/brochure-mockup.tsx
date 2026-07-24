@@ -1,89 +1,26 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Brochure, type BrochureProps } from './objects/brochure/brochure'
-import { BROCHURE, brochureSpec } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { BROCHURE_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Brochure, brochureSlots, type BrochureProps } from './objects/brochure/brochure'
 
-type InheritedObjectProps = Pick<
-  BrochureProps,
-  | 'panels'
-  | 'backPanels'
-  | 'size'
-  | 'foldAngle'
-  | 'paperColor'
-  | 'panelBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface BrochureMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** Shorthand for the first (left) panel's content. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<BrochureProps, 'children'>
-}
+export type BrochureMockupProps = MockupProps<BrochureProps>
 
 /**
  * The one-liner: a complete, interactive 3D standing tri-fold brochure mockup
- * with three live panels.
+ * with three live panels per side.
  *
  * ```tsx
- * <BrochureMockup panels={[<Front />, <Middle />, <Back />]} />
+ * <BrochureMockup>
+ *   <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
+ *   <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
+ *   <BrochureMockup.Panel side="back"><Back /></BrochureMockup.Panel>
+ * </BrochureMockup>
  * ```
+ *
+ * Bare children are shorthand for the first (left) front panel.
  */
-export function BrochureMockup({
-  children,
-  panels,
-  backPanels,
-  size,
-  foldAngle,
-  paperColor,
-  panelBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: BrochureMockupProps) {
-  const object = (
-    <Brochure
-      panels={panels}
-      backPanels={backPanels}
-      size={size}
-      foldAngle={foldAngle}
-      paperColor={paperColor}
-      panelBackground={panelBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Brochure>
-  )
-
-  const half = (size ? brochureSpec(size) : BROCHURE).panel.height / 2
-  const shadowY = canvasProps.shadowY ?? (float ? -(half + 0.3) : -(half + 0.02))
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.5, 8.4], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.7}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const BrochureMockup = createMockup({
+  object: Brochure,
+  framing: BROCHURE_FRAMING,
+  slots: brochureSlots,
+  displayName: 'BrochureMockup',
+})

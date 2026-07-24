@@ -1,37 +1,8 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Flip, type FlipProps } from './devices/flip/flip'
-import { FLIP_VARIANTS } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { FLIP_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Flip, flipSlots, type FlipProps } from './devices/flip/flip'
 
-type InheritedDeviceProps = Pick<
-  FlipProps,
-  | 'variant'
-  | 'colorway'
-  | 'open'
-  | 'openAngle'
-  | 'orientation'
-  | 'color'
-  | 'frameColor'
-  | 'screenBackground'
-  | 'resolution'
-  | 'punchHole'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface FlipMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, an <iframe>, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<FlipProps, 'children'>
-}
+export type FlipMockupProps = MockupProps<FlipProps>
 
 /**
  * The one-liner: a complete, interactive 3D Galaxy Z Flip mockup. Open by
@@ -46,67 +17,20 @@ export interface FlipMockupProps
  *   <CoverWidget /> {/* folded: content on the square cover screen *\/}
  * </FlipMockup>
  * ```
+ *
+ * Wrap children in `<FlipMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <FlipMockup openAngle={100}>
+ *   <FlipMockup.Screen background="#000" interactive={false}>
+ *     <YourApp />
+ *   </FlipMockup.Screen>
+ * </FlipMockup>
+ * ```
  */
-export function FlipMockup({
-  children,
-  variant = 'flip7',
-  colorway,
-  open = true,
-  openAngle,
-  orientation = 'portrait',
-  color,
-  frameColor,
-  screenBackground,
-  resolution,
-  punchHole,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: FlipMockupProps) {
-  const device = (
-    <Flip
-      variant={variant}
-      colorway={colorway}
-      open={open}
-      openAngle={openAngle}
-      orientation={orientation}
-      color={color}
-      frameColor={frameColor}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      punchHole={punchHole}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Flip>
-  )
-
-  // Grounded by default: the shadow plane kisses the bottom of the body — the
-  // hinge band when folded, the halves' folded extent at partial angles.
-  const spec = FLIP_VARIANTS[variant]
-  const angle = openAngle === undefined ? (open ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
-  const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
-  const extent =
-    orientation === 'landscape'
-      ? (angle > 3 ? spec.open.body.width : spec.closed.body.width)
-      : angle >= 177
-        ? spec.open.body.height
-        : angle <= 3
-          ? spec.closed.body.height + spec.hinge.overhang * 2
-          : spec.closed.body.height * 2 * foldCos
-  const shadowY = canvasProps.shadowY ?? (float ? -(extent / 2 + 0.3) : -(extent / 2 + 0.05))
-
-  return (
-    <MockupCanvas {...canvasProps} shadowY={shadowY}>
-      {float ? <FloatGroup>{device}</FloatGroup> : device}
-    </MockupCanvas>
-  )
-}
+export const FlipMockup = createMockup({
+  object: Flip,
+  framing: FLIP_FRAMING,
+  slots: flipSlots,
+  displayName: 'FlipMockup',
+})

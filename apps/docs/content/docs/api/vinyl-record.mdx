@@ -12,8 +12,11 @@ spindle hole, and the 100 mm center label as a live **circular** DOM area.
 <ObjectDemo demo="vinyl-basic" checker />
 
 ```tsx
-<VinylRecordMockup label={<Label />} deviceProps={{ rotation: [0, -0.2, 0] }}>
+<VinylRecordMockup rotation={[0, -0.2, 0]}>
   <CoverArt />
+  <VinylRecordMockup.Label>
+    <Label />
+  </VinylRecordMockup.Label>
 </VinylRecordMockup>
 ```
 
@@ -23,17 +26,27 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back cover design. |
-| `label` | `ReactNode` | - | Side-A center label — a live circle, like the round watch face. |
-| `backLabel` | `ReactNode` | - | Side-B center label on the disc's other face. |
 | `vinylColor` | `string` | `'#0b0b0d'` | Disc color. Classic black; try pressing colors. |
 | `color` | `string` | `'#f2efe8'` | Jacket stock (edges and unprinted faces). |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind cover, back and label. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind cover, back and label. |
 | `resolution` | `number` | `520` | Virtual cover width in CSS px; the label shares its dpi. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<VinylRecordMockup.Cover>` | Front cover art (bare children). |
+| `<VinylRecordMockup.Back>` | Back cover — the tracklist side of the jacket. |
+| `<VinylRecordMockup.Label>` | Side-A center label — a live circular DOM area. |
+| `<VinylRecordMockup.BackLabel>` | Side-B center label on the disc's other face. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<VinylRecord>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -43,14 +56,24 @@ what stays 3D hardware.
 
 ### Back cover and side B
 
-`back` prints the tracklist side of the jacket and `backLabel` the disc's
-side-B label, so the record reads right from behind too.
+`<VinylRecordMockup.Back>` prints the tracklist side of the jacket and
+`<VinylRecordMockup.BackLabel>` the disc's side-B label, so the record reads
+right from behind too.
 
 <ObjectDemo demo="vinyl-full" />
 
 ```tsx
-<VinylRecordMockup autoRotate back={<Tracklist />} label={<SideA />} backLabel={<SideB />}>
+<VinylRecordMockup autoRotate>
   <CoverArt />
+  <VinylRecordMockup.Back>
+    <Tracklist />
+  </VinylRecordMockup.Back>
+  <VinylRecordMockup.Label>
+    <SideA />
+  </VinylRecordMockup.Label>
+  <VinylRecordMockup.BackLabel>
+    <SideB />
+  </VinylRecordMockup.BackLabel>
 </VinylRecordMockup>
 ```
 
@@ -59,7 +82,10 @@ side-B label, so the record reads right from behind too.
 <ObjectDemo demo="vinyl-colored" />
 
 ```tsx
-<VinylRecordMockup vinylColor="#7a2337" color="#101725" label={<Label />} float>
+<VinylRecordMockup vinylColor="#7a2337" color="#101725" float>
   <CoverArt />
+  <VinylRecordMockup.Label>
+    <Label />
+  </VinylRecordMockup.Label>
 </VinylRecordMockup>
 ```

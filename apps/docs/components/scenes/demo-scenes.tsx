@@ -110,7 +110,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup color="#15171d" frameColor="#4d5260" deviceProps={{ rotation: [0, -0.25, 0] }}>
+        <PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
           <TapCounter />
         </PhoneMockup>
       </DemoCard>
@@ -129,7 +129,7 @@ export default function DemoScenes() {
           float
           color="#d3d6dd"
           frameColor="#b6bac4"
-          screenBackground="#000"
+          surfaceBackground="#000"
         >
           <LockScreen />
         </PhoneMockup>
@@ -144,7 +144,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup color="#221d31" frameColor="#453a5c" deviceProps={{ rotation: [0, 0.25, 0] }}>
+        <PhoneMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
@@ -162,7 +162,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <LaptopMockup color="#aec6d9" deviceProps={{ rotation: [0, -0.35, 0] }}>
+        <LaptopMockup color="#aec6d9" rotation={[0, -0.35, 0]}>
           <DesktopScreen />
         </LaptopMockup>
       </DemoCard>
@@ -176,7 +176,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <LaptopMockup variant="pro14" color="#4a484b" deviceProps={{ rotation: [0, 0.35, 0] }}>
+        <LaptopMockup variant="pro14" color="#4a484b" rotation={[0, 0.35, 0]}>
           <DesktopScreen />
         </LaptopMockup>
       </DemoCard>
@@ -190,7 +190,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </PhoneMockup>
       </DemoCard>
@@ -205,7 +205,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </PhoneMockup>
       </DemoCard>
@@ -220,7 +220,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FoldMockup color="#c9ccce" frameColor="#b9bcbe" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <FoldMockup color="#c9ccce" frameColor="#b9bcbe" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </FoldMockup>
       </DemoCard>
@@ -234,7 +234,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FlipMockup open={false} color="#e5502e" frameColor="#f06a45" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <FlipMockup open={false} color="#e5502e" frameColor="#f06a45" rotation={[0, -0.3, 0]}>
           <LockScreen />
         </FlipMockup>
       </DemoCard>
@@ -248,7 +248,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FoldMockup open={false} color="#c9ccce" frameColor="#b9bcbe" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <FoldMockup open={false} color="#c9ccce" frameColor="#b9bcbe" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </FoldMockup>
       </DemoCard>
@@ -262,7 +262,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -276,7 +276,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="air" color="#bfd4e6" frameColor="#a9c0d4" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <IPhoneMockup variant="air" color="#bfd4e6" frameColor="#a9c0d4" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -290,7 +290,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -304,7 +304,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -319,7 +319,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -333,7 +333,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadpro11" colorway="silver" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -347,7 +347,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadair13" colorway="starlight" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -361,7 +361,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipad11" colorway="blue" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -375,7 +375,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11" colorway="gray" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -389,7 +389,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11ultra" orientation="landscape" colorway="gray" deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <TabletMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </TabletMockup>
       </DemoCard>
@@ -403,7 +403,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <MonitorMockup deviceProps={{ rotation: [0, -0.25, 0] }}>
+        <MonitorMockup rotation={[0, -0.25, 0]}>
           <DesktopScreen />
         </MonitorMockup>
       </DemoCard>
@@ -418,7 +418,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <WatchMockup float color="#1c1d21" bandColor="#33415c" deviceProps={{ rotation: [0, -0.35, 0] }}>
+        <WatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
           <WatchFace />
         </WatchMockup>
       </DemoCard>
@@ -438,7 +438,7 @@ export default function DemoScenes() {
           float
           color="#33363c"
           bandColor="#23252a"
-          deviceProps={{ rotation: [0, 0.3, 0] }}
+          rotation={[0, 0.3, 0]}
         >
           <GalaxyWatchFace />
         </WatchMockup>
@@ -453,7 +453,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <BookMockup float color="#16324a" deviceProps={{ rotation: [0, 0.35, 0] }}>
+        <BookMockup float color="#16324a" rotation={[0, 0.35, 0]}>
           <BookCoverArt />
         </BookMockup>
       </DemoCard>
@@ -467,7 +467,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <MagazineMockup float deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <MagazineMockup float rotation={[0, -0.3, 0]}>
           <MagazineCoverArt />
         </MagazineMockup>
       </DemoCard>
@@ -477,15 +477,19 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BrochureMockup&gt;</code>: three letter-fold panels standing in a
-            zig-zag, each its own live surface via <code>panels=&#123;[…]&#125;</code>.
+            zig-zag, each its own live surface via a repeated{' '}
+            <code>&lt;BrochureMockup.Panel&gt;</code> slot.
           </>
         }
       >
-        <BrochureMockup
-          panels={[<BrochureFrontArt key="f" />, <BrochureTrailsArt key="t" />, <BrochureVisitArt key="v" />]}
-          backPanels={[<BrochureVisitArt key="f" />, <BrochureFrontArt key="t" />, <BrochureTrailsArt key="v" />]}
-          deviceProps={{ rotation: [0, -0.12, 0] }}
-        />
+        <BrochureMockup rotation={[0, -0.12, 0]}>
+          <BrochureMockup.Panel><BrochureFrontArt /></BrochureMockup.Panel>
+          <BrochureMockup.Panel><BrochureTrailsArt /></BrochureMockup.Panel>
+          <BrochureMockup.Panel><BrochureVisitArt /></BrochureMockup.Panel>
+          <BrochureMockup.Panel side="back"><BrochureVisitArt /></BrochureMockup.Panel>
+          <BrochureMockup.Panel side="back"><BrochureFrontArt /></BrochureMockup.Panel>
+          <BrochureMockup.Panel side="back"><BrochureTrailsArt /></BrochureMockup.Panel>
+        </BrochureMockup>
       </DemoCard>
 
       <DemoCard
@@ -493,12 +497,13 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BusinessCardMockup&gt;</code>: 32 pt stock with rounded die-cut
-            corners. Drag it around — the <code>back</code> prop prints the reverse.
+            corners. Drag it around — the <code>Back</code> slot prints the reverse.
           </>
         }
       >
-        <BusinessCardMockup float back={<CardBackArt />} deviceProps={{ rotation: [-0.1, -0.35, 0] }}>
+        <BusinessCardMockup float rotation={[-0.1, -0.35, 0]}>
           <CardFrontArt />
+          <BusinessCardMockup.Back><CardBackArt /></BusinessCardMockup.Back>
         </BusinessCardMockup>
       </DemoCard>
 
@@ -507,12 +512,13 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;IDCardMockup&gt;</code>: a CR80 badge with a real punched slot, snap
-            hook, and hanging lanyard. The <code>back</code> face is live too.
+            hook, and hanging lanyard. The <code>Back</code> face is live too.
           </>
         }
       >
-        <IDCardMockup float back={<BadgeBackArt />} deviceProps={{ rotation: [0, -0.25, 0.04] }}>
+        <IDCardMockup float rotation={[0, -0.25, 0.04]}>
           <BadgeFrontArt />
+          <IDCardMockup.Back><BadgeBackArt /></IDCardMockup.Back>
         </IDCardMockup>
       </DemoCard>
 
@@ -525,7 +531,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PosterFrameMockup deviceProps={{ rotation: [0, 0.25, 0] }}>
+        <PosterFrameMockup rotation={[0, 0.25, 0]}>
           <PosterArt />
         </PosterFrameMockup>
       </DemoCard>
@@ -539,7 +545,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <BillboardMockup deviceProps={{ rotation: [0, -0.18, 0] }}>
+        <BillboardMockup rotation={[0, -0.18, 0]}>
           <BillboardAdArt />
         </BillboardMockup>
       </DemoCard>
@@ -553,13 +559,11 @@ export default function DemoScenes() {
           </>
         }
       >
-        <BusMockup
-          destinationSign={<DestinationArt />}
-          streetSideAd={<BusAdArt />}
-          rearAd={<BusAdArt />}
-          deviceProps={{ rotation: [0, -0.4, 0] }}
-        >
+        <BusMockup rotation={[0, -0.4, 0]}>
           <BusAdArt />
+          <BusMockup.DestinationSign><DestinationArt /></BusMockup.DestinationSign>
+          <BusMockup.StreetSide><BusAdArt /></BusMockup.StreetSide>
+          <BusMockup.Rear><BusAdArt /></BusMockup.Rear>
         </BusMockup>
       </DemoCard>
 
@@ -572,13 +576,11 @@ export default function DemoScenes() {
           </>
         }
       >
-        <ProductBoxMockup
-          side={<BoxSideArt />}
-          top={<BoxTopArt />}
-          back={<BoxFrontArt />}
-          deviceProps={{ rotation: [0, -0.5, 0] }}
-        >
+        <ProductBoxMockup rotation={[0, -0.5, 0]}>
           <BoxFrontArt />
+          <ProductBoxMockup.Right><BoxSideArt /></ProductBoxMockup.Right>
+          <ProductBoxMockup.Top><BoxTopArt /></ProductBoxMockup.Top>
+          <ProductBoxMockup.Back><BoxFrontArt /></ProductBoxMockup.Back>
         </ProductBoxMockup>
       </DemoCard>
 
@@ -591,7 +593,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <RollupBannerMockup deviceProps={{ rotation: [0, 0.18, 0] }}>
+        <RollupBannerMockup rotation={[0, 0.18, 0]}>
           <BannerArt />
         </RollupBannerMockup>
       </DemoCard>
@@ -605,8 +607,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <VanMockup streetSide={<VanLiveryArt />} rear={<VanRearArt />} deviceProps={{ rotation: [0, -0.5, 0] }}>
+        <VanMockup rotation={[0, -0.5, 0]}>
           <VanLiveryArt />
+          <VanMockup.StreetSide><VanLiveryArt /></VanMockup.StreetSide>
+          <VanMockup.Rear><VanRearArt /></VanMockup.Rear>
         </VanMockup>
       </DemoCard>
 
@@ -619,8 +623,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <BusShelterMockup inner={<PosterArt />} arrivals={<ArrivalsBoardArt />} deviceProps={{ rotation: [0, -0.55, 0] }}>
+        <BusShelterMockup rotation={[0, -0.55, 0]}>
           <PosterArt />
+          <BusShelterMockup.Inner><PosterArt /></BusShelterMockup.Inner>
+          <BusShelterMockup.Arrivals><ArrivalsBoardArt /></BusShelterMockup.Arrivals>
         </BusShelterMockup>
       </DemoCard>
 
@@ -633,14 +639,11 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GreetingCardMockup
-          float
-          insideLeft={<GreetingInsideArt />}
-          insideRight={<GreetingInsideArt />}
-          backCover={<GreetingInsideArt />}
-          deviceProps={{ rotation: [0, -0.82, 0] }}
-        >
+        <GreetingCardMockup float rotation={[0, -0.82, 0]}>
           <GreetingCoverArt />
+          <GreetingCardMockup.InsideLeft><GreetingInsideArt /></GreetingCardMockup.InsideLeft>
+          <GreetingCardMockup.InsideRight><GreetingInsideArt /></GreetingCardMockup.InsideRight>
+          <GreetingCardMockup.Back><GreetingInsideArt /></GreetingCardMockup.Back>
         </GreetingCardMockup>
       </DemoCard>
 
@@ -653,8 +656,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <VinylRecordMockup label={<VinylLabelArt />} back={<VinylCoverArt />} deviceProps={{ rotation: [0, -0.2, 0] }}>
+        <VinylRecordMockup rotation={[0, -0.2, 0]}>
           <VinylCoverArt />
+          <VinylRecordMockup.Label><VinylLabelArt /></VinylRecordMockup.Label>
+          <VinylRecordMockup.Back><VinylCoverArt /></VinylRecordMockup.Back>
         </VinylRecordMockup>
       </DemoCard>
 
@@ -667,7 +672,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TVSetMockup deviceProps={{ rotation: [0, -0.22, 0] }}>
+        <TVSetMockup rotation={[0, -0.22, 0]}>
           <TVShowArt />
         </TVSetMockup>
       </DemoCard>
@@ -681,8 +686,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <AFrameSignMockup back={<ChalkMenuArt />} deviceProps={{ rotation: [0, -0.3, 0] }}>
+        <AFrameSignMockup rotation={[0, -0.3, 0]}>
           <ChalkMenuArt />
+          <AFrameSignMockup.Back><ChalkMenuArt /></AFrameSignMockup.Back>
         </AFrameSignMockup>
       </DemoCard>
 
@@ -695,8 +701,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <DOOHTotemMockup back={<BannerArt />} deviceProps={{ rotation: [0, -0.18, 0] }}>
+        <DOOHTotemMockup rotation={[0, -0.18, 0]}>
           <BannerArt />
+          <DOOHTotemMockup.Back><BannerArt /></DOOHTotemMockup.Back>
         </DOOHTotemMockup>
       </DemoCard>
 
@@ -709,8 +716,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <StorefrontMockup windows={{ frontLeft: <StorePosterArt />, frontRight: <StorePosterArt /> }} deviceProps={{ rotation: [0, -0.25, 0] }}>
+        <StorefrontMockup rotation={[0, -0.25, 0]}>
           <StoreSignArt />
+          <StorefrontMockup.FrontLeft><StorePosterArt /></StorefrontMockup.FrontLeft>
+          <StorefrontMockup.FrontRight><StorePosterArt /></StorefrontMockup.FrontRight>
         </StorefrontMockup>
       </DemoCard>
 
@@ -723,8 +732,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <SemiTrailerMockup streetSide={<TrailerWrapArt />} rear={<TrailerRearArt />} deviceProps={{ rotation: [0, -0.35, 0] }}>
+        <SemiTrailerMockup rotation={[0, -0.35, 0]}>
           <TrailerWrapArt />
+          <SemiTrailerMockup.StreetSide><TrailerWrapArt /></SemiTrailerMockup.StreetSide>
+          <SemiTrailerMockup.Rear><TrailerRearArt /></SemiTrailerMockup.Rear>
         </SemiTrailerMockup>
       </DemoCard>
 
@@ -737,8 +748,10 @@ export default function DemoScenes() {
           </>
         }
       >
-        <MailerBoxMockup front={<BoxPanelArt />} side={<BoxPanelArt />} deviceProps={{ rotation: [0, 0.5, 0] }}>
+        <MailerBoxMockup rotation={[0, 0.5, 0]}>
           <BoxLidArt />
+          <MailerBoxMockup.Front><BoxPanelArt /></MailerBoxMockup.Front>
+          <MailerBoxMockup.Right><BoxPanelArt /></MailerBoxMockup.Right>
         </MailerBoxMockup>
       </DemoCard>
 
@@ -751,8 +764,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <ShoppingBagMockup back={<BagArt />} deviceProps={{ rotation: [0, 0.35, 0] }}>
+        <ShoppingBagMockup rotation={[0, 0.35, 0]}>
           <BagArt />
+          <ShoppingBagMockup.Back><BagArt /></ShoppingBagMockup.Back>
         </ShoppingBagMockup>
       </DemoCard>
 
@@ -766,8 +780,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} back={<PosterArt />} deviceProps={{ rotation: [0, 0.25, 0] }}>
+        <CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} rotation={[0, 0.25, 0]}>
           <PosterArt />
+          <CustomPanelMockup.Back><PosterArt /></CustomPanelMockup.Back>
         </CustomPanelMockup>
       </DemoCard>
 
@@ -780,15 +795,12 @@ export default function DemoScenes() {
           </>
         }
       >
-        <CustomBoxMockup
-          size={{ width: 240, height: 320, depth: 80 }}
-          back={<BoxFrontArt />}
-          left={<BoxSideArt />}
-          right={<BoxSideArt />}
-          top={<BoxTopArt />}
-          deviceProps={{ rotation: [0, -0.45, 0] }}
-        >
+        <CustomBoxMockup size={{ width: 240, height: 320, depth: 80 }} rotation={[0, -0.45, 0]}>
           <BoxFrontArt />
+          <CustomBoxMockup.Back><BoxFrontArt /></CustomBoxMockup.Back>
+          <CustomBoxMockup.Left><BoxSideArt /></CustomBoxMockup.Left>
+          <CustomBoxMockup.Right><BoxSideArt /></CustomBoxMockup.Right>
+          <CustomBoxMockup.Top><BoxTopArt /></CustomBoxMockup.Top>
         </CustomBoxMockup>
       </DemoCard>
 
@@ -801,7 +813,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <BookMockup zoom float color="#4a2c3f" deviceProps={{ rotation: [0, 0.35, 0] }}>
+        <BookMockup zoom float color="#4a2c3f" rotation={[0, 0.35, 0]}>
           <BookCoverArt />
         </BookMockup>
       </DemoCard>
@@ -816,7 +828,7 @@ export default function DemoScenes() {
         }
       >
         <div className="alpha-checker">
-          <PhoneMockup float color="#15171d" frameColor="#4d5260" deviceProps={{ rotation: [0, 0.3, 0] }}>
+          <PhoneMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
             <div className="aurora-screen">
               <p>alpha</p>
             </div>

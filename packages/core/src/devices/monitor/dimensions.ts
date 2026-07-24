@@ -25,6 +25,9 @@
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
+
+import type { MockupFraming } from '../../regions'
+
 export const MONITOR = {
   /** Aluminum enclosure (glass face). `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: 5.417, height: 3.128, depth: 0.17, radius: 0.09, bevel: 0.022 },
@@ -83,6 +86,21 @@ export const MONITOR = {
     cutout: { width: 0.365, length: 0.539, edgeOffset: 0.239 },
   },
 } as const
+
+/**
+ * Vertical stage lift every binding renders the monitor with: the enclosure
+ * sits this far above the group origin, so the panel + stand ensemble reads
+ * visually centered on the stage origin the framing's camera and shadow are
+ * tuned for.
+ */
+export const MONITOR_STAGE_OFFSET_Y = 0.95
+
+/** The stand base defines the desk plane; the shadow grounds just under it. */
+export const MONITOR_FRAMING = {
+  camera: { position: [0, 0.3, 11.2], fov: 40 },
+  floatIntensity: 0.5,
+  extent: () => MONITOR.standHeight - MONITOR_STAGE_OFFSET_Y,
+} as const satisfies MockupFraming
 
 /** Display aspect ratio (height / width) — the 16:9 5K panel. */
 export const MONITOR_DISPLAY_ASPECT = MONITOR.display.height / MONITOR.display.width

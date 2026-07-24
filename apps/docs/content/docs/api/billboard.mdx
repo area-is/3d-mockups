@@ -13,7 +13,7 @@ mockup grounds the pole on a virtual ground plane.
 <ObjectDemo demo="billboard-basic" checker />
 
 ```tsx
-<BillboardMockup deviceProps={{ rotation: [0, -0.18, 0] }}>
+<BillboardMockup rotation={[0, -0.18, 0]}>
   <YourCreative />
 </BillboardMockup>
 ```
@@ -25,15 +25,21 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `color` | `string` | `'#2c313a'` | Steel color: panel, apron, pole, catwalk, and fixtures. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind your face content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your face content. |
 | `resolution` | `number` | `1200` | Virtual face width in CSS px; height follows the 14:48 bulletin. |
 
 The face is very wide (3.4:1) — design the creative like an actual bulletin:
 one message, big type.
 
+## Regions
+
+The face is the only region — bare children fill it. Wrap the creative in
+`<BillboardMockup.Face>` (or `<Billboard.Face>`) only to set per-surface
+overrides: `background`, `resolution`, `interactive`, `dragToRotate`, `style`.
+
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

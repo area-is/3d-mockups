@@ -1,7 +1,14 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { GALAXY_COLORWAYS, GALAXY_VARIANTS, findColorway, type GalaxyVariant } from '@area-mockups/core'
+import {
+  GALAXY_COLORWAYS,
+  GALAXY_VARIANTS,
+  GALAXY_DEFAULT_VARIANT,
+  findColorway,
+  SCREEN_REGIONS,
+  type GalaxyVariant,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import {
@@ -18,9 +25,13 @@ import {
 type GroupProps = ThreeElements['group']
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
-export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the phone screen: React components, an <iframe>, a <video>… */
+export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the phone screen: React components, an <iframe>, a
+   * <video>… Wrap in `<Phone.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /**
    * Which Galaxy device to render. All variants use their true relative sizes:
@@ -43,8 +54,6 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution —
@@ -54,15 +63,6 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'> {
   resolution?: number
   /** Show the front camera punch-hole overlay. */
   punchHole?: boolean
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the phone body (fast, interactive). `'blending'`
@@ -70,8 +70,6 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'> {
    * paints over the DOM, so content is not clickable). `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -83,22 +81,23 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'> {
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Phone({
+function PhoneImpl({
   children,
-  variant = 's26',
+  variant = GALAXY_DEFAULT_VARIANT,
   colorway,
   orientation = 'portrait',
   color: colorProp,
   frameColor: frameColorProp,
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution,
   punchHole = true,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: PhoneProps) {
+  const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = GALAXY_VARIANTS[variant]
   const retail = findColorway(GALAXY_COLORWAYS[variant], colorway)
   const color = colorProp ?? retail?.color ?? '#101216'
@@ -416,14 +415,16 @@ export function Phone({
           width={landscape ? display.height : display.width}
           height={landscape ? display.width : display.height}
           radius={display.radius}
-          resolution={res}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          background={screenBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
           occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
+          {...resolveSurface(screen, {
+            background: surfaceBackground,
+            resolution: res,
+            interactive,
+            dragToRotate,
+            style: surfaceStyle,
+          })}
           overlay={
             punchHole ? (
               <div
@@ -447,9 +448,15 @@ export function Phone({
             ) : undefined
           }
         >
-          {children}
+          {screen?.children}
         </DeviceScreen>
       </group>
     </group>
   )
 }
+PhoneImpl.displayName = 'Phone'
+
+/** The device's compound slots, shared by `<Phone>` and `<PhoneMockup>`. */
+export const phoneSlots = createSlots(SCREEN_REGIONS)
+
+export const Phone = Object.assign(PhoneImpl, phoneSlots)

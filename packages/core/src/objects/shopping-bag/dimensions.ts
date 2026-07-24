@@ -12,11 +12,13 @@
  * bottom, so the footprint is a clean rectangle that the floor panel fills
  * edge to edge, with the envelope fold visible on the underside.
  *
- * Live faces: front (`children`) and back — full bleed, edge to edge.
+ * Live faces: front (bare children) and back — full bleed, edge to edge.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
+
+import type { MockupFraming, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the shopping bag. */
 export const SHOPPING_BAG_MM = 1 / 95
@@ -85,3 +87,16 @@ export function shoppingBagLayout(size: ShoppingBagSizeMm = SHOPPING_BAG_SIZE_MM
     },
   }
 }
+
+/** Live regions: the two printed faces of the bag. */
+export const SHOPPING_BAG_REGIONS = [
+  { name: 'front', label: 'Front face' },
+  { name: 'back', label: 'Back face' },
+] as const satisfies readonly RegionSpec[]
+
+/** The bag stands on the floor at half its (normalized) height. */
+export const SHOPPING_BAG_FRAMING = {
+  camera: { position: [0, 0.5, 8.6], fov: 40 },
+  floatIntensity: 0.5,
+  extent: ({ size }) => shoppingBagLayout(size).body.height / 2,
+} as const satisfies MockupFraming<{ size?: ShoppingBagSizeMm }>

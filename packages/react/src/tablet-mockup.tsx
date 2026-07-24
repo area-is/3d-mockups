@@ -1,33 +1,35 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Tablet, type TabletProps } from './devices/tablet/tablet'
-import { TABLET_VARIANTS } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { TABLET_FRAMING, TABLET_ULTRA_CAMERA } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Tablet, tabletSlots, type TabletProps } from './devices/tablet/tablet'
 
-type InheritedDeviceProps = Pick<
-  TabletProps,
-  | 'variant'
-  | 'colorway'
-  | 'orientation'
-  | 'color'
-  | 'screenBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
+export type TabletMockupProps = MockupProps<TabletProps>
 
-export interface TabletMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, an <iframe>, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<TabletProps, 'children'>
+const TabletMockupBase = createMockup({
+  object: Tablet,
+  framing: TABLET_FRAMING,
+  slots: tabletSlots,
+  displayName: 'TabletMockup',
+})
+
+function TabletMockupImpl({ camera, ...props }: TabletMockupProps) {
+  // The framing's camera is the iPad-class pose; the 14.6" Tab Ultra needs a
+  // bit more room, which a static framing can't express per variant.
+  return (
+    <TabletMockupBase
+      {...props}
+      camera={
+        camera ??
+        (props.variant === 'tabs11ultra'
+          ? {
+              position: [...TABLET_ULTRA_CAMERA.position] as [number, number, number],
+              fov: TABLET_ULTRA_CAMERA.fov,
+            }
+          : undefined)
+      }
+    />
+  )
 }
+TabletMockupImpl.displayName = 'TabletMockup'
 
 /**
  * The one-liner: a complete, interactive 3D iPad Pro-style tablet mockup.
@@ -37,55 +39,15 @@ export interface TabletMockupProps
  *   <YourApp />
  * </TabletMockup>
  * ```
+ *
+ * Wrap children in `<TabletMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <TabletMockup variant="tabs11ultra" rotation={[0, 0.25, 0]}>
+ *   <TabletMockup.Screen background="#000" resolution={1480}>
+ *     <Dashboard />
+ *   </TabletMockup.Screen>
+ * </TabletMockup>
+ * ```
  */
-export function TabletMockup({
-  children,
-  variant = 'ipadpro13',
-  colorway,
-  orientation = 'portrait',
-  color,
-  screenBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: TabletMockupProps) {
-  const device = (
-    <Tablet
-      variant={variant}
-      colorway={colorway}
-      orientation={orientation}
-      color={color}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Tablet>
-  )
-
-  // Grounded by default; the wider landscape pose gets a further camera below.
-  const body = TABLET_VARIANTS[variant].body
-  const extent = orientation === 'landscape' ? body.width : body.height
-  const shadowY = canvasProps.shadowY ?? (float ? -(extent / 2 + 0.3) : -(extent / 2 + 0.05))
-  // The 14.6" Ultra needs a bit more room than the iPads.
-  const distance = variant === 'tabs11ultra' ? 9.6 : 8.6
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.5, distance], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.8}>{device}</FloatGroup> : device}
-    </MockupCanvas>
-  )
-}
+export const TabletMockup = Object.assign(TabletMockupImpl, tabletSlots)

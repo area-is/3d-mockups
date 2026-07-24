@@ -15,6 +15,9 @@
  */
 
 /** World units per millimeter for the iPhone family. */
+import type { Orientation } from '../../orientation'
+import type { MockupFraming } from '../../regions'
+
 export const IPHONE_MM = 1 / 37.15
 
 /** A side key. `flush: true` renders it seated in the rail (Camera Control). */
@@ -296,6 +299,18 @@ export const IPHONE_VARIANTS: Record<'17' | 'air' | 'pro' | 'promax', IPhoneSpec
 }
 
 export type IPhoneVariant = keyof typeof IPHONE_VARIANTS
+
+/** The variant every binding defaults to. */
+export const IPHONE_DEFAULT_VARIANT: IPhoneVariant = '17'
+
+/** Grounded on the bottom edge of the body (its side edge in landscape). */
+export const IPHONE_FRAMING = {
+  contactGap: 0.05,
+  extent: ({ variant, orientation }) => {
+    const body = IPHONE_VARIANTS[variant ?? IPHONE_DEFAULT_VARIANT].body
+    return (orientation === 'landscape' ? body.width : body.height) / 2
+  },
+} as const satisfies MockupFraming<{ variant?: IPhoneVariant; orientation?: Orientation }>
 
 /** Back-compat: dimensions of the default device (iPhone 17). */
 export const IPHONE = IPHONE_17

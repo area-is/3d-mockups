@@ -1,30 +1,8 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Monitor, type MonitorProps } from './devices/monitor/monitor'
-import { MONITOR } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { MONITOR_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Monitor, monitorSlots, type MonitorProps } from './devices/monitor/monitor'
 
-type InheritedDeviceProps = Pick<
-  MonitorProps,
-  'colorway' | 'color' | 'screenBackground' | 'resolution' | 'interactive' | 'dragToRotate' | 'occlude' | 'screenStyle'
->
-
-export interface MonitorMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, an <iframe>, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<MonitorProps, 'children'>
-}
-
-/**
- * Vertical offset that keeps the monitor (panel + stand) visually centered on
- * the stage origin the camera and shadow are tuned for.
- */
-const STAGE_OFFSET_Y = 0.95
+export type MonitorMockupProps = MockupProps<MonitorProps>
 
 /**
  * The one-liner: a complete, interactive 3D Studio Display-style monitor mockup.
@@ -34,50 +12,20 @@ const STAGE_OFFSET_Y = 0.95
  *   <YourApp />
  * </MonitorMockup>
  * ```
+ *
+ * Wrap children in `<MonitorMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <MonitorMockup autoRotate>
+ *   <MonitorMockup.Screen background="#0b0d12" resolution={1920}>
+ *     <Dashboard />
+ *   </MonitorMockup.Screen>
+ * </MonitorMockup>
+ * ```
  */
-export function MonitorMockup({
-  children,
-  colorway,
-  color,
-  screenBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: MonitorMockupProps) {
-  const device = (
-    <Monitor
-      colorway={colorway}
-      color={color}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Monitor>
-  )
-
-  // The stand base defines the desk plane; ground the shadow just under it.
-  const deskY = STAGE_OFFSET_Y - MONITOR.standHeight
-  const shadowY = canvasProps.shadowY ?? (float ? deskY - 0.25 : deskY - 0.02)
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.3, 11.2], fov: 40 }}
-      shadowY={shadowY}
-    >
-      <group position={[0, STAGE_OFFSET_Y, 0]}>
-        {float ? <FloatGroup intensity={0.5}>{device}</FloatGroup> : device}
-      </group>
-    </MockupCanvas>
-  )
-}
+export const MonitorMockup = createMockup({
+  object: Monitor,
+  framing: MONITOR_FRAMING,
+  slots: monitorSlots,
+  displayName: 'MonitorMockup',
+})

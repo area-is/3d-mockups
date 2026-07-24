@@ -17,7 +17,7 @@ Real editorial CSS lays out exactly as it would in a browser at 480×620.
 <ObjectDemo demo="magazine-basic" checker />
 
 ```tsx
-<MagazineMockup deviceProps={{ rotation: [0, -0.3, 0] }}>
+<MagazineMockup rotation={[0, -0.3, 0]}>
   <YourCoverArt />
 </MagazineMockup>
 ```
@@ -28,18 +28,28 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back cover design — full bleed, same stock finish. |
-| `spine` | `ReactNode` | - | Spine print — the bound-edge strip. Content is rotated to read top-to-bottom like a real shelf spine (your DOM's left edge lands at the spine's top), and renders at 3× the cover dpi so small type stays crisp. |
 | `size` | `{ width?, height?, thickness? }` | `216×279×6` | Physical trim in mm — e.g. `{ width: 210, height: 297 }` for A4, `{ thickness: 12 }` for a thick issue. |
 | `pageColor` | `string` | `'#fbfaf7'` | Paper color of the trimmed page edges. |
 | `backColor` | `string` | `'#e9e7e2'` | Back cover and spine-wrap color. |
 | `glossy` | `boolean` | `false` | Coated gloss stock: a soft diagonal sheen over the cover art and a clearcoat on the spine and back. Off = matte paper. |
-| `coverBackground` | `string` | `'#ffffff'` | CSS background behind your cover content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your cover content. |
 | `resolution` | `number` | `480` | Virtual cover width in CSS px; height follows the trim aspect. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<MagazineMockup.Cover>` | Front cover (bare children). |
+| `<MagazineMockup.Back>` | Back cover — full bleed, same stock finish. |
+| `<MagazineMockup.Spine>` | Spine strip — content is rotated to read top-to-bottom like a real shelf spine (your DOM's left edge lands at the spine's top), and renders at 3× the cover dpi so small type stays crisp. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<Magazine>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -49,26 +59,36 @@ what stays 3D hardware.
 
 ### The back-cover ad
 
-Magazines sell their back page — `back` prints it, full bleed.
+Magazines sell their back page — `<MagazineMockup.Back>` prints it, full
+bleed.
 
 <ObjectDemo demo="magazine-back" />
 
 ```tsx
-<MagazineMockup autoRotate back={<BackCoverAd />}>
+<MagazineMockup autoRotate>
   <YourCoverArt />
+  <MagazineMockup.Back>
+    <BackCoverAd />
+  </MagazineMockup.Back>
 </MagazineMockup>
 ```
 
 ### The spine
 
-Title and issue number on the bound edge — `spine` prints the strip,
-reading top-to-bottom like a real shelf spine.
+Title and issue number on the bound edge — `<MagazineMockup.Spine>` prints
+the strip, reading top-to-bottom like a real shelf spine.
 
 <ObjectDemo demo="magazine-spine" />
 
 ```tsx
-<MagazineMockup spine={<YourSpineStrip />} back={<BackCoverAd />} deviceProps={{ rotation: [0, 0.95, 0] }}>
+<MagazineMockup rotation={[0, 0.95, 0]}>
   <YourCoverArt />
+  <MagazineMockup.Spine>
+    <YourSpineStrip />
+  </MagazineMockup.Spine>
+  <MagazineMockup.Back>
+    <BackCoverAd />
+  </MagazineMockup.Back>
 </MagazineMockup>
 ```
 

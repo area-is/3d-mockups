@@ -1,94 +1,25 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Magazine, type MagazineProps } from './objects/magazine/magazine'
-import { MAGAZINE, magazineSpec } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { MAGAZINE_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Magazine, magazineSlots, type MagazineProps } from './objects/magazine/magazine'
 
-type InheritedObjectProps = Pick<
-  MagazineProps,
-  | 'back'
-  | 'spine'
-  | 'size'
-  | 'pageColor'
-  | 'backColor'
-  | 'glossy'
-  | 'coverBackground'
-  | 'resolution'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface MagazineMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedObjectProps {
-  /** Cover art — any React node. */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the object group (position, rotation, scale…). */
-  deviceProps?: Omit<MagazineProps, 'children'>
-}
+export type MagazineMockupProps = MockupProps<MagazineProps>
 
 /**
  * The one-liner: a complete, interactive 3D glossy magazine mockup with a
- * live full-bleed cover.
+ * live full-bleed cover, back cover and spine.
  *
  * ```tsx
  * <MagazineMockup float>
- *   <YourCoverArt />
+ *   <MagazineMockup.Cover><CoverArt /></MagazineMockup.Cover>
+ *   <MagazineMockup.Back><BackAd /></MagazineMockup.Back>
  * </MagazineMockup>
  * ```
+ *
+ * Bare children are shorthand for the front cover.
  */
-export function MagazineMockup({
-  children,
-  back,
-  spine,
-  size,
-  pageColor,
-  backColor,
-  glossy,
-  coverBackground,
-  resolution,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: MagazineMockupProps) {
-  const object = (
-    <Magazine
-      back={back}
-      spine={spine}
-      size={size}
-      pageColor={pageColor}
-      backColor={backColor}
-      glossy={glossy}
-      coverBackground={coverBackground}
-      resolution={resolution}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Magazine>
-  )
-
-  const half = (size ? magazineSpec(size) : MAGAZINE).body.height / 2
-  const shadowY = canvasProps.shadowY ?? (float ? -(half + 0.3) : -(half + 0.05))
-
-  return (
-    <MockupCanvas
-      {...canvasProps}
-      camera={canvasProps.camera ?? { position: [0, 0.5, 8.2], fov: 40 }}
-      shadowY={shadowY}
-    >
-      {float ? <FloatGroup intensity={0.8}>{object}</FloatGroup> : object}
-    </MockupCanvas>
-  )
-}
+export const MagazineMockup = createMockup({
+  object: Magazine,
+  framing: MAGAZINE_FRAMING,
+  slots: magazineSlots,
+  displayName: 'MagazineMockup',
+})

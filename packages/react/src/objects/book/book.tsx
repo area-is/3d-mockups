@@ -2,20 +2,21 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BOOK, bookSpec, type BookSize } from '@area-mockups/core'
+import { BOOK, BOOK_REGIONS, bookSpec, type BookSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BookProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Cover art — any React node. It fills the whole front board, full bleed. */
+export interface BookProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Cover art — full bleed on the front board. Bare children fill the front
+   * cover; name faces explicitly with `<Book.Cover>`, `<Book.Back>` and
+   * `<Book.Spine>`.
+   */
   children?: React.ReactNode
-  /** Back cover design — fills the whole back board, full bleed. */
-  back?: React.ReactNode
-  /** Spine design — a tall strip on the crown of the cloth backbone. */
-  spine?: React.ReactNode
   /**
    * Physical trim size in millimeters, e.g. `{ width: 216, height: 279 }`
    * for a letter-size art book or `{ thickness: 45 }` for a fat novel.
@@ -26,22 +27,12 @@ export interface BookProps extends Omit<GroupProps, 'children' | 'color'> {
   color?: string
   /** Paper color of the page block edges. */
   pageColor?: string
-  /** CSS background painted behind your cover content. */
-  coverBackground?: string
-  /** CSS pixel width of the virtual cover. Height follows the board aspect. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your cover content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How cover content hides when the book faces away from the camera.
    * `true` raycasts against the boards (fast, interactive). `'blending'` uses
    * per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the cover wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -51,22 +42,28 @@ export interface BookProps extends Omit<GroupProps, 'children' | 'color'> {
  * front cover, back cover, and spine strip. No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <Book color="#1f3a5f">
+ *   <Book.Cover><CoverArt /></Book.Cover>
+ *   <Book.Spine><SpineTitle /></Book.Spine>
+ * </Book>
+ * ```
  */
-export function Book({
+function BookImpl({
   children,
-  back,
-  spine: spineContent,
   size,
   color = '#1f3a5f',
   pageColor = '#f4eede',
-  coverBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = BOOK.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: BookProps) {
+  const regions = collectSlots(children, BOOK_REGIONS)
   const spec = React.useMemo(
     () => (size ? bookSpec(size) : BOOK),
     [size?.width, size?.height, size?.thickness]
@@ -76,13 +73,15 @@ export function Book({
   const backRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(frontRef, backRef)
 
-  const screenProps = {
+  const surfaceDefaults = {
+    background: surfaceBackground,
     resolution,
-    background: coverBackground,
     interactive,
     dragToRotate,
+    style: surfaceStyle,
+  }
+  const screenProps = {
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
   // spine strip: rides the crown of the convex backbone, narrowed so its
   // flat DOM plane stays tight against the curved shell
@@ -169,42 +168,54 @@ export function Book({
       {/* the live cover: real DOM, CSS3D-transformed onto the front board */}
       <DeviceScreen
         {...screenProps}
+        {...resolveSurface(regions.cover, surfaceDefaults)}
         width={cover.width}
         height={cover.height}
         radius={cover.radius}
         position={[0, 0, thickness / 2 + 0.004]}
       >
-        {children}
+        {regions.cover?.children}
       </DeviceScreen>
 
       {/* live back cover */}
-      {back != null && (
+      {regions.back != null && (
         <DeviceScreen
           {...screenProps}
+          {...resolveSurface(regions.back, surfaceDefaults)}
           width={cover.width}
           height={cover.height}
           radius={cover.radius}
           position={[0, 0, -thickness / 2 - 0.004]}
           rotation={[0, Math.PI, 0]}
         >
-          {back}
+          {regions.back.children}
         </DeviceScreen>
       )}
 
       {/* live spine strip on the backbone crown */}
-      {spineContent != null && (
+      {regions.spine != null && (
         <DeviceScreen
           {...screenProps}
+          {...resolveSurface(regions.spine, {
+            ...surfaceDefaults,
+            // the spine shares the cover's dpi unless its slot overrides
+            resolution: Math.max(48, Math.round((resolution / cover.width) * spineWidth)),
+          })}
           width={spineWidth}
           height={board.height - 0.03}
           radius={0.01}
-          resolution={Math.max(48, Math.round((resolution / cover.width) * spineWidth))}
           position={[spineX, 0, 0]}
           rotation={[0, -Math.PI / 2, 0]}
         >
-          {spineContent}
+          {regions.spine.children}
         </DeviceScreen>
       )}
     </group>
   )
 }
+BookImpl.displayName = 'Book'
+
+/** The book's compound slots, shared by `<Book>` and `<BookMockup>`. */
+export const bookSlots = createSlots(BOOK_REGIONS)
+
+export const Book = Object.assign(BookImpl, bookSlots)

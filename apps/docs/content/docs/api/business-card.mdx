@@ -11,7 +11,7 @@ on the front — and, optionally, the back.
 <ObjectDemo demo="card-basic" checker />
 
 ```tsx
-<BusinessCardMockup float deviceProps={{ rotation: [-0.1, -0.35, 0] }}>
+<BusinessCardMockup float rotation={[-0.1, -0.35, 0]}>
   <CardFront />
 </BusinessCardMockup>
 ```
@@ -22,15 +22,25 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `back` | `ReactNode` | - | Back face design. Plain stock when omitted. |
 | `color` | `string` | `'#f7f6f2'` | Stock color: the faces' base and unprinted back. |
 | `edgeColor` | `string` | stock color | Painted-edge color — the bright seam that says "32 pt". |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
 | `resolution` | `number` | `520` | Virtual face width in CSS px (~150 dpi); height follows the card aspect. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<BusinessCardMockup.Front>` | Front face (bare children). |
+| `<BusinessCardMockup.Back>` | Back face — plain stock when omitted. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<BusinessCard>`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -40,13 +50,16 @@ what stays 3D hardware.
 
 ### Front and back
 
-Pass `back` and let it orbit — both faces are live DOM.
+Add a `<BusinessCardMockup.Back>` and let it orbit — both faces are live DOM.
 
 <ObjectDemo demo="card-back" />
 
 ```tsx
-<BusinessCardMockup autoRotate autoRotateSpeed={2} back={<CardBack />}>
+<BusinessCardMockup autoRotate autoRotateSpeed={2}>
   <CardFront />
+  <BusinessCardMockup.Back>
+    <CardBack />
+  </BusinessCardMockup.Back>
 </BusinessCardMockup>
 ```
 

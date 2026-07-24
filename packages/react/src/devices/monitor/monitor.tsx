@@ -2,16 +2,20 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MONITOR, MONITOR_COLORWAYS, findColorway } from '@area-mockups/core'
+import { MONITOR, MONITOR_COLORWAYS, MONITOR_STAGE_OFFSET_Y, SCREEN_REGIONS, findColorway } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { createLogoGeometry } from '../logos'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the monitor: React components, an <iframe>, a <video>… */
+export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the monitor: React components, an <iframe>, a
+   * <video>… Wrap in `<Monitor.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /**
    * A retail colorway id from `MONITOR_COLORWAYS` presetting the enclosure
@@ -20,8 +24,6 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'> {
   colorway?: string
   /** Aluminum colorway (enclosure + stand). */
   color?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 16:9 panel.
    * The default 2560 gives a 2560×1440 screen — exactly the Studio Display's
@@ -29,23 +31,12 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'> {
    * behave like on the real display.
    */
   resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the enclosure (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -61,22 +52,25 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'> {
  * Thunderbolt/USB-C port row and the captive power cord's circular recess on
  * the back — and, faithfully, no power button. No 3D asset files are loaded.
  *
- * The group origin is the panel center; the stand reaches `MONITOR.standHeight`
- * below it. Must be rendered inside a react-three-fiber `<Canvas>` (or
- * `<MockupCanvas>`).
+ * The monitor renders lifted `MONITOR_STAGE_OFFSET_Y` above the group origin,
+ * so the panel + stand ensemble is visually centered on it (the stage pose the
+ * framing's camera and shadow expect); the desk plane sits
+ * `MONITOR.standHeight` below the lifted panel center. Must be rendered inside
+ * a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Monitor({
+function MonitorImpl({
   children,
   colorway,
   color: colorProp,
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution = MONITOR.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: MonitorProps) {
+  const screen = collectSlots(children, SCREEN_REGIONS).screen
   const retail = findColorway(MONITOR_COLORWAYS, colorway)
   const color = colorProp ?? retail?.color ?? '#c8cbd0'
   const { body, glass, display, stand, standHeight } = MONITOR
@@ -268,6 +262,8 @@ export function Monitor({
   }, [bodyGeometry, glassGeometry, standParts, logoGeometry, grilleTexture])
 
   return (
+    /* the stage lift centering the panel + stand ensemble on the group origin */
+    <group position-y={MONITOR_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure */}
       <mesh ref={bodyRef} geometry={bodyGeometry}>
@@ -393,16 +389,25 @@ export function Monitor({
         width={display.width}
         height={display.height}
         radius={display.radius}
-        resolution={resolution}
         position={[0, 0, body.depth / 2 + 0.006]}
-        background={screenBackground}
-        interactive={interactive}
-        dragToRotate={dragToRotate}
         occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-        screenStyle={screenStyle}
+        {...resolveSurface(screen, {
+          background: surfaceBackground,
+          resolution,
+          interactive,
+          dragToRotate,
+          style: surfaceStyle,
+        })}
       >
-        {children}
+        {screen?.children}
       </DeviceScreen>
+    </group>
     </group>
   )
 }
+MonitorImpl.displayName = 'Monitor'
+
+/** The device's compound slots, shared by `<Monitor>` and `<MonitorMockup>`. */
+export const monitorSlots = createSlots(SCREEN_REGIONS)
+
+export const Monitor = Object.assign(MonitorImpl, monitorSlots)

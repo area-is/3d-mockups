@@ -8,12 +8,17 @@ zig-zag (Z-fold) accordion. Each of the three 93×216 mm panels is its own
 live 360×835 DOM surface — and the reverse faces can be printed too. Panels
 shade gently toward the folds, like paper actually bowing.
 
-Pass an array — left to right. Each panel is independent live DOM.
+Repeat the `Panel` slot — panels fill left to right in document order. Each
+panel is independent live DOM.
 
 <ObjectDemo demo="brochure-panels" checker />
 
 ```tsx
-<BrochureMockup panels={[<Front />, <Middle />, <Back />]} />
+<BrochureMockup>
+  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Back /></BrochureMockup.Panel>
+</BrochureMockup>
 ```
 
 ## Props
@@ -22,20 +27,33 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `panels` | `[ReactNode?, ReactNode?, ReactNode?]` | - | Content per panel, left to right. Wins over `children` where provided. |
-| `backPanels` | `[ReactNode?, ReactNode?, ReactNode?]` | - | Reverse-side content, left to right as seen from the back — all six faces of the sheet are live surfaces. |
 | `size` | `{ width?, height? }` | `93×216` | One panel's physical size in mm — e.g. `{ width: 99, height: 210 }` for an A4 tri-fold. |
 | `foldAngle` | `number` | `24` | Zig-zag fold angle in degrees. `0` lays the sheet out flat. |
-| `paperColor` | `string` | `'#f5f4f0'` | Stock color of unprinted faces and paper edges. |
-| `panelBackground` | `string` | `'#ffffff'` | CSS background behind each panel's content. |
+| `color` | `string` | `'#f5f4f0'` | Stock color of unprinted faces and paper edges. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each panel's content. |
 | `resolution` | `number` | `360` | Virtual width of one panel in CSS px; height follows the panel aspect. |
 
 The fold keeps every panel centered on the group origin, so the brochure
 orbits about its own visual center at any `foldAngle`.
 
+## Regions
+
+The brochure has one repeating region:
+
+| Slot | Surface |
+| --- | --- |
+| `<BrochureMockup.Panel>` | One panel, left to right in document order — up to three per side. Bare children are shorthand for the first (left) front panel. |
+
+Add `side="back"` to a `Panel` slot to print a reverse face; back panels also
+fill left to right in document order, as seen from BEHIND — matching how a
+real tri-fold is imposed. Panels left out show bare `color` stock. Every slot
+takes per-surface overrides — `background`, `resolution`, `interactive`,
+`dragToRotate`, `style` — over the mockup-level defaults. The same slot
+exists on the bare `<Brochure>`.
+
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -46,17 +64,20 @@ what stays 3D hardware.
 ### All six surfaces printed
 
 A real tri-fold prints on both sides of the sheet, and every face here is a
-live surface: three via `panels`, three via `backPanels` (indexed left to
+live surface: three front panels, three with `side="back"` (reading left to
 right as seen from the back). Spin the demo to read both sides.
 
 <ObjectDemo demo="brochure-both-sides" />
 
 ```tsx
-<BrochureMockup
-  panels={[<Front />, <Trails />, <Visit />]}
-  backPanels={[<Map />, <Hours />, <Contact />]}
-  autoRotate
-/>
+<BrochureMockup autoRotate>
+  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Trails /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Visit /></BrochureMockup.Panel>
+  <BrochureMockup.Panel side="back"><Map /></BrochureMockup.Panel>
+  <BrochureMockup.Panel side="back"><Hours /></BrochureMockup.Panel>
+  <BrochureMockup.Panel side="back"><Contact /></BrochureMockup.Panel>
+</BrochureMockup>
 ```
 
 ### Flat, before folding
@@ -67,18 +88,22 @@ the full 11" spread it prints as.
 <ObjectDemo demo="brochure-flat" />
 
 ```tsx
-<BrochureMockup foldAngle={0} panels={[<Front />, <Middle />, <Back />]} />
+<BrochureMockup foldAngle={0}>
+  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
+  <BrochureMockup.Panel><Back /></BrochureMockup.Panel>
+</BrochureMockup>
 ```
 
 ### One designed panel on bare stock
 
-`children` is shorthand for the first panel; the rest show `paperColor`
+`children` is shorthand for the first panel; the rest show bare `color`
 stock — a work-in-progress state that reads clearly in reviews.
 
 <ObjectDemo demo="brochure-single" />
 
 ```tsx
-<BrochureMockup paperColor="#e9e4d8" float>
+<BrochureMockup color="#e9e4d8" float>
   <Front />
 </BrochureMockup>
 ```

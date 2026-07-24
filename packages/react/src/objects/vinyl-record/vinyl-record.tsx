@@ -1,42 +1,32 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { VINYL_RECORD } from '@area-mockups/core'
+import { VINYL_RECORD, VINYL_RECORD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Album cover art — any React node, full bleed on the jacket front. */
+export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Album cover art — full bleed on the jacket front. Bare children fill the
+   * cover; name faces explicitly with `<VinylRecord.Cover>`,
+   * `<VinylRecord.Back>`, `<VinylRecord.Label>` (the live circular side-A
+   * disc label) and `<VinylRecord.BackLabel>` (side B).
+   */
   children?: React.ReactNode
-  /** Back cover design. */
-  back?: React.ReactNode
-  /** Center label design — a live circular area on the disc (side A). */
-  label?: React.ReactNode
-  /** Side B center label — the live circular area on the disc's other face. */
-  backLabel?: React.ReactNode
   /** Vinyl color. Classic black by default; try translucent-look colors. */
   vinylColor?: string
   /** Jacket stock color (edges and unprinted faces). */
   color?: string
-  /** CSS background painted behind cover, back and label content. */
-  faceBackground?: string
-  /** CSS pixel width of the virtual cover; the label shares its dpi. */
-  resolution?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your content. */
-  interactive?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /**
    * How content hides when a face turns away from the camera.
    * `true` raycasts against jacket and disc (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto each face wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /**
@@ -48,22 +38,27 @@ export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>
  * a live circular DOM area. No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ *
+ * ```tsx
+ * <VinylRecord>
+ *   <VinylRecord.Cover><CoverArt /></VinylRecord.Cover>
+ *   <VinylRecord.Label><SideALabel /></VinylRecord.Label>
+ * </VinylRecord>
+ * ```
  */
-export function VinylRecord({
+function VinylRecordImpl({
   children,
-  back,
-  label,
-  backLabel,
   vinylColor = '#0b0b0d',
   color = '#f2efe8',
-  faceBackground = '#ffffff',
+  surfaceBackground = '#ffffff',
   resolution = VINYL_RECORD.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: VinylRecordProps) {
+  const regions = collectSlots(children, VINYL_RECORD_REGIONS)
   const { sleeve, disc, innerSleeve, discPeek } = VINYL_RECORD
   const frontBoardRef = React.useRef<THREE.Mesh>(null!)
   const backBoardRef = React.useRef<THREE.Mesh>(null!)
@@ -129,13 +124,15 @@ export function VinylRecord({
   const discZ = slotHalf - disc.thickness / 2 - 0.0005
   const labelPxPerUnit = resolution / sleeve.size
 
-  const faceProps = {
+  const surfaceDefaults = {
+    background: surfaceBackground,
     resolution,
-    background: faceBackground,
     interactive,
     dragToRotate,
+    style: surfaceStyle,
+  }
+  const faceProps = {
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
-    screenStyle,
   }
 
   const stock = { color, metalness: 0, roughness: 0.75 }
@@ -211,25 +208,27 @@ export function VinylRecord({
         {/* live cover art */}
         <DeviceScreen
           {...faceProps}
+          {...resolveSurface(regions.cover, surfaceDefaults)}
           width={sleeve.size}
           height={sleeve.size}
           radius={sleeve.radius}
           position={[0, 0, sleeve.thickness / 2 + 0.003]}
         >
-          {children}
+          {regions.cover?.children}
         </DeviceScreen>
 
         {/* live back cover */}
-        {back != null && (
+        {regions.back != null && (
           <DeviceScreen
             {...faceProps}
+            {...resolveSurface(regions.back, surfaceDefaults)}
             width={sleeve.size}
             height={sleeve.size}
             radius={sleeve.radius}
             position={[0, 0, -sleeve.thickness / 2 - 0.003]}
             rotation={[0, Math.PI, 0]}
           >
-            {back}
+            {regions.back.children}
           </DeviceScreen>
         )}
 
@@ -252,33 +251,40 @@ export function VinylRecord({
 
           {/* live circular label, with the spindle hole punched through the
               DOM layer (the content would otherwise paint over it) */}
-          {label != null && (
+          {regions.label != null && (
             <DeviceScreen
               {...faceProps}
+              {...resolveSurface(regions.label, {
+                ...surfaceDefaults,
+                // the label shares the cover's dpi unless its slot overrides
+                resolution: Math.round(labelPxPerUnit * disc.labelRadius * 2),
+              })}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}
               radius={disc.labelRadius}
-              resolution={Math.round(labelPxPerUnit * disc.labelRadius * 2)}
               position={[0, 0, disc.thickness / 2 + 0.003]}
               overlay={spindleOverlay}
             >
-              {label}
+              {regions.label.children}
             </DeviceScreen>
           )}
 
           {/* live side-B label */}
-          {backLabel != null && (
+          {regions.backLabel != null && (
             <DeviceScreen
               {...faceProps}
+              {...resolveSurface(regions.backLabel, {
+                ...surfaceDefaults,
+                resolution: Math.round(labelPxPerUnit * disc.labelRadius * 2),
+              })}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}
               radius={disc.labelRadius}
-              resolution={Math.round(labelPxPerUnit * disc.labelRadius * 2)}
               position={[0, 0, -disc.thickness / 2 - 0.003]}
               rotation={[0, Math.PI, 0]}
               overlay={spindleOverlay}
             >
-              {backLabel}
+              {regions.backLabel.children}
             </DeviceScreen>
           )}
 
@@ -292,3 +298,9 @@ export function VinylRecord({
     </group>
   )
 }
+VinylRecordImpl.displayName = 'VinylRecord'
+
+/** The LP's compound slots, shared by `<VinylRecord>` and `<VinylRecordMockup>`. */
+export const vinylRecordSlots = createSlots(VINYL_RECORD_REGIONS)
+
+export const VinylRecord = Object.assign(VinylRecordImpl, vinylRecordSlots)

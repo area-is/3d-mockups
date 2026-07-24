@@ -1,18 +1,30 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { LAPTOP_COLORWAYS, findColorway, LAPTOP_VARIANTS, type LaptopVariant } from '@area-mockups/core'
+import {
+  LAPTOP_COLORWAYS,
+  findColorway,
+  LAPTOP_VARIANTS,
+  LAPTOP_DEFAULT_VARIANT,
+  LAPTOP_STAGE_OFFSET_Y,
+  SCREEN_REGIONS,
+  type LaptopVariant,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'
 import { UsbC, EdgeSocket, cutGeometry, stadiumCutter, holeCutter } from '../details'
 import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
+import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'> {
-  /** Anything you want on the laptop screen: React components, an <iframe>, a <video>… */
+export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+  /**
+   * Anything you want on the laptop screen: React components, an <iframe>, a
+   * <video>… Wrap in `<Laptop.Screen>` to set per-screen surface props.
+   */
   children?: React.ReactNode
   /**
    * Which laptop to render, at true relative sizes: `air13` / `air15`
@@ -29,8 +41,6 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'> {
   /** Aluminum colorway (lid, deck, bottom). MacBook Air M5 finishes work well:
    * Silver `#e3e4e6` (default), Sky Blue `#aec6d9`, Starlight `#e8e0d4`, Midnight `#2e3642`. */
   color?: string
-  /** CSS background painted behind your screen content. */
-  screenBackground?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 13.6" panel's
    * aspect. The default 1280 gives a 1280x832 screen — exactly the MacBook
@@ -42,23 +52,12 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'> {
   notch?: boolean
   /** Lid angle in degrees between deck and screen (90 = upright). */
   openAngle?: number
-  /** Let pointer events (clicks, scrolling, typing) reach your screen content. */
-  interactive?: boolean
-  /**
-   * Drags that start on the screen spin the device too: once the pointer travels
-   * ~10px the gesture is handed off to the orbit controls, while plain taps and
-   * clicks keep reaching your content. Disable if your screen content needs its
-   * own drag gestures (sliders, drawing, horizontal swipes).
-   */
-  dragToRotate?: boolean
   /**
    * How screen content hides when the device faces away from the camera.
    * `true` raycasts against the lid and base (fast, interactive). `'blending'`
    * uses per-pixel depth blending. `false` disables hiding.
    */
   occlude?: boolean | 'blending'
-  /** Extra styles merged onto the screen wrapper (e.g. a custom fontFamily). */
-  screenStyle?: React.CSSProperties
 }
 
 /** One flat, rounded slab (base or lid), extruded with a soft edge bevel. */
@@ -602,23 +601,27 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
  * hinged lid whose notched display carries your live content. No 3D asset
  * files — everything is generated from geometry at runtime.
  *
+ * The opened pose (deck + raised lid) is centered on the group origin, the
+ * pose the stage camera and shadow framing are tuned for.
+ *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-export function Laptop({
+function LaptopImpl({
   children,
-  variant = 'air13',
+  variant = LAPTOP_DEFAULT_VARIANT,
   colorway,
   color: colorProp,
-  screenBackground = '#000000',
+  surfaceBackground = '#000000',
   resolution,
   notch = true,
   openAngle,
   interactive = true,
   dragToRotate = true,
   occlude = true,
-  screenStyle,
+  surfaceStyle,
   ...groupProps
 }: LaptopProps) {
+  const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = LAPTOP_VARIANTS[variant]
   const retail = findColorway(LAPTOP_COLORWAYS[variant], colorway)
   const color = colorProp ?? retail?.color ?? '#e3e4e6'
@@ -785,214 +788,227 @@ export function Laptop({
 
   return (
     <group {...groupProps}>
-      {/* ---------------- base: unibody chassis with the keyboard deck ---------------- */}
-      <group>
-        <mesh ref={baseRef} geometry={baseGeometry}>
-          {aluminum}
-        </mesh>
+      {/* the whole machine rides LAPTOP_STAGE_OFFSET_Y down so the opened pose
+          (deck + raised lid) sits visually centered on the group origin the
+          stage framing in core is tuned for */}
+      <group position={[0, LAPTOP_STAGE_OFFSET_Y, 0]}>
+        {/* ---------------- base: unibody chassis with the keyboard deck ---------------- */}
+        <group>
+          <mesh ref={baseRef} geometry={baseGeometry}>
+            {aluminum}
+          </mesh>
 
-        {/* keyboard well (recess) + keys */}
-        <mesh geometry={wellGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.002, keyboard.offsetZ]}>
-          <meshPhysicalMaterial color="#101216" metalness={0.3} roughness={0.5} />
-        </mesh>
-        {/* caps sit nearly flush with the deck (scan: tops +0.3 mm), rising
-            out of the black well tub */}
-        <group position={[0, deckY - 0.013, keyboard.offsetZ]}>
-          <Keys keyboard={keyboard} />
-        </group>
+          {/* keyboard well (recess) + keys */}
+          <mesh geometry={wellGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.002, keyboard.offsetZ]}>
+            <meshPhysicalMaterial color="#101216" metalness={0.3} roughness={0.5} />
+          </mesh>
+          {/* caps sit nearly flush with the deck (scan: tops +0.3 mm), rising
+              out of the black well tub */}
+          <group position={[0, deckY - 0.013, keyboard.offsetZ]}>
+            <Keys keyboard={keyboard} />
+          </group>
 
-        {/* trackpad: flush glass with a hairline seam around it. Same finish as
-            the deck — a glossier material here reads as a bright sticker */}
-        <mesh geometry={trackpadRimGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.0015, trackpad.offsetZ]}>
-          <meshPhysicalMaterial color="#5c5f66" metalness={0.4} roughness={0.5} />
-        </mesh>
-        <mesh geometry={trackpadGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.003, trackpad.offsetZ]}>
-          <meshPhysicalMaterial color={color} metalness={0.85} roughness={0.36} clearcoat={0.4} clearcoatRoughness={0.3} />
-        </mesh>
+          {/* trackpad: flush glass with a hairline seam around it. Same finish as
+              the deck — a glossier material here reads as a bright sticker */}
+          <mesh geometry={trackpadRimGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.0015, trackpad.offsetZ]}>
+            <meshPhysicalMaterial color="#5c5f66" metalness={0.4} roughness={0.5} />
+          </mesh>
+          <mesh geometry={trackpadGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.003, trackpad.offsetZ]}>
+            <meshPhysicalMaterial color={color} metalness={0.85} roughness={0.36} clearcoat={0.4} clearcoatRoughness={0.3} />
+          </mesh>
 
-        {/* inset bottom plate (the seam line visible along the lower edge) */}
-        <mesh geometry={bottomPlateGeometry} rotation-x={Math.PI / 2} position={[0, -base.thickness / 2 - 0.004, 0]}>
-          <meshPhysicalMaterial color={color} metalness={0.8} roughness={0.5} envMapIntensity={0.6} />
-        </mesh>
+          {/* inset bottom plate (the seam line visible along the lower edge) */}
+          <mesh geometry={bottomPlateGeometry} rotation-x={Math.PI / 2} position={[0, -base.thickness / 2 - 0.004, 0]}>
+            <meshPhysicalMaterial color={color} metalness={0.8} roughness={0.5} envMapIntensity={0.6} />
+          </mesh>
 
-        {/* perforated speaker strips flanking the keyboard (Pro): drilled-hole
-            grid painted over the bare deck — aluminum shows between holes */}
-        {spec.speakers &&
-          grilleTexture &&
-          [-1, 1].map((side) => (
+          {/* perforated speaker strips flanking the keyboard (Pro): drilled-hole
+              grid painted over the bare deck — aluminum shows between holes */}
+          {spec.speakers &&
+            grilleTexture &&
+            [-1, 1].map((side) => (
+              <mesh
+                key={side}
+                rotation-x={-Math.PI / 2}
+                position={[side * spec.speakers!.x, deckY + 0.0015, spec.speakers!.offsetZ]}
+              >
+                <planeGeometry args={[spec.speakers!.width, spec.speakers!.depth]} />
+                <meshBasicMaterial
+                  map={grilleTexture}
+                  transparent
+                  toneMapped={false}
+                  depthWrite={false}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                />
+              </mesh>
+            ))}
+
+          {/* port interiors — the openings are real cavities machined from the
+              base above. Thunderbolt gets the full USB-C receptacle (shell +
+              gold tongue); MagSafe, HDMI, SDXC and the jack get dark sockets. */}
+          {([['left', -1], ['right', 1]] as const).map(([side, dir]) =>
+            spec.ports[side].map((port, i) => {
+              const inward: 1 | -1 = dir === -1 ? 1 : -1
+              const x = dir * (footprint.width / 2)
+              return port.shape === 'round' ? (
+                <EdgeSocket
+                  key={`${side}${i}`}
+                  position={[x, -0.004, port.z]}
+                  r={port.height / 2}
+                  depth={0.1}
+                  lip={0.012}
+                  axis="x"
+                  inward={inward}
+                />
+              ) : port.width <= 0.13 ? (
+                <UsbC
+                  key={`${side}${i}`}
+                  x={x}
+                  y={-0.004}
+                  z={port.z}
+                  width={port.width}
+                  height={port.height}
+                  depth={0.1}
+                  axis="x"
+                  inward={inward}
+                />
+              ) : (
+                <EdgeSocket
+                  key={`${side}${i}`}
+                  position={[x, -0.004, port.z]}
+                  width={port.width}
+                  height={port.height}
+                  depth={0.1}
+                  lip={0.012}
+                  axis="x"
+                  inward={inward}
+                />
+              )
+            })
+          )}
+
+          {/* rubber feet */}
+          {([[-1, -1], [1, -1], [-1, 1], [1, 1]] as const).map(([sx, sz], i) => (
+            <mesh key={i} position={[sx * spec.feet.x, -base.thickness / 2 - 0.01, sz * spec.feet.z]}>
+              <cylinderGeometry args={[spec.feet.radius, spec.feet.radius, 0.016, 20]} />
+              <meshPhysicalMaterial color="#17181c" metalness={0.1} roughness={0.8} />
+            </mesh>
+          ))}
+
+          {/* embossed wordmark near the front of the underside (Pro) */}
+          {spec.bottomText && bottomTextTexture && (
             <mesh
-              key={side}
-              rotation-x={-Math.PI / 2}
-              position={[side * spec.speakers!.x, deckY + 0.0015, spec.speakers!.offsetZ]}
+              rotation-x={Math.PI / 2}
+              position={[0, -base.thickness / 2 - 0.0055, spec.bottomText.offsetZ]}
             >
-              <planeGeometry args={[spec.speakers!.width, spec.speakers!.depth]} />
-              <meshBasicMaterial
-                map={grilleTexture}
+              <planeGeometry args={[spec.bottomText.width, spec.bottomText.height]} />
+              <meshPhysicalMaterial
+                map={bottomTextTexture}
                 transparent
-                toneMapped={false}
-                depthWrite={false}
+                opacity={0.5}
+                color="#9a9da4"
+                metalness={0.7}
+                roughness={0.4}
                 polygonOffset
                 polygonOffsetFactor={-1}
               />
             </mesh>
-          ))}
+          )}
+        </group>
 
-        {/* port interiors — the openings are real cavities machined from the
-            base above. Thunderbolt gets the full USB-C receptacle (shell +
-            gold tongue); MagSafe, HDMI, SDXC and the jack get dark sockets. */}
-        {([['left', -1], ['right', 1]] as const).map(([side, dir]) =>
-          spec.ports[side].map((port, i) => {
-            const inward: 1 | -1 = dir === -1 ? 1 : -1
-            const x = dir * (footprint.width / 2)
-            return port.shape === 'round' ? (
-              <EdgeSocket
-                key={`${side}${i}`}
-                position={[x, -0.004, port.z]}
-                r={port.height / 2}
-                depth={0.1}
-                lip={0.012}
-                axis="x"
-                inward={inward}
-              />
-            ) : port.width <= 0.13 ? (
-              <UsbC
-                key={`${side}${i}`}
-                x={x}
-                y={-0.004}
-                z={port.z}
-                width={port.width}
-                height={port.height}
-                depth={0.1}
-                axis="x"
-                inward={inward}
-              />
-            ) : (
-              <EdgeSocket
-                key={`${side}${i}`}
-                position={[x, -0.004, port.z]}
-                width={port.width}
-                height={port.height}
-                depth={0.1}
-                lip={0.012}
-                axis="x"
-                inward={inward}
-              />
-            )
-          })
-        )}
-
-        {/* rubber feet */}
-        {([[-1, -1], [1, -1], [-1, 1], [1, 1]] as const).map(([sx, sz], i) => (
-          <mesh key={i} position={[sx * spec.feet.x, -base.thickness / 2 - 0.01, sz * spec.feet.z]}>
-            <cylinderGeometry args={[spec.feet.radius, spec.feet.radius, 0.016, 20]} />
-            <meshPhysicalMaterial color="#17181c" metalness={0.1} roughness={0.8} />
+        {/* ---------------- lid: hinged at the back edge of the deck ---------------- */}
+        <group position={[0, deckY, hingeZ]} rotation-x={lidTilt}>
+          {/* hinge: the black band spanning the center of the back (aluminum shows at the ends) */}
+          <mesh rotation-z={Math.PI / 2} position={[0, 0, 0]}>
+            <cylinderGeometry args={[variant.startsWith('pro') ? 0.069 : 0.052, variant.startsWith('pro') ? 0.069 : 0.052, footprint.width * 0.76, 24]} />
+            <meshPhysicalMaterial color="#0d0e12" metalness={0.5} roughness={0.55} envMapIntensity={0.5} />
           </mesh>
-        ))}
 
-        {/* embossed wordmark near the front of the underside (Pro) */}
-        {spec.bottomText && bottomTextTexture && (
+          {/* lid slab — local +y is "up the screen", inner face toward +z */}
+          <mesh ref={lidRef} geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
+            {aluminum}
+          </mesh>
+
+          {/* the badge on the lid's outer face */}
           <mesh
-            rotation-x={Math.PI / 2}
-            position={[0, -base.thickness / 2 - 0.0055, spec.bottomText.offsetZ]}
+            geometry={logoGeometry}
+            rotation-y={Math.PI}
+            position={[0, footprint.depth / 2 + spec.logo.offsetY, -lid.thickness / 2 - 0.003]}
           >
-            <planeGeometry args={[spec.bottomText.width, spec.bottomText.height]} />
             <meshPhysicalMaterial
-              map={bottomTextTexture}
-              transparent
-              opacity={0.5}
-              color="#9a9da4"
-              metalness={0.7}
-              roughness={0.4}
+              color={logoColor}
+              metalness={0.55}
+              roughness={0.06}
+              clearcoat={1}
+              envMapIntensity={1.2}
               polygonOffset
               polygonOffsetFactor={-1}
             />
           </mesh>
-        )}
-      </group>
 
-      {/* ---------------- lid: hinged at the back edge of the deck ---------------- */}
-      <group position={[0, deckY, hingeZ]} rotation-x={lidTilt}>
-        {/* hinge: the black band spanning the center of the back (aluminum shows at the ends) */}
-        <mesh rotation-z={Math.PI / 2} position={[0, 0, 0]}>
-          <cylinderGeometry args={[variant.startsWith('pro') ? 0.069 : 0.052, variant.startsWith('pro') ? 0.069 : 0.052, footprint.width * 0.76, 24]} />
-          <meshPhysicalMaterial color="#0d0e12" metalness={0.5} roughness={0.55} envMapIntensity={0.5} />
-        </mesh>
+          {/* edge-to-edge cover glass on the inner face */}
+          <mesh geometry={glassGeometry} position={[0, footprint.depth / 2, lid.thickness / 2 + 0.002]}>
+            <meshPhysicalMaterial color="#050608" metalness={0.1} roughness={0.09} clearcoat={1} />
+          </mesh>
 
-        {/* lid slab — local +y is "up the screen", inner face toward +z */}
-        <mesh ref={lidRef} geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
-          {aluminum}
-        </mesh>
-
-        {/* the badge on the lid's outer face */}
-        <mesh
-          geometry={logoGeometry}
-          rotation-y={Math.PI}
-          position={[0, footprint.depth / 2 + spec.logo.offsetY, -lid.thickness / 2 - 0.003]}
-        >
-          <meshPhysicalMaterial
-            color={logoColor}
-            metalness={0.55}
-            roughness={0.06}
-            clearcoat={1}
-            envMapIntensity={1.2}
-            polygonOffset
-            polygonOffsetFactor={-1}
-          />
-        </mesh>
-
-        {/* edge-to-edge cover glass on the inner face */}
-        <mesh geometry={glassGeometry} position={[0, footprint.depth / 2, lid.thickness / 2 + 0.002]}>
-          <meshPhysicalMaterial color="#050608" metalness={0.1} roughness={0.09} clearcoat={1} />
-        </mesh>
-
-        {/* the live screen */}
-        <DeviceScreen
-          width={display.width}
-          height={display.height}
-          radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
-          resolution={res}
-          position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
-          background={screenBackground}
-          interactive={interactive}
-          dragToRotate={dragToRotate}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
-          screenStyle={screenStyle}
-          overlay={
-            notch ? (
-              <div
-                aria-hidden
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: px(notchDims.width),
-                  height: px(notchDims.height),
-                  borderRadius: `0 0 ${px(notchDims.radius)}px ${px(notchDims.radius)}px`,
-                  background: '#04050a',
-                  pointerEvents: 'none',
-                  zIndex: 2147483647,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+          {/* the live screen */}
+          <DeviceScreen
+            width={display.width}
+            height={display.height}
+            radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
+            position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
+            occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+            {...resolveSurface(screen, {
+              background: surfaceBackground,
+              resolution: res,
+              interactive,
+              dragToRotate,
+              style: surfaceStyle,
+            })}
+            overlay={
+              notch ? (
                 <div
+                  aria-hidden
                   style={{
-                    width: px(0.045),
-                    height: px(0.045),
-                    borderRadius: '50%',
-                    background:
-                      'radial-gradient(circle at 38% 38%, #1c2536 0%, #05060a 60%, #000 100%)',
+                    position: 'absolute',
+                    top: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: px(notchDims.width),
+                    height: px(notchDims.height),
+                    borderRadius: `0 0 ${px(notchDims.radius)}px ${px(notchDims.radius)}px`,
+                    background: '#04050a',
+                    pointerEvents: 'none',
+                    zIndex: 2147483647,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
-                />
-              </div>
-            ) : undefined
-          }
-        >
-          {children}
-        </DeviceScreen>
+                >
+                  <div
+                    style={{
+                      width: px(0.045),
+                      height: px(0.045),
+                      borderRadius: '50%',
+                      background:
+                        'radial-gradient(circle at 38% 38%, #1c2536 0%, #05060a 60%, #000 100%)',
+                    }}
+                  />
+                </div>
+              ) : undefined
+            }
+          >
+            {screen?.children}
+          </DeviceScreen>
+        </group>
       </group>
     </group>
   )
 }
+LaptopImpl.displayName = 'Laptop'
+
+/** The device's compound slots, shared by `<Laptop>` and `<LaptopMockup>`. */
+export const laptopSlots = createSlots(SCREEN_REGIONS)
+
+export const Laptop = Object.assign(LaptopImpl, laptopSlots)

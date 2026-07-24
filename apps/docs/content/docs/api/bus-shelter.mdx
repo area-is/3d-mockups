@@ -9,19 +9,19 @@ glass back wall, floating bench — and the 6-sheet lightbox (1185×1750 mm)
 standing as the structural end panel, with backlit diffusers behind a live
 480×709 poster on each face.
 
-The arrivals display speaks LED natively: pass an array of strings and each
-becomes a glowing dot-matrix board row (rows scroll when they overflow), a
-single string for a one-line message — or any React node for a fully custom
-board.
+The arrivals display speaks LED natively: give `<BusShelter.Arrivals>` an
+array of strings and each becomes a glowing dot-matrix board row (rows scroll
+when they overflow), a single string for a one-line message — or any React
+node for a fully custom board.
 
 <ObjectDemo demo="shelter-basic" checker />
 
 ```tsx
-<BusShelterMockup
-  arrivals={['12  Harbor Loop      2 min', '4X  Union Sq Express  7 min', '31  Larchmont        12 min']}
-  deviceProps={{ rotation: [0, -0.55, 0] }}
->
+<BusShelterMockup rotation={[0, -0.55, 0]}>
   <YourPoster />
+  <BusShelterMockup.Arrivals>
+    {['12  Harbor Loop      2 min', '4X  Union Sq Express  7 min', '31  Larchmont        12 min']}
+  </BusShelterMockup.Arrivals>
 </BusShelterMockup>
 ```
 
@@ -31,19 +31,29 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `inner` | `ReactNode` | - | Creative on the inward (waiting-area) lightbox face. |
-| `arrivals` | `ReactNode \| string \| string[]` | - | Live RTPI arrivals display hanging under the roof. Strings get the built-in dot-matrix LED board (one row per string); a node renders as-is. |
-| `arrivalsBack` | `ReactNode \| string \| string[]` | mirrors `arrivals` | The waiting-area face of the arrivals board. By default it shows the same content as the front; set it to show something different. |
 | `color` | `string` | `'#2f333a'` | Street-furniture steel: roof, posts, frames, bench supports. |
-| `posterBackground` | `string` | `'#ffffff'` | CSS background behind the poster (backlit white). |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind the poster (backlit white). |
 | `resolution` | `number` | `480` | Virtual poster width in CSS px; height follows the 6-sheet. |
 
 The lightbox faces ±X (along the sidewalk) — pose the shelter in
 three-quarter view to feature it.
 
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<BusShelterMockup.Poster>` | Outward 6-sheet lightbox face (bare children). |
+| `<BusShelterMockup.Inner>` | The inward (waiting-area) lightbox face. |
+| `<BusShelterMockup.Arrivals>` | Live RTPI arrivals display hanging under the roof. Strings get the built-in dot-matrix LED board (one row per string); a node renders as-is. |
+| `<BusShelterMockup.ArrivalsBack>` | The waiting-area face of the arrivals board. Mirrors `Arrivals` unless given its own content. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<BusShelter>`.
+
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
@@ -56,12 +66,13 @@ what stays 3D hardware.
 <ObjectDemo demo="shelter-night" />
 
 ```tsx
-<BusShelterMockup
-  color="#22262c"
-  inner={<InnerPoster />}
-  arrivals={<YourArrivalsBoard />}
-  deviceProps={{ rotation: [0, -0.75, 0] }}
->
+<BusShelterMockup color="#22262c" rotation={[0, -0.75, 0]}>
   <YourPoster />
+  <BusShelterMockup.Inner>
+    <InnerPoster />
+  </BusShelterMockup.Inner>
+  <BusShelterMockup.Arrivals>
+    <YourArrivalsBoard />
+  </BusShelterMockup.Arrivals>
 </BusShelterMockup>
 ```

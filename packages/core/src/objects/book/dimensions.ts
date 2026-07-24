@@ -11,6 +11,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the book. */
 export const BOOK_MM = 1 / 56
 
@@ -63,3 +65,18 @@ export const BOOK: BookSpec = bookSpec()
 
 /** Cover aspect ratio (height / width) of the default trim. */
 export const BOOK_COVER_ASPECT = BOOK.cover.height / BOOK.cover.width
+
+/** Live regions: front cover, back cover and the spine strip. */
+export const BOOK_REGIONS = [
+  { name: 'cover', label: 'Front cover' },
+  { name: 'back', label: 'Back cover' },
+  { name: 'spine', label: 'Spine' },
+] as const satisfies readonly RegionSpec[]
+
+/** The standing hardcover grounds on its bottom board edge. */
+export const BOOK_FRAMING = {
+  camera: { position: [0, 0.5, 8], fov: 40 },
+  floatIntensity: 0.8,
+  extent: ({ size }) => (size ? bookSpec(size) : BOOK).board.height / 2,
+  contactGap: 0.05,
+} as const satisfies MockupFraming<{ size?: BookSize }>

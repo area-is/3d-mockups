@@ -12,6 +12,8 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
+import type { MockupFraming, RegionSpec } from '../../regions'
+
 /** World units per millimeter for the vinyl record. */
 export const VINYL_RECORD_MM = 1 / 92
 
@@ -33,3 +35,19 @@ export const VINYL_RECORD = {
 
 /** Cover aspect ratio (height / width) — square. */
 export const VINYL_RECORD_ASPECT = 1
+
+/** Live regions: the jacket's two faces and the disc's two center labels. */
+export const VINYL_RECORD_REGIONS = [
+  { name: 'cover', label: 'Cover' },
+  { name: 'back', label: 'Back cover' },
+  { name: 'label', label: 'Side A label' },
+  { name: 'backLabel', label: 'Side B label' },
+] as const satisfies readonly RegionSpec[]
+
+/** The upright jacket grounds on its bottom edge. */
+export const VINYL_RECORD_FRAMING = {
+  camera: { position: [0, 0.4, 8.4], fov: 40 },
+  floatIntensity: 0.7,
+  extent: () => VINYL_RECORD.sleeve.size / 2,
+  contactGap: 0.05,
+} as const satisfies MockupFraming

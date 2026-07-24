@@ -1,92 +1,31 @@
-import * as React from 'react'
-import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
-import { Phone, type PhoneProps } from './devices/phone/phone'
-import { GALAXY_VARIANTS } from '@area-mockups/core'
-import { FloatGroup } from './float-group'
+import { PHONE_FRAMING } from '@area-mockups/core'
+import { createMockup, type MockupProps } from './create-mockup'
+import { Phone, phoneSlots, type PhoneProps } from './devices/phone/phone'
 
-type InheritedDeviceProps = Pick<
-  PhoneProps,
-  | 'variant'
-  | 'colorway'
-  | 'orientation'
-  | 'color'
-  | 'frameColor'
-  | 'screenBackground'
-  | 'resolution'
-  | 'punchHole'
-  | 'interactive'
-  | 'dragToRotate'
-  | 'occlude'
-  | 'screenStyle'
->
-
-export interface PhoneMockupProps
-  extends Omit<MockupCanvasProps, 'children'>,
-    InheritedDeviceProps {
-  /** Screen content — any React node, an <iframe>, a <video>… */
-  children?: React.ReactNode
-  /** Gentle floating idle animation. */
-  float?: boolean
-  /** Extra props forwarded to the device group (position, rotation, scale…). */
-  deviceProps?: Omit<PhoneProps, 'children'>
-}
+export type PhoneMockupProps = MockupProps<PhoneProps>
 
 /**
- * The one-liner: a complete, interactive 3D Phone mockup.
+ * The one-liner: a complete, interactive 3D Galaxy-style phone mockup.
  *
  * ```tsx
  * <PhoneMockup autoRotate float>
  *   <YourApp />
  * </PhoneMockup>
  * ```
+ *
+ * Wrap children in `<PhoneMockup.Screen>` to set per-screen surface props:
+ *
+ * ```tsx
+ * <PhoneMockup variant="s26ultra" rotation={[0, 0.25, 0]}>
+ *   <PhoneMockup.Screen background="#000" resolution={720}>
+ *     <MusicPlayer />
+ *   </PhoneMockup.Screen>
+ * </PhoneMockup>
+ * ```
  */
-export function PhoneMockup({
-  children,
-  variant = 's26',
-  colorway,
-  orientation = 'portrait',
-  color,
-  frameColor,
-  screenBackground,
-  resolution,
-  punchHole,
-  interactive,
-  dragToRotate,
-  occlude,
-  screenStyle,
-  float = false,
-  deviceProps,
-  ...canvasProps
-}: PhoneMockupProps) {
-  const device = (
-    <Phone
-      variant={variant}
-      colorway={colorway}
-      orientation={orientation}
-      color={color}
-      frameColor={frameColor}
-      screenBackground={screenBackground}
-      resolution={resolution}
-      punchHole={punchHole}
-      interactive={interactive}
-      dragToRotate={dragToRotate}
-      occlude={occlude}
-      screenStyle={screenStyle}
-      {...deviceProps}
-    >
-      {children}
-    </Phone>
-  )
-
-  // Grounded by default: the shadow plane kisses the bottom edge of the body
-  // (its width when lying in landscape). Floating keeps a visible hover gap.
-  const body = GALAXY_VARIANTS[variant].body
-  const extent = orientation === 'landscape' ? body.width : body.height
-  const shadowY = canvasProps.shadowY ?? (float ? -(extent / 2 + 0.3) : -(extent / 2 + 0.05))
-
-  return (
-    <MockupCanvas {...canvasProps} shadowY={shadowY}>
-      {float ? <FloatGroup>{device}</FloatGroup> : device}
-    </MockupCanvas>
-  )
-}
+export const PhoneMockup = createMockup({
+  object: Phone,
+  framing: PHONE_FRAMING,
+  slots: phoneSlots,
+  displayName: 'PhoneMockup',
+})
