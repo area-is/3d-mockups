@@ -6,20 +6,29 @@ description: Apple Watch Series 11 or Galaxy Watch 8, wearing a two-strap wristb
 `<Watch>` and `<WatchMockup>` render a smartwatch wearing a real wristband on
 an invisible wrist directly behind the case — two domed, tapering straps
 sliding into the band slots in the case edges and meeting at a closure on the
-underside of the wrist, matching how worn-band product photos pose it. Two
-variants at true relative sizes:
+underside of the wrist, matching how worn-band product photos pose it.
+
+Strap length is taken from the retail fit ranges rather than eyeballed: the
+wrist oval and the two straps are sized so the band reaches the top of the
+band's stated fit range, which is why the tail runs well past the closure.
+Set `bandOpen` to unbuckle it — the straps relax into an open curl with the
+hole row, pin and buckle on show, the way a band is photographed off-wrist.
+
+Two variants at true relative sizes:
 
 - **`series11`** (default): Apple Watch Series 11, 46 mm — squircle case,
   gear-toothed knurled Digital Crown, flush side button in its machined
   recess, drilled mic hole, machined speaker slot on the left edge, a Sport
-  Band closing with the pin-and-tuck (the twelve-o'clock strap laps over the
-  other, its pin stud on show), and a live 208×248 rounded-rect face.
+  Band closing pin-and-tuck — six holes punched clean through the long strap
+  with the pin coming up through one of them — and a live 208×248
+  rounded-rect face.
 - **`watch8`**: Samsung Galaxy Watch 8, 44 mm — cushion case with the fully
   **round** 1.47" display raised on its dial puck (live 240×240 circular
   face), two raised chamfered keys straddling the mic hole, twin machined
   speaker slots on the left edge, and a Dynamic-Lug-style band: nearly
   case-wide at the connector, tapering around the wrist to a stainless pin
-  buckle, a keeper and punched adjustment holes.
+  buckle whose tongue rises through one of the punched holes, plus a keeper
+  holding the tail down.
 
 <ObjectDemo demo="watch-band" checker />
 
@@ -38,6 +47,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | `variant` | `'series11' \| 'watch8'` | `'series11'` | Which watch to render. |
 | `color` | `string` | `'#1c1d21'` | Case colorway. |
 | `bandColor` | `string` | `'#2a2c31'` | Strap (fluoroelastomer). |
+| `bandOpen` | `boolean` | `false` | Render the band unbuckled — the straps relax into an open curl, closure and adjustment holes on show. |
 | `resolution` | `number` | per variant | Virtual display width: 208 (Apple point grid) or 240 (Galaxy dp grid). |
 
 There is no `orientation` prop.

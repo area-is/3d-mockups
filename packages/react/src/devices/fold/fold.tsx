@@ -162,6 +162,19 @@ function FoldImpl({
     () => occludeRefs.filter((ref) => ref !== bodyRef && ref !== rearRef),
     [occludeRefs]
   )
+  // …with ONE exception, in the flex pose: a half's screen must still occlude
+  // against the OTHER half's panel. The two halves stand at an angle, so from
+  // most viewpoints the near one covers part of the far one — and a DOM screen
+  // that ignores it composites straight over the chassis, the far display
+  // visibly piercing through the near panel. Each half keeps only its own
+  // shell out of its occluder set.
+  const siblingOccludeRefs = React.useMemo(
+    () => ({
+      left: occludeRefs.filter((ref) => ref !== bodyRef),
+      right: occludeRefs.filter((ref) => ref !== rearRef),
+    }),
+    [occludeRefs]
+  )
 
   // The folded stack: body.depth spans both slabs plus the crevice between them.
   const gap = spec.closed.gap
@@ -559,7 +572,13 @@ function FoldImpl({
           radius={radius}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occlude={
+            occlude === true
+              ? siblingOccludeRefs[left ? 'left' : 'right']
+              : occlude === 'blending'
+                ? 'blending'
+                : undefined
+          }
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's width

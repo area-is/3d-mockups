@@ -44,6 +44,12 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
   /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
   bandColor?: string
   /**
+   * `true` renders the band unbuckled — the straps open out into the relaxed
+   * curl of a product shot, closure and adjustment holes on show. The default
+   * (`false`) wears it: fastened around an invisible wrist behind the case.
+   */
+  bandOpen?: boolean
+  /**
    * CSS pixel width of the virtual display. The default matches the device's
    * logical grid: 208 gives 208×248 on the Apple Watch; 240 gives a round
    * 240×240 on the Galaxy Watch — so content lays out like on the real device.
@@ -78,6 +84,7 @@ function WatchImpl({
   colorway,
   color: colorProp,
   bandColor = '#2a2c31',
+  bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
   interactive = true,
@@ -177,20 +184,68 @@ function WatchImpl({
     [speaker]
   )
 
-  // The worn wristband: two straps, like the real product. The twelve-o'clock
-  // strap leaves the top band slot, wraps the invisible wrist and carries the
-  // closure on its underside; the six-o'clock strap comes up the other way
-  // and its tail runs past the closure. Both start inside the case, so they
-  // read as sliding into the band slots.
+  // The worn wristband: two straps, exactly as the retail bands are built.
+  //
+  // The twelve-o'clock strap leaves the top band slot, lies against the wrist
+  // and ends under the closure. The six-o'clock strap is the long one: it
+  // comes up the other way, carries the row of punched adjustment holes,
+  // LAPS OVER the twelve-o'clock strap past the closure (the pin or buckle
+  // tongue comes up through one of its holes) and runs on as a free tail.
+  // Both start inside the case, so they read as sliding into the band slots.
   //
   // Each is a domed strap section swept along the wrist oval (core's
   // `sweptStrapGeometry`): wide at the lug shoulder, narrowing to the strap
-  // proper, tapering again at the tip. The twelve-o'clock strap lifts by one
-  // strap thickness as it approaches the closure so it laps cleanly OVER the
-  // tail instead of intersecting it.
-  const closure = band.closureAngle
-  const bandGeometries = React.useMemo(() => {
+  // proper, tapering again at the tip. The holes are then machined clean
+  // through the long strap with the same CSG the chassis ports use, so they
+  // are real openings showing the strap beneath — not painted-on discs.
+  //
+  // Unbuckled (`bandOpen`), the band relaxes into a CURL. It cannot simply
+  // open onto a bigger circle: 180-odd mm of strap does not fit a 360° loop
+  // without doubling back, which is exactly what an unfastened band does —
+  // the long tail uncoils and comes to rest OUTSIDE the other strap. So both
+  // straps spiral outward, the tail much further, which parts the two ends in
+  // space and puts the closure and the whole hole row on show.
+  const ride = band.thickness * 1.02
+  const pose = React.useMemo(() => {
     const { startAngle } = band.loop
+    const pin = { from: startAngle, to: band.pinStrapEnd }
+    const tail = { from: 360 - startAngle, to: band.tailEnd }
+    const ramp = (t: number, a: number, b: number) =>
+      Math.min(1, Math.max(0, (t - a) / Math.max(b - a, 1e-3)))
+    // Worn, the tail rides one thickness proud from just before it reaches the
+    // other strap's end, so the two stack rather than interpenetrate.
+    const lapAt = (angle: number) => (tail.from - angle) / (tail.from - tail.to)
+    const lapStart = Math.max(0, lapAt(band.pinStrapEnd + 20))
+    const lapFull = Math.min(1, lapAt(band.pinStrapEnd))
+
+    if (!bandOpen) {
+      return {
+        loop: band.loop,
+        pin,
+        tail,
+        pinLift: () => 0,
+        tailLift: (t: number) => ride * ramp(t, lapStart, lapFull),
+      }
+    }
+
+    const flare = band.openScale - 1
+    const relaxed = 1.06
+    return {
+      loop: {
+        ...band.loop,
+        ryFront: band.loop.ryFront * relaxed,
+        ryBack: band.loop.ryBack * relaxed,
+        rz: band.loop.rz * relaxed,
+        centerZ: band.loop.centerZ * relaxed,
+      },
+      pin,
+      tail,
+      pinLift: (t: number) => flare * 0.8 * t * t,
+      tailLift: (t: number) => ride + flare * 2.5 * ramp(t, 0.18, 1) ** 1.6,
+    }
+  }, [band, bandOpen, ride])
+
+  const bandGeometries = React.useMemo(() => {
     // Lug shoulder → strap: the wide section is just the connector filling the
     // case slot, exactly as on the real bands.
     const shoulder = (t: number) => Math.min(1, t * 7)
@@ -200,40 +255,62 @@ function WatchImpl({
     const strapWidth = (t: number) => lugTaper(t) + (band.tipWidth - band.width) * tipFade(t)
     const thickness = (t: number) => band.thickness * (1 - 0.18 * tipFade(t))
     const crown = (t: number) => band.crown * (1 - 0.4 * tipFade(t))
-    return {
-      // Twelve-o'clock strap, lapping over the tail near the closure.
-      upper: sweptStrapGeometry({
-        loop: band.loop,
-        from: startAngle,
-        to: closure,
-        width: strapWidth,
-        thickness,
-        crown,
-        lift: (t) => band.thickness * 1.05 * Math.min(1, Math.max(0, (t - 0.74) / 0.16)),
-        segments: 60,
-        capEnd: true,
-      }),
-      // Six-o'clock strap: swept backwards from the bottom band slot, running
-      // `tailOverrun` degrees past the closure.
-      lower: sweptStrapGeometry({
-        loop: band.loop,
-        from: 360 - startAngle,
-        to: closure - band.tailOverrun,
-        width: strapWidth,
-        thickness,
-        crown,
-        segments: 60,
-        capEnd: true,
-      }),
-    }
-  }, [band, closure])
+
+    const pinStrap = sweptStrapGeometry({
+      loop: pose.loop,
+      from: pose.pin.from,
+      to: pose.pin.to,
+      width: strapWidth,
+      thickness,
+      crown,
+      lift: pose.pinLift,
+      segments: 72,
+      capStart: true,
+      capEnd: true,
+    })
+
+    const { from, to } = pose.tail
+    const holedStrap = sweptStrapGeometry({
+      loop: pose.loop,
+      from,
+      to,
+      width: strapWidth,
+      thickness,
+      crown,
+      lift: pose.tailLift,
+      segments: 112,
+      capStart: true,
+      capEnd: true,
+    })
+
+    // Punch the adjustment holes clean through. Each cutter is a cylinder on
+    // the loop's outward normal at that hole's position along the strap, long
+    // enough to clear the section however far it has ridden up.
+    const cutters = band.holes.map((t) => {
+      const angle = from + (to - from) * t
+      const frame = wristLoopAt(pose.loop, (angle * Math.PI) / 180)
+      const cutter = new THREE.CylinderGeometry(band.holeRadius, band.holeRadius, band.thickness * 8, 20)
+      cutter.rotateX(Math.PI / 2)
+      // The cylinder is built along +z; aim it down the loop's outward normal.
+      cutter.rotateX(Math.atan2(-frame.nz, frame.ny) + Math.PI / 2)
+      // Centre it on the strap's MID-surface — that is where `lift` puts the
+      // section's origin. Seating it a thickness out instead leaves the
+      // straight cutter clipping only the outer face of a curving strap, which
+      // machines an open notch rather than a hole.
+      const seat = pose.tailLift(t)
+      cutter.translate(0, frame.y + frame.ny * seat, frame.z + frame.nz * seat)
+      return cutter
+    })
+
+    return { pinStrap, holedStrap: cutGeometry(holedStrap, cutters) }
+  }, [band, pose, bandOpen, ride])
 
   React.useEffect(() => {
     return () => {
       bodyGeometry.dispose()
       glassGeometry.dispose()
-      bandGeometries.upper.dispose()
-      bandGeometries.lower.dispose()
+      bandGeometries.pinStrap.dispose()
+      bandGeometries.holedStrap.dispose()
       crownGeometry?.dispose()
       speakerLinerGeometries.forEach((g) => g.dispose())
     }
@@ -246,25 +323,37 @@ function WatchImpl({
   // normal to stand hardware off the strap, and the tangent tilt that lays it
   // flat against the band.
   const fittingAt = React.useCallback(
-    (phiDeg: number, ride = 0) => {
-      const frame = wristLoopAt(band.loop, (phiDeg * Math.PI) / 180)
+    (phiDeg: number, stand = 0) => {
+      const frame = wristLoopAt(pose.loop, (phiDeg * Math.PI) / 180)
       return {
-        position: [0, frame.y + frame.ny * ride, frame.z + frame.nz * ride] as [number, number, number],
+        position: [0, frame.y + frame.ny * stand, frame.z + frame.nz * stand] as [number, number, number],
         // The section's outward normal is (ny, nz); a fitting built along +Y
         // lines up with the strap when rotated onto it.
         rotX: Math.atan2(-frame.nz, frame.ny),
       }
     },
-    [band.loop]
+    [pose.loop]
   )
 
-  // Closure hardware on the wrist's underside. `tuck` (Sport Band) is just
-  // the pin stud on the lapping strap's tip; `buckle` is the classic metal
-  // frame with its pin, plus a keeper holding the tail down.
-  const stand = band.thickness * 1.05
-  const pinStud = fittingAt(closure - 5, stand + band.thickness * 0.55)
-  const buckleFrame = fittingAt(closure - 2, stand * 0.5)
-  const keeper = fittingAt(closure - band.tailOverrun * 0.62, band.thickness * 0.5)
+  // Closure hardware. Worn, both closures engage through a hole in the lapping
+  // strap, so the hardware sits at that hole: the tail rides one thickness
+  // proud and the pin (or buckle tongue) comes up from the strap below into
+  // the opening. Unbuckled, the hardware stays on the twelve-o'clock strap's
+  // own tip where it is mounted, with nothing threaded through it.
+  const tailAngleAt = (t: number) => pose.tail.from + (pose.tail.to - pose.tail.from) * t
+  const closureT = band.holes[band.closureHole] ?? band.holes[0] ?? 0.6
+  // Worn, the closure engages the tail's hole and so rides the tail. Unbuckled
+  // it stays on the twelve-o'clock strap's tip where it is actually mounted.
+  const closureAngle = bandOpen ? pose.pin.to - 7 : tailAngleAt(closureT)
+  const closureStand = bandOpen ? pose.pinLift(0.94) : pose.tailLift(closureT)
+  const pinStud = fittingAt(closureAngle, closureStand + band.thickness * 0.42)
+  const buckleFrame = fittingAt(closureAngle, closureStand * 0.55 + band.thickness * 0.1)
+  // Worn, the keeper encircles the tail where it lies over the other strap;
+  // unbuckled it sits on its own strap, just inboard of the buckle.
+  const keeperT = band.keeperT ?? 0.78
+  const keeper = bandOpen
+    ? fittingAt(pose.pin.to - 24, pose.pinLift(0.82))
+    : fittingAt(tailAngleAt(keeperT), pose.tailLift(keeperT) + band.thickness * 0.5)
 
   return (
     <group {...groupProps}>
@@ -412,7 +501,7 @@ function WatchImpl({
       {/* the two worn straps. Fluoroelastomer is a soft-touch matte with a
           velvety edge falloff — `sheen` gives that without the blown-out
           white a clearcoat produces at grazing angles */}
-      {[bandGeometries.upper, bandGeometries.lower].map((geometry, i) => (
+      {[bandGeometries.pinStrap, bandGeometries.holedStrap].map((geometry, i) => (
         <mesh key={i} geometry={geometry}>
           <meshPhysicalMaterial
             color={bandColor}
@@ -424,62 +513,58 @@ function WatchImpl({
             sheenRoughness={0.85}
             sheenColor="#8d939c"
             envMapIntensity={0.65}
+            side={THREE.DoubleSide}
           />
         </mesh>
       ))}
 
-      {/* adjustment holes punched through the tail, sunk as dark eyelets */}
-      {band.holes.map(({ angle, radius }) => {
-        const hole = fittingAt(angle, band.thickness * 0.5 + band.crown * 0.4)
-        return (
-          <mesh key={angle} position={hole.position} rotation-x={hole.rotX + Math.PI / 2}>
-            <cylinderGeometry args={[radius, radius * 0.86, band.thickness * 1.1, 16]} />
-            <meshPhysicalMaterial color="#08090b" metalness={0.1} roughness={0.75} envMapIntensity={0.25} />
-          </mesh>
-        )
-      })}
-
       {band.closure === 'tuck' ? (
-        // Sport Band pin-and-tuck: the only hardware on show is the pin stud
-        // on the lapping strap's tip, seated in a shallow dark socket.
+        // Sport Band pin-and-tuck: the twelve-o'clock strap's pin stud comes
+        // up through one of the punched holes, its polished head sitting
+        // flush in the opening — the only hardware the band shows.
         <group position={pinStud.position} rotation-x={pinStud.rotX}>
           <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[band.thickness * 0.62, band.thickness * 0.68, band.thickness * 0.5, 24]} />
+            <cylinderGeometry args={[band.thickness * 0.55, band.thickness * 0.62, band.thickness * 1.5, 24]} />
             <meshPhysicalMaterial color="#0d0e11" metalness={0.2} roughness={0.6} envMapIntensity={0.3} />
           </mesh>
-          <mesh rotation-x={Math.PI / 2} position-y={band.thickness * 0.16}>
-            <cylinderGeometry args={[band.thickness * 0.4, band.thickness * 0.44, band.thickness * 0.36, 24]} />
-            <meshPhysicalMaterial color="#aeb4bd" metalness={0.92} roughness={0.26} envMapIntensity={1.2} />
+          <mesh rotation-x={Math.PI / 2} position-y={band.thickness * 0.5}>
+            <cylinderGeometry args={[band.holeRadius * 0.96, band.holeRadius * 0.8, band.thickness * 0.5, 24]} />
+            <meshPhysicalMaterial color="#b6bcc5" metalness={0.92} roughness={0.24} envMapIntensity={1.3} />
           </mesh>
         </group>
       ) : (
         <>
-          {/* pin buckle: a stainless frame straddling both straps, with the
-              tongue crossing it into the tail's holes */}
+          {/* stainless pin buckle: a frame straddling the strap below, its
+              tongue rising through the lapping tail's hole */}
           <group position={buckleFrame.position} rotation-x={buckleFrame.rotX}>
             {([1, -1] as const).map((s) => (
               <RoundedBox
                 key={s}
-                args={[0.07, 0.1, band.thickness * 2.6]}
-                radius={0.026}
-                position={[s * (band.width / 2 + 0.035), 0, 0]}
+                args={[0.062, band.thickness * 3.1, 0.5]}
+                radius={0.024}
+                position={[s * (band.width / 2 + 0.032), 0, 0]}
               >
-                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.28} envMapIntensity={1.2} />
+                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.26} envMapIntensity={1.3} />
               </RoundedBox>
             ))}
             {([1, -1] as const).map((s) => (
               <RoundedBox
                 key={s}
-                args={[band.width + 0.14, 0.1, 0.062]}
-                radius={0.026}
-                position={[0, 0, s * band.thickness * 1.24]}
+                args={[band.width + 0.13, band.thickness * 3.1, 0.062]}
+                radius={0.024}
+                position={[0, 0, s * 0.25]}
               >
-                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.28} envMapIntensity={1.2} />
+                <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.26} envMapIntensity={1.3} />
               </RoundedBox>
             ))}
-            <mesh rotation-z={Math.PI / 2} position-y={band.thickness * 0.7}>
-              <cylinderGeometry args={[0.022, 0.022, band.width * 0.55, 12]} />
-              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.24} />
+            {/* the tongue, hinged on the far bar and rising through the hole */}
+            <mesh rotation-z={Math.PI / 2} position={[0, 0, 0.25]}>
+              <cylinderGeometry args={[0.019, 0.019, band.width * 0.6, 12]} />
+              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} />
+            </mesh>
+            <mesh position={[0, band.thickness * 0.85, 0.08]} rotation-x={-0.5}>
+              <cylinderGeometry args={[0.016, 0.021, 0.4, 10]} />
+              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} />
             </mesh>
           </group>
           {/* keeper: the rubber loop the tail threads back through */}
@@ -487,9 +572,9 @@ function WatchImpl({
             {([1, -1] as const).map((s) => (
               <RoundedBox
                 key={s}
-                args={[band.tipWidth + 0.11, 0.14, 0.05]}
-                radius={0.022}
-                position={[0, 0, s * (band.thickness * 0.72 + 0.025)]}
+                args={[band.tipWidth + 0.1, 0.15, 0.046]}
+                radius={0.02}
+                position={[0, s * (band.thickness * 0.9 + 0.023), 0]}
               >
                 <meshPhysicalMaterial color={bandColor} metalness={0} roughness={0.62} sheen={0.4} sheenRoughness={0.85} />
               </RoundedBox>
@@ -497,9 +582,9 @@ function WatchImpl({
             {([1, -1] as const).map((s) => (
               <RoundedBox
                 key={s}
-                args={[0.05, 0.14, band.thickness * 1.5]}
-                radius={0.02}
-                position={[s * (band.tipWidth / 2 + 0.03), 0, 0]}
+                args={[0.046, band.thickness * 1.9, 0.15]}
+                radius={0.018}
+                position={[s * (band.tipWidth / 2 + 0.028), 0, 0]}
               >
                 <meshPhysicalMaterial color={bandColor} metalness={0} roughness={0.62} sheen={0.4} sheenRoughness={0.85} />
               </RoundedBox>

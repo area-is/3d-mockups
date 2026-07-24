@@ -36,6 +36,7 @@ import {
  *               | phone | iphone | bus | van | shelter | tv | idcard
  *               | store | magazine (default tablet)
  *   pvariant    device variant id                  (phone, iphone)
+ *   bandOpen    1 | 0 — unbuckled band             (watch)
  *   variant     device variant id                  (tablet only)
  *   colorway    retail colorway id                 | color=#hex overrides
  *   orientation portrait | landscape               (tablet)
@@ -310,6 +311,7 @@ function HarnessScene() {
           colorway={colorway}
           color={color}
           bandColor={params.get('bandColor') ?? undefined}
+          bandOpen={params.get('bandOpen') === '1'}
           rotation={[rx, ry, 0]}
           interactive={false}
           dragToRotate={false}

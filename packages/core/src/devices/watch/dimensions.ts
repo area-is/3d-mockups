@@ -76,13 +76,21 @@ export interface WatchSpec {
   bandSlot?: { width: number; height: number; z: number }
   /**
    * Wristband, worn on an invisible wrist: TWO straps, like the real product.
-   * The twelve-o'clock strap carries the closure, the six-o'clock strap runs
-   * past it and its tail is held down — never one continuous rubber ring.
+   *
+   * Both bands work the same way. The **twelve-o'clock strap** carries the
+   * closure hardware (Apple's pin stud, Samsung's buckle frame) and lies
+   * against the wrist. The **six-o'clock strap** is the long one: it carries
+   * the row of punched adjustment holes, laps OVER the twelve-o'clock strap
+   * past the closure — the pin comes up through one of its holes — and runs
+   * on as a free tail. It is never one continuous rubber ring, and the tail
+   * is long: on the retail product it reaches most of the way back round.
    *
    * The loop is an ovoid (see `WristLoop`): the vertical radius eases from
    * `ryFront` at the case to `ryBack` at the far side of the wrist, `rz` is
    * the depth radius around `centerZ`, and both straps emerge `startAngle`
    * degrees off the front axis so their cut ends stay buried in the case.
+   * Every other angle below is measured the same way — 90° is the
+   * twelve-o'clock side, 180° the underside of the wrist, 270° six o'clock.
    */
   band: {
     /** Width where the strap meets the case (the lug shoulder). */
@@ -95,17 +103,33 @@ export interface WatchSpec {
     /** How far the outer face domes above the nominal thickness. */
     crown: number
     /**
-     * `tuck` is Apple's Sport Band: no metal frame — the twelve-o'clock strap
-     * laps over the other and a small pin stud shows on its tip.
-     * `buckle` is the classic pin buckle with a keeper.
+     * `tuck` is Apple's Sport Band: no metal frame — a pin stud on the
+     * twelve-o'clock strap comes up through a hole and the tail tucks into
+     * the slot behind it. `buckle` is the classic pin buckle with a keeper.
      */
     closure: 'tuck' | 'buckle'
-    /** Sweep angle (deg) where the closure sits on the wrist's underside. */
-    closureAngle: number
-    /** How far past the closure the six-o'clock strap's tail runs (deg). */
-    tailOverrun: number
-    /** Adjustment holes punched along the tail, as sweep angles (deg). */
-    holes: { angle: number; radius: number }[]
+    /** Where the twelve-o'clock strap ends, under the lapping tail (worn). */
+    pinStrapEnd: number
+    /** Where the six-o'clock strap's free tip ends (worn). */
+    tailEnd: number
+    /**
+     * Adjustment holes punched clean through the six-o'clock strap, as
+     * normalized positions along it (0 at the lug, 1 at the tip). Positions
+     * rather than sweep angles, so the row stays ON the strap whichever pose
+     * the band is in — the unbuckled pose sweeps a different arc.
+     */
+    holes: number[]
+    holeRadius: number
+    /** Which hole the pin / buckle tongue engages when the band is worn. */
+    closureHole: number
+    /** Where the keeper sits along the six-o'clock strap, worn. */
+    keeperT?: number
+    /**
+     * How much the loop opens out when the band is unbuckled: the straps keep
+     * their length and the oval grows, so the two ends part instead of
+     * overlapping — the relaxed curl of a product shot.
+     */
+    openScale: number
     loop: WristLoop
   }
 }
@@ -118,7 +142,7 @@ const SERIES_11: WatchSpec = {
   display: { width: 1.808, height: 2.158, radius: 0.62 },
   resolution: 208,
   // Crown center ~31% down the right edge; ~7.3 mm knurled barrel, ~2 mm proud.
-  crown: { y: 0.48, radius: 0.205, thickness: 0.19, proud: 0.115, teeth: 30, toothDepth: 0.016 },
+  crown: { y: 0.48, radius: 0.205, thickness: 0.19, proud: 0.115, teeth: 46, toothDepth: 0.0085 },
   // Flush side button in its recess, center ~62% down the edge (~10.3 x 2.8 mm).
   buttons: [{ y: -0.31, length: 0.58, width: 0.16, proud: 0.012 }],
   // Mic hole between crown and side button.
@@ -127,20 +151,29 @@ const SERIES_11: WatchSpec = {
   speaker: [{ y: 0, length: 0.92, height: 0.06 }],
   // Sport Band slot channel in the flat top/bottom edges, offset case-back.
   bandSlot: { width: 1.37, height: 0.24, z: -0.16 },
-  // Sport Band: fills the lug slot, narrows to a 22 mm strap, and closes with
-  // the pin-and-tuck — the twelve-o'clock strap laps over the six-o'clock
-  // one, its pin stud showing on the outer face.
+  // Sport Band: fills the lug slot, narrows to a 22 mm strap, and closes
+  // pin-and-tuck — six evenly spaced adjustment holes punched through the
+  // long strap, the twelve-o'clock strap's pin coming up through the middle
+  // one, and a long tail running on past it.
   band: {
     lugWidth: 1.33,
     width: 1.24,
-    tipWidth: 1.15,
+    tipWidth: 1.16,
     thickness: 0.15,
     crown: 0.045,
     closure: 'tuck',
-    closureAngle: 176,
-    tailOverrun: 34,
-    holes: [],
-    loop: { ryFront: 1.6, ryBack: 1.34, rz: 1.06, centerZ: -0.7, startAngle: 30 },
+    // Sized from the retail fit range, not eyeballed. The loop below is a
+    // 58 x 45 mm wrist (~162 mm round); the 46 mm M/L Sport Band fits up to
+    // 210 mm, so the two straps carry ~183 mm of material — 300 deg to wrap
+    // the wrist plus ~105 deg of tail past the closure. Apple's two pieces
+    // are unequal: the pin strap is the short one, roughly 40 / 60.
+    pinStrapEnd: 192,
+    tailEnd: 86,
+    holes: [0.476, 0.534, 0.591, 0.649, 0.706, 0.764],
+    holeRadius: 0.112,
+    closureHole: 2,
+    openScale: 1.35,
+    loop: { ryFront: 1.78, ryBack: 1.5, rz: 1.27, centerZ: -1.05, startAngle: 30 },
   },
 }
 
@@ -164,22 +197,26 @@ const GALAXY_WATCH_8: WatchSpec = {
     { y: -0.26, length: 0.37, height: 0.05 },
   ],
   // Dynamic Lug band: nearly case-wide where it attaches, tapering hard
-  // around the wrist to a classic pin buckle with a keeper.
+  // around the wrist to a stainless pin buckle, its tongue through one of the
+  // punched holes and the tail threaded back through a rubber keeper.
   band: {
     lugWidth: 1.94,
-    width: 1.44,
-    tipWidth: 1.08,
+    width: 1.42,
+    tipWidth: 1.06,
     thickness: 0.135,
     crown: 0.038,
     closure: 'buckle',
-    closureAngle: 172,
-    tailOverrun: 40,
-    holes: [
-      { angle: 152, radius: 0.052 },
-      { angle: 138, radius: 0.052 },
-      { angle: 124, radius: 0.052 },
-    ],
-    loop: { ryFront: 1.55, ryBack: 1.3, rz: 1.0, centerZ: -0.62, startAngle: 34 },
+    // Same sizing pass as the Sport Band: a 56 x 43 mm wrist (~157 mm round)
+    // with ~170 mm of strap, so the tail still reaches the ~200 mm top of the
+    // band's fit range and stands well past the buckle.
+    pinStrapEnd: 198,
+    tailEnd: 98,
+    holes: [0.465, 0.527, 0.588, 0.649, 0.711, 0.772],
+    holeRadius: 0.072,
+    closureHole: 2,
+    keeperT: 0.72,
+    openScale: 1.32,
+    loop: { ryFront: 1.72, ryBack: 1.46, rz: 1.22, centerZ: -0.98, startAngle: 34 },
   },
 }
 
@@ -200,7 +237,7 @@ export const WATCH_DEFAULT_VARIANT: WatchVariant = 'series11'
  * 0.1 contact gap.
  */
 export const WATCH_FRAMING = {
-  camera: { position: [0, 0.4, 6.9], fov: 40 },
+  camera: { position: [0, 0.4, 7.7], fov: 40 },
   floatIntensity: 0.6,
   contactGap: 0.1,
   extent: ({ variant }) => {
