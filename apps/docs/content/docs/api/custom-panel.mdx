@@ -13,8 +13,11 @@ live DOM.
 <ObjectDemo demo="custom-panel-basic" checker />
 
 ```tsx
-<CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} deviceProps={{ rotation: [0, 0.25, 0] }}>
+<CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} rotation={[0, 0.25, 0]}>
   <YourArtwork />
+  <CustomPanelMockup.Back>
+    <BackArtwork />
+  </CustomPanelMockup.Back>
 </CustomPanelMockup>
 ```
 
@@ -25,18 +28,28 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `{ width, height, thickness? }` | required | Panel size in millimeters. `thickness` defaults to 5. |
-| `back` | `ReactNode` | - | Back face design. |
 | `color` | `string` | `'#f2f1ed'` | Stock color: edges, and the back when unprinted. |
 | `cornerRadius` | `number` | `2` | Corner rounding in millimeters. |
-| `faceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed face. |
 | `resolution` | `number` | `560` | Virtual front face width in CSS px. |
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<CustomPanelMockup.Front>` | Front face (bare children). |
+| `<CustomPanelMockup.Back>` | Back face. |
+
+Every slot takes per-surface overrides — `background`, `resolution`,
+`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+same slots exist on the bare `<CustomPanel>`.
 
 `customPanelScale(size)` is exported if you need the world-units-per-mm
 factor (e.g. to position several panels in one scene).
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

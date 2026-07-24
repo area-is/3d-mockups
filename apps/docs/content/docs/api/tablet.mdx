@@ -19,7 +19,7 @@ The virtual display swaps to 1376×1032 — real desktop-class layouts apply.
 <ObjectDemo demo="tablet-landscape" checker />
 
 ```tsx
-<TabletMockup orientation="landscape" deviceProps={{ rotation: [0, -0.3, 0] }}>
+<TabletMockup orientation="landscape" rotation={[0, -0.3, 0]}>
   <YourApp />
 </TabletMockup>
 ```
@@ -104,7 +104,7 @@ hardware; spin it to catch the dual camera rings and the wordmark.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

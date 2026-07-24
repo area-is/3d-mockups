@@ -44,7 +44,7 @@ wraps around the cameras exactly like the real FlexWindow:
 <ObjectDemo demo="flip-closed" />
 
 ```tsx
-<FlipMockup open={false} autoRotate float color="#e5502e" frameColor="#f06a45" screenBackground="#000">
+<FlipMockup open={false} autoRotate float color="#e5502e" frameColor="#f06a45" surfaceBackground="#000">
   <LockScreen /> {/* now on the square cover screen */}
 </FlipMockup>
 ```
@@ -70,7 +70,7 @@ Jet Black `#26282c`, or Mint `#bfe3d0` with `frameColor="#a9cdb9"`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
