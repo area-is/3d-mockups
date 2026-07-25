@@ -126,9 +126,10 @@ function StudioDisplayImpl({
       leanDeg,
       attachY,
       footFrontZ,
+      footBackZ,
       footThickness,
-      outerKneeRadius: Ro,
-      innerKneeRadius: Ri,
+      backFillet: Rb,
+      frontFillet: Rf,
       hingeRadius,
       cutout,
     } = stand
@@ -145,33 +146,37 @@ function StudioDisplayImpl({
     const footTopY = deskY + footThickness
     const tangentAngle = Math.atan2(n.y, n.z) + Math.PI
 
-    // Outer knee: tangent to the desk plane and to the arm's back face.
-    const oC = { y: deskY + Ro, z: 0 }
-    oC.z = (cBack + Ro - n.y * oC.y) / n.z
-    const oTan = { z: oC.z - n.z * Ro, y: oC.y - n.y * Ro }
-    // Inner knee: fillet between the foot's top face and the arm's front face.
-    const iC = { y: footTopY + Ri, z: 0 }
-    iC.z = (cFront + Ri - n.y * iC.y) / n.z
-    const iTan = { z: iC.z - n.z * Ri, y: iC.y - n.y * Ri }
-    // Cap the knee piece just above the tangencies — the cut hides inside
+    // Both fillets are CONCAVE — the corners where the arm rises out of the
+    // plate — so each circle sits outside the metal: above the plate's top
+    // face, and off the arm face it touches.
+    const bC = { y: footTopY + Rb, z: 0 }
+    bC.z = (cBack - Rb - n.y * bC.y) / n.z
+    const bTan = { z: bC.z + n.z * Rb, y: bC.y + n.y * Rb }
+    const fC = { y: footTopY + Rf, z: 0 }
+    fC.z = (cFront + Rf - n.y * fC.y) / n.z
+    const fTan = { z: fC.z - n.z * Rf, y: fC.y - n.y * Rf }
+    // Cap the plate piece just above the tangencies — the cut hides inside
     // the (slightly thicker) arm slab that overlaps it.
-    const yCut = Math.max(oTan.y, iTan.y) + 0.17
-    const zCutBack = oTan.z + (d.z / d.y) * (yCut - oTan.y)
-    const zCutFront = iTan.z + (d.z / d.y) * (yCut - iTan.y)
-    // Rounded front lip of the foot.
+    const yCut = Math.max(bTan.y, fTan.y) + 0.17
+    const zCutBack = bTan.z + (d.z / d.y) * (yCut - bTan.y)
+    const zCutFront = fTan.z + (d.z / d.y) * (yCut - fTan.y)
+    // Rounded lips at both ends of the foot plate.
     const r = footThickness / 2
-    const cap = { z: footFrontZ - r, y: deskY + r }
+    const front = { z: footFrontZ - r, y: deskY + r }
+    const back = { z: footBackZ + r, y: deskY + r }
 
     const shape = new THREE.Shape()
-    shape.moveTo(cap.z, deskY)
-    shape.lineTo(oC.z, deskY)
-    shape.absarc(oC.z, oC.y, Ro, -Math.PI / 2, tangentAngle, true)
+    shape.moveTo(front.z, deskY)
+    shape.lineTo(back.z, deskY)
+    shape.absarc(back.z, back.y, r, -Math.PI / 2, Math.PI / 2, true)
+    shape.lineTo(bC.z, footTopY)
+    shape.absarc(bC.z, bC.y, Rb, -Math.PI / 2, Math.atan2(n.y, n.z), false)
     shape.lineTo(zCutBack, yCut)
     shape.lineTo(zCutFront, yCut)
-    shape.lineTo(iTan.z, iTan.y)
-    shape.absarc(iC.z, iC.y, Ri, tangentAngle, -Math.PI / 2, false)
-    shape.lineTo(cap.z, footTopY)
-    shape.absarc(cap.z, cap.y, r, Math.PI / 2, -Math.PI / 2, true)
+    shape.lineTo(fTan.z, fTan.y)
+    shape.absarc(fC.z, fC.y, Rf, tangentAngle, -Math.PI / 2, false)
+    shape.lineTo(front.z, footTopY)
+    shape.absarc(front.z, front.y, r, Math.PI / 2, -Math.PI / 2, true)
 
     const bevel = 0.012
     const extrudeW = width - bevel * 2
@@ -190,13 +195,16 @@ function StudioDisplayImpl({
     // center at +armLen/2) with the stadium cutout as a real punched
     // opening — the extrude bevel rounds its bore, giving the rim highlight
     // the product photos show around the opening.
-    const armLen = (hinge.y - yCut) / d.y + 0.24
+    // The arm's rounded top stands a little proud of the hinge, exactly as the
+    // rear photography shows it above the pivot.
+    const topProud = 0.1
+    const armLen = (hinge.y - yCut) / d.y + 0.24 + topProud
     const armShape = roundedRectShape(width - 0.016, armLen, 0.05)
     // The cutout's center sits `edgeOffset` above the enclosure's bottom
     // edge: the power inlet shows through its upper half, open air through
     // the lower; from the front it hides behind the panel.
     const holeWorldY = -body.height / 2 + cutout.edgeOffset
-    const holeCenterS = armLen / 2 - (hinge.y - holeWorldY) / d.y
+    const holeCenterS = armLen / 2 - topProud - (hinge.y - holeWorldY) / d.y
     const capR = cutout.width / 2
     const straight = Math.max(0, cutout.length / 2 - capR)
     const holePath = new THREE.Path()
@@ -217,13 +225,12 @@ function StudioDisplayImpl({
     armSlab.rotateX(lean)
     const armPos: [number, number, number] = [
       0,
-      hinge.y - (d.y * armLen) / 2,
-      hinge.z - (d.z * armLen) / 2,
+      hinge.y + d.y * (topProud - armLen / 2),
+      hinge.z + d.z * (topProud - armLen / 2),
     ]
 
-    // Rubber pad positions on the foot's underside — front pair under the
-    // lip, rear pair just ahead of the knee's desk tangency.
-    const feetZ = { front: footFrontZ - 0.15, rear: oC.z + 0.05 }
+    // Rubber pad positions on the plate's underside — a pair inside each lip.
+    const feetZ = { front: footFrontZ - 0.16, rear: footBackZ + 0.16 }
 
     return { footKnee, armSlab, armPos, hinge, feetZ }
   }, [body, stand, standHeight])
