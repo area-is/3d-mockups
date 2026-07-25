@@ -156,7 +156,13 @@ export interface FastenedWatchBand extends WatchBandBase {
    * the band is in — the unbuckled pose sweeps a different arc.
    */
   holes: number[]
+  /** Half-width of a hole across the strap. */
   holeRadius: number
+  /**
+   * Length of a hole along the strap. The Galaxy band's are elongated slots,
+   * not drillings; set it equal to `holeRadius * 2` for a round hole.
+   */
+  holeLength: number
   /** Which hole the pin / buckle tongue engages when the band is worn. */
   closureHole: number
   /** Where the keeper sits along the six-o'clock strap, worn. */
@@ -261,7 +267,8 @@ const GALAXY_WATCH_8: WatchSpec = {
     pinStrapEnd: 198,
     tailEnd: 98,
     holes: [0.465, 0.527, 0.588, 0.649, 0.711, 0.772],
-    holeRadius: 0.072,
+    holeRadius: 0.058,
+    holeLength: 0.185,
     closureHole: 2,
     keeperT: 0.72,
     openRadius: 3.35,
