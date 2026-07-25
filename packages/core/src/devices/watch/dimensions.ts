@@ -9,9 +9,9 @@
  *   bottom (per Apple's product photography): knurled Digital Crown (~7.3 mm
  *   gear-toothed barrel with a flat end cap, protruding ~2 mm), a single
  *   microphone hole, then the elongated flush side button sitting in a
- *   machined recess below center. Left edge: one slim machined speaker slot.
- *   The Sport Band slides into dark band slots in the case's flat top/bottom
- *   edges, offset toward the case back.
+ *   machined recess below center. Left edge: a fine perforated speaker
+ *   grille. The Solo Loop slides into dark band slots in the case's flat
+ *   top/bottom edges, offset toward the case back.
  * - Galaxy Watch 8, 44 mm: 46.0 x 43.7 x 8.6 mm "cushion" case (squircle
  *   aluminum armor with a flat top) carrying a RAISED round dial — the fully
  *   round 1.47" 480x480 sAMOLED sits on a slightly protruding black puck, so
@@ -22,12 +22,11 @@
  *   run. The Dynamic Lug band is nearly case-wide where it attaches and
  *   tapers around the wrist.
  *
- * The wristband is worn on an invisible wrist directly behind the case
- * (product photos show the strap peeking only a few mm past the case outline,
- * wrist oval ~55 x 40 mm). It is two straps, not a ring: each leaves the case
- * through the band slot in its edge, and they meet at a closure on the
- * underside of the wrist — pin-and-tuck on the Sport Band, pin buckle and
- * keeper on the Galaxy band.
+ * The wristband is worn on an invisible wrist directly behind the case (a
+ * ~58 x 45 mm oval, the wrist a 46 mm watch is sold for). The Apple wears the
+ * Solo Loop: one seamless stretchy band with no closure, no holes and no
+ * hardware, flaring into the lug slots at both ends. The Galaxy wears a
+ * two-strap band closing with a pin buckle and keeper on the underside.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
@@ -97,67 +96,83 @@ export interface WatchSpec {
     coilRing?: number
   }
   /**
-   * Wristband, worn on an invisible wrist: TWO straps, like the real product.
+   * Wristband. Two families, discriminated on `closure`.
    *
-   * Both bands work the same way. The **twelve-o'clock strap** carries the
-   * closure hardware (Apple's pin stud, Samsung's buckle frame) and lies
-   * against the wrist. The **six-o'clock strap** is the long one: it carries
-   * the row of punched adjustment holes, laps OVER the twelve-o'clock strap
-   * past the closure — the pin comes up through one of its holes — and runs
-   * on as a free tail. It is never one continuous rubber ring, and the tail
-   * is long: on the retail product it reaches most of the way back round.
+   * `seamless` is Apple's Solo Loop: ONE continuous stretchy band with no
+   * closure, no holes and no hardware of any kind — it simply flares into the
+   * lugs at both ends and is sized to the wrist rather than adjusted.
+   *
+   * `tuck` and `buckle` are the two-strap bands. The twelve-o'clock strap
+   * carries the closure hardware and lies against the wrist; the six-o'clock
+   * strap is the long one, carrying the row of punched adjustment holes,
+   * lapping OVER the other past the closure — the pin or buckle tongue comes
+   * up through one of its holes — and running on as a free tail.
    *
    * The loop is an ovoid (see `WristLoop`): the vertical radius eases from
    * `ryFront` at the case to `ryBack` at the far side of the wrist, `rz` is
-   * the depth radius around `centerZ`, and both straps emerge `startAngle`
-   * degrees off the front axis so their cut ends stay buried in the case.
+   * the depth radius around `centerZ`, and the band emerges `startAngle`
+   * degrees off the front axis so its cut ends stay buried in the case.
    * Every other angle below is measured the same way — 90° is the
    * twelve-o'clock side, 180° the underside of the wrist, 270° six o'clock.
    */
-  band: {
-    /** Width where the strap meets the case (the lug shoulder). */
-    lugWidth: number
-    /** Width along the strap's free run. */
-    width: number
-    /** Width at the free tip — tapered straps (Galaxy's Dynamic Lug band). */
-    tipWidth: number
-    thickness: number
-    /** How far the outer face domes above the nominal thickness. */
-    crown: number
-    /**
-     * `tuck` is Apple's Sport Band: no metal frame — a pin stud on the
-     * twelve-o'clock strap comes up through a hole and the tail tucks into
-     * the slot behind it. `buckle` is the classic pin buckle with a keeper.
-     */
-    closure: 'tuck' | 'buckle'
-    /** Where the twelve-o'clock strap ends, under the lapping tail (worn). */
-    pinStrapEnd: number
-    /** Where the six-o'clock strap's free tip ends (worn). */
-    tailEnd: number
-    /**
-     * Adjustment holes punched clean through the six-o'clock strap, as
-     * normalized positions along it (0 at the lug, 1 at the tip). Positions
-     * rather than sweep angles, so the row stays ON the strap whichever pose
-     * the band is in — the unbuckled pose sweeps a different arc.
-     */
-    holes: number[]
-    holeRadius: number
-    /** Which hole the pin / buckle tongue engages when the band is worn. */
-    closureHole: number
-    /** Where the keeper sits along the six-o'clock strap, worn. */
-    keeperT?: number
-    /**
-     * Radius of the gentle arc the band lies on when unbuckled. A closed loop
-     * always hides the case back from behind — the far side of the strap is
-     * between the camera and the watch — so the open pose is a wide, nearly
-     * flat C on a much larger radius: the straps run out past the case, the
-     * whole hole row and closure face the camera, and the back is clear. The
-     * straps keep their true length, so the arc they subtend follows from it.
-     */
-    openRadius: number
-    loop: WristLoop
-  }
+  band: WatchBand
 }
+
+/** Shared by every band, whatever its closure. */
+interface WatchBandBase {
+  /** Width where the band meets the case (the lug shoulder). */
+  lugWidth: number
+  /** Width along the band's free run. */
+  width: number
+  thickness: number
+  /** How far the outer face domes above the nominal thickness. */
+  crown: number
+  loop: WristLoop
+}
+
+/** Apple's Solo Loop: one continuous band, no closure, no holes, no hardware. */
+export interface SeamlessWatchBand extends WatchBandBase {
+  closure: 'seamless'
+}
+
+/** A two-strap band closing with a pin-and-tuck lap or a pin buckle. */
+export interface FastenedWatchBand extends WatchBandBase {
+  /**
+   * `tuck` is the Sport Band: a pin stud on the twelve-o'clock strap comes up
+   * through a hole and the tail tucks into the slot behind it. `buckle` is the
+   * classic pin buckle with a keeper.
+   */
+  closure: 'tuck' | 'buckle'
+  /** Width at the free tip — tapered straps (Galaxy's Dynamic Lug band). */
+  tipWidth: number
+  /** Where the twelve-o'clock strap ends, under the lapping tail (worn). */
+  pinStrapEnd: number
+  /** Where the six-o'clock strap's free tip ends (worn). */
+  tailEnd: number
+  /**
+   * Adjustment holes punched clean through the six-o'clock strap, as
+   * normalized positions along it (0 at the lug, 1 at the tip). Positions
+   * rather than sweep angles, so the row stays ON the strap whichever pose
+   * the band is in — the unbuckled pose sweeps a different arc.
+   */
+  holes: number[]
+  holeRadius: number
+  /** Which hole the pin / buckle tongue engages when the band is worn. */
+  closureHole: number
+  /** Where the keeper sits along the six-o'clock strap, worn. */
+  keeperT?: number
+  /**
+   * Radius of the gentle arc the band lies on when unbuckled. A closed loop
+   * always hides the case back from behind — the far side of the strap is
+   * between the camera and the watch — so the open pose is a wide, nearly
+   * flat C on a much larger radius: the straps run out past the case, the
+   * whole hole row and closure face the camera, and the back is clear. The
+   * straps keep their true length, so the arc they subtend follows from it.
+   */
+  openRadius: number
+}
+
+export type WatchBand = SeamlessWatchBand | FastenedWatchBand
 
 /** Apple Watch Series 11, 46 mm. Logical resolution 208x248 pt. */
 const SERIES_11: WatchSpec = {
@@ -186,28 +201,16 @@ const SERIES_11: WatchSpec = {
     electrode: { inner: 0.6, outer: 0.68 },
     coilRing: 0.86,
   },
-  // Sport Band: fills the lug slot, narrows to a 22 mm strap, and closes
-  // pin-and-tuck — six evenly spaced adjustment holes punched through the
-  // long strap, the twelve-o'clock strap's pin coming up through the middle
-  // one, and a long tail running on past it.
+  // Solo Loop: ONE continuous stretchy band, no closure, no holes, no
+  // hardware — it flares into the lug slots at both ends and is sized to the
+  // wrist rather than adjusted. The loop below is a 58 x 45 mm wrist (~162 mm
+  // round), which is what a Solo Loop is cut to.
   band: {
+    closure: 'seamless',
     lugWidth: 1.33,
-    width: 1.24,
-    tipWidth: 1.16,
-    thickness: 0.15,
-    crown: 0.045,
-    closure: 'tuck',
-    // Sized from the retail fit range, not eyeballed. The loop below is a
-    // 58 x 45 mm wrist (~162 mm round); the 46 mm M/L Sport Band fits up to
-    // 210 mm, so the two straps carry ~183 mm of material — 300 deg to wrap
-    // the wrist plus ~105 deg of tail past the closure. Apple's two pieces
-    // are unequal: the pin strap is the short one, roughly 40 / 60.
-    pinStrapEnd: 192,
-    tailEnd: 86,
-    holes: [0.476, 0.534, 0.591, 0.649, 0.706, 0.764],
-    holeRadius: 0.112,
-    closureHole: 2,
-    openRadius: 3.5,
+    width: 1.235,
+    thickness: 0.152,
+    crown: 0.05,
     loop: { ryFront: 1.78, ryBack: 1.5, rz: 1.27, centerZ: -1.05, startAngle: 30 },
   },
 }
@@ -288,7 +291,8 @@ export const WATCH_FRAMING = {
   contactGap: 0.1,
   extent: ({ variant, bandOpen }) => {
     const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
-    if (bandOpen) return watchOpenExtent(band)
+    // A seamless band has no closure to undo, so `bandOpen` cannot change it.
+    if (bandOpen && band.closure !== 'seamless') return watchOpenExtent(band)
     return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
   },
 } as const satisfies MockupFraming<{ variant?: WatchVariant; bandOpen?: boolean }>
@@ -298,7 +302,7 @@ export const WATCH_FRAMING = {
  * length on the worn loop transferred onto `openRadius`. Shared by the scene
  * component and the framing so the two never drift.
  */
-export function watchOpenSweeps(band: WatchSpec['band']): { pin: number; tail: number } {
+export function watchOpenSweeps(band: FastenedWatchBand): { pin: number; tail: number } {
   const { ryFront, ryBack, rz, startAngle } = band.loop
   const a = (ryFront + ryBack) / 2
   // Ramanujan's ellipse perimeter — accurate to a few parts in 10^5 here.
@@ -311,7 +315,7 @@ export function watchOpenSweeps(band: WatchSpec['band']): { pin: number; tail: n
 }
 
 /** Half-height of the open band, for framing and the contact shadow. */
-export function watchOpenExtent(band: WatchSpec['band']): number {
+export function watchOpenExtent(band: FastenedWatchBand): number {
   const { openRadius } = band
   const { pin, tail } = watchOpenSweeps(band)
   const start = WATCH_OPEN_START
