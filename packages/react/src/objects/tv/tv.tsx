@@ -33,9 +33,9 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
   size?: number
   /**
    * Which design: `'legs'` the wide 4K set on splayed A-frame feet (default),
-   * `'pedestal'` the OLED class on a center plate, `'frame'` the picture-frame
-   * class — a uniform thick bezel on an even-thickness slab (its electronics
-   * live in an external connect box) standing on snap-in blade feet.
+   * `'pedestal'` the Neo QLED class on a center plate, `'frame'` the
+   * picture-frame class — a uniform thick bezel on an even-thickness slab (its
+   * electronics live in an external connect box), wall-hung on nothing.
    */
   variant?: TVVariant
   /** Enclosure colorway (frame, back, feet). */
@@ -133,6 +133,18 @@ function TVSetImpl({
   }, [stand])
 
   const plastic = <meshPhysicalMaterial color={color} metalness={0.55} roughness={0.42} />
+  // The pedestal's plate is a big flat face aimed straight up, and the camera
+  // sees it at a grazing angle — where Fresnel drives the enclosure finish's
+  // reflectance to ~1 and the overhead softbox blows the whole plate white.
+  // Real center stands are dark graphite, so damp the specular right down.
+  const graphite = (
+    <meshPhysicalMaterial
+      color={color}
+      metalness={0.15}
+      roughness={0.72}
+      specularIntensity={0.3}
+    />
+  )
   const bayBottom = -body.height / 2 + body.centerY + 0.42
   const bulgeY = backBulge ? -(body.height - backBulge.height) / 2 + body.centerY + 0.1 : 0
   const bulgeZ = backBulge ? -body.depth / 2 - backBulge.depth / 2 + 0.02 : 0
@@ -366,7 +378,7 @@ function TVSetImpl({
               -body.depth / 2 - stand.neck.depth / 2 + 0.03,
             ]}
           >
-            {plastic}
+            {graphite}
           </RoundedBox>
           {/* the plate runs FORWARD from under the neck, the way a pedestal
               set sits at the back of its own base */}
@@ -379,29 +391,13 @@ function TVSetImpl({
               -body.depth / 2 - stand.neck.depth / 2 + 0.03 + (stand.plate.depth - stand.neck.depth) / 2,
             ]}
           >
-            {plastic}
+            {graphite}
           </RoundedBox>
         </>
       )}
 
-      {/* blade feet: one flat plate per end, standing on its edge square to
-          the panel — the snap-in tabletop stand of the picture-frame set */}
-      {stand.kind === 'blades' &&
-        ([1, -1] as const).map((sideX) => (
-          <RoundedBox
-            key={sideX}
-            args={[stand.thickness, stand.height + 0.05, stand.depth]}
-            radius={0.008}
-            position={[
-              sideX * stand.offsetX,
-              -body.height / 2 + body.centerY - stand.height / 2 + 0.025,
-              // front edge flush with the panel face, running back from there
-              body.depth / 2 - stand.depth / 2,
-            ]}
-          >
-            {plastic}
-          </RoundedBox>
-        ))}
+      {/* `stand.kind === 'none'` (the picture-frame set) renders nothing here:
+          it ships with a slim-fit wall mount and meets the surface directly */}
 
       {/* the live screen: real DOM, CSS3D-transformed onto the panel */}
       <DeviceScreen

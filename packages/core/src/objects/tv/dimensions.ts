@@ -11,15 +11,18 @@
  *   shallow electronics bulge low on the back, standing on two slim feet near
  *   the ends, each a pair of struts meeting at the cabinet in the shallow Λ of
  *   current retail stands.
- * - `pedestal` — the OLED class on a center plate (LG C5, 65": 1441 mm wide
- *   over a 1428.5 mm panel, so a ~6.2 mm frame; 880 mm tall on the stand, whose
- *   footprint is 470 x 230 mm). One slim neck rises from a low plate instead of
- *   feet, so the set can sit on furniture narrower than the panel.
+ * - `pedestal` — the Neo QLED class on a center plate, from Samsung's own
+ *   QN70F spec sheet (75": 1677.5 x 960.7 x 26.6 mm over a 1660.6 x 934.1 mm
+ *   panel, so an 8.45 mm frame and an 18.15 mm chin on a 26.6 mm AirSlim slab;
+ *   the AERO CENTER stand's footprint is 354.8 x 331.5 mm, and the 1017.5 mm
+ *   height-with-stand puts the panel 56.8 mm up). Samsung publishes that
+ *   footprint at four sizes, so the plate is interpolated between them rather
+ *   than scaled off one.
  * - `frame` — the picture-frame class (Samsung The Frame LS03F, 65":
  *   1458 x 833 x 25.4 mm over the same panel, i.e. a UNIFORM ~14.75 mm bezel
  *   with no chin, and a slab of even thickness because the electronics live in
- *   an external One Connect box). It stands on the snap-in blade feet Samsung
- *   ships for tabletop placement.
+ *   an external One Connect box). It ships with the Slim Fit Wall Mount and
+ *   hangs flush, so it stands on nothing: the panel meets the surface directly.
  *
  * Normalized to ~258 mm per world unit (the 65" panel is 5.6 units wide). The
  * origin is the panel center; the media-stand plane is `standHeight` below it.
@@ -52,6 +55,24 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 /** Which cabinet + stand design a set is built to. */
 export type TVVariant = 'legs' | 'pedestal' | 'frame'
 
+/** Linear interpolation across a published size table, clamped at both ends. */
+const fromTable = (table: readonly (readonly [number, number])[], d: number) => {
+  const first = table[0]!
+  const last = table[table.length - 1]!
+  if (d <= first[0]) return first[1]
+  if (d >= last[0]) return last[1]
+  for (let i = 1; i < table.length; i++) {
+    const [x1, y1] = table[i]!
+    const [x0, y0] = table[i - 1]!
+    if (d <= x1) return y0 + ((y1 - y0) * (d - x0)) / (x1 - x0)
+  }
+  return last[1]
+}
+
+/** Samsung's published AERO CENTER footprint (width, depth in mm) by diagonal. */
+const AERO_STAND_WIDTH = [[55, 263.9], [65, 314.3], [75, 354.8], [85, 375.4]] as const
+const AERO_STAND_DEPTH = [[55, 247.4], [65, 279.4], [75, 331.5], [85, 366.5]] as const
+
 /** The variant every binding defaults to. */
 export const TV_DEFAULT_VARIANT: TVVariant = 'legs'
 
@@ -63,8 +84,8 @@ export const TV_DEFAULT_VARIANT: TVVariant = 'legs'
  */
 const VARIANTS = {
   legs: { bezel: 7.6, chin: 14.6, depth: 0.11, bulge: 0.14, ports: true, logoBar: true, stand: 'splayed' },
-  pedestal: { bezel: 6.2, chin: 9.4, depth: 0.1, bulge: 0.135, ports: true, logoBar: true, stand: 'pedestal' },
-  frame: { bezel: 14.75, chin: 14.75, depth: 0.098, bulge: 0, ports: false, logoBar: false, stand: 'blades' },
+  pedestal: { bezel: 8.45, chin: 18.15, depth: 0.1031, bulge: 0.115, ports: true, logoBar: true, stand: 'pedestal' },
+  frame: { bezel: 14.75, chin: 14.75, depth: 0.098, bulge: 0, ports: false, logoBar: false, stand: 'none' },
 } as const satisfies Record<TVVariant, Record<string, unknown>>
 
 /**
@@ -89,34 +110,26 @@ export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARI
   const footInset = mm(clamp(105 + (d - 43) * 1.1, 100, 170))
   const footHeight = mm(clamp(58 + (d - 43) * 0.4, 55, 75))
   const footSpan = mm(clamp(240 + (d - 43) * 1.6, 230, 330))
-  // The center plate: 470 x 230 mm under a 65" C5, growing gently with the
-  // panel so a 98" set doesn't perch on a 65" plate.
-  const plateWidth = mm(clamp(470 + (d - 65) * 2.2, 380, 620))
-  const plateDepth = mm(clamp(230 + (d - 65) * 0.8, 200, 280))
-  const plateHeight = mm(20)
-  const neckLift = mm(clamp(60 + (d - 65) * 0.2, 52, 76))
-  // The Frame's snap-in blades: flat, straight and shallow, set well in from
-  // the panel ends so the set clears a narrower console.
-  const bladeInset = mm(clamp(150 + (d - 43) * 1.4, 140, 230))
-  const bladeHeight = mm(clamp(52 + (d - 43) * 0.3, 50, 66))
-  const bladeDepth = mm(clamp(150 + (d - 43) * 0.9, 145, 210))
+  // The AERO CENTER plate, interpolated across Samsung's published footprints,
+  // lifting the panel the 56.8 mm their height-with-stand figure works out to.
+  const plateWidth = mm(fromTable(AERO_STAND_WIDTH, d))
+  const plateDepth = mm(fromTable(AERO_STAND_DEPTH, d))
+  const plateHeight = mm(18)
+  const neckLift = mm(56.8)
   const stand =
     v.stand === 'pedestal'
       ? ({
           kind: 'pedestal' as const,
           /** The low plate on the media surface, and the neck rising from it. */
           plate: { width: plateWidth, depth: plateDepth, height: plateHeight },
-          neck: { width: mm(90), depth: mm(34), height: neckLift - plateHeight },
+          neck: { width: mm(96), depth: mm(38), height: neckLift - plateHeight },
           height: neckLift,
         } as const)
-      : v.stand === 'blades'
+      : v.stand === 'none'
         ? ({
-            kind: 'blades' as const,
-            /** One flat blade per end: a thin plate standing on its edge. */
-            offsetX: bodyW / 2 - bladeInset,
-            height: bladeHeight,
-            depth: bladeDepth,
-            thickness: mm(11),
+            /** Wall-flush: the panel meets the surface with nothing under it. */
+            kind: 'none' as const,
+            height: 0,
           } as const)
         : ({
             kind: 'splayed' as const,
@@ -156,7 +169,7 @@ export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARI
      * an external connect box.
      */
     portBay: v.ports ? { width: 0.62, height: 1.08, inset: 0.03 } : null,
-    /** How the set stands: splayed feet, a center pedestal, or blade feet. */
+    /** How the set stands: splayed feet, a center pedestal, or nothing. */
     stand,
     /** Distance from panel center down to the media-stand plane. */
     standHeight: bodyH / 2 - centerY + stand.height,

@@ -28,7 +28,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `variant` | `'legs' \| 'pedestal' \| 'frame'` | `'legs'` | Which design: splayed A-frame feet, a center pedestal, or the picture-frame set on blade feet. |
+| `variant` | `'legs' \| 'pedestal' \| 'frame'` | `'legs'` | Which design: splayed A-frame feet, a center pedestal, or the wall-hung picture-frame set. |
 | `size` | `number` | `65` | Diagonal in inches, clamped to 32–98. Panel scales; bezels, ports and stand follow real product ratios. |
 | `color` | `string` | `'#15171b'` | Enclosure colorway (frame, back, stand). |
 | `resolution` | `number` | `1920` | Virtual display width; 1920 gives 1920×1080. |
@@ -45,12 +45,15 @@ with a shallow electronics bulge low on the back, a recessed rear input bay
 ends — each a pair of wide-splayed struts, the shallow Λ stance of current
 retail stands.
 
-### `pedestal` — the OLED on a center plate
+### `pedestal` — the Neo QLED on a center plate
 
-Proportioned from the 65" LG C5: 1441 mm of cabinet over a 1428.5 mm panel,
-so a ~6.2 mm frame, standing 880 mm tall on a 470 × 230 mm plate. One slim
-neck drops from the cabinet onto that plate, so the set fits furniture
-narrower than the panel.
+Proportioned from Samsung's QN70F spec sheet. At 75": 1677.5 × 960.7 ×
+26.6 mm of cabinet over a 1660.6 × 934.1 mm panel — an 8.45 mm frame and an
+18.15 mm chin on a 26.6 mm AirSlim slab. One slim neck drops from the
+cabinet onto the AERO CENTER plate, lifting the panel 56.8 mm and letting
+the set fit furniture far narrower than itself. Samsung publishes that
+plate at four diagonals (55": 263.9 × 247.4 mm → 85": 375.4 × 366.5 mm),
+so `size` interpolates between them instead of scaling one footprint.
 
 <ObjectDemo demo="tv-pedestal" />
 
@@ -65,10 +68,10 @@ narrower than the panel.
 Proportioned from the 65" Samsung The Frame LS03F: 1458 × 833 × 25.4 mm
 over the same panel, which works out to a **uniform ~14.75 mm bezel with no
 chin** on a slab of even thickness (its electronics live in an external
-connect box, so there is no bulge and no rear bay). It stands on the
-snap-in blade feet Samsung ships for tabletop placement. Set `color` to one
-of the bezel finishes — `#1b1c1e` black, `#e8e4dd` white, `#a9825a` teak,
-`#6d5341` brown.
+connect box, so there is no bulge and no rear bay). It ships with the Slim
+Fit Wall Mount and hangs flush, so it stands on nothing — the panel meets
+the surface directly. Set `color` to one of the bezel finishes —
+`#1b1c1e` black, `#e8e4dd` white, `#a9825a` teak, `#6d5341` brown.
 
 <ObjectDemo demo="tv-frame" />
 

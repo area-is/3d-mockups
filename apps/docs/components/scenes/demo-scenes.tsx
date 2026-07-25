@@ -663,8 +663,8 @@ export default function DemoScenes() {
         title="65″ TV"
         description={
           <>
-            <code>&lt;TVSetMockup&gt;</code>: a near-bezel-less 65″ panel on blade feet
-            with a live 1920×1080 screen — desktop layouts and video apply directly.
+            <code>&lt;TVSetMockup&gt;</code>: a near-bezel-less 65″ panel on splayed
+            feet with a live 1920×1080 screen — desktop layouts and video apply directly.
           </>
         }
       >

@@ -70,6 +70,12 @@ export interface LaptopSpec {
    * Perforated speaker strips flanking the keyboard (Pro): centers at ±x.
    * Hole metrics from the reference scan's grille tile: ~1.0 x 0.93 mm grid
    * of ~0.63 mm drilled holes.
+   *
+   * Photo-measured on Apple's own product shots: the drilling fills the whole
+   * band between the keyboard tray and the chassis edge — 96% of it on the
+   * 16", where the gap is 38.5 mm — leaving only a hairline of bare aluminum
+   * either side, and it sits slightly toward the back of the tray (3 mm below
+   * its top edge, 7 mm above its bottom).
    */
   speakers?: {
     x: number
@@ -151,11 +157,13 @@ const MACBOOK_PRO_14: LaptopSpec = {
     ],
   },
   feet: { x: 1.774, z: 1.146, radius: 0.132 },
+  // The strip runs from 0.4 mm off the tray out to where the deck's edge
+  // bevel starts — 14.5 mm of drilling in a 16.9 mm gap.
   speakers: {
-    x: 2.037,
-    width: 0.213,
+    x: 2.0308,
+    width: 0.2005,
     depth: 1.47,
-    offsetZ: -0.504,
+    offsetZ: -0.533,
     holePitchX: 0.0142,
     holePitchZ: 0.0129,
     holeR: 0.00435,
@@ -229,11 +237,14 @@ const MACBOOK_PRO_16: LaptopSpec = {
     ],
   },
   feet: { x: 2.072, z: 1.332, radius: 0.145 },
+  // The 16"'s gap is 38.5 mm and the drilling fills it: 35.6 mm of holes from
+  // 0.4 mm off the tray out to the deck's edge bevel. The strip used to stop
+  // 15 mm short, which read as a wide blank margin beside the speakers.
   speakers: {
-    x: 2.09,
-    width: 0.32,
+    x: 2.1826,
+    width: 0.4918,
     depth: 1.47,
-    offsetZ: -0.69,
+    offsetZ: -0.719,
     holePitchX: 0.0142,
     holePitchZ: 0.0129,
     holeR: 0.00435,

@@ -478,7 +478,9 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
     const INK = 'rgba(228, 231, 240, 0.85)'
     ctx.fillStyle = INK
     ctx.strokeStyle = INK
-    const font = (size: number, weight = 500) =>
+    // Apple laser-etches these legends in a light-to-regular weight; 400 keeps
+    // the hairline look on real keycaps rather than the chunkier UI-label 500.
+    const font = (size: number, weight = 400) =>
       (ctx.font = `${weight} ${Math.round(size)}px -apple-system, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif`)
     const arrowTri = (px: number, py: number, s: number, d: 'l' | 'r' | 'u' | 'd') => {
       const rot = { u: 0, r: Math.PI / 2, d: Math.PI, l: -Math.PI / 2 }[d]
@@ -543,7 +545,7 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           const sx = legend.side === 'l' ? px - hw + u(0.072) : px + hw - u(0.072)
           const sy = py - hd + u(0.063)
           if (legend.c) {
-            font(u(0.062), 600)
+            font(u(0.062), 500)
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText(legend.c, sx, sy)
