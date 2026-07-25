@@ -270,35 +270,39 @@ function TabletBody({
               <meshPhysicalMaterial color={color} metalness={0.75} roughness={0.3} clearcoat={0.6} />
             </mesh>
             {(() => {
-              const s = rearCamera.size / 0.5
+              // Apple's drawing places every element on a 20.04 mm-centered pod
+              // (both Pro sizes share it): the wide lens and the LiDAR on the
+              // outboard column 6.01 mm either side of center, and the ALS,
+              // flash and mic on the inboard column 6.78 mm in — the flash
+              // exactly on the pod's center line.
+              const s = rearCamera.size / 0.4913
               // The pod's extruded face (depth + bevels) — contents sit ON it.
               const podZ = backZ - 0.044
               return (
                 <group position={[rearCamera.x, rearCamera.y, podZ]}>
-                  {/* 12MP wide — the pod's large lens, a flat black window
-                      with a subtle dark collar (no bright metal ring on the
-                      retail pod) */}
-                  <group position={[0.105 * s, 0.105 * s, 0]}>
-                    <LensRing r={0.125 * s} proud={0.022} seat={0.02} frameColor="#15171b" pupil={0.62} matte />
+                  {/* 48MP wide — Ø10.83 opening, a flat black window with a
+                      subtle dark collar (no bright metal ring on the retail pod) */}
+                  <group position={[0.0939 * s, 0.0939 * s, 0]}>
+                    <LensRing r={0.0984 * s} proud={0.022} seat={0.02} frameColor="#15171b" pupil={0.62} matte />
                   </group>
-                  {/* LiDAR scanner — the near-lens-sized black glass circle */}
-                  <mesh rotation-x={Math.PI / 2} position={[0.105 * s, -0.122 * s, -0.004]}>
-                    <cylinderGeometry args={[0.095 * s, 0.095 * s, 0.01, 32]} />
+                  {/* LiDAR scanner — Ø8.41 black glass circle */}
+                  <mesh rotation-x={Math.PI / 2} position={[0.0939 * s, -0.0939 * s, -0.004]}>
+                    <cylinderGeometry args={[0.0657 * s, 0.0657 * s, 0.01, 32]} />
                     <meshPhysicalMaterial color="#0a0c11" metalness={0.35} roughness={0.14} clearcoat={1} envMapIntensity={0.5} />
                   </mesh>
-                  {/* True Tone flash — the large frosted window */}
-                  <mesh rotation-x={Math.PI / 2} position={[-0.118 * s, 0.03 * s, -0.004]}>
-                    <cylinderGeometry args={[0.055 * s, 0.055 * s, 0.01, 24]} />
+                  {/* True Tone flash — Ø6.70 frosted window */}
+                  <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0, -0.004]}>
+                    <cylinderGeometry args={[0.0523 * s, 0.0523 * s, 0.01, 24]} />
                     <meshPhysicalMaterial color="#e9e6df" emissive="#fff3d6" emissiveIntensity={0.12} roughness={0.35} clearcoat={0.6} />
                   </mesh>
-                  {/* ambient sensor dot */}
-                  <mesh rotation-x={Math.PI / 2} position={[-0.115 * s, 0.16 * s, -0.003]}>
-                    <cylinderGeometry args={[0.042 * s, 0.042 * s, 0.008, 20]} />
+                  {/* ambient light sensor — Ø3.60 */}
+                  <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0.1267 * s, -0.003]}>
+                    <cylinderGeometry args={[0.0281 * s, 0.0281 * s, 0.008, 20]} />
                     <meshPhysicalMaterial color="#0b0d12" metalness={0.4} roughness={0.25} clearcoat={1} />
                   </mesh>
-                  {/* pinhole mic */}
-                  <mesh rotation-x={Math.PI / 2} position={[-0.115 * s, -0.135 * s, -0.002]}>
-                    <cylinderGeometry args={[0.016, 0.016, 0.008, 12]} />
+                  {/* pinhole mic — Ø1.72 */}
+                  <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, -0.1241 * s, -0.002]}>
+                    <cylinderGeometry args={[0.0134, 0.0134, 0.008, 12]} />
                     <meshStandardMaterial color="#08090c" roughness={0.6} />
                   </mesh>
                 </group>
@@ -312,11 +316,18 @@ function TabletBody({
             pinhole mic beside it */}
         {rearCamera.style === 'single' && (
           <>
-            {/* the ring is the body-colored anodized boss itself, polished on
-                its chamfer, around the large black lens window — blue iPads
-                get a blue ring, exactly like the product photography */}
-            <group position={[rearCamera.x, rearCamera.y, backZ]}>
-              <LensRing r={rearCamera.r} proud={0.026} seat={0.03} frameColor={color} pupil={0.6} matte />
+            {/* Apple draws a body-colored mound (Ø16.92) with the black lens
+                window (Ø11.89) rising out of it, the whole stack standing
+                ~2 mm off the back — blue iPads get a blue mound, exactly like
+                the product photography */}
+            {rearCamera.boss && (
+              <mesh rotation-x={Math.PI / 2} position={[rearCamera.x, rearCamera.y, backZ - 0.009]}>
+                <cylinderGeometry args={[rearCamera.boss * 0.96, rearCamera.boss, 0.019, 48]} />
+                <meshPhysicalMaterial color={color} metalness={0.55} roughness={0.32} clearcoat={0.5} />
+              </mesh>
+            )}
+            <group position={[rearCamera.x, rearCamera.y, backZ - (rearCamera.boss ? 0.019 : 0)]}>
+              <LensRing r={rearCamera.r} proud={0.014} seat={0.03} frameColor={color} pupil={0.6} matte />
             </group>
             <mesh rotation-x={Math.PI / 2} position={[rearCamera.mic.x, rearCamera.mic.y, backZ - 0.004]}>
               <cylinderGeometry args={[0.011, 0.011, 0.008, 12]} />
@@ -437,7 +448,8 @@ function TabletBody({
                   rotation-z={Math.PI / 2}
                   position={[-body.width / 2 + 0.002, pogo.y + off, 0]}
                 >
-                  <cylinderGeometry args={[0.016, 0.016, 0.006, 16]} />
+                  {/* Ø3.20 pins per Apple's rail drawing */}
+                  <cylinderGeometry args={[0.025, 0.025, 0.006, 20]} />
                   <meshPhysicalMaterial color="#9aa0a8" metalness={0.9} roughness={0.3} />
                 </mesh>
               )
@@ -448,7 +460,8 @@ function TabletBody({
                 rotation-x={Math.PI / 2}
                 position={[pos[0], pos[1], backZ - 0.004]}
               >
-                <cylinderGeometry args={[isPad ? 0.016 : 0.019, isPad ? 0.016 : 0.019, 0.006, 16]} />
+                {/* the iPads' Smart Connector pins are Ø3.40 per Apple's drawing */}
+                <cylinderGeometry args={[isPad ? 0.0266 : 0.019, isPad ? 0.0266 : 0.019, 0.006, 20]} />
                 <meshPhysicalMaterial color="#c3c7cd" metalness={0.95} roughness={0.3} />
               </mesh>
             )
