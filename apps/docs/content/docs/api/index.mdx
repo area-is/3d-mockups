@@ -5,15 +5,15 @@ description: How the pieces fit together, and the props every mockup shares.
 
 The library has two layers:
 
-1. **All-in-one mockups**: `PhoneMockup`, `IPhoneMockup`, `LaptopMockup`,
-   `TabletMockup`, `AppleWatchMockup`, `GalaxyWatchMockup`, and `MonitorMockup`
+1. **All-in-one mockups**: `GalaxyMockup`, `IPhoneMockup`, `LaptopMockup`,
+   `IPadMockup`, `GalaxyTabMockup`, `AppleWatchMockup`, `GalaxyWatchMockup`, and `StudioDisplayMockup`
    for the devices, plus `BookMockup`, `MagazineMockup`, `BrochureMockup`,
    `BusinessCardMockup`, `PosterFrameMockup`, `BillboardMockup`, and
    `VanMockup` for the [objects](/docs/objects). Each one bundles the stage and
    a model, ready to drop into a page.
 2. **Composable parts**: [`MockupCanvas`](/docs/api/mockup-canvas) (the stage)
-   plus the bare models (`Phone`, `IPhone`, `Laptop`, `Tablet`, `AppleWatch`,
-   `GalaxyWatch`, `Monitor`, `Book`, `Magazine`, `Brochure`, `BusinessCard`,
+   plus the bare models (`Phone`, `IPhone`, `Laptop`, `IPad`, `GalaxyTab`, `AppleWatch`,
+   `GalaxyWatch`, `StudioDisplay`, `Book`, `Magazine`, `Brochure`, `BusinessCard`,
    `PosterFrame`, `Billboard`, `Van`) for your own react-three-fiber scenes. See
    [Composing scenes](/docs/composing).
 
@@ -32,7 +32,7 @@ props, all of its device's appearance props, and:
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Screen content: any React node, iframe, or video. |
 | `float` | `boolean` | `false` | Gentle floating idle animation for the device. |
-| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<PhoneMockup rotation={[0, -0.25, 0]}>`). |
+| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<GalaxyMockup rotation={[0, -0.25, 0]}>`). |
 
 ## Regions and slots
 

@@ -21,8 +21,8 @@ import {
   MagazineMockup,
   MailerBoxMockup,
   MockupCanvas,
-  MonitorMockup,
-  PhoneMockup,
+  StudioDisplayMockup,
+  GalaxyMockup,
   PosterFrameMockup,
   ProductBoxMockup,
   RollupBannerMockup,
@@ -30,7 +30,8 @@ import {
   ShoppingBagMockup,
   StorefrontMockup,
   TVSetMockup,
-  TabletMockup,
+  IPadMockup,
+  GalaxyTabMockup,
   VanMockup,
   VinylRecordMockup,
   AppleWatchMockup,
@@ -40,8 +41,9 @@ import {
   GALAXY_COLORWAYS,
   IPHONE_COLORWAYS,
   LAPTOP_COLORWAYS,
-  MONITOR_COLORWAYS,
-  TABLET_COLORWAYS,
+  STUDIO_DISPLAY_COLORWAYS,
+  IPAD_COLORWAYS,
+  GALAXY_TAB_COLORWAYS,
   APPLE_WATCH_COLORWAYS,
   GALAXY_WATCH_COLORWAYS,
   type Colorway,
@@ -201,7 +203,7 @@ interface ModelControls {
 /** Every mockup's own props, keyed by component. */
 const MODELS = new Map<unknown, ModelControls>([
   [
-    PhoneMockup,
+    GalaxyMockup,
     {
       variants: [
         { value: 's26', label: 'Galaxy S26' },
@@ -225,7 +227,7 @@ const MODELS = new Map<unknown, ModelControls>([
     },
   ],
   [
-    TabletMockup,
+    IPadMockup,
     {
       variants: [
         { value: 'ipadpro13', label: 'iPad Pro 13″' },
@@ -233,10 +235,19 @@ const MODELS = new Map<unknown, ModelControls>([
         { value: 'ipadair13', label: 'iPad Air 13″' },
         { value: 'ipadair11', label: 'iPad Air 11″' },
         { value: 'ipad11', label: 'iPad (A16)' },
+      ],
+      catalogs: IPAD_COLORWAYS as Record<string, Colorway[]>,
+      controls: [ORIENTATION],
+    },
+  ],
+  [
+    GalaxyTabMockup,
+    {
+      variants: [
         { value: 'tabs11', label: 'Galaxy Tab S11' },
         { value: 'tabs11ultra', label: 'Tab S11 Ultra' },
       ],
-      catalogs: TABLET_COLORWAYS as Record<string, Colorway[]>,
+      catalogs: GALAXY_TAB_COLORWAYS as Record<string, Colorway[]>,
       controls: [ORIENTATION],
     },
   ],
@@ -253,7 +264,7 @@ const MODELS = new Map<unknown, ModelControls>([
       controls: [openAngle(40, 130, 110), toggle('notch', 'notch', true)],
     },
   ],
-  [MonitorMockup, { catalog: MONITOR_COLORWAYS }],
+  [StudioDisplayMockup, { catalog: STUDIO_DISPLAY_COLORWAYS }],
   [
     FoldMockup,
     {

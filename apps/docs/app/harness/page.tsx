@@ -16,7 +16,7 @@ import {
   IPhone,
   type IPhoneVariant,
   MailerBoxMockup,
-  Phone,
+  Galaxy,
   type GalaxyVariant,
   PosterFrameMockup,
   ProductBoxMockup,
@@ -32,10 +32,12 @@ import {
   type LaptopVariant,
   MagazineMockup,
   MockupCanvas,
-  MonitorMockup,
+  StudioDisplayMockup,
   StorefrontMockup,
-  Tablet,
-  type TabletVariant,
+  IPad,
+  type IPadVariant,
+  GalaxyTab,
+  type GalaxyTabVariant,
   TVSetMockup,
   VanMockup,
   AppleWatch,
@@ -130,7 +132,7 @@ function regionProbe(Mockup: object): React.ReactNode {
 function HarnessScene() {
   const params = useSearchParams()
   const device = params.get('device') ?? 'tablet'
-  const variant = (params.get('variant') ?? 'ipadpro13') as TabletVariant
+  const variant = params.get('variant') ?? 'ipadpro13'
   const colorway = params.get('colorway') ?? undefined
   const color = params.get('color') ?? undefined
   const orientation = params.get('orientation') === 'landscape' ? 'landscape' : 'portrait'
@@ -359,14 +361,14 @@ function HarnessScene() {
   if (device === 'monitor') {
     const dist = Number(params.get('dist') ?? 9.4)
     return (
-      <MonitorMockup
+      <StudioDisplayMockup
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
         rotation={[rx, ry, 0]}
       >
         {screen}
-      </MonitorMockup>
+      </StudioDisplayMockup>
     )
   }
 
@@ -408,7 +410,7 @@ function HarnessScene() {
 
   if (device === 'phone' || device === 'iphone') {
     const dist = Number(params.get('dist') ?? 7.4)
-    const Device = device === 'phone' ? Phone : IPhone
+    const Device = device === 'phone' ? Galaxy : IPhone
     return (
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
         <Device
@@ -478,17 +480,31 @@ function HarnessScene() {
       camera={{ position: [0, cy, dist], fov: 40 }}
       shadows={shadows}
     >
-      <Tablet
-        variant={variant}
-        colorway={colorway}
-        color={color}
-        orientation={orientation}
-        rotation={[rx, ry, 0]}
-        interactive={false}
-        dragToRotate={false}
-      >
-        {screen}
-      </Tablet>
+      {variant.startsWith('tabs') ? (
+        <GalaxyTab
+          variant={variant as GalaxyTabVariant}
+          colorway={colorway}
+          color={color}
+          orientation={orientation}
+          rotation={[rx, ry, 0]}
+          interactive={false}
+          dragToRotate={false}
+        >
+          {screen}
+        </GalaxyTab>
+      ) : (
+        <IPad
+          variant={variant as IPadVariant}
+          colorway={colorway}
+          color={color}
+          orientation={orientation}
+          rotation={[rx, ry, 0]}
+          interactive={false}
+          dragToRotate={false}
+        >
+          {screen}
+        </IPad>
+      )}
     </MockupCanvas>
   )
 }

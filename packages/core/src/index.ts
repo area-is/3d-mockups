@@ -119,20 +119,21 @@ export {
   FOLD_COLORWAYS,
   FLIP_COLORWAYS,
   LAPTOP_COLORWAYS,
-  TABLET_COLORWAYS,
+  IPAD_COLORWAYS,
+  GALAXY_TAB_COLORWAYS,
   APPLE_WATCH_COLORWAYS,
   GALAXY_WATCH_COLORWAYS,
-  MONITOR_COLORWAYS,
+  STUDIO_DISPLAY_COLORWAYS,
   findColorway,
 } from './colorways'
 
 // Device specs (physical dimensions, cameras, displays — pure data).
-export * from './devices/phone/dimensions'
+export * from './devices/galaxy/dimensions'
 export * from './devices/iphone/dimensions'
 export * from './devices/laptop/dimensions'
 export * from './devices/tablet/dimensions'
 export * from './devices/watch/dimensions'
-export * from './devices/monitor/dimensions'
+export * from './devices/studio-display/dimensions'
 export * from './devices/fold/dimensions'
 export * from './devices/flip/dimensions'
 

@@ -20,10 +20,10 @@ videos play, iframes scroll.
   lighting, soft shadows, clamped DPR.
 - **Any content on screen** — pass React components, an `<iframe>` or a `<video>` as
   children. Pointer events, state and scrolling keep working.
-- **Composable** — use the one-liners `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
-  / `<TabletMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<MonitorMockup>`, or
-  drop `<Phone>` / `<IPhone>` / `<Laptop>` / `<Tablet>` / `<AppleWatch>` / `<GalaxyWatch>` /
-  `<Monitor>` into your own react-three-fiber scene.
+- **Composable** — use the one-liners `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
+  / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>`, or
+  drop `<Galaxy>` / `<IPhone>` / `<Laptop>` / `<IPad>` / `<GalaxyTab>` / `<AppleWatch>` / `<GalaxyWatch>` /
+  `<StudioDisplay>` into your own react-three-fiber scene.
 
 ## Install
 
@@ -39,14 +39,14 @@ dependencies.
 ```tsx
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 
 export function Hero() {
   return (
     <div style={{ height: 560 }}>
-      <PhoneMockup autoRotate float>
+      <GalaxyMockup autoRotate float>
         <YourApp />
-      </PhoneMockup>
+      </GalaxyMockup>
     </div>
   )
 }
@@ -92,7 +92,7 @@ names come from each object's spec in the core, so every future binding shares t
 
 ## Components
 
-### `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<TabletMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<MonitorMockup>` — all-in-one
+### `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>` — all-in-one
 
 Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float`
 (idle floating animation). Transforms are first-class: `position`, `rotation` and `scale`
@@ -114,7 +114,7 @@ flow straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]
 | `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp |
 
-### `<Phone>` — the device
+### `<Galaxy>` — the device
 
 Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation`, `scale`…).
 
@@ -136,7 +136,7 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 
 ### `<IPhone>` — iPhone 17 family
 
-Same API as `<Phone>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`,
+Same API as `<Galaxy>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`,
 `dynamicIsland` replaces `punchHole`, and `resolution` defaults to the variant's logical
 point grid (see resolution table). Camera architecture follows the real devices: two-lens
 pill (17), ultra-thin single-lens bar (Air), full-width triple-lens plateau with flash +
@@ -176,7 +176,7 @@ Every variant's screen defaults to the real device's logical resolution (CSS px)
 | Apple Watch Series 11 46mm | — | 208×248 | — | 416×496 @ 2x point grid |
 | Studio Display 27" | — | — | 2560×1440 | 5120×2880 @ 2x point grid |
 
-### `<Tablet>` — the iPad lineup / Galaxy Tab S11 family
+### `<IPad>` / `<GalaxyTab>` — the iPad lineup / Galaxy Tab S11 family
 
 Shares the phones' screen/interaction API plus `orientation`, with a `variant` prop
 (`'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11' | 'tabs11' |
@@ -188,7 +188,7 @@ and (on the Ultra) the U-shaped display notch on the Galaxy Tabs; brand marks as
 vector geometry (Apple glyph, edge-aligned SAMSUNG wordmark) and model wordmarks on
 the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
 
-### `<AppleWatch>` / `<GalaxyWatch>` — smartwatches · `<Monitor>` — Studio Display-style
+### `<AppleWatch>` / `<GalaxyWatch>` — smartwatches · `<StudioDisplay>` — Studio Display-style
 
 Both watches add `bandColor` and skip orientation. `<AppleWatch>` is the Series 11:
 squircle case, knurled Digital Crown, flush side button, sensor back, worn on the
@@ -201,7 +201,7 @@ camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive p
 cord's circular recess framed by the stand's cable hole and, faithfully, no power
 button.
 
-Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `TABLET_VARIANTS`,
+Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPAD_VARIANTS`,
 `APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
 `PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
 available from the `area-mockups/core` subpath — the same data will drive the planned

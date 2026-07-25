@@ -12,7 +12,7 @@ import type { RegionSpec } from '@area-mockups/core'
  *
  * Bare (non-slot) children are shorthand for the primary region — the first
  * region in the spec's list — so the single-surface one-liner stays a
- * one-liner: `<PhoneMockup><App/></PhoneMockup>`.
+ * one-liner: `<GalaxyMockup><App/></GalaxyMockup>`.
  *
  * Slots must be DIRECT children of the mockup (fragments are flattened). A
  * user component that merely renders a slot element cannot be detected — the

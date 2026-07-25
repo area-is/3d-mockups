@@ -15,10 +15,11 @@ import {
   ProductBoxMockup,
   RollupBannerMockup,
   MagazineMockup,
-  MonitorMockup,
-  PhoneMockup,
+  StudioDisplayMockup,
+  GalaxyMockup,
   PosterFrameMockup,
-  TabletMockup,
+  IPadMockup,
+  GalaxyTabMockup,
   VanMockup,
   FlipMockup,
 } from 'area-mockups'
@@ -111,9 +112,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+        <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
           <TapCounter />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -125,7 +126,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup
+        <GalaxyMockup
           autoRotate
           float
           color="#d3d6dd"
@@ -133,7 +134,7 @@ export default function DemoScenes() {
           surfaceBackground="#000"
         >
           <LockScreen />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -145,13 +146,13 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
+        <GalaxyMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
             style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
           />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -191,9 +192,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -206,9 +207,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -314,15 +315,15 @@ export default function DemoScenes() {
         title="iPad Pro 13″ (M5)"
         description={
           <>
-            <code>&lt;TabletMockup&gt;</code> in Space Black, landscape — the pencil mount
+            <code>&lt;IPadMockup&gt;</code> in Space Black, landscape — the pencil mount
             and camera pod follow the orientation, and the virtual screen is a true
             1376×1032.
           </>
         }
       >
-        <TabletMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -334,9 +335,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -348,9 +349,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -362,9 +363,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -376,9 +377,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </GalaxyTabMockup>
       </DemoCard>
 
       <DemoCard
@@ -390,23 +391,23 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </GalaxyTabMockup>
       </DemoCard>
 
       <DemoCard
         title="Studio Display"
         description={
           <>
-            <code>&lt;MonitorMockup&gt;</code>: the 27″ 5K panel on its tilt stand with a
+            <code>&lt;StudioDisplayMockup&gt;</code>: the 27″ 5K panel on its tilt stand with a
             2560×1440 virtual screen (and, faithfully, no power button).
           </>
         }
       >
-        <MonitorMockup rotation={[0, -0.25, 0]}>
+        <StudioDisplayMockup rotation={[0, -0.25, 0]}>
           <DesktopScreen />
-        </MonitorMockup>
+        </StudioDisplayMockup>
       </DemoCard>
 
       <DemoCard
@@ -823,11 +824,11 @@ export default function DemoScenes() {
         }
       >
         <div className="alpha-checker">
-          <PhoneMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
+          <GalaxyMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
             <div className="aurora-screen">
               <p>alpha</p>
             </div>
-          </PhoneMockup>
+          </GalaxyMockup>
         </div>
       </DemoCard>
     </div>

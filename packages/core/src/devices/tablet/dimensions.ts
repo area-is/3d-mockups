@@ -325,8 +325,9 @@ const TAB_S11_ULTRA: TabletSpec = {
   speakers: { style: 'slots', xs: [-1.075, 1.075], length: 0.64, width: 0.02 },
 }
 
-export const TABLET_VARIANTS: Record<
-  'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11' | 'tabs11' | 'tabs11ultra',
+/** The iPad lineup: two Pros, two Airs and the standard iPad. */
+export const IPAD_VARIANTS: Record<
+  'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11',
   TabletSpec
 > = {
   ipadpro13: IPAD_PRO_13,
@@ -334,14 +335,28 @@ export const TABLET_VARIANTS: Record<
   ipadair13: IPAD_AIR_13,
   ipadair11: IPAD_AIR_11,
   ipad11: IPAD_11,
+}
+
+/** The Galaxy Tab S11 family. */
+export const GALAXY_TAB_VARIANTS: Record<'tabs11' | 'tabs11ultra', TabletSpec> = {
   tabs11: TAB_S11,
   tabs11ultra: TAB_S11_ULTRA,
 }
 
-export type TabletVariant = keyof typeof TABLET_VARIANTS
+export type IPadVariant = keyof typeof IPAD_VARIANTS
+export type GalaxyTabVariant = keyof typeof GALAXY_TAB_VARIANTS
 
-/** The variant every binding defaults to. */
-export const TABLET_DEFAULT_VARIANT: TabletVariant = 'ipadpro13'
+/** Every tablet spec in one table — the shared framing keys off it. */
+export const TABLET_VARIANTS: Record<IPadVariant | GalaxyTabVariant, TabletSpec> = {
+  ...IPAD_VARIANTS,
+  ...GALAXY_TAB_VARIANTS,
+}
+
+export type TabletVariant = IPadVariant | GalaxyTabVariant
+
+/** The variant each family's binding defaults to. */
+export const IPAD_DEFAULT_VARIANT: IPadVariant = 'ipadpro13'
+export const GALAXY_TAB_DEFAULT_VARIANT: GalaxyTabVariant = 'tabs11'
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
 export const TABLET_FRAMING = {
@@ -349,7 +364,7 @@ export const TABLET_FRAMING = {
   floatIntensity: 0.8,
   contactGap: 0.05,
   extent: ({ variant, orientation }) => {
-    const body = TABLET_VARIANTS[variant ?? TABLET_DEFAULT_VARIANT].body
+    const body = TABLET_VARIANTS[variant ?? IPAD_DEFAULT_VARIANT].body
     return (orientation === 'landscape' ? body.width : body.height) / 2
   },
 } as const satisfies MockupFraming<{ variant?: TabletVariant; orientation?: Orientation }>

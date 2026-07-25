@@ -182,7 +182,7 @@ export type GalaxyVariant = keyof typeof GALAXY_VARIANTS
 export const GALAXY_DEFAULT_VARIANT: GalaxyVariant = 's26'
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
-export const PHONE_FRAMING = {
+export const GALAXY_FRAMING = {
   contactGap: 0.05,
   extent: ({ variant, orientation }) => {
     const body = GALAXY_VARIANTS[variant ?? GALAXY_DEFAULT_VARIANT].body

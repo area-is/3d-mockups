@@ -28,7 +28,7 @@
 
 import type { MockupFraming } from '../../regions'
 
-export const MONITOR = {
+export const STUDIO_DISPLAY = {
   /** Aluminum enclosure (glass face). `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: 5.417, height: 3.128, depth: 0.17, radius: 0.09, bevel: 0.022 },
   /** Front cover glass — edge-to-edge, leaving only a hairline of aluminum.
@@ -93,11 +93,11 @@ export const MONITOR = {
  * visually centered on the stage origin the framing's camera and shadow are
  * tuned for.
  */
-export const MONITOR_STAGE_OFFSET_Y = 0.95
+export const STUDIO_DISPLAY_STAGE_OFFSET_Y = 0.95
 
 /** The stand base defines the desk plane; the shadow grounds just under it. */
-export const MONITOR_FRAMING = {
+export const STUDIO_DISPLAY_FRAMING = {
   camera: { position: [0, 0.3, 11.2], fov: 40 },
   floatIntensity: 0.5,
-  extent: () => MONITOR.standHeight - MONITOR_STAGE_OFFSET_Y,
+  extent: () => STUDIO_DISPLAY.standHeight - STUDIO_DISPLAY_STAGE_OFFSET_Y,
 } as const satisfies MockupFraming

@@ -1,9 +1,9 @@
-import type { GalaxyVariant } from './devices/phone/dimensions'
+import type { GalaxyVariant } from './devices/galaxy/dimensions'
 import type { IPhoneVariant } from './devices/iphone/dimensions'
 import type { FoldVariant } from './devices/fold/dimensions'
 import type { FlipVariant } from './devices/flip/dimensions'
 import type { LaptopVariant } from './devices/laptop/dimensions'
-import type { TabletVariant } from './devices/tablet/dimensions'
+import type { GalaxyTabVariant, IPadVariant } from './devices/tablet/dimensions'
 import type { AppleWatchVariant, GalaxyWatchVariant } from './devices/watch/dimensions'
 
 /**
@@ -115,7 +115,7 @@ const IPAD_AIR_COLORS: Colorway[] = [
   { id: 'blue', name: 'Blue', color: '#d9e7e8' },
 ]
 
-export const TABLET_COLORWAYS: Record<TabletVariant, Colorway[]> = {
+export const IPAD_COLORWAYS: Record<IPadVariant, Colorway[]> = {
   ipadpro13: IPAD_PRO_COLORS,
   ipadpro11: IPAD_PRO_COLORS,
   ipadair13: IPAD_AIR_COLORS,
@@ -126,14 +126,16 @@ export const TABLET_COLORWAYS: Record<TabletVariant, Colorway[]> = {
     { id: 'pink', name: 'Pink', color: '#f9899c' },
     { id: 'yellow', name: 'Yellow', color: '#fbe778' },
   ],
-  tabs11: [
-    { id: 'gray', name: 'Gray', color: '#63656a' },
-    { id: 'silver', name: 'Silver', color: '#d3d4d8' },
-  ],
-  tabs11ultra: [
-    { id: 'gray', name: 'Gray', color: '#63656a' },
-    { id: 'silver', name: 'Silver', color: '#d3d4d8' },
-  ],
+}
+
+const GALAXY_TAB_COLORS: Colorway[] = [
+  { id: 'gray', name: 'Gray', color: '#63656a' },
+  { id: 'silver', name: 'Silver', color: '#d3d4d8' },
+]
+
+export const GALAXY_TAB_COLORWAYS: Record<GalaxyTabVariant, Colorway[]> = {
+  tabs11: GALAXY_TAB_COLORS,
+  tabs11ultra: GALAXY_TAB_COLORS,
 }
 
 export const APPLE_WATCH_COLORWAYS: Record<AppleWatchVariant, Colorway[]> = {
@@ -152,7 +154,7 @@ export const GALAXY_WATCH_COLORWAYS: Record<GalaxyWatchVariant, Colorway[]> = {
   ],
 }
 
-export const MONITOR_COLORWAYS: Colorway[] = [
+export const STUDIO_DISPLAY_COLORWAYS: Colorway[] = [
   { id: 'silver', name: 'Silver', color: '#c8cbd0' },
 ]
 

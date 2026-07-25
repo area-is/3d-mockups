@@ -6,13 +6,14 @@ import { build } from 'esbuild'
 import { gzipSync } from 'node:zlib'
 
 const ENTRIES = {
-  'PhoneMockup (Galaxy family)': "export { PhoneMockup } from './src/index'",
+  'GalaxyMockup (Galaxy phone family)': "export { GalaxyMockup } from './src/index'",
   'IPhoneMockup (iPhone family)': "export { IPhoneMockup } from './src/index'",
   'LaptopMockup (MacBook Air + Pro)': "export { LaptopMockup } from './src/index'",
-  'TabletMockup (iPad + Galaxy Tab)': "export { TabletMockup } from './src/index'",
+  'IPadMockup (iPad family)': "export { IPadMockup } from './src/index'",
+  'GalaxyTabMockup (Galaxy Tab family)': "export { GalaxyTabMockup } from './src/index'",
   'AppleWatchMockup (Apple Watch)': "export { AppleWatchMockup } from './src/index'",
   'GalaxyWatchMockup (Galaxy Watch)': "export { GalaxyWatchMockup } from './src/index'",
-  'MonitorMockup (Studio Display)': "export { MonitorMockup } from './src/index'",
+  'StudioDisplayMockup (Studio Display)': "export { StudioDisplayMockup } from './src/index'",
   'FoldMockup (Galaxy Z Fold 7)': "export { FoldMockup } from './src/index'",
   'FlipMockup (Galaxy Z Flip 7)': "export { FlipMockup } from './src/index'",
   'BookMockup (hardcover)': "export { BookMockup } from './src/index'",

@@ -3,20 +3,20 @@ title: Quick start
 description: Render your first interactive 3D phone with a single component.
 ---
 
-Drop a `PhoneMockup` anywhere in a client component and give it a height. Your
+Drop a `GalaxyMockup` anywhere in a client component and give it a height. Your
 content becomes the phone's screen.
 
 ```tsx title="hero.tsx"
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 
 export function Hero() {
   return (
     <div style={{ height: 560 }}>
-      <PhoneMockup autoRotate float>
+      <GalaxyMockup autoRotate float>
         <YourApp /> {/* any React node */}
-      </PhoneMockup>
+      </GalaxyMockup>
     </div>
   )
 }

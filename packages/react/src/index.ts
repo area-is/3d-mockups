@@ -1,11 +1,12 @@
 // All-in-one 3D mockups (canvas + device in one component).
-export { PhoneMockup, type PhoneMockupProps } from './phone-mockup'
+export { GalaxyMockup, type GalaxyMockupProps } from './galaxy-mockup'
 export { IPhoneMockup, type IPhoneMockupProps } from './iphone-mockup'
 export { LaptopMockup, type LaptopMockupProps } from './laptop-mockup'
-export { TabletMockup, type TabletMockupProps } from './tablet-mockup'
+export { IPadMockup, type IPadMockupProps } from './ipad-mockup'
+export { GalaxyTabMockup, type GalaxyTabMockupProps } from './galaxy-tab-mockup'
 export { AppleWatchMockup, type AppleWatchMockupProps } from './apple-watch-mockup'
 export { GalaxyWatchMockup, type GalaxyWatchMockupProps } from './galaxy-watch-mockup'
-export { MonitorMockup, type MonitorMockupProps } from './monitor-mockup'
+export { StudioDisplayMockup, type StudioDisplayMockupProps } from './studio-display-mockup'
 export { FoldMockup, type FoldMockupProps } from './fold-mockup'
 export { FlipMockup, type FlipMockupProps } from './flip-mockup'
 export { TumbleControls, type TumbleControlsProps, type TumbleControlsHandle } from './tumble-controls'
@@ -56,10 +57,16 @@ export { type BrochurePanelProps } from './objects/brochure/brochure'
 // Composable pieces: bring your own scene, or drop a device into an existing one.
 export { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
 export { LEDText, type LEDTextProps } from './led-text'
-export { Phone, type PhoneProps } from './devices/phone/phone'
+export { Galaxy, type GalaxyProps } from './devices/galaxy/galaxy'
 export { IPhone, type IPhoneProps } from './devices/iphone/iphone'
 export { Laptop, type LaptopProps } from './devices/laptop/laptop'
-export { Tablet, type TabletProps } from './devices/tablet/tablet'
+export {
+  IPad,
+  type IPadProps,
+  GalaxyTab,
+  type GalaxyTabProps,
+  type TabletCommonProps,
+} from './devices/tablet/tablet'
 export {
   AppleWatch,
   type AppleWatchProps,
@@ -67,7 +74,7 @@ export {
   type GalaxyWatchProps,
   type WatchCommonProps,
 } from './devices/watch/watch'
-export { Monitor, type MonitorProps } from './devices/monitor/monitor'
+export { StudioDisplay, type StudioDisplayProps } from './devices/studio-display/studio-display'
 export { Fold, type FoldProps } from './devices/fold/fold'
 export { Flip, type FlipProps } from './devices/flip/flip'
 export { Book, type BookProps } from './objects/book/book'
@@ -112,17 +119,19 @@ export {
   FOLD_COLORWAYS,
   FLIP_COLORWAYS,
   LAPTOP_COLORWAYS,
-  TABLET_COLORWAYS,
+  IPAD_COLORWAYS,
+  GALAXY_TAB_COLORWAYS,
   APPLE_WATCH_COLORWAYS,
   GALAXY_WATCH_COLORWAYS,
-  MONITOR_COLORWAYS,
+  STUDIO_DISPLAY_COLORWAYS,
   findColorway,
 } from '@area-mockups/core'
 export type {
   GalaxyVariant,
   IPhoneVariant,
   LaptopVariant,
-  TabletVariant,
+  IPadVariant,
+  GalaxyTabVariant,
   AppleWatchVariant,
   GalaxyWatchVariant,
   FoldVariant,

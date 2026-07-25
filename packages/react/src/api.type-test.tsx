@@ -14,7 +14,7 @@ import {
   CustomBoxMockup,
   type CustomBoxMockupProps,
   IPhoneMockup,
-  PhoneMockup,
+  GalaxyMockup,
   type MockupProps,
   type SlotProps,
   type SurfaceProps,
@@ -64,9 +64,9 @@ const _slotsUsage = (
     </AFrameSign>
 
     {/* bare children stay the primary-region shorthand */}
-    <PhoneMockup float>
+    <GalaxyMockup float>
       <div />
-    </PhoneMockup>
+    </GalaxyMockup>
 
     <IPhoneMockup variant="pro">
       <IPhoneMockup.Screen background="#000" resolution={860}>

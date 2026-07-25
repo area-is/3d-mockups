@@ -3,11 +3,16 @@ import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import {
-  TABLET_COLORWAYS,
+  GALAXY_TAB_COLORWAYS,
+  GALAXY_TAB_DEFAULT_VARIANT,
+  IPAD_COLORWAYS,
+  IPAD_DEFAULT_VARIANT,
   findColorway,
   TABLET_VARIANTS,
-  TABLET_DEFAULT_VARIANT,
   SCREEN_REGIONS,
+  type Colorway,
+  type GalaxyTabVariant,
+  type IPadVariant,
   type TabletVariant,
   roundedRectShape,
 } from '@area-mockups/core'
@@ -26,23 +31,21 @@ type GroupProps = ThreeElements['group']
 const USB_WIDTH = 0.155
 const USB_HEIGHT = 0.05
 
-export interface TabletProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+/**
+ * Everything both tablet families take. Each brand's component adds its own
+ * `variant` union on top.
+ */
+export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the tablet screen: React components, an <iframe>, a
-   * <video>… Wrap in `<Tablet.Screen>` to set per-screen surface props.
+   * <video>… Wrap in `<IPad.Screen>` / `<GalaxyTab.Screen>` to set per-screen
+   * surface props.
    */
   children?: React.ReactNode
   /**
-   * Which tablet to render, at true relative sizes: `ipadpro13` (default) or
-   * `ipadpro11` (camera pod, Face ID), `ipadair13` / `ipadair11` (bare
-   * single lens, Touch ID top button), `ipad11` (the standard A16 iPad),
-   * `tabs11` (Galaxy Tab S11 11"), `tabs11ultra` (14.6", display notch,
-   * dual camera rings).
-   */
-  variant?: TabletVariant
-  /**
-   * A retail colorway id from `TABLET_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
+   * A retail colorway id from the family's catalog (`IPAD_COLORWAYS` /
+   * `GALAXY_TAB_COLORWAYS`) presetting the device colors. Explicit color props
+   * override it.
    */
   colorway?: string
   /**
@@ -69,21 +72,26 @@ export interface TabletProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   occlude?: boolean | 'blending'
 }
 
+/** The shared implementation's props: one variant space over every spec. */
+interface TabletBodyProps extends TabletCommonProps {
+  variant: TabletVariant
+  /** The family's colorway catalog, for resolving the `colorway` id. */
+  catalog: Colorway[]
+}
+
 /**
- * A procedurally built tablet — the current Apple iPad lineup (iPad Pro M5,
- * iPad Air M4, iPad A16) or Samsung Galaxy Tab S11 family depending on
- * `variant`: ultra-thin flat slab, thin bezels, per-family rear camera (Pro
- * pod with LiDAR and flash, Air/iPad bare single lens, Tab protruding
- * rings), per-family buttons, brand mark and model wordmark on the back,
- * speaker machining on the short edges, landscape-edge front camera and
- * USB-C. No 3D asset files are loaded — everything is generated from
- * geometry at runtime.
- *
- * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ * The tablet both families are built from — an ultra-thin flat slab machined
+ * out of its spec: thin bezels, the spec's rear camera (the iPad Pro's pod with
+ * LiDAR and flash, the Air's and iPad's bare single lens, the Galaxy Tab's
+ * protruding rings), its buttons, brand mark and model wordmark on the back,
+ * speaker machining on the short edges, landscape-edge front camera and USB-C.
+ * No 3D asset files are loaded — everything is generated from geometry at
+ * runtime.
  */
-function TabletImpl({
+function TabletBody({
   children,
-  variant = TABLET_DEFAULT_VARIANT,
+  variant,
+  catalog,
   orientation = 'portrait',
   colorway,
   color: colorProp,
@@ -94,10 +102,10 @@ function TabletImpl({
   occlude = true,
   surfaceStyle,
   ...groupProps
-}: TabletProps) {
+}: TabletBodyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = TABLET_VARIANTS[variant]
-  const retail = findColorway(TABLET_COLORWAYS[variant], colorway)
+  const retail = findColorway(catalog, colorway)
   const color = colorProp ?? retail?.color ?? '#2b292c'
   const { body, glass, display, rearCamera, stylus, notch, pogo, logo, backText, speakers } = spec
   const landscape = orientation === 'landscape'
@@ -557,9 +565,59 @@ function TabletImpl({
     </group>
   )
 }
-TabletImpl.displayName = 'Tablet'
+TabletBody.displayName = 'TabletBody'
 
-/** The device's compound slots, shared by `<Tablet>` and `<TabletMockup>`. */
+/** The compound slots both tablets share with their mockups. */
 export const tabletSlots = createSlots(SCREEN_REGIONS)
 
-export const Tablet = Object.assign(TabletImpl, tabletSlots)
+export interface IPadProps extends TabletCommonProps {
+  /**
+   * Which iPad to render, at true relative sizes: `ipadpro13` (default) or
+   * `ipadpro11` — camera pod with LiDAR, Face ID, Thunderbolt — `ipadair13` /
+   * `ipadair11` (bare single lens, Touch ID top button), or `ipad11`, the
+   * standard A16 iPad.
+   */
+  variant?: IPadVariant
+}
+
+/**
+ * A procedurally built iPad: the ultra-thin flat slab with thin uniform
+ * bezels, the family's rear camera (the Pro's rounded-square pod carrying the
+ * wide lens, LiDAR and flash; the Air's and iPad's bare polished lens), the
+ * top button, volume pills, Apple Pencil charging strip, Smart Connector pogo
+ * dots, the Apple glyph and model wordmark on the back, and drilled speaker
+ * clusters in both short edges.
+ *
+ * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ */
+function IPadImpl({ variant = IPAD_DEFAULT_VARIANT, ...props }: IPadProps) {
+  return <TabletBody variant={variant} catalog={IPAD_COLORWAYS[variant]} {...props} />
+}
+IPadImpl.displayName = 'IPad'
+
+export const IPad = Object.assign(IPadImpl, tabletSlots)
+
+export interface GalaxyTabProps extends TabletCommonProps {
+  /**
+   * Which Galaxy Tab to render, at true relative sizes: `tabs11` (Tab S11,
+   * 11" — the default) or `tabs11ultra` (Tab S11 Ultra, 14.6", with the
+   * display notch and dual camera rings).
+   */
+  variant?: GalaxyTabVariant
+}
+
+/**
+ * A procedurally built Galaxy Tab S11: the ultra-thin slab with its floating
+ * camera rings and flash, volume rocker and power key, the magnetic S Pen
+ * side-mount, keyboard pogo column, SAMSUNG wordmark set for the landscape
+ * hold, milled speaker slots near all four corners — and, on the Ultra, the
+ * front camera's display notch.
+ *
+ * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ */
+function GalaxyTabImpl({ variant = GALAXY_TAB_DEFAULT_VARIANT, ...props }: GalaxyTabProps) {
+  return <TabletBody variant={variant} catalog={GALAXY_TAB_COLORWAYS[variant]} {...props} />
+}
+GalaxyTabImpl.displayName = 'GalaxyTab'
+
+export const GalaxyTab = Object.assign(GalaxyTabImpl, tabletSlots)

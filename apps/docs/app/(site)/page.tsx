@@ -4,14 +4,14 @@ import { HeroMockup } from '@/components/hero-mockup'
 
 const usageSnippet = `'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 
 export function Hero() {
   return (
-    <PhoneMockup autoRotate float>
+    <GalaxyMockup autoRotate float>
       {/* anything goes here: your app, an <iframe>, a <video>… */}
       <YourApp />
-    </PhoneMockup>
+    </GalaxyMockup>
   )
 }`
 
@@ -78,7 +78,7 @@ export default function HomePage() {
         <div className="feature">
           <h3>Composable by design</h3>
           <p>
-            Use the one-liner <code>&lt;PhoneMockup&gt;</code>, or compose{' '}
+            Use the one-liner <code>&lt;GalaxyMockup&gt;</code>, or compose{' '}
             <code>&lt;MockupCanvas&gt;</code> and <code>&lt;Phone&gt;</code> into an existing
             three.js scene. 2D (CSS-only) mockups are on the roadmap, sharing the same API.
           </p>
@@ -90,7 +90,7 @@ export default function HomePage() {
           <h2>Quick start</h2>
           <p>
             Install the package and its three.js peers, then wrap any content in{' '}
-            <code>&lt;PhoneMockup&gt;</code>. It renders WebGL, so keep it in a client
+            <code>&lt;GalaxyMockup&gt;</code>. It renders WebGL, so keep it in a client
             component.
           </p>
           <Link className="text-link" href="/docs">

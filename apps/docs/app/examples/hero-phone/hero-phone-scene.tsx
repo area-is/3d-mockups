@@ -1,6 +1,6 @@
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 import { StrideApp } from '@/components/screens/stride-app'
 
 /**
@@ -14,7 +14,7 @@ import { StrideApp } from '@/components/screens/stride-app'
  */
 export default function HeroPhoneScene() {
   return (
-    <PhoneMockup
+    <GalaxyMockup
       variant="s26ultra"
       float
       camera={{ position: [0, 0.1, 8.25], fov: 38 }}
@@ -25,6 +25,6 @@ export default function HeroPhoneScene() {
       rotation={[0, -0.3, 0]}
     >
       <StrideApp />
-    </PhoneMockup>
+    </GalaxyMockup>
   )
 }

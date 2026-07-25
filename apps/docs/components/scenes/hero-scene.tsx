@@ -1,11 +1,11 @@
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 import { MusicPlayer } from '../screens/music-player'
 
 export default function HeroScene() {
   return (
-    <PhoneMockup
+    <GalaxyMockup
       float
       color="#15171d"
       frameColor="#4d5260"
@@ -13,6 +13,6 @@ export default function HeroScene() {
       rotation={[0, -0.32, 0]}
     >
       <MusicPlayer />
-    </PhoneMockup>
+    </GalaxyMockup>
   )
 }

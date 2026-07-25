@@ -3,9 +3,9 @@ import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import {
-  MONITOR,
-  MONITOR_COLORWAYS,
-  MONITOR_STAGE_OFFSET_Y,
+  STUDIO_DISPLAY,
+  STUDIO_DISPLAY_COLORWAYS,
+  STUDIO_DISPLAY_STAGE_OFFSET_Y,
   SCREEN_REGIONS,
   findColorway,
   roundedRectShape,
@@ -17,14 +17,14 @@ import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from 
 
 type GroupProps = ThreeElements['group']
 
-export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the monitor: React components, an <iframe>, a
-   * <video>… Wrap in `<Monitor.Screen>` to set per-screen surface props.
+   * <video>… Wrap in `<StudioDisplay.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from `MONITOR_COLORWAYS` presetting the enclosure
+   * A retail colorway id from `STUDIO_DISPLAY_COLORWAYS` presetting the enclosure
    * color. An explicit `color` prop overrides it.
    */
   colorway?: string
@@ -58,28 +58,28 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, Su
  * Thunderbolt/USB-C port row and the captive power cord's circular recess on
  * the back — and, faithfully, no power button. No 3D asset files are loaded.
  *
- * The monitor renders lifted `MONITOR_STAGE_OFFSET_Y` above the group origin,
+ * The monitor renders lifted `STUDIO_DISPLAY_STAGE_OFFSET_Y` above the group origin,
  * so the panel + stand ensemble is visually centered on it (the stage pose the
  * framing's camera and shadow expect); the desk plane sits
- * `MONITOR.standHeight` below the lifted panel center. Must be rendered inside
+ * `STUDIO_DISPLAY.standHeight` below the lifted panel center. Must be rendered inside
  * a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-function MonitorImpl({
+function StudioDisplayImpl({
   children,
   colorway,
   color: colorProp,
   surfaceBackground = '#000000',
-  resolution = MONITOR.resolution,
+  resolution = STUDIO_DISPLAY.resolution,
   interactive = true,
   dragToRotate = true,
   occlude = true,
   surfaceStyle,
   ...groupProps
-}: MonitorProps) {
+}: StudioDisplayProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
-  const retail = findColorway(MONITOR_COLORWAYS, colorway)
+  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorway)
   const color = colorProp ?? retail?.color ?? '#c8cbd0'
-  const { body, glass, display, stand, standHeight } = MONITOR
+  const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   // The stand pieces occlude too — from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
@@ -231,7 +231,7 @@ function MonitorImpl({
   // The generation's gloss-black Apple mark on the back — real vector
   // geometry from the SVG, reading as a dark glass inlay on the aluminum.
   const logoGeometry = React.useMemo(
-    () => createLogoGeometry('apple', MONITOR.logo.width, MONITOR.logo.height),
+    () => createLogoGeometry('apple', STUDIO_DISPLAY.logo.width, STUDIO_DISPLAY.logo.height),
     []
   )
 
@@ -269,7 +269,7 @@ function MonitorImpl({
 
   return (
     /* the stage lift centering the panel + stand ensemble on the group origin */
-    <group position-y={MONITOR_STAGE_OFFSET_Y}>
+    <group position-y={STUDIO_DISPLAY_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure */}
       <mesh ref={bodyRef} geometry={bodyGeometry}>
@@ -292,7 +292,7 @@ function MonitorImpl({
       <mesh
         geometry={logoGeometry}
         rotation-y={Math.PI}
-        position={[0, MONITOR.logo.y, -body.depth / 2 - 0.003]}
+        position={[0, STUDIO_DISPLAY.logo.y, -body.depth / 2 - 0.003]}
       >
         <meshPhysicalMaterial
           color="#08090b"
@@ -311,13 +311,13 @@ function MonitorImpl({
       {[0, 1, 2, 3].map((i) => (
         <RoundedBox
           key={i}
-          args={[MONITOR.ports.slot.width, MONITOR.ports.slot.height, 0.02]}
+          args={[STUDIO_DISPLAY.ports.slot.width, STUDIO_DISPLAY.ports.slot.height, 0.02]}
           // radius must stay under half the SMALLEST face dimension or the
           // corner spheres self-intersect into a bowtie
-          radius={Math.min(MONITOR.ports.slot.width, MONITOR.ports.slot.height) / 2 - 0.004}
+          radius={Math.min(STUDIO_DISPLAY.ports.slot.width, STUDIO_DISPLAY.ports.slot.height) / 2 - 0.004}
           position={[
-            MONITOR.ports.x - i * MONITOR.ports.spacing,
-            -body.height / 2 + MONITOR.ports.y,
+            STUDIO_DISPLAY.ports.x - i * STUDIO_DISPLAY.ports.spacing,
+            -body.height / 2 + STUDIO_DISPLAY.ports.y,
             -body.depth / 2 - 0.004,
           ]}
         >
@@ -328,13 +328,13 @@ function MonitorImpl({
       {/* the captive power cord's circular recess, centered low on the back —
           the cable is not user-detachable, so a molded collar sits proud of
           the machined ring instead of a socket */}
-      <group position={[0, -body.height / 2 + MONITOR.power.y, -body.depth / 2]}>
+      <group position={[0, -body.height / 2 + STUDIO_DISPLAY.power.y, -body.depth / 2]}>
         <mesh rotation-x={Math.PI / 2} position-z={-0.003}>
-          <cylinderGeometry args={[MONITOR.power.r, MONITOR.power.r, 0.006, 32]} />
+          <cylinderGeometry args={[STUDIO_DISPLAY.power.r, STUDIO_DISPLAY.power.r, 0.006, 32]} />
           <meshPhysicalMaterial color="#585b60" metalness={0.6} roughness={0.35} />
         </mesh>
         <mesh rotation-x={Math.PI / 2} position-z={-0.012}>
-          <cylinderGeometry args={[MONITOR.power.r * 0.44, MONITOR.power.r * 0.52, 0.018, 24]} />
+          <cylinderGeometry args={[STUDIO_DISPLAY.power.r * 0.44, STUDIO_DISPLAY.power.r * 0.52, 0.018, 24]} />
           <meshStandardMaterial color="#2c2e32" roughness={0.7} />
         </mesh>
       </group>
@@ -411,9 +411,9 @@ function MonitorImpl({
     </group>
   )
 }
-MonitorImpl.displayName = 'Monitor'
+StudioDisplayImpl.displayName = 'StudioDisplay'
 
-/** The device's compound slots, shared by `<Monitor>` and `<MonitorMockup>`. */
-export const monitorSlots = createSlots(SCREEN_REGIONS)
+/** The device's compound slots, shared by `<StudioDisplay>` and `<StudioDisplayMockup>`. */
+export const studioDisplaySlots = createSlots(SCREEN_REGIONS)
 
-export const Monitor = Object.assign(MonitorImpl, monitorSlots)
+export const StudioDisplay = Object.assign(StudioDisplayImpl, studioDisplaySlots)

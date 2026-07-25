@@ -27,10 +27,10 @@ type GroupProps = ThreeElements['group']
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
-export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the phone screen: React components, an <iframe>, a
-   * <video>… Wrap in `<Phone.Screen>` to set per-screen surface props.
+   * <video>… Wrap in `<Galaxy.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
@@ -81,7 +81,7 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, Surf
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-function PhoneImpl({
+function GalaxyImpl({
   children,
   variant = GALAXY_DEFAULT_VARIANT,
   colorway,
@@ -96,7 +96,7 @@ function PhoneImpl({
   occlude = true,
   surfaceStyle,
   ...groupProps
-}: PhoneProps) {
+}: GalaxyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = GALAXY_VARIANTS[variant]
   const retail = findColorway(GALAXY_COLORWAYS[variant], colorway)
@@ -454,9 +454,9 @@ function PhoneImpl({
     </group>
   )
 }
-PhoneImpl.displayName = 'Phone'
+GalaxyImpl.displayName = 'Galaxy'
 
-/** The device's compound slots, shared by `<Phone>` and `<PhoneMockup>`. */
-export const phoneSlots = createSlots(SCREEN_REGIONS)
+/** The device's compound slots, shared by `<Galaxy>` and `<GalaxyMockup>`. */
+export const galaxySlots = createSlots(SCREEN_REGIONS)
 
-export const Phone = Object.assign(PhoneImpl, phoneSlots)
+export const Galaxy = Object.assign(GalaxyImpl, galaxySlots)
