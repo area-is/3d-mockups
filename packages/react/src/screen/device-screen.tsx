@@ -13,7 +13,11 @@ import {
   screenSurfaceStyle,
   type ScreenRadius,
 } from '@area-mockups/core'
-import { createScreenOcclusionTester } from './occluders'
+import {
+  createScreenOcclusionTester,
+  SCREEN_COVER_HIDDEN,
+  SCREEN_COVER_VISIBLE,
+} from './occluders'
 
 export type { ScreenRadius }
 
@@ -62,6 +66,16 @@ function isolateCanvasStack(canvas: HTMLCanvasElement): void {
  * same margin — inward at the outline, outward around any punched hole.
  */
 export const SCREEN_MASK_INSET = 0.004
+
+/**
+ * Time constant, in seconds, for easing a raycast screen's opacity toward the
+ * coverage ramp's verdict. The five sample rays give a coverage that steps in
+ * fifths, so a screen grazing an edge can rattle between two steps as the
+ * camera moves; easing turns that rattle into a steady mid-fade instead of a
+ * strobe. Short enough that a screen passing behind a body still reads as
+ * being covered by it rather than dimming on its own schedule.
+ */
+const FADE_TAU = 0.07
 
 // Staggered retry thresholds for the drei <Html> mount race (see below):
 // screens created back-to-back get different frame counts, so their
@@ -242,9 +256,12 @@ export function DeviceScreen({
   const retryState = React.useRef({ frames: 0, retries: 0 })
   const retryThreshold = React.useMemo(nextRetryThreshold, [])
   const cullBackface = React.useMemo(() => createBackfaceCuller(), [])
-  const occlusionBlocked = React.useMemo(() => createScreenOcclusionTester(), [])
+  const occlusionCover = React.useMemo(() => createScreenOcclusionTester(), [])
   const occludeMeshes = usingBlending ? undefined : occluders
-  useFrame(({ camera }) => {
+  // Current eased opacity of a raycast screen. 1 whenever nothing occludes it,
+  // which is every frame in blending mode.
+  const fade = React.useRef(1)
+  useFrame(({ camera }, delta) => {
     if (usingBlending) {
       const canvas = gl.domElement.style
       if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
@@ -275,17 +292,35 @@ export function DeviceScreen({
     if (!anchorRef.current || !contentRef.current) return
     const content = contentRef.current
     cullBackface(anchorRef.current, content, camera)
-    if (
-      occludeMeshes?.length &&
-      content.style.visibility !== 'hidden' &&
-      occlusionBlocked(anchorRef.current, width, height, occludeMeshes, camera)
-    ) {
-      content.style.visibility = 'hidden'
+    // Raycast mode cannot cover a screen partway — the DOM is one element on
+    // top of the canvas — so instead of blinking off the moment a majority of
+    // sample rays are blocked, it eases across the coverage ramp and dissolves
+    // behind whatever is passing in front of it.
+    if (!occludeMeshes?.length) {
+      if (fade.current !== 1) {
+        fade.current = 1
+        content.style.opacity = ''
+      }
+    } else if (content.style.visibility !== 'hidden') {
+      const covered = occlusionCover(anchorRef.current, width, height, occludeMeshes, camera)
+      const ramp = (covered - SCREEN_COVER_VISIBLE) / (SCREEN_COVER_HIDDEN - SCREEN_COVER_VISIBLE)
+      const target = 1 - Math.min(1, Math.max(0, ramp))
+      // Frame-rate independent ease, snapped once it is within a step nobody
+      // can see so the opacity stops being rewritten every frame.
+      fade.current += (target - fade.current) * (1 - Math.exp(-delta / FADE_TAU))
+      if (Math.abs(target - fade.current) < 0.004) fade.current = target
+      content.style.opacity = fade.current > 0.995 ? '' : fade.current.toFixed(3)
+      // Fully faded is the old all-or-nothing hidden state: take it out of
+      // hit-testing and off the compositor rather than leaving an invisible
+      // pane over the device's back.
+      if (fade.current <= 0.004) content.style.visibility = 'hidden'
     }
     // A hidden screen must never intercept pointers either — user content can
     // re-enable its own `visibility`, which would silently eat drags on the
     // device's back (visibility alone doesn't stop such children hit-testing).
-    const pointerEvents = content.style.visibility === 'hidden' || !clickable ? 'none' : 'auto'
+    // Nor may a mostly-faded one: opacity does not stop hit-testing at all.
+    const pointerEvents =
+      content.style.visibility === 'hidden' || !clickable || fade.current < 0.5 ? 'none' : 'auto'
     if (content.style.pointerEvents !== pointerEvents) {
       content.style.pointerEvents = pointerEvents
     }

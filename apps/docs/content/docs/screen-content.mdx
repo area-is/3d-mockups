@@ -66,11 +66,13 @@ content cannot be clicked.
 
 **`interactive={true}` — raycast occlusion.** The DOM stacks *on top of* the
 canvas so pointers can reach it — which means nothing in the scene can visually
-cover it. Hiding becomes all-or-nothing: sample rays decide whether the screen
-is behind the body, and the whole screen blinks off together. Partial coverage
-goes wrong in both directions — content shows through hardware that should hide
-it (you can see a laptop's screen through its own keyboard), and a screen that
-is mostly visible can blank out entirely.
+cover it. Hiding is therefore all-or-nothing: five sample rays measure how much
+of the screen is behind the body, and the screen fades out across the middle of
+that range rather than blinking, but it is still the whole screen going at once.
+Partial coverage goes wrong in both directions — content shows through hardware
+that should hide it (you can see a laptop's screen through its own keyboard),
+and a screen that is mostly covered dissolves away even where it is still
+visible.
 
 Turn it on only when the content genuinely has to be *used* — a live embedded
 app, a scrollable prototype, a form someone will type into. For screenshots,
