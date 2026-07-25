@@ -1,15 +1,22 @@
 /**
- * Wristband geometry: a crowned strap section swept along the oval of a worn
- * wrist.
+ * Wristband geometry: a crowned strap section swept along a path.
  *
  * A watch strap is not a tube. Its outer face is gently domed, its inner face
  * is flat against the wrist, its edges are half-round, and it tapers between
- * the lug and the free tip. Sweeping that section along a wrist oval — rather
- * than extruding one rectangle around a circle — is what separates a strap
- * from a rubber O-ring, so the math lives here and every binding gets it.
+ * the lug and the free tip. Sweeping that section along a path — rather than
+ * extruding one rectangle around a circle — is what separates a strap from a
+ * rubber O-ring, so the math lives here and every binding gets it.
  *
- * Angles are measured from the loop's front axis (the case): 0 is dead centre
- * of the case, +90° the twelve-o'clock side, 180° the underside of the wrist
+ * A band gets a DIFFERENT path per pose rather than one path bent to fit.
+ * Worn, it follows the oval of a wrist (`wristLoopPath`); unbuckled, it lies
+ * dead straight on a surface (`flatStrapPath`). Approximating the flat pose as
+ * a huge-radius arc technically works, but every offset expressed in degrees
+ * then means a wildly different distance in the two poses — the bug that put
+ * the buckle tens of units off the band. A path is parameterized 0→1 along the
+ * strap in both poses, so positions transfer between them unchanged.
+ *
+ * Loop angles are measured from the front axis (the case): 0 is dead centre of
+ * the case, +90° the twelve-o'clock side, 180° the underside of the wrist
  * where the closure sits, 270° the six-o'clock side.
  */
 
@@ -41,6 +48,22 @@ export interface LoopFrame {
   nz: number
 }
 
+/**
+ * The loop's circumference, by Ramanujan's ellipse approximation — accurate to
+ * a few parts in 10^5 at these proportions. This is what fixes a band's true
+ * length: a band is cut to go round a wrist, so however it is posed, its
+ * straps measure what they measure here.
+ */
+export function wristLoopPerimeter(loop: WristLoop): number {
+  const a = (loop.ryFront + loop.ryBack) / 2
+  return Math.PI * (3 * (a + loop.rz) - Math.sqrt((3 * a + loop.rz) * (a + 3 * loop.rz)))
+}
+
+/** Length of the `from` → `to` degree run along the loop. */
+export function wristLoopArcLength(loop: WristLoop, from: number, to: number): number {
+  return (Math.abs(to - from) / 360) * wristLoopPerimeter(loop)
+}
+
 /** Sample the wrist loop at sweep angle `phi` (radians). */
 export function wristLoopAt(loop: WristLoop, phi: number): LoopFrame {
   const { ryFront, ryBack, rz, centerZ } = loop
@@ -68,15 +91,47 @@ export function wristLoopAt(loop: WristLoop, phi: number): LoopFrame {
   return { y, z, ny, nz }
 }
 
+/**
+ * A strap's centre path, sampled at `t` from 0 at the lug end to 1 at the free
+ * end. Every position along a band — a hole, the buckle, the keeper — is a `t`,
+ * so it means the same place whichever pose the band is in.
+ */
+export type StrapPath = (t: number) => LoopFrame
+
+/** Path along part of a worn wrist loop, `from` → `to` in degrees. */
+export function wristLoopPath(loop: WristLoop, from: number, to: number): StrapPath {
+  const a0 = (from * Math.PI) / 180
+  const a1 = (to * Math.PI) / 180
+  return (t) => wristLoopAt(loop, a0 + (a1 - a0) * t)
+}
+
+export interface FlatStrapOptions {
+  /** Where the strap's lug end sits on the case's centre line. */
+  startY: number
+  /** Depth of the strap's mid-surface — the plane it lies in. */
+  z: number
+  /** True length of the strap. */
+  length: number
+  /** `1` runs it toward twelve o'clock, `-1` toward six. */
+  direction: 1 | -1
+}
+
+/**
+ * Path for a strap laid out flat: a straight run along Y at a fixed depth,
+ * its outer face toward the viewer. This is the unbuckled pose — a real band
+ * off the wrist is straight, not a very wide arc, and holes and hardware sit
+ * at exact multiples of the strap's length rather than of some arc's radius.
+ */
+export function flatStrapPath({ startY, z, length, direction }: FlatStrapOptions): StrapPath {
+  return (t) => ({ y: startY + direction * length * t, z, ny: 0, nz: 1 })
+}
+
 /** Per-position strap dimensions, sampled at `t` from 0 (start) to 1 (end). */
 export type StrapTaper = (t: number) => number
 
 export interface StrapOptions {
-  loop: WristLoop
-  /** Sweep start angle in degrees (see the module note for the convention). */
-  from: number
-  /** Sweep end angle in degrees. */
-  to: number
+  /** The centre path the section sweeps along. */
+  path: StrapPath
   /** Strap width across the wrist. */
   width: StrapTaper
   /** Strap thickness (edge to edge through the section). */
@@ -150,9 +205,7 @@ export const STRAP_SECTION_POINTS = (OUTER_SEGMENTS + 1) * 2 + (EDGE_SEGMENTS - 
  * band into visible facets.
  */
 export function sweptStrapGeometry({
-  loop,
-  from,
-  to,
+  path,
   width,
   thickness,
   crown,
@@ -162,8 +215,6 @@ export function sweptStrapGeometry({
   capEnd = false,
 }: StrapOptions): BufferGeometry {
   const cols = STRAP_SECTION_POINTS
-  const a0 = (from * Math.PI) / 180
-  const a1 = (to * Math.PI) / 180
   const rings = segments
   const vertexCount = (rings + 1) * cols + (capStart ? cols + 1 : 0) + (capEnd ? cols + 1 : 0)
   const positions = new Float32Array(vertexCount * 3)
@@ -173,7 +224,7 @@ export function sweptStrapGeometry({
 
   for (let i = 0; i <= rings; i++) {
     const t = i / rings
-    const frame = wristLoopAt(loop, a0 + (a1 - a0) * t)
+    const frame = path(t)
     const ride = lift ? lift(t) : 0
     strapSection(width(t), thickness(t), crown(t), section)
     for (let j = 0; j < cols; j++) {

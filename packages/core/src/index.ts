@@ -25,10 +25,16 @@ export { gearShape } from './geometry/gear'
 export {
   type WristLoop,
   type LoopFrame,
+  type StrapPath,
   type StrapTaper,
   type StrapOptions,
+  type FlatStrapOptions,
   STRAP_SECTION_POINTS,
   wristLoopAt,
+  wristLoopPath,
+  wristLoopPerimeter,
+  wristLoopArcLength,
+  flatStrapPath,
   sweptStrapGeometry,
 } from './geometry/strap'
 export {

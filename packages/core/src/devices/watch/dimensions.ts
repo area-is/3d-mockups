@@ -32,7 +32,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { WristLoop } from '../../geometry/strap'
+import { wristLoopArcLength, type WristLoop } from '../../geometry/strap'
 import type { MockupFraming } from '../../regions'
 
 export interface WatchSpec {
@@ -167,15 +167,6 @@ export interface FastenedWatchBand extends WatchBandBase {
   closureHole: number
   /** Where the keeper sits along the six-o'clock strap, worn. */
   keeperT?: number
-  /**
-   * Radius of the gentle arc the band lies on when unbuckled. A closed loop
-   * always hides the case back from behind — the far side of the strap is
-   * between the camera and the watch — so the open pose is a wide, nearly
-   * flat C on a much larger radius: the straps run out past the case, the
-   * whole hole row and closure face the camera, and the back is clear. The
-   * straps keep their true length, so the arc they subtend follows from it.
-   */
-  openRadius: number
 }
 
 export type WatchBand = SeamlessWatchBand | FastenedWatchBand
@@ -271,7 +262,6 @@ const GALAXY_WATCH_8: WatchSpec = {
     holeLength: 0.185,
     closureHole: 2,
     keeperT: 0.72,
-    openRadius: 3.35,
     loop: { ryFront: 1.72, ryBack: 1.46, rz: 1.22, centerZ: -0.98, startAngle: 34 },
   },
 }
@@ -286,14 +276,32 @@ export type WatchVariant = keyof typeof WATCH_VARIANTS
 /** The variant every binding defaults to. */
 export const WATCH_DEFAULT_VARIANT: WatchVariant = 'series11'
 
+/** Framing distance for the worn pose, which every variant shares. */
+const WORN_DISTANCE = 7.7
+const FOV = 40
+
 /**
- * Grounded under the bottom of the worn band loop. The extent is rebased
+ * Camera distance that frames the watch in the given band pose. Laid flat the
+ * band is several times the worn loop's height, so the worn distance crops it
+ * badly; back off far enough that the full extent fits the vertical field with
+ * a little air around it.
+ */
+export function watchCameraDistance(variant: WatchVariant | undefined, bandOpen: boolean): number {
+  const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
+  if (!bandOpen || band.closure === 'seamless') return WORN_DISTANCE
+  const fit = watchOpenExtent(band) / Math.tan((FOV / 2) * (Math.PI / 180))
+  return Math.max(WORN_DISTANCE, fit * 1.12)
+}
+
+/**
+ * Grounded under the bottom of the band: the worn loop's lower edge, or the
+ * tip of the longer strap when the band lies flat. The worn extent is rebased
  * −0.05 so the shared float gap reproduces the stage's original 0.25 hover
  * clearance, with the grounded line (0.05 under the strap) restored by the
  * 0.1 contact gap.
  */
 export const WATCH_FRAMING = {
-  camera: { position: [0, 0.4, 7.7], fov: 40 },
+  camera: { position: [0, 0.4, WORN_DISTANCE], fov: FOV },
   floatIntensity: 0.6,
   contactGap: 0.1,
   extent: ({ variant, bandOpen }) => {
@@ -305,34 +313,27 @@ export const WATCH_FRAMING = {
 } as const satisfies MockupFraming<{ variant?: WatchVariant; bandOpen?: boolean }>
 
 /**
- * Arc (degrees) each strap subtends when the band lies open, from its true
- * length on the worn loop transferred onto `openRadius`. Shared by the scene
- * component and the framing so the two never drift.
+ * True length of each strap, measured along the wrist loop it wraps. The worn
+ * pose is what fixes a band's length — it is cut to go round a wrist — so the
+ * flat pose reads its lengths from here rather than carrying its own numbers
+ * that could drift out of agreement.
  */
-export function watchOpenSweeps(band: FastenedWatchBand): { pin: number; tail: number } {
-  const { ryFront, ryBack, rz, startAngle } = band.loop
-  const a = (ryFront + ryBack) / 2
-  // Ramanujan's ellipse perimeter — accurate to a few parts in 10^5 here.
-  const perimeter = Math.PI * (3 * (a + rz) - Math.sqrt((3 * a + rz) * (a + 3 * rz)))
-  const degToLength = perimeter / 360
+export function watchStrapLengths(band: FastenedWatchBand): { pin: number; tail: number } {
+  const { startAngle } = band.loop
   return {
-    pin: ((band.pinStrapEnd - startAngle) * degToLength) / band.openRadius * (180 / Math.PI),
-    tail: ((360 - startAngle - band.tailEnd) * degToLength) / band.openRadius * (180 / Math.PI),
+    pin: wristLoopArcLength(band.loop, startAngle, band.pinStrapEnd),
+    tail: wristLoopArcLength(band.loop, 360 - startAngle, band.tailEnd),
   }
 }
 
-/** Half-height of the open band, for framing and the contact shadow. */
-export function watchOpenExtent(band: FastenedWatchBand): number {
-  const { openRadius } = band
-  const { pin, tail } = watchOpenSweeps(band)
-  const start = WATCH_OPEN_START
-  // The arc is centred on the case; the lowest point is the tail's tip (or the
-  // arc's bottom if it sweeps past straight down).
-  const lowest = Math.min(
-    ...[start + tail, 90].filter((d) => d <= start + tail).map((d) => -openRadius * Math.sin((d * Math.PI) / 180))
-  )
-  return Math.max(-lowest, openRadius * Math.sin((Math.min(start + pin, 90) * Math.PI) / 180)) + band.thickness
-}
+/**
+ * How far up the case's centre line a flat band's straps begin, so their cut
+ * ends stay buried inside it.
+ */
+export const WATCH_OPEN_START_Y = 0.55
 
-/** Sweep angle the open band's straps leave the case at. */
-export const WATCH_OPEN_START = 12
+/** Half-height of the band laid flat, for framing and the contact shadow. */
+export function watchOpenExtent(band: FastenedWatchBand): number {
+  const { pin, tail } = watchStrapLengths(band)
+  return WATCH_OPEN_START_Y + Math.max(pin, tail) + band.thickness
+}
