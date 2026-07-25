@@ -248,9 +248,42 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
     if (close) ctx.closePath()
     fill ? ctx.fill() : ctx.stroke()
   }
-  // Apple's F10-F12 speaker glyph is a stroked outline, not a filled solid.
+  const roundRect = (cx: number, cy: number, w: number, h: number, r: number) => {
+    ctx.beginPath()
+    ctx.roundRect(cx - w / 2, cy - h / 2, w, h, r)
+    ctx.stroke()
+  }
+  /**
+   * F10-F12 share one stroked speaker outline: a shallow box on the left
+   * opening into a cone that flares right. Measured off Apple's own art at
+   * 36 x 53 px — so 1.47x as tall as wide, with the box only 0.30 of the
+   * cone's height. `SPK` is the speaker's width; everything follows from it.
+   */
+  const SPK = 0.523 * s
   const speaker = (cx: number) => {
-    poly([[cx - 0.3 * s, -0.11 * s], [cx - 0.15 * s, -0.11 * s], [cx + 0.02 * s, -0.28 * s], [cx + 0.02 * s, 0.28 * s], [cx - 0.15 * s, 0.11 * s], [cx - 0.3 * s, 0.11 * s]])
+    const box = 0.222 * SPK
+    const mouth = 0.736 * SPK
+    poly([
+      [cx - 0.46 * SPK, -box],
+      [cx + 0.03 * SPK, -box],
+      [cx + 0.46 * SPK, -mouth],
+      [cx + 0.46 * SPK, mouth],
+      [cx + 0.03 * SPK, box],
+      [cx - 0.46 * SPK, box],
+    ])
+  }
+  /**
+   * The waves to its right: arcs struck from a point 0.34 speaker-widths
+   * right of the speaker's center, at 0.635 / 0.985 / 1.337 of that width.
+   * F11 shows the first alone, F12 all three.
+   */
+  const waves = (cx: number, n: number) => {
+    const at = cx + 0.34 * SPK
+    for (const r of [0.635, 0.985, 1.337].slice(0, n)) {
+      ctx.beginPath()
+      ctx.arc(at, 0, r * SPK, -0.197 * Math.PI, 0.197 * Math.PI)
+      ctx.stroke()
+    }
   }
   const rays = (r0: number, r1: number, n: number) => {
     for (let i = 0; i < n; i++) {
@@ -259,87 +292,95 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
     }
   }
   switch (icon) {
+    // F1 / F2 are the SAME sun at the same size with the same 28 px disc, and
+    // differ ONLY in how far the eight rays reach. (They used to differ in
+    // overall size by a third, which is not what the keys do.)
     case 'sunlo':
-      circle(0, 0, 0.14 * s)
-      rays(0.24 * s, 0.32 * s, 8)
+      circle(0, 0, 0.201 * s)
+      rays(0.294 * s, 0.394 * s, 8)
       break
     case 'sunhi':
-      circle(0, 0, 0.18 * s)
-      rays(0.3 * s, 0.42 * s, 8)
+      circle(0, 0, 0.2 * s)
+      rays(0.265 * s, 0.423 * s, 8)
       break
     case 'mission': {
-      const r = 0.06 * s
-      ctx.beginPath()
-      ctx.roundRect(-0.42 * s, -0.26 * s, 0.46 * s, 0.52 * s, r)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.roundRect(0.14 * s, -0.26 * s, 0.3 * s, 0.2 * s, r)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.roundRect(0.14 * s, 0.06 * s, 0.3 * s, 0.2 * s, r)
-      ctx.stroke()
+      // Mission Control is TWO stacked panes on the LEFT beside one tall pane
+      // on the RIGHT — this had it mirrored, with the tall pane left and two
+      // equal panes right. Apple's three are all different sizes: the
+      // upper-left is widest, the lower-left is smaller and steps right, and
+      // the right-hand one is the tall one. It is also the widest glyph in the
+      // row (1.5x as wide as tall), which is why it gets more width than `s`.
+      const r = 0.05 * s
+      roundRect(-0.337 * s, -0.222 * s, 0.546 * s, 0.33 * s, r)
+      roundRect(-0.251 * s, 0.251 * s, 0.488 * s, 0.273 * s, r)
+      roundRect(0.388 * s, 0.007 * s, 0.445 * s, 0.645 * s, r)
       break
     }
     case 'spot':
-      circle(-0.08 * s, -0.08 * s, 0.26 * s)
-      line(0.12 * s, 0.12 * s, 0.36 * s, 0.36 * s)
+      // A big lens with a stub of a handle, not the small lens on a long
+      // handle this drew: Apple's lens is 0.72 of the glyph across.
+      circle(-0.073 * s, -0.08 * s, 0.302 * s)
+      line(0.141 * s, 0.134 * s, 0.395 * s, 0.395 * s)
       break
     case 'mic': {
+      // Dictation: capsule, U-shaped cradle, stem, and the FOOT that was
+      // missing entirely. The glyph is 1.45x as tall as wide; `W` is its
+      // width and each step down the stack is a fraction of it.
+      const W = 0.574 * s
+      const y = (u: number) => -0.416 * s + u * W
       ctx.beginPath()
-      ctx.roundRect(-0.1 * s, -0.42 * s, 0.2 * s, 0.44 * s, 0.1 * s)
+      ctx.roundRect(-0.0935 * s, y(0.075), 0.187 * s, 0.402 * s, 0.0935 * s)
       ctx.stroke()
       ctx.beginPath()
-      ctx.arc(0, -0.02 * s, 0.24 * s, 0.15 * Math.PI, 0.85 * Math.PI)
+      ctx.arc(0, y(0.6), 0.244 * s, 0, Math.PI)
       ctx.stroke()
-      line(0, 0.22 * s, 0, 0.4 * s)
+      line(0, y(1.1), 0, y(1.32))
+      line(-0.158 * s, y(1.36), 0.158 * s, y(1.36))
       break
     }
     case 'moon': {
-      // F6's Do Not Disturb crescent is solid: fill a disc, then punch a second
-      // one out of its upper right. Nothing else prints inside a keycap, so
-      // erasing there only ever removes this glyph's own ink.
-      ctx.save()
-      circle(0, 0, 0.34 * s, true)
-      ctx.globalCompositeOperation = 'destination-out'
-      circle(0.11 * s, -0.11 * s, 0.32 * s, true)
-      ctx.restore()
-      break
-    }
-    // F7-F9 transport glyphs are hollow outlined triangles on the real caps
-    case 'rew':
-      poly([[0.02 * s, -0.22 * s], [-0.32 * s, 0], [0.02 * s, 0.22 * s]])
-      poly([[0.38 * s, -0.22 * s], [0.04 * s, 0], [0.38 * s, 0.22 * s]])
-      break
-    case 'play':
-      poly([[-0.36 * s, -0.22 * s], [-0.05 * s, 0], [-0.36 * s, 0.22 * s]])
-      line(0.12 * s, -0.22 * s, 0.12 * s, 0.22 * s)
-      line(0.28 * s, -0.22 * s, 0.28 * s, 0.22 * s)
-      break
-    case 'fwd':
-      poly([[-0.38 * s, -0.22 * s], [-0.04 * s, 0], [-0.38 * s, 0.22 * s]])
-      poly([[-0.02 * s, -0.22 * s], [0.32 * s, 0], [-0.02 * s, 0.22 * s]])
-      break
-    case 'mute':
-      // F10 is the muted speaker: the bare cone with a slash struck through it
-      speaker(0.14 * s)
-      line(-0.3 * s, 0.32 * s, 0.3 * s, -0.32 * s)
-      break
-    case 'voldn': {
-      speaker(-0.04 * s)
+      // Do Not Disturb is an OUTLINED crescent, not the solid one this drew:
+      // the boundary between a disc and a second, larger disc overlapping it
+      // from the upper right. Both circles were fitted to Apple's art to
+      // within 3% of the crescent's area.
+      const R = 0.39 * s
       ctx.beginPath()
-      ctx.arc(0.04 * s, 0, 0.2 * s, -0.3 * Math.PI, 0.3 * Math.PI)
+      // The arcs meet at the horns. These sweep directions are the pair that
+      // keeps the outer arc clear of the bite and the inner arc inside it.
+      ctx.arc(0, 0, R, 0.1868, 4.5942, false)
+      ctx.arc(0.47 * R, -0.439 * R, 0.808 * R, 3.8972, 0.8834, true)
+      ctx.closePath()
       ctx.stroke()
       break
     }
-    case 'volup': {
-      speaker(-0.14 * s)
-      for (const r of [0.16, 0.28, 0.4]) {
-        ctx.beginPath()
-        ctx.arc(-0.06 * s, 0, r * s, -0.3 * Math.PI, 0.3 * Math.PI)
-        ctx.stroke()
-      }
+    // F7-F9 are hollow outlined triangles, a shared 0.56s tall
+    case 'rew':
+      poly([[0, -0.28 * s], [-0.53 * s, 0], [0, 0.28 * s]])
+      poly([[0.53 * s, -0.28 * s], [0, 0], [0.53 * s, 0.28 * s]])
       break
-    }
+    case 'play':
+      poly([[-0.466 * s, -0.28 * s], [0.021 * s, 0], [-0.466 * s, 0.28 * s]])
+      line(0.193 * s, -0.301 * s, 0.193 * s, 0.301 * s)
+      line(0.466 * s, -0.301 * s, 0.466 * s, 0.301 * s)
+      break
+    case 'fwd':
+      poly([[-0.53 * s, -0.28 * s], [0, 0], [-0.53 * s, 0.28 * s]])
+      poly([[0, -0.28 * s], [0.53 * s, 0], [0, 0.28 * s]])
+      break
+    case 'mute':
+      // The bare speaker struck through corner to corner. Apple's slash falls
+      // from the TOP-LEFT to the bottom right; this used to rise the other way.
+      speaker(-0.074 * s)
+      line(-0.42 * s, -0.42 * s, 0.42 * s, 0.42 * s)
+      break
+    case 'voldn':
+      speaker(-0.121 * s)
+      waves(-0.121 * s, 1)
+      break
+    case 'volup':
+      speaker(-0.309 * s)
+      waves(-0.309 * s, 3)
+      break
     case 'globe': {
       circle(0, 0, 0.36 * s)
       line(-0.36 * s, 0, 0.36 * s, 0)
