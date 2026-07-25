@@ -21,8 +21,9 @@ videos play, iframes scroll.
 - **Any content on screen** — pass React components, an `<iframe>` or a `<video>` as
   children. Pointer events, state and scrolling keep working.
 - **Composable** — use the one-liners `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
-  / `<TabletMockup>` / `<WatchMockup>` / `<MonitorMockup>`, or drop `<Phone>` / `<IPhone>` /
-  `<Laptop>` / `<Tablet>` / `<Watch>` / `<Monitor>` into your own react-three-fiber scene.
+  / `<TabletMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<MonitorMockup>`, or
+  drop `<Phone>` / `<IPhone>` / `<Laptop>` / `<Tablet>` / `<AppleWatch>` / `<GalaxyWatch>` /
+  `<Monitor>` into your own react-three-fiber scene.
 
 ## Install
 
@@ -91,7 +92,7 @@ names come from each object's spec in the core, so every future binding shares t
 
 ## Components
 
-### `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<TabletMockup>` / `<WatchMockup>` / `<MonitorMockup>` — all-in-one
+### `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<TabletMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<MonitorMockup>` — all-in-one
 
 Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float`
 (idle floating animation). Transforms are first-class: `position`, `rotation` and `scale`
@@ -187,16 +188,21 @@ and (on the Ultra) the U-shaped display notch on the Galaxy Tabs; brand marks as
 vector geometry (Apple glyph, edge-aligned SAMSUNG wordmark) and model wordmarks on
 the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
 
-### `<Watch>` — Apple Watch-style · `<Monitor>` — Studio Display-style
+### `<AppleWatch>` / `<GalaxyWatch>` — smartwatches · `<Monitor>` — Studio Display-style
 
-The watch adds `bandColor` (Sport-Band straps) and skips orientation: squircle case,
-knurled Digital Crown, side button, sensor dome and straps. The monitor puts the
+Both watches add `bandColor` and skip orientation. `<AppleWatch>` is the Series 11:
+squircle case, knurled Digital Crown, flush side button, sensor back, worn on the
+seamless Solo Loop — which has no closure, so it takes no `bandOpen`.
+`<GalaxyWatch>` is the Watch 8: cushion case, round display on its dial puck, two
+flat keys, BioActive puck, worn on a buckled two-strap band that `bandOpen` lays
+out flat. The monitor puts the
 2026 Studio Display's 27" 5K panel on its tilt stand — uniform bezel, centered
 camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive power
 cord's circular recess framed by the stand's cable hole and, faithfully, no power
 button.
 
 Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `TABLET_VARIANTS`,
+`APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
 `PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
 available from the `area-mockups/core` subpath — the same data will drive the planned
 2D (CSS/SVG) renderers.

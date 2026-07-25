@@ -3,7 +3,8 @@ export { PhoneMockup, type PhoneMockupProps } from './phone-mockup'
 export { IPhoneMockup, type IPhoneMockupProps } from './iphone-mockup'
 export { LaptopMockup, type LaptopMockupProps } from './laptop-mockup'
 export { TabletMockup, type TabletMockupProps } from './tablet-mockup'
-export { WatchMockup, type WatchMockupProps } from './watch-mockup'
+export { AppleWatchMockup, type AppleWatchMockupProps } from './apple-watch-mockup'
+export { GalaxyWatchMockup, type GalaxyWatchMockupProps } from './galaxy-watch-mockup'
 export { MonitorMockup, type MonitorMockupProps } from './monitor-mockup'
 export { FoldMockup, type FoldMockupProps } from './fold-mockup'
 export { FlipMockup, type FlipMockupProps } from './flip-mockup'
@@ -59,7 +60,13 @@ export { Phone, type PhoneProps } from './devices/phone/phone'
 export { IPhone, type IPhoneProps } from './devices/iphone/iphone'
 export { Laptop, type LaptopProps } from './devices/laptop/laptop'
 export { Tablet, type TabletProps } from './devices/tablet/tablet'
-export { Watch, type WatchProps } from './devices/watch/watch'
+export {
+  AppleWatch,
+  type AppleWatchProps,
+  GalaxyWatch,
+  type GalaxyWatchProps,
+  type WatchCommonProps,
+} from './devices/watch/watch'
 export { Monitor, type MonitorProps } from './devices/monitor/monitor'
 export { Fold, type FoldProps } from './devices/fold/fold'
 export { Flip, type FlipProps } from './devices/flip/flip'
@@ -106,7 +113,8 @@ export {
   FLIP_COLORWAYS,
   LAPTOP_COLORWAYS,
   TABLET_COLORWAYS,
-  WATCH_COLORWAYS,
+  APPLE_WATCH_COLORWAYS,
+  GALAXY_WATCH_COLORWAYS,
   MONITOR_COLORWAYS,
   findColorway,
 } from '@area-mockups/core'
@@ -115,7 +123,8 @@ export type {
   IPhoneVariant,
   LaptopVariant,
   TabletVariant,
-  WatchVariant,
+  AppleWatchVariant,
+  GalaxyWatchVariant,
   FoldVariant,
   FlipVariant,
 } from '@area-mockups/core'

@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  AppleWatchMockup,
+  GalaxyWatchMockup,
   BillboardMockup,
   BookMockup,
   BrochureMockup,
@@ -18,7 +20,6 @@ import {
   PosterFrameMockup,
   TabletMockup,
   VanMockup,
-  WatchMockup,
   FlipMockup,
 } from 'area-mockups'
 import { TapCounter } from '../screens/tap-counter'
@@ -412,36 +413,30 @@ export default function DemoScenes() {
         title="Apple Watch Series 11"
         description={
           <>
-            <code>&lt;WatchMockup&gt;</code>: squircle case, Digital Crown, a full Sport
-            Band loop worn on an invisible wrist, and a live 208×248 face. The
+            <code>&lt;AppleWatchMockup&gt;</code>: squircle case, Digital Crown, a full
+            Solo Loop worn on an invisible wrist, and a live 208×248 face. The
             complication really taps.
           </>
         }
       >
-        <WatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
+        <AppleWatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
           <WatchFace />
-        </WatchMockup>
+        </AppleWatchMockup>
       </DemoCard>
 
       <DemoCard
         title="Galaxy Watch 8"
         description={
           <>
-            <code>variant=&quot;watch8&quot;</code>: the cushion case with a fully round
+            <code>&lt;GalaxyWatchMockup&gt;</code>: the cushion case with a fully round
             1.47″ display — a live circular 240×240 face — two flat keys, and the
             Dynamic Lug band.
           </>
         }
       >
-        <WatchMockup
-          variant="watch8"
-          float
-          color="#33363c"
-          bandColor="#23252a"
-          rotation={[0, 0.3, 0]}
-        >
+        <GalaxyWatchMockup float color="#33363c" bandColor="#23252a" rotation={[0, 0.3, 0]}>
           <GalaxyWatchFace />
-        </WatchMockup>
+        </GalaxyWatchMockup>
       </DemoCard>
 
       <DemoCard

@@ -2,6 +2,7 @@
 
 import {
   AFrameSignMockup,
+  AppleWatchMockup,
   Billboard,
   BillboardMockup,
   Book,
@@ -15,6 +16,7 @@ import {
   CustomPanelMockup,
   DOOHTotemMockup,
   FoldMockup,
+  GalaxyWatchMockup,
   GreetingCardMockup,
   IDCardMockup,
   IPhone,
@@ -39,7 +41,6 @@ import {
   VanMockup,
   VinylRecord,
   VinylRecordMockup,
-  WatchMockup,
   FlipMockup,
 } from 'area-mockups'
 import { PreviewStage } from './preview-controls'
@@ -923,16 +924,21 @@ const DEMOS: Record<string, React.ReactNode> = {
     </CustomBoxMockup>
   ),
 
-  // ---- Watch ------------------------------------------------------------------
-  'watch-band': (
-    <WatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
+  // ---- Watches ----------------------------------------------------------------
+  'apple-watch': (
+    <AppleWatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
       <WatchFace />
-    </WatchMockup>
+    </AppleWatchMockup>
   ),
-  'watch-galaxy': (
-    <WatchMockup variant="watch8" color="#33363c" bandColor="#23252a" float rotation={[0, 0.3, 0]}>
+  'galaxy-watch': (
+    <GalaxyWatchMockup color="#33363c" bandColor="#23252a" float rotation={[0, 0.3, 0]}>
       <GalaxyWatchFace />
-    </WatchMockup>
+    </GalaxyWatchMockup>
+  ),
+  'galaxy-watch-open': (
+    <GalaxyWatchMockup bandOpen color="#33363c" bandColor="#23252a" rotation={[0, 3.14, 0]}>
+      <GalaxyWatchFace />
+    </GalaxyWatchMockup>
   ),
 
   // ---- Chroma surface maps: every mockup-able area in chroma green -----------
@@ -956,10 +962,15 @@ const DEMOS: Record<string, React.ReactNode> = {
       <ChromaSurface label="children" />
     </TabletMockup>
   ),
-  'chroma-watch': (
-    <WatchMockup rotation={[0, -0.3, 0]}>
+  'chroma-apple-watch': (
+    <AppleWatchMockup rotation={[0, -0.3, 0]}>
       <ChromaSurface label="children" />
-    </WatchMockup>
+    </AppleWatchMockup>
+  ),
+  'chroma-galaxy-watch': (
+    <GalaxyWatchMockup rotation={[0, -0.3, 0]}>
+      <ChromaSurface label="children" />
+    </GalaxyWatchMockup>
   ),
   'chroma-monitor': (
     <MonitorMockup rotation={[0, -0.25, 0]}>

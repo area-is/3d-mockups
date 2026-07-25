@@ -4,7 +4,7 @@ import type { FoldVariant } from './devices/fold/dimensions'
 import type { FlipVariant } from './devices/flip/dimensions'
 import type { LaptopVariant } from './devices/laptop/dimensions'
 import type { TabletVariant } from './devices/tablet/dimensions'
-import type { WatchVariant } from './devices/watch/dimensions'
+import type { AppleWatchVariant, GalaxyWatchVariant } from './devices/watch/dimensions'
 
 /**
  * The well-known retail colorways of every device, as pure data. Each device
@@ -136,13 +136,16 @@ export const TABLET_COLORWAYS: Record<TabletVariant, Colorway[]> = {
   ],
 }
 
-export const WATCH_COLORWAYS: Record<WatchVariant, Colorway[]> = {
+export const APPLE_WATCH_COLORWAYS: Record<AppleWatchVariant, Colorway[]> = {
   series11: [
     { id: 'jetblack', name: 'Jet Black', color: '#1c1d21' },
     { id: 'spacegray', name: 'Space Gray', color: '#7a7d82' },
     { id: 'rosegold', name: 'Rose Gold', color: '#e7c4bb' },
     { id: 'silver', name: 'Silver', color: '#e2e3e5' },
   ],
+}
+
+export const GALAXY_WATCH_COLORWAYS: Record<GalaxyWatchVariant, Colorway[]> = {
   watch8: [
     { id: 'graphite', name: 'Graphite', color: '#33363c' },
     { id: 'silver', name: 'Silver', color: '#d9dbde' },

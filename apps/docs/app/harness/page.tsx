@@ -38,8 +38,8 @@ import {
   type TabletVariant,
   TVSetMockup,
   VanMockup,
-  Watch,
-  type WatchVariant,
+  AppleWatch,
+  GalaxyWatch,
 } from 'area-mockups'
 
 /**
@@ -426,22 +426,28 @@ function HarnessScene() {
     )
   }
 
+  // The two watches are separate components; `wvariant=watch8` still selects
+  // the Galaxy so existing probe URLs keep working.
   if (device === 'watch') {
     const dist = Number(params.get('dist') ?? 6.4)
+    const galaxy = params.get('wvariant') === 'watch8'
+    const shared = {
+      colorway,
+      color,
+      bandColor: params.get('bandColor') ?? undefined,
+      rotation: [rx, ry, 0] as [number, number, number],
+      interactive: false,
+      dragToRotate: false,
+    }
     return (
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
-        <Watch
-          variant={(params.get('wvariant') ?? 'series11') as WatchVariant}
-          colorway={colorway}
-          color={color}
-          bandColor={params.get('bandColor') ?? undefined}
-          bandOpen={params.get('bandOpen') === '1'}
-          rotation={[rx, ry, 0]}
-          interactive={false}
-          dragToRotate={false}
-        >
-          {screen}
-        </Watch>
+        {galaxy ? (
+          <GalaxyWatch {...shared} bandOpen={params.get('bandOpen') === '1'}>
+            {screen}
+          </GalaxyWatch>
+        ) : (
+          <AppleWatch {...shared}>{screen}</AppleWatch>
+        )}
       </MockupCanvas>
     )
   }

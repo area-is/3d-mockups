@@ -33,7 +33,8 @@ import {
   TabletMockup,
   VanMockup,
   VinylRecordMockup,
-  WatchMockup,
+  AppleWatchMockup,
+  GalaxyWatchMockup,
   FLIP_COLORWAYS,
   FOLD_COLORWAYS,
   GALAXY_COLORWAYS,
@@ -41,7 +42,8 @@ import {
   LAPTOP_COLORWAYS,
   MONITOR_COLORWAYS,
   TABLET_COLORWAYS,
-  WATCH_COLORWAYS,
+  APPLE_WATCH_COLORWAYS,
+  GALAXY_WATCH_COLORWAYS,
   type Colorway,
 } from 'area-mockups'
 import { LazyScene } from './lazy-scene'
@@ -279,13 +281,19 @@ const MODELS = new Map<unknown, ModelControls>([
     },
   ],
   [
-    WatchMockup,
+    AppleWatchMockup,
     {
-      variants: [
-        { value: 'series11', label: 'Apple Watch S11' },
-        { value: 'watch8', label: 'Galaxy Watch 8' },
-      ],
-      catalogs: WATCH_COLORWAYS as Record<string, Colorway[]>,
+      variants: [{ value: 'series11', label: 'Apple Watch S11' }],
+      catalogs: APPLE_WATCH_COLORWAYS as Record<string, Colorway[]>,
+      // No `bandOpen` here: the Solo Loop is seamless, with no closure to undo.
+      controls: [swatch('bandColor', 'band')],
+    },
+  ],
+  [
+    GalaxyWatchMockup,
+    {
+      variants: [{ value: 'watch8', label: 'Galaxy Watch 8' }],
+      catalogs: GALAXY_WATCH_COLORWAYS as Record<string, Colorway[]>,
       controls: [swatch('bandColor', 'band'), toggle('bandOpen', 'unbuckled', false)],
     },
   ],
