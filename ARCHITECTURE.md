@@ -153,7 +153,7 @@ change only, no API change.
    `tsconfig.base.json` with the `@area-mockups/core` → `../core/src/index.ts` paths
    mapping, and a build aliasing the core like `packages/react/tsup.config.ts` does.
 2. Implement the stage and screen pieces of the binding contract above.
-3. Port `Phone` first — it exercises specs, screen, overlays and orientation; verify
+3. Port `Galaxy` first — it exercises specs, screen, overlays and orientation; verify
    against the React rendering side by side in the docs app.
 4. Port remaining devices/objects and wrappers incrementally; each is independent.
 5. Add root scripts (`build`, `typecheck`) for the new workspace, docs examples, and

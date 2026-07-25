@@ -79,7 +79,7 @@ export default function HomePage() {
           <h3>Composable by design</h3>
           <p>
             Use the one-liner <code>&lt;GalaxyMockup&gt;</code>, or compose{' '}
-            <code>&lt;MockupCanvas&gt;</code> and <code>&lt;Phone&gt;</code> into an existing
+            <code>&lt;MockupCanvas&gt;</code> and <code>&lt;Galaxy&gt;</code> into an existing
             three.js scene. 2D (CSS-only) mockups are on the roadmap, sharing the same API.
           </p>
         </div>

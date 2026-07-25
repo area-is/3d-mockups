@@ -5,7 +5,7 @@ description: The ready-made stage, with a WebGL canvas, studio lighting, soft sh
 
 `<MockupCanvas>` wraps a react-three-fiber `Canvas` with everything a product
 shot needs. Compose it with any device, for example
-`<MockupCanvas><Phone>...</Phone></MockupCanvas>`.
+`<MockupCanvas><Galaxy>...</Galaxy></MockupCanvas>`.
 
 One canvas, two bare devices, one shared studio light rig and shadow plane.
 
@@ -13,9 +13,9 @@ One canvas, two bare devices, one shared studio light rig and shadow plane.
 
 ```tsx
 <MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-  <Phone variant="s26ultra" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
+  <Galaxy variant="s26ultra" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
     <YourAndroidApp />
-  </Phone>
+  </Galaxy>
   <IPhone variant="promax" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
     <YourIOSApp />
   </IPhone>
@@ -26,7 +26,7 @@ One canvas, two bare devices, one shared studio light rig and shadow plane.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `children` | `ReactNode` | - | Your scene, typically a device such as `Phone`. |
+| `children` | `ReactNode` | - | Your scene, typically a device such as `Galaxy`. |
 | `controls` | `boolean` | `true` | Drag-to-rotate controls with the axis fixed at the stage center (pan is always disabled). Vertical rotation stays within the classic orbit clamp by default. |
 | `freeRotation` | `boolean` | `false` | Allow the camera to rotate a full 360° vertically — vertical drags continue straight over the top and bottom of the device instead of clamping. |
 | `autoRotate` | `boolean` | `false` | Slowly spin the camera around the device. |

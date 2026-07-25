@@ -5,23 +5,23 @@ description: Use the ready-made stage with your own arrangement, or drop devices
 
 Each `*Mockup` component is a convenience wrapper around two composable parts:
 `MockupCanvas` (the stage: canvas, lighting, shadows, controls) and a device
-model such as `Phone`. Compose them yourself when you want more control.
+model such as `Galaxy`. Compose them yourself when you want more control.
 
 ```tsx title="scenes.tsx"
 'use client'
 
 import { Canvas } from '@react-three/fiber'
 import { Float } from '@react-three/drei'
-import { MockupCanvas, Phone } from 'area-mockups'
+import { MockupCanvas, Galaxy } from 'area-mockups'
 
 // Option A: the ready-made stage with your own scene arrangement
 export function Stage() {
   return (
     <MockupCanvas autoRotate background="#0b0d12">
       <Float>
-        <Phone color="#d3d6dd" frameColor="#b6bac4" rotation={[0, -0.4, 0]}>
+        <Galaxy color="#d3d6dd" frameColor="#b6bac4" rotation={[0, -0.4, 0]}>
           <YourApp />
-        </Phone>
+        </Galaxy>
       </Float>
     </MockupCanvas>
   )
@@ -33,9 +33,9 @@ export function CustomScene() {
     <Canvas camera={{ position: [0, 0.5, 7.4], fov: 40 }}>
       <ambientLight intensity={0.7} />
       <directionalLight position={[4, 8, 6]} intensity={1.4} />
-      <Phone>
+      <Galaxy>
         <YourApp />
-      </Phone>
+      </Galaxy>
     </Canvas>
   )
 }

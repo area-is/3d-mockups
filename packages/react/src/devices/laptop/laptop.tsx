@@ -101,6 +101,8 @@ const KEY_PAD_Z = 0.0456
 const KEY_GAP = 0.0345
 /** 2.2 mm keycap corner radius — the same on every cap, from 1u to the space bar. */
 const CAP_RADIUS = 0.03
+/** Height of a keycap's flat top face (0.012 extrusion + the 0.005 bevel). */
+const CAP_TOP_Y = 0.017
 
 type KeyIcon =
   | 'sunlo' | 'sunhi' | 'mission' | 'spot' | 'mic' | 'moon'
@@ -391,6 +393,39 @@ function keycapGeometry(width: number, depth: number) {
   return g
 }
 
+/**
+ * The raised home-row markers on F and J: a stadium bar standing proud of the
+ * cap, the same molding as the cap itself rather than print. Photo-measured
+ * off a straight-on Magic Keyboard — 0.237 cap widths long, 0.053 cap depths
+ * across, its center 0.816 of the way down the cap (3.9 x 0.9 mm, 5.1 mm below
+ * the cap's center on a 16 mm cap), standing ~0.2 mm off the face.
+ */
+function HomeRowNubs({ keys }: { keys: KeyDef[] }) {
+  const geometry = React.useMemo(() => {
+    if (!keys.length) return null
+    const width = keys[0]!.w * 0.237
+    const depth = keys[0]!.d * 0.053
+    const bevel = 0.001
+    const g = new THREE.ExtrudeGeometry(
+      roundedRectShape(width - bevel * 2, depth - bevel * 2, depth / 2 - bevel),
+      { depth: 0.003, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 8 }
+    )
+    g.rotateX(-Math.PI / 2)
+    return g
+  }, [keys])
+  React.useEffect(() => () => geometry?.dispose(), [geometry])
+  if (!geometry) return null
+  return (
+    <>
+      {keys.map((key, i) => (
+        <mesh key={i} geometry={geometry} position={[key.x, CAP_TOP_Y, key.z + key.d * 0.316]}>
+          <meshPhysicalMaterial color="#17181d" metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
+        </mesh>
+      ))}
+    </>
+  )
+}
+
 /** Every cap of one footprint, in one draw call. */
 function CapCluster({ width, depth, keys }: { width: number; depth: number; keys: KeyDef[] }) {
   const meshRef = React.useRef<THREE.InstancedMesh>(null!)
@@ -413,7 +448,8 @@ function CapCluster({ width, depth, keys }: { width: number; depth: number; keys
  * The Magic Keyboard: rounded keycaps grouped by footprint into a handful of
  * instanced meshes, a canvas-painted legends layer just above the caps
  * (letters, stacked shift symbols, corner words, modifier glyphs, hand-drawn
- * media icons, home-row nubs), and the Touch ID sensor on the top-right key.
+ * media icons), the raised F / J home-row markers, and the Touch ID sensor on
+ * the top-right key.
  */
 function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ: number } }) {
   const layout = React.useMemo(() => buildKeyboardLayout(keyboard), [keyboard])
@@ -481,15 +517,8 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(legend.s, px, py)
-          if (legend.nub) {
-            // home-row locator bar under F and J
-            ctx.save()
-            ctx.globalAlpha = 0.55
-            ctx.beginPath()
-            ctx.roundRect(px - u(0.034), py + hd - u(0.02), u(0.068), u(0.008), u(0.004))
-            ctx.fill()
-            ctx.restore()
-          }
+          // the F / J home-row markers are RAISED bars, not print — real
+          // geometry standing on those two caps (see HomeRowNubs).
           break
         case 'dual':
           // shifted symbol centered 4.5 mm from the cap top, base symbol
@@ -565,6 +594,8 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
       {clusters.map(([id, cluster]) => (
         <CapCluster key={id} width={cluster.width} depth={cluster.depth} keys={cluster.keys} />
       ))}
+      {/* the raised F / J home-row markers */}
+      <HomeRowNubs keys={layout.keys.filter((k) => k.legend.t === 'txt' && k.legend.nub)} />
       {/* printed legends, floating just above the caps */}
       {legendsTexture && (
         <mesh position={[0, 0.0195, 0]} rotation-x={-Math.PI / 2}>

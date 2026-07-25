@@ -386,7 +386,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </LaptopMockup>
   ),
 
-  // ---- Tablet -------------------------------------------------------------------
+  // ---- iPad / Galaxy Tab --------------------------------------------------------
   'ipad-landscape': (
     <IPadMockup orientation="landscape" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
@@ -418,7 +418,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </GalaxyTabMockup>
   ),
 
-  // ---- Monitor --------------------------------------------------------------------
+  // ---- Studio Display -------------------------------------------------------------
   'studio-display-basic': (
     <StudioDisplayMockup rotation={[0, -0.25, 0]}>
       <DesktopScreen />

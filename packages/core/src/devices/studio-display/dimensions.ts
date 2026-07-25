@@ -58,8 +58,26 @@ export const STUDIO_DISPLAY = {
    * `spacing` toward the center), `y` is above the bottom edge; each slot is
    * `slot.width` x `slot.height` (~3.5 x 8.8 mm, centers ~14.5 mm apart,
    * ~29 mm up — photo-measured).
+   *
+   * `thunderbolt` marks the LAST `count` slots of that run — the ones nearest
+   * the panel's center, i.e. the rightmost pair seen from behind, exactly as
+   * on the hardware. Each wears the bolt above it, and the upstream (host)
+   * port, the innermost one, adds a dot below. Both are sized and placed off
+   * Apple's own rear-port callout: the bolt is 0.6 slot wide and 0.44 slot
+   * tall, its center 0.57 slots above the slot's top edge, and the dot is a
+   * 0.13-slot circle 0.44 slots below the bottom edge.
    */
-  ports: { x: 5.417 / 2 - 0.813, spacing: 0.13, y: 0.243, slot: { width: 0.03, height: 0.078 } },
+  ports: {
+    x: 5.417 / 2 - 0.813,
+    spacing: 0.13,
+    y: 0.243,
+    slot: { width: 0.03, height: 0.078 },
+    thunderbolt: {
+      count: 2,
+      icon: { width: 0.018, height: 0.0343, offset: 0.0444 },
+      dot: { r: 0.0051, offset: 0.0343 },
+    },
+  },
   /** The captive power cord's round inlet: centered horizontally on the
    * back, ~35 mm across, its center ~32 mm above the bottom edge — aligned
    * behind the upper half of the stand blade's stadium cutout. */

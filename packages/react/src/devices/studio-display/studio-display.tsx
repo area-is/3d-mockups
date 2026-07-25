@@ -241,6 +241,16 @@ function StudioDisplayImpl({
     () => createLogoGeometry('apple', STUDIO_DISPLAY.logo.width, STUDIO_DISPLAY.logo.height),
     []
   )
+  // The Thunderbolt bolt printed above each Thunderbolt slot.
+  const boltGeometry = React.useMemo(
+    () =>
+      createLogoGeometry(
+        'thunderbolt',
+        STUDIO_DISPLAY.ports.thunderbolt.icon.width,
+        STUDIO_DISPLAY.ports.thunderbolt.icon.height
+      ),
+    []
+  )
 
   // Speaker perforations along the bottom edge (the underside, where the
   // product drills them): a dot grid painted once into a texture strip.
@@ -270,9 +280,10 @@ function StudioDisplayImpl({
       standParts.footKnee.dispose()
       standParts.armSlab.dispose()
       logoGeometry.dispose()
+      boltGeometry.dispose()
       grilleTexture?.dispose()
     }
-  }, [bodyGeometry, glassGeometry, standParts, logoGeometry, grilleTexture])
+  }, [bodyGeometry, glassGeometry, standParts, logoGeometry, boltGeometry, grilleTexture])
 
   return (
     /* the stage lift centering the panel + stand ensemble on the group origin */
@@ -314,23 +325,52 @@ function StudioDisplayImpl({
       </mesh>
 
       {/* back: the tight 2x Thunderbolt 5 + 2x USB-C cluster, low and left of
-          center seen from behind (front-view right), pill slots ~14.5 mm apart */}
-      {[0, 1, 2, 3].map((i) => (
-        <RoundedBox
-          key={i}
-          args={[STUDIO_DISPLAY.ports.slot.width, STUDIO_DISPLAY.ports.slot.height, 0.02]}
-          // radius must stay under half the SMALLEST face dimension or the
-          // corner spheres self-intersect into a bowtie
-          radius={Math.min(STUDIO_DISPLAY.ports.slot.width, STUDIO_DISPLAY.ports.slot.height) / 2 - 0.004}
-          position={[
-            STUDIO_DISPLAY.ports.x - i * STUDIO_DISPLAY.ports.spacing,
-            -body.height / 2 + STUDIO_DISPLAY.ports.y,
-            -body.depth / 2 - 0.004,
-          ]}
-        >
-          <meshPhysicalMaterial color="#07080c" metalness={0.4} roughness={0.4} />
-        </RoundedBox>
-      ))}
+          center seen from behind (front-view right), pill slots ~14.5 mm apart.
+          The two innermost slots are the Thunderbolt pair: each is printed with
+          the bolt above it, and the upstream (innermost) one adds the host dot
+          below — the marking Apple's rear-port callout shows. */}
+      {[0, 1, 2, 3].map((i) => {
+        const { ports } = STUDIO_DISPLAY
+        const x = ports.x - i * ports.spacing
+        const y = -body.height / 2 + ports.y
+        const isThunderbolt = i >= 4 - ports.thunderbolt.count
+        return (
+          <React.Fragment key={i}>
+            <RoundedBox
+              args={[ports.slot.width, ports.slot.height, 0.02]}
+              // radius must stay under half the SMALLEST face dimension or the
+              // corner spheres self-intersect into a bowtie
+              radius={Math.min(ports.slot.width, ports.slot.height) / 2 - 0.004}
+              position={[x, y, -body.depth / 2 - 0.004]}
+            >
+              <meshPhysicalMaterial color="#07080c" metalness={0.4} roughness={0.4} />
+            </RoundedBox>
+            {isThunderbolt && boltGeometry && (
+              <mesh
+                geometry={boltGeometry}
+                rotation-y={Math.PI}
+                position={[x, y + ports.slot.height / 2 + ports.thunderbolt.icon.offset, -body.depth / 2 - 0.002]}
+              >
+                <meshStandardMaterial
+                  color="#25272b"
+                  roughness={0.5}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                />
+              </mesh>
+            )}
+            {i === 3 && (
+              <mesh
+                rotation-x={Math.PI / 2}
+                position={[x, y - ports.slot.height / 2 - ports.thunderbolt.dot.offset, -body.depth / 2 - 0.002]}
+              >
+                <cylinderGeometry args={[ports.thunderbolt.dot.r, ports.thunderbolt.dot.r, 0.004, 16]} />
+                <meshStandardMaterial color="#25272b" roughness={0.5} />
+              </mesh>
+            )}
+          </React.Fragment>
+        )
+      })}
 
       {/* the captive power cord's circular recess, centered low on the back —
           the cable is not user-detachable, so a molded collar sits proud of
