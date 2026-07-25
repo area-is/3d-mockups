@@ -152,29 +152,13 @@ function FoldImpl({
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   const rearRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(bodyRef, rearRef)
-  // This device's screens occlude against OTHER registered bodies only. The
-  // backface culler already hides a screen the camera can't face, and at
-  // oblique views the sample rays graze our own slabs (or cross the crease
-  // into the sibling half), hiding a display that is mostly visible — the
-  // all-black main screen at side-on angles. Own shells stay registered so
-  // they still occlude every other mockup in the scene.
-  const otherOccludeRefs = React.useMemo(
-    () => occludeRefs.filter((ref) => ref !== bodyRef && ref !== rearRef),
-    [occludeRefs]
-  )
-  // …with ONE exception, in the flex pose: a half's screen must still occlude
-  // against the OTHER half's panel. The two halves stand at an angle, so from
-  // most viewpoints the near one covers part of the far one — and a DOM screen
-  // that ignores it composites straight over the chassis, the far display
-  // visibly piercing through the near panel. Each half keeps only its own
-  // shell out of its occluder set.
-  const siblingOccludeRefs = React.useMemo(
-    () => ({
-      left: occludeRefs.filter((ref) => ref !== bodyRef),
-      right: occludeRefs.filter((ref) => ref !== rearRef),
-    }),
-    [occludeRefs]
-  )
+  // Screens occlude against EVERY registered body, this device's own panels
+  // included. Excluding them (to stop a grazing corner ray blacking out a
+  // visible display) meant a panel's DOM screen composited straight over its
+  // own chassis — the flex pose's far display piercing through the near one,
+  // and the main display showing through the device's own back. The occlusion
+  // test now needs a MAJORITY of its samples blocked before it hides, which
+  // handles the grazing case without giving up self-occlusion.
 
   // The folded stack: body.depth spans both slabs plus the crevice between them.
   const gap = spec.closed.gap
@@ -496,7 +480,7 @@ function FoldImpl({
       radius={display.radius}
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
@@ -573,11 +557,7 @@ function FoldImpl({
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           occlude={
-            occlude === true
-              ? siblingOccludeRefs[left ? 'left' : 'right']
-              : occlude === 'blending'
-                ? 'blending'
-                : undefined
+            occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined
           }
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,

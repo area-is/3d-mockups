@@ -164,26 +164,11 @@ function FlipImpl({
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   const lowerBodyRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(bodyRef, lowerBodyRef)
-  // Screens occlude against OTHER registered bodies only — see the fold's
-  // matching note: self-hits at oblique angles black out a visible display,
-  // and the backface culler already covers every behind-the-device view.
-  const otherOccludeRefs = React.useMemo(
-    () => occludeRefs.filter((ref) => ref !== bodyRef && ref !== lowerBodyRef),
-    [occludeRefs]
-  )
-  // …with ONE exception, in the flex pose: a half's screen must still occlude
-  // against the OTHER half's body. The halves stand at an angle, so from most
-  // viewpoints the near one covers part of the far one — and a DOM screen that
-  // ignores it composites straight over the chassis, the far display visibly
-  // piercing through the near half. Each half keeps only its own shell out of
-  // its occluder set.
-  const siblingOccludeRefs = React.useMemo(
-    () => ({
-      upper: occludeRefs.filter((ref) => ref !== bodyRef),
-      lower: occludeRefs.filter((ref) => ref !== lowerBodyRef),
-    }),
-    [occludeRefs]
-  )
+  // Screens occlude against EVERY registered body, this device's own halves
+  // included — see the fold's matching note. Self-occlusion is what keeps a
+  // half's display from painting through its own back in the flex pose, and
+  // the occlusion test's majority rule keeps a grazing corner ray from
+  // blacking out a display that is plainly in view.
 
   const openBody = spec.open.body
   const half = spec.closed.body
@@ -502,7 +487,7 @@ function FlipImpl({
       radius={display.radius}
       position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
@@ -592,11 +577,7 @@ function FlipImpl({
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           occlude={
-            occlude === true
-              ? siblingOccludeRefs[upper ? 'upper' : 'lower']
-              : occlude === 'blending'
-                ? 'blending'
-                : undefined
+            occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined
           }
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,

@@ -13,6 +13,8 @@ import {
   gearShape,
   sweptStrapGeometry,
   wristLoopAt,
+  watchOpenSweeps,
+  WATCH_OPEN_START,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
@@ -44,9 +46,11 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
   /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
   bandColor?: string
   /**
-   * `true` renders the band unbuckled — the straps open out into the relaxed
-   * curl of a product shot, closure and adjustment holes on show. The default
-   * (`false`) wears it: fastened around an invisible wrist behind the case.
+   * `true` renders the band unbuckled and laid open: the straps run out from
+   * the case on a wide, near-flat arc, so the hole row, the closure AND the
+   * case back all face the camera — the pose product photography uses. The
+   * default (`false`) wears it, fastened around an invisible wrist behind the
+   * case, which necessarily hides the back.
    */
   bandOpen?: boolean
   /**
@@ -69,12 +73,15 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
  * case with the round display raised on its dial puck, two flat keys, a
  * tapering Dynamic-Lug-style band) depending on `variant`.
  *
- * The band is worn on an invisible wrist and built the way a real one is:
- * TWO domed, tapering straps sliding into the case's band slots, meeting at
- * a closure on the underside — the Sport Band's pin-and-tuck lap, or a
- * stainless pin buckle with a keeper and punched adjustment holes. No 3D
- * asset files are loaded — the whole device is generated from geometry at
- * runtime.
+ * The band is built the way a real one is: TWO domed, tapering straps sliding
+ * into the case's band slots, the long one carrying a row of holes punched
+ * clean through it, closing either with the Sport Band's pin-and-tuck lap or
+ * a stainless pin buckle and keeper. Strap length comes from the retail fit
+ * ranges. `bandOpen` lays the band out flat instead of wearing it. Both cases
+ * carry their real sensor back: an optical cluster behind a round crystal,
+ * sunk flush into Apple's body-colour plate, raised on Samsung's BioActive
+ * puck. No 3D asset files are loaded — the whole device is generated from
+ * geometry at runtime.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
@@ -223,25 +230,34 @@ function WatchImpl({
         loop: band.loop,
         pin,
         tail,
-        pinLift: () => 0,
+        pinLift: (_t: number) => 0,
         tailLift: (t: number) => ride * ramp(t, lapStart, lapFull),
       }
     }
 
-    const flare = band.openScale - 1
-    const relaxed = 1.06
+    // Unbuckled, the band lies on a much larger, near-flat arc — a wide C
+    // whose ends are far apart. It cannot stay a loop: the far side of a
+    // closed loop sits between the camera and the watch, hiding the case back
+    // from behind and turning the closure away. On the open arc both straps
+    // run out past the case with the hole row, pin and buckle facing the
+    // viewer, exactly as a band is photographed off-wrist. The sweeps come
+    // from the straps' true length (core's `watchOpenSweeps`), so opening the
+    // band never stretches or shortens it.
+    const R = band.openRadius
+    const sweeps = watchOpenSweeps(band)
     return {
       loop: {
-        ...band.loop,
-        ryFront: band.loop.ryFront * relaxed,
-        ryBack: band.loop.ryBack * relaxed,
-        rz: band.loop.rz * relaxed,
-        centerZ: band.loop.centerZ * relaxed,
+        ryFront: R,
+        ryBack: R,
+        rz: R,
+        // Centred behind the case, so the arc passes through the band slots.
+        centerZ: -R + band.loop.rz * 0.12,
+        startAngle: WATCH_OPEN_START,
       },
-      pin,
-      tail,
-      pinLift: (t: number) => flare * 0.8 * t * t,
-      tailLift: (t: number) => ride + flare * 2.5 * ramp(t, 0.18, 1) ** 1.6,
+      pin: { from: WATCH_OPEN_START, to: WATCH_OPEN_START + sweeps.pin },
+      tail: { from: -WATCH_OPEN_START, to: -WATCH_OPEN_START - sweeps.tail },
+      pinLift: (_t: number) => 0,
+      tailLift: (_t: number) => 0,
     }
   }, [band, bandOpen, ride])
 
@@ -290,9 +306,12 @@ function WatchImpl({
       const angle = from + (to - from) * t
       const frame = wristLoopAt(pose.loop, (angle * Math.PI) / 180)
       const cutter = new THREE.CylinderGeometry(band.holeRadius, band.holeRadius, band.thickness * 8, 20)
-      cutter.rotateX(Math.PI / 2)
-      // The cylinder is built along +z; aim it down the loop's outward normal.
-      cutter.rotateX(Math.atan2(-frame.nz, frame.ny) + Math.PI / 2)
+      // The cylinder is built along +Y, so one rotation about X aims it down
+      // the loop's outward normal: rotateX(t) sends +Y to (0, cos t, sin t),
+      // and the normal is (0, ny, nz). Getting this sign wrong mirrors the
+      // axis in Y — the cutter then slices the strap at up to 144 deg off
+      // square and machines crescents instead of holes.
+      cutter.rotateX(Math.atan2(frame.nz, frame.ny))
       // Centre it on the strap's MID-surface — that is where `lift` puts the
       // section's origin. Seating it a thickness out instead leaves the
       // straight cutter clipping only the outer face of a curving strap, which
@@ -327,9 +346,10 @@ function WatchImpl({
       const frame = wristLoopAt(pose.loop, (phiDeg * Math.PI) / 180)
       return {
         position: [0, frame.y + frame.ny * stand, frame.z + frame.nz * stand] as [number, number, number],
-        // The section's outward normal is (ny, nz); a fitting built along +Y
-        // lines up with the strap when rotated onto it.
-        rotX: Math.atan2(-frame.nz, frame.ny),
+        // Rotation that sends the fitting's local +Y onto the loop's outward
+        // normal, +Z along the strap and +X across it — so hardware is
+        // authored in strap-local terms and lands flat on the band.
+        rotX: Math.atan2(frame.nz, frame.ny),
       }
     },
     [pose.loop]
@@ -350,6 +370,11 @@ function WatchImpl({
   const buckleFrame = fittingAt(closureAngle, closureStand * 0.55 + band.thickness * 0.1)
   // Worn, the keeper encircles the tail where it lies over the other strap;
   // unbuckled it sits on its own strap, just inboard of the buckle.
+  // A buckle frame is only a little wider than the strap that threads it, and
+  // roughly half as long as it is wide — bent from ~1.4 mm stock.
+  const buckleWidth = band.width + 0.09
+  const buckleLength = buckleWidth * 0.56
+  const buckleBar = band.thickness * 0.55
   const keeperT = band.keeperT ?? 0.78
   const keeper = bandOpen
     ? fittingAt(pose.pin.to - 24, pose.pinLift(0.82))
@@ -407,11 +432,92 @@ function WatchImpl({
         />
       </mesh>
 
-      {/* back sensor island — spans most of the case back on both watches */}
-      <mesh rotation-x={Math.PI / 2} position-z={-body.depth / 2 - 0.01}>
-        <cylinderGeometry args={[0.78, 0.85, 0.03, 40]} />
-        <meshPhysicalMaterial color="#101114" metalness={0.3} roughness={0.35} clearcoat={1} />
-      </mesh>
+      {/* The case back. Both families read the heart optically through a round
+          crystal in the middle, ringed by the metal ECG electrode — but Apple
+          sinks it flush into a back plate the colour of the case (the watch
+          looks milled from one billet), while Samsung raises the whole
+          BioActive puck proud of the aluminium cushion. Either way the back is
+          NOT one big dark disc: the metal around the cluster is body-coloured,
+          and the sensor windows are small. */}
+      {(() => {
+        const { radius, raise, hubRadius, leds, electrode, coilRing } = spec.back
+        // Back face is −z; everything below stacks outward from it.
+        const face = -body.depth / 2
+        const at = (out: number) => face - out
+        return (
+          <group>
+            {/* raised puck (Galaxy) — a body-colour collar carrying the crystal */}
+            {raise > 0 && (
+              <mesh rotation-x={Math.PI / 2} position-z={at(raise / 2)}>
+                <cylinderGeometry args={[radius, radius * 1.03, raise, 48]} />
+                <meshPhysicalMaterial color={color} metalness={0.8} roughness={0.34} envMapIntensity={0.9} />
+              </mesh>
+            )}
+            {/* machined chamfer the crystal sits in — without it the near-black
+                sapphire vanishes into a near-black case */}
+            <mesh position-z={at(Math.max(raise, 0) + 0.006)} rotation-y={Math.PI}>
+              <ringGeometry args={[radius * 0.9, radius * 1.02, 48]} />
+              <meshPhysicalMaterial color={color} metalness={0.95} roughness={0.16} envMapIntensity={1.5} />
+            </mesh>
+            {/* the sensor crystal: glossy near-black sapphire, domed a hair */}
+            <mesh rotation-x={Math.PI / 2} position-z={at(Math.max(raise, 0) + 0.012)}>
+              <cylinderGeometry args={[radius * 0.94, radius * 0.94, 0.026, 48]} />
+              <meshPhysicalMaterial
+                color="#07080b"
+                metalness={0.1}
+                roughness={0.07}
+                clearcoat={1}
+                clearcoatRoughness={0.05}
+                envMapIntensity={1.3}
+              />
+            </mesh>
+            {/* polished electrode ring the ECG reads from */}
+            <mesh position-z={at(Math.max(raise, 0) + 0.014)} rotation-y={Math.PI}>
+              <ringGeometry args={[electrode.inner * 0.94, electrode.outer * 0.94, 48]} />
+              <meshPhysicalMaterial
+                color={spec.style === 'galaxy' ? '#c3c7ce' : color}
+                metalness={0.94}
+                roughness={0.2}
+                envMapIntensity={1.3}
+              />
+            </mesh>
+            {/* optical stack: the central photodiode, ringed by the LED
+                windows — the green pair reads as the heart-rate emitters */}
+            <mesh position-z={at(Math.max(raise, 0) + 0.027)} rotation-y={Math.PI}>
+              <circleGeometry args={[hubRadius, 28]} />
+              <meshPhysicalMaterial color="#1b2230" metalness={0.35} roughness={0.13} clearcoat={1} envMapIntensity={1.4} />
+            </mesh>
+            {Array.from({ length: leds.count }, (_, i) => {
+              const a = (i / leds.count) * Math.PI * 2 + Math.PI / 4
+              const green = i % 2 === 0
+              return (
+                <mesh
+                  key={i}
+                  position={[Math.cos(a) * leds.ring, Math.sin(a) * leds.ring, at(Math.max(raise, 0) + 0.027)]}
+                  rotation-y={Math.PI}
+                >
+                  <circleGeometry args={[leds.radius, 20]} />
+                  <meshPhysicalMaterial
+                    color={green ? '#0e4a2e' : '#1a2030'}
+                    emissive={green ? '#0f7a4a' : '#000000'}
+                    emissiveIntensity={green ? 0.75 : 0}
+                    metalness={0.2}
+                    roughness={0.14}
+                    clearcoat={1}
+                  />
+                </mesh>
+              )
+            })}
+            {/* engraved charging-coil ring outside the cluster (Apple) */}
+            {coilRing && (
+              <mesh position-z={at(0.004)} rotation-y={Math.PI}>
+                <ringGeometry args={[coilRing - 0.014, coilRing, 56]} />
+                <meshPhysicalMaterial color="#0f1114" metalness={0.5} roughness={0.55} transparent opacity={0.5} />
+              </mesh>
+            )}
+          </group>
+        )
+      })()}
 
       {/* Digital Crown, Apple only — a knurled gear-toothed barrel protruding
           ~2 mm past the case, with a flat end cap and a dark seam ring where
@@ -523,48 +629,57 @@ function WatchImpl({
         // up through one of the punched holes, its polished head sitting
         // flush in the opening — the only hardware the band shows.
         <group position={pinStud.position} rotation-x={pinStud.rotX}>
-          <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[band.thickness * 0.55, band.thickness * 0.62, band.thickness * 1.5, 24]} />
+          {/* the post, rooted in the strap below */}
+          <mesh>
+            <cylinderGeometry args={[band.holeRadius * 0.72, band.holeRadius * 0.72, band.thickness * 2.2, 20]} />
             <meshPhysicalMaterial color="#0d0e11" metalness={0.2} roughness={0.6} envMapIntensity={0.3} />
           </mesh>
-          <mesh rotation-x={Math.PI / 2} position-y={band.thickness * 0.5}>
-            <cylinderGeometry args={[band.holeRadius * 0.96, band.holeRadius * 0.8, band.thickness * 0.5, 24]} />
+          {/* the polished head, sitting in the hole it came up through */}
+          <mesh position-y={band.thickness * 0.55}>
+            <cylinderGeometry args={[band.holeRadius * 0.94, band.holeRadius * 0.78, band.thickness * 0.55, 24]} />
             <meshPhysicalMaterial color="#b6bcc5" metalness={0.92} roughness={0.24} envMapIntensity={1.3} />
           </mesh>
         </group>
       ) : (
         <>
-          {/* stainless pin buckle: a frame straddling the strap below, its
-              tongue rising through the lapping tail's hole */}
+          {/* stainless pin buckle. Proportioned off the strap it fastens: a
+              real one is a slim rectangular frame just wide enough for the
+              strap to pass through, about half as long as it is wide, with a
+              hinge bar at the lug end and a short tongue crossing it into the
+              tail's hole. `buckleBar` is the stock the frame is bent from. */}
           <group position={buckleFrame.position} rotation-x={buckleFrame.rotX}>
             {([1, -1] as const).map((s) => (
               <RoundedBox
-                key={s}
-                args={[0.062, band.thickness * 3.1, 0.5]}
-                radius={0.024}
-                position={[s * (band.width / 2 + 0.032), 0, 0]}
+                key={`side${s}`}
+                args={[buckleBar, buckleBar * 1.35, buckleLength]}
+                radius={buckleBar * 0.42}
+                position={[s * (buckleWidth / 2 - buckleBar / 2), 0, 0]}
               >
                 <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.26} envMapIntensity={1.3} />
               </RoundedBox>
             ))}
             {([1, -1] as const).map((s) => (
               <RoundedBox
-                key={s}
-                args={[band.width + 0.13, band.thickness * 3.1, 0.062]}
-                radius={0.024}
-                position={[0, 0, s * 0.25]}
+                key={`end${s}`}
+                args={[buckleWidth, buckleBar * 1.35, buckleBar]}
+                radius={buckleBar * 0.42}
+                position={[0, 0, s * (buckleLength / 2 - buckleBar / 2)]}
               >
                 <meshPhysicalMaterial color="#b9bdc6" metalness={0.9} roughness={0.26} envMapIntensity={1.3} />
               </RoundedBox>
             ))}
-            {/* the tongue, hinged on the far bar and rising through the hole */}
-            <mesh rotation-z={Math.PI / 2} position={[0, 0, 0.25]}>
-              <cylinderGeometry args={[0.019, 0.019, band.width * 0.6, 12]} />
-              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} />
+            {/* hinge bar spanning the frame, and the tongue swinging off it
+                and down into the hole */}
+            <mesh rotation-z={Math.PI / 2} position={[0, 0, buckleLength / 2 - buckleBar / 2]}>
+              <cylinderGeometry args={[buckleBar * 0.4, buckleBar * 0.4, buckleWidth - buckleBar, 12]} />
+              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} envMapIntensity={1.3} />
             </mesh>
-            <mesh position={[0, band.thickness * 0.85, 0.08]} rotation-x={-0.5}>
-              <cylinderGeometry args={[0.016, 0.021, 0.4, 10]} />
-              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} />
+            <mesh
+              position={[0, band.thickness * 0.55, buckleLength * 0.06]}
+              rotation-x={Math.PI / 2 - 0.42}
+            >
+              <cylinderGeometry args={[buckleBar * 0.3, buckleBar * 0.4, buckleLength * 0.92, 10]} />
+              <meshPhysicalMaterial color="#c6cad1" metalness={0.92} roughness={0.22} envMapIntensity={1.3} />
             </mesh>
           </group>
           {/* keeper: the rubber loop the tail threads back through */}

@@ -75,6 +75,28 @@ export interface WatchSpec {
    */
   bandSlot?: { width: number; height: number; z: number }
   /**
+   * The case back's sensor cluster. Both families put an optical heart sensor
+   * behind a round crystal in the middle of the back, ringed by the metal
+   * electrode the ECG reads from — but they mount it differently: Apple sinks
+   * the crystal flush into a back plate that matches the case colour (so the
+   * watch reads as one piece of metal), while Samsung raises the whole
+   * BioActive puck proud of the aluminium cushion.
+   */
+  back: {
+    /** Crystal / puck radius. */
+    radius: number
+    /** How far it stands proud of the case back — negative sinks it in. */
+    raise: number
+    /** Central photodiode window. */
+    hubRadius: number
+    /** The small LED windows ringed around the hub. */
+    leds: { count: number; ring: number; radius: number }
+    /** Polished metal electrode ring around the crystal. */
+    electrode: { inner: number; outer: number }
+    /** Engraved charging-coil ring outside the electrode (Apple). */
+    coilRing?: number
+  }
+  /**
    * Wristband, worn on an invisible wrist: TWO straps, like the real product.
    *
    * Both bands work the same way. The **twelve-o'clock strap** carries the
@@ -125,11 +147,14 @@ export interface WatchSpec {
     /** Where the keeper sits along the six-o'clock strap, worn. */
     keeperT?: number
     /**
-     * How much the loop opens out when the band is unbuckled: the straps keep
-     * their length and the oval grows, so the two ends part instead of
-     * overlapping — the relaxed curl of a product shot.
+     * Radius of the gentle arc the band lies on when unbuckled. A closed loop
+     * always hides the case back from behind — the far side of the strap is
+     * between the camera and the watch — so the open pose is a wide, nearly
+     * flat C on a much larger radius: the straps run out past the case, the
+     * whole hole row and closure face the camera, and the back is clear. The
+     * straps keep their true length, so the arc they subtend follows from it.
      */
-    openScale: number
+    openRadius: number
     loop: WristLoop
   }
 }
@@ -151,6 +176,16 @@ const SERIES_11: WatchSpec = {
   speaker: [{ y: 0, length: 0.92, height: 0.06 }],
   // Sport Band slot channel in the flat top/bottom edges, offset case-back.
   bandSlot: { width: 1.37, height: 0.24, z: -0.16 },
+  // Back: aluminium matching the case, with the sensor crystal sunk flush in
+  // the middle and the electrode ring around it.
+  back: {
+    radius: 0.6,
+    raise: -0.012,
+    hubRadius: 0.17,
+    leds: { count: 4, ring: 0.33, radius: 0.078 },
+    electrode: { inner: 0.6, outer: 0.68 },
+    coilRing: 0.86,
+  },
   // Sport Band: fills the lug slot, narrows to a 22 mm strap, and closes
   // pin-and-tuck — six evenly spaced adjustment holes punched through the
   // long strap, the twelve-o'clock strap's pin coming up through the middle
@@ -172,7 +207,7 @@ const SERIES_11: WatchSpec = {
     holes: [0.476, 0.534, 0.591, 0.649, 0.706, 0.764],
     holeRadius: 0.112,
     closureHole: 2,
-    openScale: 1.35,
+    openRadius: 3.5,
     loop: { ryFront: 1.78, ryBack: 1.5, rz: 1.27, centerZ: -1.05, startAngle: 30 },
   },
 }
@@ -191,6 +226,15 @@ const GALAXY_WATCH_8: WatchSpec = {
     { y: -0.4, length: 0.56, width: 0.185, proud: 0.04 },
   ],
   mic: { y: 0.0, radius: 0.02 },
+  // Back: the BioActive puck stands proud of the aluminium cushion, its
+  // electrode ring split into two arcs around the optical windows.
+  back: {
+    radius: 0.62,
+    raise: 0.055,
+    hubRadius: 0.14,
+    leds: { count: 4, ring: 0.3, radius: 0.068 },
+    electrode: { inner: 0.44, outer: 0.56 },
+  },
   // Two short machined speaker slots in a vertical run on the left edge.
   speaker: [
     { y: 0.26, length: 0.37, height: 0.05 },
@@ -200,9 +244,11 @@ const GALAXY_WATCH_8: WatchSpec = {
   // around the wrist to a stainless pin buckle, its tongue through one of the
   // punched holes and the tail threaded back through a rubber keeper.
   band: {
-    lugWidth: 1.94,
-    width: 1.42,
-    tipWidth: 1.06,
+    // The Dynamic Lug connector is nearly case-wide, but the strap itself is
+    // the standard 20 mm (1.13 units at this scale), tapering to ~16 mm.
+    lugWidth: 1.86,
+    width: 1.13,
+    tipWidth: 0.9,
     thickness: 0.135,
     crown: 0.038,
     closure: 'buckle',
@@ -215,7 +261,7 @@ const GALAXY_WATCH_8: WatchSpec = {
     holeRadius: 0.072,
     closureHole: 2,
     keeperT: 0.72,
-    openScale: 1.32,
+    openRadius: 3.35,
     loop: { ryFront: 1.72, ryBack: 1.46, rz: 1.22, centerZ: -0.98, startAngle: 34 },
   },
 }
@@ -240,8 +286,42 @@ export const WATCH_FRAMING = {
   camera: { position: [0, 0.4, 7.7], fov: 40 },
   floatIntensity: 0.6,
   contactGap: 0.1,
-  extent: ({ variant }) => {
+  extent: ({ variant, bandOpen }) => {
     const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
+    if (bandOpen) return watchOpenExtent(band)
     return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
   },
-} as const satisfies MockupFraming<{ variant?: WatchVariant }>
+} as const satisfies MockupFraming<{ variant?: WatchVariant; bandOpen?: boolean }>
+
+/**
+ * Arc (degrees) each strap subtends when the band lies open, from its true
+ * length on the worn loop transferred onto `openRadius`. Shared by the scene
+ * component and the framing so the two never drift.
+ */
+export function watchOpenSweeps(band: WatchSpec['band']): { pin: number; tail: number } {
+  const { ryFront, ryBack, rz, startAngle } = band.loop
+  const a = (ryFront + ryBack) / 2
+  // Ramanujan's ellipse perimeter — accurate to a few parts in 10^5 here.
+  const perimeter = Math.PI * (3 * (a + rz) - Math.sqrt((3 * a + rz) * (a + 3 * rz)))
+  const degToLength = perimeter / 360
+  return {
+    pin: ((band.pinStrapEnd - startAngle) * degToLength) / band.openRadius * (180 / Math.PI),
+    tail: ((360 - startAngle - band.tailEnd) * degToLength) / band.openRadius * (180 / Math.PI),
+  }
+}
+
+/** Half-height of the open band, for framing and the contact shadow. */
+export function watchOpenExtent(band: WatchSpec['band']): number {
+  const { openRadius } = band
+  const { pin, tail } = watchOpenSweeps(band)
+  const start = WATCH_OPEN_START
+  // The arc is centred on the case; the lowest point is the tail's tip (or the
+  // arc's bottom if it sweeps past straight down).
+  const lowest = Math.min(
+    ...[start + tail, 90].filter((d) => d <= start + tail).map((d) => -openRadius * Math.sin((d * Math.PI) / 180))
+  )
+  return Math.max(-lowest, openRadius * Math.sin((Math.min(start + pin, 90) * Math.PI) / 180)) + band.thickness
+}
+
+/** Sweep angle the open band's straps leave the case at. */
+export const WATCH_OPEN_START = 12
