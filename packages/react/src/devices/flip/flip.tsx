@@ -57,8 +57,9 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * across the fold — e.g. `openAngle={100}` for the classic half-open
    * standing pose. The pose is continuous from nearly shut to nearly flat;
    * only ~0° snaps to the dedicated folded pose and ~177°+ to the
-   * flat-open one. At intermediate angles the main display is composited
-   * from two planes, so stateful screen content is best kept simple.
+   * flat-open one. At intermediate angles the display is composited from two
+   * planes that depth-blend against the chassis, so content there is
+   * display-only and stateful screen content is best kept simple.
    */
   openAngle?: number
   /**
@@ -569,6 +570,15 @@ function FlipImpl({
           ? [r, r, 0, 0]
           : [0, 0, r, r]
       const localY = (upper ? 1 : -1) * (display.height / 4 - halfH / 2)
+      // Per-pixel depth, not raycasting. A raycast occluder is all-or-nothing
+      // for the whole plane, and at every intermediate angle a half-screen is
+      // PARTIALLY covered by the other panel — so no sample threshold can be
+      // right: strict hides a display that is half in view, lenient lets the
+      // covered part paint straight over the chassis. Blending hands the job
+      // to the depth buffer, which resolves it pixel by pixel at any angle.
+      // The trade is that a blending screen is display-only (the canvas keeps
+      // pointer input, so drag-to-rotate still works everywhere) — acceptable
+      // here, where the display is already composited from two planes.
       return (
         <DeviceScreen
           width={landscape ? display.height / 2 : display.width}
@@ -576,9 +586,7 @@ function FlipImpl({
           radius={radius}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={
-            occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined
-          }
+          occlude={occlude === false ? undefined : 'blending'}
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's height
