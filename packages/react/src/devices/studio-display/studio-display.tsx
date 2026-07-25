@@ -64,7 +64,7 @@ function StudioDisplayImpl({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution = STUDIO_DISPLAY.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -440,7 +440,7 @@ function StudioDisplayImpl({
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

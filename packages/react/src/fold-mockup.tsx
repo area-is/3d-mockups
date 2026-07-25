@@ -22,7 +22,7 @@ export type FoldMockupProps = MockupProps<FoldProps>
  *
  * ```tsx
  * <FoldMockup openAngle={110}>
- *   <FoldMockup.Screen background="#000" interactive={false}>
+ *   <FoldMockup.Screen background="#000" allowInput={false}>
  *     <YourApp />
  *   </FoldMockup.Screen>
  * </FoldMockup>

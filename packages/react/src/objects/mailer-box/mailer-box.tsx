@@ -55,7 +55,7 @@ function MailerBoxImpl({
   tapeColor = 'rgba(168, 127, 79, 0.82)',
   surfaceBackground = '#ffffff',
   resolution = MAILER_BOX.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -123,7 +123,7 @@ function MailerBoxImpl({
   const panelDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

@@ -37,7 +37,7 @@ export interface SurfaceProps {
    * content. Off by default, and worth leaving off — see `SurfaceDefaults`
    * for what turning it on costs.
    */
-  interactive?: boolean
+  allowInput?: boolean
   /** Hand >10px drags off to the orbit controls; taps still reach the content. */
   dragToRotate?: boolean
   /** Extra styles merged onto this region's surface wrapper. */
@@ -60,7 +60,7 @@ export interface SurfaceDefaults {
    * nothing.
    *
    * Do not set it to `transparent` expecting the hardware to show through.
-   * A screen's DOM sits UNDER the canvas (see `interactive`), so transparent
+   * A screen's DOM sits UNDER the canvas (see `allowInput`), so transparent
    * pixels fall through to the PAGE, and the mockup reads as a hole.
    */
   surfaceBackground?: string
@@ -90,7 +90,7 @@ export interface SurfaceDefaults {
    * embedded app, a scrollable prototype. For screenshots, hero shots and
    * marketing pages, leave it off.
    */
-  interactive?: boolean
+  allowInput?: boolean
   /** Hand >10px drags off to the orbit controls; taps still reach the content. */
   dragToRotate?: boolean
   /** Extra styles merged onto each region's surface wrapper. */
@@ -227,7 +227,7 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
 export interface ResolvedSurface {
   background?: string
   resolution: number
-  interactive: boolean
+  allowInput: boolean
   dragToRotate: boolean
   screenStyle?: React.CSSProperties
 }
@@ -242,7 +242,7 @@ export function resolveSurface(
   defaults: {
     background: string | undefined
     resolution: number
-    interactive: boolean
+    allowInput: boolean
     dragToRotate: boolean
     style: React.CSSProperties | undefined
   }
@@ -252,7 +252,7 @@ export function resolveSurface(
   return {
     background: slot?.background ?? defaults.background,
     resolution: slot?.resolution ?? defaults.resolution,
-    interactive: slot?.interactive ?? defaults.interactive,
+    allowInput: slot?.allowInput ?? defaults.allowInput,
     dragToRotate: slot?.dragToRotate ?? defaults.dragToRotate,
     screenStyle: style,
   }

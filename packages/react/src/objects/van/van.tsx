@@ -362,7 +362,7 @@ function VanImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = false,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -425,7 +425,7 @@ function VanImpl({
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
   const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear panel shares the side wrap's dpi.
@@ -484,8 +484,8 @@ function VanImpl({
   )
   // Full-coverage sides composite per-pixel so proud hardware (mirrors,
   // handles, track, hinges) draws over the livery; so they stay per-pixel even when
-  // `interactive` (and are therefore never clickable). Everything else
-  // follows `interactive` like any other surface.
+  // `allowInput` (and are therefore never clickable). Everything else
+  // follows `allowInput` like any other surface.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
     fullWrap
       ? { blending: true, occluderGeometry: blendGeometry }

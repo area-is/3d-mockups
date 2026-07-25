@@ -51,7 +51,7 @@ function DOOHTotemImpl({
   color = '#2f333a',
   surfaceBackground = '#000000',
   resolution = DOOH_TOTEM.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -98,7 +98,7 @@ function DOOHTotemImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

@@ -423,8 +423,8 @@ const SCREEN_CONTROLS: Control[] = [
     title: 'CSS pixel width of the virtual display (unset = the model’s own default)',
   },
   toggle(
-    'interactive',
-    'interactive',
+    'allowInput',
+    'allowInput',
     false,
     'Let clicks, scrolling and typing reach the content — at the cost of per-pixel occlusion (see /docs/screen-content)'
   ),

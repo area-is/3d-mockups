@@ -60,7 +60,7 @@ function BrochureImpl({
   color = '#f5f4f0',
   surfaceBackground = '#ffffff',
   resolution = BROCHURE.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -103,7 +103,7 @@ function BrochureImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

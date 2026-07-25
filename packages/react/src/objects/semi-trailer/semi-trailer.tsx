@@ -47,7 +47,7 @@ function SemiTrailerImpl({
   skirtColor,
   surfaceBackground = '#ffffff',
   resolution = SEMI_TRAILER.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -63,7 +63,7 @@ function SemiTrailerImpl({
   const dualOuterZ = body.width / 2 - 0.03 - wheels.width / 2
   const dualInnerZ = dualOuterZ - wheels.width - wheels.dualGap
 
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const wrapProps = {
     occluders: occludeRefs,
   }

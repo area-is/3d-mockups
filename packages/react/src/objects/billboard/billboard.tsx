@@ -40,7 +40,7 @@ function BillboardImpl({
   color = '#2c313a',
   surfaceBackground = '#ffffff',
   resolution = BILLBOARD.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -204,7 +204,7 @@ function BillboardImpl({
         {...resolveSurface(faceSlot, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

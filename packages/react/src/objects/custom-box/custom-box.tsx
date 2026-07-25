@@ -43,7 +43,7 @@ function CustomBoxImpl({
   color = '#e8e5df',
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_BOX.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -96,7 +96,7 @@ function CustomBoxImpl({
                 background: surfaceBackground,
                 // every face shares the front face's dpi unless its slot overrides
                 resolution: Math.round(face.width * pxPerUnit),
-                interactive,
+                allowInput,
                 dragToRotate,
                 style: surfaceStyle,
               })}

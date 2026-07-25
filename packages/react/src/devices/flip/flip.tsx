@@ -131,7 +131,7 @@ function FlipImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -485,7 +485,7 @@ function FlipImpl({
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
-        interactive,
+        allowInput,
         dragToRotate,
         style: surfaceStyle,
       })}
@@ -584,7 +584,7 @@ function FlipImpl({
             background: surfaceBackground,
             // each half pane carries half the virtual display's height
             resolution: landscape ? res / 2 : res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

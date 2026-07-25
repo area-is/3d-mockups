@@ -66,7 +66,7 @@ function TVSetImpl({
   color = '#15171b',
   surfaceBackground = '#000000',
   resolution = TV.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -402,7 +402,7 @@ function TVSetImpl({
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

@@ -51,7 +51,7 @@ function ProductBoxImpl({
   color = '#f4f1ea',
   surfaceBackground = '#ffffff',
   resolution = PRODUCT_BOX.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -79,7 +79,7 @@ function ProductBoxImpl({
   const panelDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

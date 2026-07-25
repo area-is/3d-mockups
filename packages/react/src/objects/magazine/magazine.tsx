@@ -59,7 +59,7 @@ function MagazineImpl({
   glossy = false,
   surfaceBackground = '#ffffff',
   resolution = MAGAZINE.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -114,7 +114,7 @@ function MagazineImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

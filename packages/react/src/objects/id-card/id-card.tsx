@@ -54,7 +54,7 @@ function IDCardImpl({
   lanyardColor = '#b3223a',
   surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -204,7 +204,7 @@ function IDCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

@@ -44,7 +44,7 @@ function GreetingCardImpl({
   color = '#f6f3ec',
   surfaceBackground = '#ffffff',
   resolution = GREETING_CARD.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -84,7 +84,7 @@ function GreetingCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

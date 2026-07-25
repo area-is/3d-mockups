@@ -127,13 +127,13 @@ export interface DeviceScreenProps {
    * - `true` raycasts the enclosure meshes in `occluders` instead, which
    *   keeps the DOM on top and clickable but hides the whole screen at once.
    */
-  interactive?: boolean
+  allowInput?: boolean
   /** Hand >10px drags off to the orbit controls; taps still reach the content. */
   dragToRotate?: boolean
-  /** Enclosure meshes to raycast against; used only in interactive mode. */
+  /** Enclosure meshes to raycast against; used only when `allowInput` is on. */
   occluders?: React.RefObject<THREE.Mesh>[]
   /**
-   * Force per-pixel blending even when `interactive`, for surfaces raycasting
+   * Force per-pixel blending even when `allowInput`, for surfaces raycasting
    * cannot describe — a full vehicle wrap with proud mirrors standing over it,
    * glass seen through a shelter's own frame. Such a surface is never
    * clickable, since blending is what puts its DOM under the canvas.
@@ -170,7 +170,7 @@ export function DeviceScreen({
   position,
   rotation = [0, 0, 0],
   background = '#000000',
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   occluders,
   blending = false,
@@ -185,8 +185,8 @@ export function DeviceScreen({
   // blending is pixel-exact but stacks the DOM under the canvas (see the
   // pointer-events override below), so a blending surface can never be
   // clicked, and a clickable surface can only occlude by raycast.
-  const usingBlending = blending || !interactive
-  const clickable = interactive && !blending
+  const usingBlending = blending || !allowInput
+  const clickable = allowInput && !blending
 
   // The depth mask that makes the canvas transparent over the screen so the
   // DOM beneath shows through. drei's default is a plain rectangle, which on
@@ -352,7 +352,7 @@ export function DeviceScreen({
         zIndexRange={SCREEN_Z_RANGE}
         wrapperClass={screenLayerClass(dragToRotate)}
         // Keep drei's inner transform div from hit-testing: pointer handling
-        // lives on the content div alone (visible + interactive → auto,
+        // lives on the content div alone (visible + clickable → auto,
         // hidden → none). Otherwise the invisible bridge div spanning the
         // screen rect eats drags over the device's BACK, so drag-to-rotate
         // dies exactly where the body should be grabbable.
@@ -369,7 +369,7 @@ export function DeviceScreen({
               radius,
               resolution,
               background,
-              interactive: clickable,
+              allowInput: clickable,
               dragToRotate,
             }),
             ...screenStyle,

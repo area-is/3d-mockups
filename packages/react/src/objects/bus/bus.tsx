@@ -269,7 +269,7 @@ function BusImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = true,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -312,7 +312,7 @@ function BusImpl({
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
@@ -391,8 +391,8 @@ function BusImpl({
   )
   // Full-coverage sides composite per-pixel so proud hardware (the door
   // mirrors and their arms) draws over the livery; so they stay per-pixel even when
-  // `interactive` (and are therefore never clickable). Everything else
-  // follows `interactive` like any other surface.
+  // `allowInput` (and are therefore never clickable). Everything else
+  // follows `allowInput` like any other surface.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
     fullWrap
       ? { blending: true, occluderGeometry: blendGeometry }

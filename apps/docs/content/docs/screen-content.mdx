@@ -45,26 +45,26 @@ Every device accepts the same screen behavior props:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `interactive` | `boolean` | `false` | Let pointer events (clicks, scrolling, typing) reach the screen content. **Also changes how the mockup looks — read the warning below.** |
+| `allowInput` | `boolean` | `false` | Let pointer events (clicks, scrolling, typing) reach the screen content. **Also changes how the mockup looks — read the warning below.** |
 | `dragToRotate` | `boolean` | `true` | Drags that start on the screen spin the device after about 10 px of travel; taps still click. Disable when your content needs its own drag gestures (sliders, drawing, horizontal swipes). |
 | `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content, under whatever you render. See [Surface background](#surface-background). |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
-<Callout type="warn" title="interactive costs you visual accuracy">
+<Callout type="warn" title="allowInput costs you visual accuracy">
 
-Turning `interactive` on is not free, and it is not just a pointer-events
+Turning `allowInput` on is not free, and it is not just a pointer-events
 switch. A screen is real DOM composited into a WebGL scene, and where that DOM
 has to sit in the stacking order decides how it can be hidden behind hardware.
 There are exactly two options and you get one or the other:
 
-**`interactive={false}` (default) — per-pixel blending.** The DOM stacks
+**`allowInput={false}` (default) — per-pixel blending.** The DOM stacks
 *under* the canvas and is masked by the depth buffer, so anything in front of
 the screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
 screen's reflection, a phone's proud camera ring stands over a wrap, a bus's
 mirrors draw over the livery. Being under the canvas is also precisely why the
 content cannot be clicked.
 
-**`interactive={true}` — raycast occlusion.** The DOM stacks *on top of* the
+**`allowInput={true}` — raycast occlusion.** The DOM stacks *on top of* the
 canvas so pointers can reach it — which means nothing in the scene can visually
 cover it. Hiding is therefore all-or-nothing: five sample rays measure how much
 of the screen is behind the body, and the screen fades out across the middle of
@@ -81,11 +81,11 @@ hero images, landing pages and anything you'll export as a still, leave it off.
 </Callout>
 
 Both modes are per-region, so a mockup with several surfaces can mix them —
-set `interactive` on the one slot that needs it and leave the rest display-only:
+set `allowInput` on the one slot that needs it and leave the rest display-only:
 
 ```tsx
 <LaptopMockup>
-  <LaptopMockup.Screen interactive>
+  <LaptopMockup.Screen allowInput>
     <YourLiveApp />
   </LaptopMockup.Screen>
 </LaptopMockup>

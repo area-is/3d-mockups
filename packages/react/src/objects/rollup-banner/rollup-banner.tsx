@@ -54,7 +54,7 @@ function RollupBannerImpl({
   color = '#b9bdc4',
   surfaceBackground = '#ffffff',
   resolution = ROLLUP_BANNER.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -137,7 +137,7 @@ function RollupBannerImpl({
         {...resolveSurface(bannerSlot, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

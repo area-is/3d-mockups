@@ -102,7 +102,7 @@ function WatchBody({
   bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -763,7 +763,7 @@ function WatchBody({
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution: res,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

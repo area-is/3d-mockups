@@ -84,7 +84,7 @@ function GalaxyImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -413,7 +413,7 @@ function GalaxyImpl({
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

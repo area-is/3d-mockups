@@ -50,7 +50,7 @@ function BookImpl({
   pageColor = '#f4eede',
   surfaceBackground = '#ffffff',
   resolution = BOOK.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -68,7 +68,7 @@ function BookImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

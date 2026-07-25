@@ -76,7 +76,7 @@ export interface ScreenSurfaceStyleOptions {
   /** CSS background painted behind the content. */
   background?: string
   /** Let pointer events (clicks, scrolling, typing) reach the content. */
-  interactive?: boolean
+  allowInput?: boolean
   /** Whether >10px drags are handed off to the orbit controls (see drag-handoff). */
   dragToRotate?: boolean
 }
@@ -105,7 +105,7 @@ export function screenSurfaceStyle({
   radius,
   resolution,
   background = '#000000',
-  interactive = true,
+  allowInput = true,
   dragToRotate = true,
 }: ScreenSurfaceStyleOptions): ScreenSurfaceStyle {
   const pxPerUnit = screenPxPerUnit(resolution, width)
@@ -116,7 +116,7 @@ export function screenSurfaceStyle({
     borderRadius: screenCornerRadiusCss(radius, pxPerUnit),
     overflow: 'hidden',
     background,
-    pointerEvents: interactive ? 'auto' : 'none',
+    pointerEvents: allowInput ? 'auto' : 'none',
     // pan-y mirrors the canvas: on touch, vertical swipes over the screen
     // scroll the page; horizontal drags past the threshold rotate the
     // device; taps still click content.

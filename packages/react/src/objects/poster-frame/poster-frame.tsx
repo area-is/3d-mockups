@@ -60,7 +60,7 @@ function PosterFrameImpl({
   glazing = true,
   surfaceBackground = '#ffffff',
   resolution = POSTER_FRAME.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -192,7 +192,7 @@ function PosterFrameImpl({
         {...resolveSurface(posterSlot, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

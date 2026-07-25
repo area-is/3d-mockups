@@ -44,7 +44,7 @@ function BusinessCardImpl({
   edgeColor,
   surfaceBackground = '#ffffff',
   resolution = BUSINESS_CARD.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -78,7 +78,7 @@ function BusinessCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

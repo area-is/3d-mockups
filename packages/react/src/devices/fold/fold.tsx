@@ -117,7 +117,7 @@ function FoldImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -477,7 +477,7 @@ function FoldImpl({
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
-        interactive,
+        allowInput,
         dragToRotate,
         style: surfaceStyle,
       })}
@@ -563,7 +563,7 @@ function FoldImpl({
             background: surfaceBackground,
             // each half pane carries half the virtual display's width
             resolution: landscape ? res : res / 2,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

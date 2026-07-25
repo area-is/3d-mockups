@@ -86,7 +86,7 @@ function IPhoneImpl({
   surfaceBackground = '#000000',
   resolution,
   dynamicIsland = true,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -443,7 +443,7 @@ function IPhoneImpl({
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

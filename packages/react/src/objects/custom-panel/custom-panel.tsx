@@ -46,7 +46,7 @@ function CustomPanelImpl({
   cornerRadius = 2,
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_PANEL.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -64,7 +64,7 @@ function CustomPanelImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

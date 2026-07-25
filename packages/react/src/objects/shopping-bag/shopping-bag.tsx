@@ -53,7 +53,7 @@ function ShoppingBagImpl({
   handleColor = '#7d6142',
   surfaceBackground = '#ffffff',
   resolution = SHOPPING_BAG.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -155,7 +155,7 @@ function ShoppingBagImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

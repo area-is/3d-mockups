@@ -68,7 +68,7 @@ function StorefrontImpl({
   windowColor = '#5a6d75',
   surfaceBackground = '#ffffff',
   resolution = STOREFRONT.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -120,7 +120,7 @@ function StorefrontImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

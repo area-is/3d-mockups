@@ -45,7 +45,7 @@ function VinylRecordImpl({
   color = '#f2efe8',
   surfaceBackground = '#ffffff',
   resolution = VINYL_RECORD.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -119,7 +119,7 @@ function VinylRecordImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -135,7 +135,7 @@ function VinylRecordImpl({
     })
     return { ...surface, screenStyle: { ...surface.screenStyle, ...spindleMask } }
   }
-  // KNOWN LIMITATION — with `interactive` on, a record carrying live art on
+  // KNOWN LIMITATION — with `allowInput` on, a record carrying live art on
   // BOTH labels can show side B faintly through side A at some angles. The
   // disc is 0.022 units thick, the same order as the occlusion tester's
   // self-hit margins (the ones that stop a screen hiding behind its own cover

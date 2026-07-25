@@ -41,7 +41,7 @@ function AFrameSignImpl({
   color = '#4a3826',
   surfaceBackground = '#20241f',
   resolution = A_FRAME_SIGN.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -90,7 +90,7 @@ function AFrameSignImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

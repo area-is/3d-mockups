@@ -49,7 +49,7 @@ function BusShelterImpl({
   color = '#2f333a',
   surfaceBackground = '#ffffff',
   resolution = BUS_SHELTER.resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -101,7 +101,7 @@ function BusShelterImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -109,7 +109,7 @@ function BusShelterImpl({
   const boardDefaults = {
     background: '#0b0c0e',
     resolution: display.resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

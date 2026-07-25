@@ -91,7 +91,7 @@ function TabletBody({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -530,7 +530,7 @@ function TabletBody({
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

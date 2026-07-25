@@ -673,7 +673,7 @@ function LaptopImpl({
   resolution,
   notch = true,
   openAngle,
-  interactive = false,
+  allowInput = false,
   dragToRotate = true,
   surfaceStyle,
   ...groupProps
@@ -1026,7 +1026,7 @@ function LaptopImpl({
             {...resolveSurface(screen, {
               background: surfaceBackground,
               resolution: res,
-              interactive,
+              allowInput,
               dragToRotate,
               style: surfaceStyle,
             })}
