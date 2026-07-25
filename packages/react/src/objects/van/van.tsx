@@ -6,6 +6,7 @@ import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { RoadWheel, WheelArchFlare } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
@@ -543,23 +544,77 @@ function VanImpl({
     }
   }, [shellGeometry, doorGlassGeometry])
 
+  // Automotive laminate: a near-black dielectric with a mirror-smooth
+  // surface, so the studio panels read as reflections instead of grey plastic.
   const glassMaterial = (
-    <meshPhysicalMaterial color="#10161f" metalness={0.2} roughness={0.12} clearcoat={1} />
+    <meshPhysicalMaterial
+      color="#080c13"
+      metalness={0}
+      roughness={0.05}
+      clearcoat={1}
+      clearcoatRoughness={0.03}
+      envMapIntensity={1.8}
+    />
   )
   const trimMaterial = <meshPhysicalMaterial color="#23262b" metalness={0.1} roughness={0.7} />
 
   return (
     <group {...groupProps}>
-      {/* painted shell */}
+      {/* painted shell. Automotive paint is a dielectric base under a clear
+          lacquer — modelling it as half-metal (the old `metalness: 0.4`)
+          desaturates the body into dull sheet and kills the wet highlight the
+          clearcoat is there to provide. */}
       <mesh ref={shellRef} geometry={shellGeometry}>
         <meshPhysicalMaterial
           color={color}
-          metalness={0.4}
-          roughness={0.3}
+          metalness={0.08}
+          roughness={0.42}
           clearcoat={1}
-          clearcoatRoughness={0.15}
+          clearcoatRoughness={0.06}
+          envMapIntensity={1.1}
         />
       </mesh>
+
+      {/* pressed body form. A panel van's sides ARE flat — that is what makes
+          them wrap surfaces — but they are not featureless: a lower feature
+          line runs the cargo length and the rocker steps in below it. Both sit
+          a hair BEHIND the wrap plane, so a livery covers them exactly like
+          vinyl following the body contour, and they show on bare paint (and
+          below the panel wrap, which starts higher up the side). */}
+      {([1, -1] as const).map((side) => (
+        <group key={side} position-z={side * (body.width / 2 - 0.004)}>
+          {/* both lines break at the wheel arches, like the pressings they
+              stand in for — a stripe running straight over an arch opening
+              is the giveaway of a decal */}
+          {(
+            [
+              [profile.tailX + 0.12, wheels.rearX - wheels.archRadius - 0.02],
+              [wheels.rearX + wheels.archRadius + 0.02, wheels.frontX - wheels.archRadius - 0.02],
+            ] as const
+          ).flatMap(([x0, x1]) =>
+            [
+              { y: -0.55, height: 0.022 },
+              { y: rockerY + 0.115, height: 0.032 },
+            ].map(({ y, height }) => (
+              <mesh key={`${x0}${y}`} position={[(x0 + x1) / 2, y, 0]}>
+                <boxGeometry args={[x1 - x0, height, 0.014]} />
+                <meshPhysicalMaterial color={color} metalness={0.08} roughness={0.6} clearcoat={0.7} />
+              </mesh>
+            ))
+          )}
+        </group>
+      ))}
+
+      {/* mud flaps behind the rear wheels */}
+      {([1, -1] as const).map((side) => (
+        <mesh
+          key={side}
+          position={[wheels.rearX - wheels.archRadius - 0.06, rockerY - 0.16, side * (body.width / 2 - 0.14)]}
+        >
+          <boxGeometry args={[0.02, 0.34, wheels.width + 0.06]} />
+          <meshPhysicalMaterial color="#131417" metalness={0} roughness={0.95} />
+        </mesh>
+      ))}
 
       {/* windshield on the cowl-to-header segment, with the two wipers
           parked across its base — the give-away cue of a working cab */}
@@ -703,38 +758,33 @@ function VanImpl({
         <meshPhysicalMaterial color="#0d0e11" metalness={0.1} roughness={0.95} />
       </mesh>
 
-      {/* wheels: tire, rim, hub and a six-lug ring — four corners. The lugs
-          sit just proud of the outer rim face, the cue that makes a plain
-          cylinder read as a steel commercial wheel. */}
+      {/* wheels: lathed tires with bulging sidewalls, rounded shoulders and
+          grooved tread, on dished six-lug steel rims — plus the rolled lip
+          around each arch, without which the openings read as holes printed
+          on a flat slab */}
       {([wheels.frontX, wheels.rearX] as const).map((x) =>
-        [1, -1].map((side) => (
-          <group key={`${x}${side}`} position={[x, wheels.centerY, side * (body.width / 2 - 0.145)]}>
-            <mesh rotation-x={Math.PI / 2}>
-              <cylinderGeometry args={[wheels.radius, wheels.radius, wheels.width, 28]} />
-              <meshPhysicalMaterial color="#15161a" metalness={0} roughness={0.95} />
-            </mesh>
-            <mesh rotation-x={Math.PI / 2}>
-              <cylinderGeometry args={[0.19, 0.19, wheels.width + 0.006, 24]} />
-              <meshPhysicalMaterial color="#c6cad1" metalness={0.85} roughness={0.35} />
-            </mesh>
-            <mesh rotation-x={Math.PI / 2}>
-              <cylinderGeometry args={[0.06, 0.06, wheels.width + 0.012, 16]} />
-              <meshPhysicalMaterial color="#3c4046" metalness={0.7} roughness={0.4} />
-            </mesh>
-            {Array.from({ length: 6 }, (_, i) => {
-              const angle = (i / 6) * Math.PI * 2
-              return (
-                <mesh
-                  key={i}
-                  rotation-x={Math.PI / 2}
-                  position={[Math.cos(angle) * 0.115, Math.sin(angle) * 0.115, side * (wheels.width / 2 + 0.007)]}
-                >
-                  <cylinderGeometry args={[0.017, 0.017, 0.016, 10]} />
-                  <meshPhysicalMaterial color="#4a4f56" metalness={0.75} roughness={0.35} />
-                </mesh>
-              )
-            })}
-          </group>
+        ([1, -1] as const).map((side) => (
+          <React.Fragment key={`${x}${side}`}>
+            <RoadWheel
+              radius={wheels.radius}
+              width={wheels.width}
+              face={side}
+              lugs={6}
+              rimColor="#b7bcc4"
+              position={[x, wheels.centerY, side * (body.width / 2 - 0.145)]}
+            />
+            {/* dark moulded arch trim, as on work-spec vans — it stands
+                proud of the wrap plane, so it reads as trim the installer cut
+                around rather than a stripe of the wrong body colour on top of
+                the livery */}
+            <WheelArchFlare
+              radius={wheels.archRadius}
+              tube={0.026}
+              z={side * (body.width / 2)}
+              side={side}
+              position={[x, rockerY, 0]}
+            />
+          </React.Fragment>
         ))
       )}
 

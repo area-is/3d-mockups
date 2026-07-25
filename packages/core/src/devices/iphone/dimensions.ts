@@ -18,8 +18,6 @@
 import type { Orientation } from '../../orientation'
 import type { MockupFraming } from '../../regions'
 
-export const IPHONE_MM = 1 / 37.15
-
 /** A side key. `flush: true` renders it seated in the rail (Camera Control). */
 export interface IPhoneButton {
   edge: 'left' | 'right'
@@ -311,9 +309,3 @@ export const IPHONE_FRAMING = {
     return (orientation === 'landscape' ? body.width : body.height) / 2
   },
 } as const satisfies MockupFraming<{ variant?: IPhoneVariant; orientation?: Orientation }>
-
-/** Back-compat: dimensions of the default device (iPhone 17). */
-export const IPHONE = IPHONE_17
-
-/** Display aspect ratio (height / width) of the default device. */
-export const IPHONE_DISPLAY_ASPECT = IPHONE.display.height / IPHONE.display.width

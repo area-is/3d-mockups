@@ -59,9 +59,6 @@ export type PosterFrameSpec = ReturnType<typeof posterFrameSpec>
 /** The default 18" x 24" framed poster. */
 export const POSTER_FRAME: PosterFrameSpec = posterFrameSpec()
 
-/** Visible opening aspect ratio (height / width) of the default sheet. */
-export const POSTER_FRAME_ASPECT = POSTER_FRAME.opening.height / POSTER_FRAME.opening.width
-
 /** Live regions: the poster behind the glazing. */
 export const POSTER_FRAME_REGIONS = [
   { name: 'poster', label: 'Poster' },

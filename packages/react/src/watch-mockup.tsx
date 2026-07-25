@@ -1,8 +1,17 @@
-import { WATCH_FRAMING } from '@area-mockups/core'
+import { WATCH_FRAMING, watchCameraDistance } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Watch, watchSlots, type WatchProps } from './devices/watch/watch'
 
 export type WatchMockupProps = MockupProps<WatchProps>
+
+// The factory handles everything but the camera: laid out flat, a band is
+// several times the height of the worn loop, which the static
+// `MockupFraming.camera` cannot express — a thin shell injects it per render.
+const WatchMockupBase = createMockup({
+  object: Watch,
+  framing: WATCH_FRAMING,
+  slots: watchSlots,
+})
 
 /**
  * The one-liner: a complete, interactive 3D smartwatch mockup — Apple Watch
@@ -24,9 +33,15 @@ export type WatchMockupProps = MockupProps<WatchProps>
  * </WatchMockup>
  * ```
  */
-export const WatchMockup = createMockup({
-  object: Watch,
-  framing: WATCH_FRAMING,
-  slots: watchSlots,
-  displayName: 'WatchMockup',
-})
+function WatchMockupImpl({ camera, ...props }: WatchMockupProps) {
+  const distance = watchCameraDistance(props.variant, props.bandOpen ?? false)
+  return (
+    <WatchMockupBase
+      {...props}
+      camera={camera ?? { position: [0, 0.4, distance], fov: WATCH_FRAMING.camera.fov }}
+    />
+  )
+}
+WatchMockupImpl.displayName = 'WatchMockup'
+
+export const WatchMockup = Object.assign(WatchMockupImpl, watchSlots)

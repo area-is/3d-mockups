@@ -1,9 +1,8 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
-import { VINYL_RECORD, VINYL_RECORD_REGIONS } from '@area-mockups/core'
+import { VINYL_RECORD, VINYL_RECORD_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -134,6 +133,16 @@ function VinylRecordImpl({
   const faceProps = {
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
   }
+  // KNOWN LIMITATION — a record carrying live art on BOTH labels can show
+  // side B faintly through side A at some angles. The disc is 0.022 units
+  // thick, which is the same order as the occlusion tester's self-hit
+  // margins (the ones that stop a screen hiding behind its own cover glass),
+  // so the two labels sit too close together for the raycast test to
+  // separate cleanly. Depth blending sorts them correctly but is worse
+  // overall here: its depth-writing occluder is a RECTANGLE, so on a round
+  // label it punches a square hole in the render and the page shows through
+  // the corners. Raycast is the lesser defect until the tester's margin can
+  // be scaled per screen rather than fixed in world units.
 
   const stock = { color, metalness: 0, roughness: 0.75 }
 

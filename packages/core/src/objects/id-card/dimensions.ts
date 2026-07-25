@@ -13,9 +13,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the ID card. */
-export const ID_CARD_MM = 1 / 32
-
 export const ID_CARD = {
   /** CR80 blank, portrait. `radius` is the die-cut corner rounding. */
   body: { width: 1.687, height: 2.675, thickness: 0.03, radius: 0.1, bevel: 0.005 },
@@ -56,9 +53,6 @@ export const ID_CARD = {
   /** Default CSS px width of the virtual face (~300 dpi of the physical card). */
   resolution: 420,
 } as const
-
-/** Printable face aspect ratio (height / width). */
-export const ID_CARD_FACE_ASPECT = ID_CARD.face.height / ID_CARD.face.width
 
 /** Live regions: the two faces of the badge. */
 export const ID_CARD_REGIONS = [

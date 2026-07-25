@@ -63,9 +63,6 @@ export type BookSpec = ReturnType<typeof bookSpec>
 /** The default trade hardcover (156 x 234 x 27 mm). */
 export const BOOK: BookSpec = bookSpec()
 
-/** Cover aspect ratio (height / width) of the default trim. */
-export const BOOK_COVER_ASPECT = BOOK.cover.height / BOOK.cover.width
-
 /** Live regions: front cover, back cover and the spine strip. */
 export const BOOK_REGIONS = [
   { name: 'cover', label: 'Front cover' },

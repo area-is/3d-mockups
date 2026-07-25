@@ -13,9 +13,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the product box. */
-export const PRODUCT_BOX_MM = 1 / 62
-
 export const PRODUCT_BOX = {
   /** The carton: width (x), height (y), depth (z). `radius` is the fold-edge rounding. */
   body: { width: 3.065, height: 4.274, depth: 0.887, radius: 0.008 },
@@ -24,9 +21,6 @@ export const PRODUCT_BOX = {
   /** Default CSS px width of the virtual front face; other faces share its dpi. */
   resolution: 480,
 } as const
-
-/** Front face aspect ratio (height / width). */
-export const PRODUCT_BOX_FRONT_ASPECT = PRODUCT_BOX.body.height / PRODUCT_BOX.body.width
 
 /** Carton size in real millimeters. */
 export interface ProductBoxSizeMm {

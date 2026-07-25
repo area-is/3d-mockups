@@ -9,6 +9,7 @@ import {
   FLIP_DEFAULT_VARIANT,
   SCREEN_REGIONS,
   type FlipVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
@@ -23,7 +24,6 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -57,8 +57,9 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * across the fold — e.g. `openAngle={100}` for the classic half-open
    * standing pose. The pose is continuous from nearly shut to nearly flat;
    * only ~0° snaps to the dedicated folded pose and ~177°+ to the
-   * flat-open one. At intermediate angles the main display is composited
-   * from two planes, so stateful screen content is best kept simple.
+   * flat-open one. At intermediate angles the display is composited from two
+   * planes that depth-blend against the chassis, so content there is
+   * display-only and stateful screen content is best kept simple.
    */
   openAngle?: number
   /**
@@ -164,50 +165,29 @@ function FlipImpl({
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   const lowerBodyRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(bodyRef, lowerBodyRef)
-  // Screens occlude against OTHER registered bodies only — see the fold's
-  // matching note: self-hits at oblique angles black out a visible display,
-  // and the backface culler already covers every behind-the-device view.
-  const otherOccludeRefs = React.useMemo(
-    () => occludeRefs.filter((ref) => ref !== bodyRef && ref !== lowerBodyRef),
-    [occludeRefs]
-  )
+  // Screens occlude against EVERY registered body, this device's own halves
+  // included — see the fold's matching note. Self-occlusion is what keeps a
+  // half's display from painting through its own back in the flex pose, and
+  // the occlusion test's majority rule keeps a grazing corner ray from
+  // blacking out a display that is plainly in view.
 
   const openBody = spec.open.body
   const half = spec.closed.body
   // Cover-half center offset from the open body's center (+y = upper half).
   const halfOffsetY = openBody.height / 2 - half.height / 2
 
-  // The open slab with the free-edge kit machined out of its bottom edge.
-  const openGeometry = React.useMemo(
-    () =>
-      cutGeometry(
-        slabGeometry(openBody.width, openBody.height, openBody.radius, openBody.depth, openBody.bevel),
-        freeEdgeCutters(spec.bottomEdge, -openBody.height / 2)
-      ),
-    [openBody, spec.bottomEdge]
-  )
-  // Folded halves: the front (cover) half is uncut; the rear half carries the
-  // same kit machined into what becomes the TOP edge of the folded stack.
-  const halfGeometry = React.useMemo(
-    () => slabGeometry(half.width, half.height, half.radius, half.depth, half.bevel),
-    [half]
-  )
-  const rearHalfGeometry = React.useMemo(
-    () =>
-      cutGeometry(
-        slabGeometry(half.width, half.height, half.radius, half.depth, half.bevel),
-        freeEdgeCutters(spec.bottomEdge, half.height / 2)
-      ),
-    [half, spec.bottomEdge]
-  )
-  // Flex pose halves: like the closed slabs but with nearly square corners
-  // along the fold edge (the display bends there — the real halves run
-  // straight into the hinge), so the two stay tight at the crease instead
-  // of opening rounded-corner gaps. The lower one also machines the
-  // free-edge kit into its own bottom edge (the open-plane orientation,
-  // unlike the folded stack where that edge faces up).
-  const flexSlab = React.useCallback(
-    (foldEdge: 'top' | 'bottom') => {
+  // Machined chassis geometry, built ONLY for the pose being rendered. Every
+  // `cutGeometry` is a CSG boolean over a tessellated slab — the most
+  // expensive work this component does — and no two poses share a shell, so
+  // building all of them up front paid for shells that never reached the
+  // scene graph. Keying one memo on `mode` also hands the render branches a
+  // discriminated union to narrow on.
+  const shell = React.useMemo(() => {
+    // Nearly square corners along a fold edge: the display bends there (the
+    // real halves run straight into the hinge), so folded halves stay tight
+    // at the crease instead of opening rounded-corner gaps.
+    const halfSlab = (foldEdge?: 'top' | 'bottom') => {
+      if (!foldEdge) return slabGeometry(half.width, half.height, half.radius, half.depth, half.bevel)
       const rFree = half.radius - half.bevel
       const rFold = 0.01
       const corners =
@@ -230,29 +210,45 @@ function FlipImpl({
       })
       g.translate(0, 0, -core / 2)
       return g
-    },
-    [half]
-  )
-  const flexUpperGeometry = React.useMemo(
-    () => (mode === 'flex' ? flexSlab('bottom') : null),
-    [mode, flexSlab]
-  )
-  const flexLowerGeometry = React.useMemo(
-    () =>
-      mode === 'flex'
-        ? cutGeometry(flexSlab('top'), freeEdgeCutters(spec.bottomEdge, -half.height / 2))
-        : null,
-    [mode, flexSlab, half, spec.bottomEdge]
-  )
+    }
+
+    if (mode === 'open') {
+      // One slab with the free-edge kit machined out of its bottom edge.
+      return {
+        mode: 'open' as const,
+        body: cutGeometry(
+          slabGeometry(openBody.width, openBody.height, openBody.radius, openBody.depth, openBody.bevel),
+          freeEdgeCutters(spec.bottomEdge, -openBody.height / 2)
+        ),
+      }
+    }
+
+    if (mode === 'closed') {
+      // The front (cover) half is uncut; the rear half carries the same kit
+      // machined into what becomes the TOP edge of the folded stack.
+      return {
+        mode: 'closed' as const,
+        upper: halfSlab(),
+        lower: cutGeometry(halfSlab(), freeEdgeCutters(spec.bottomEdge, half.height / 2)),
+      }
+    }
+
+    // Flex pose: the lower half machines the free-edge kit into its own
+    // bottom edge (the open-plane orientation, unlike the folded stack where
+    // that edge faces up).
+    return {
+      mode: 'flex' as const,
+      upper: halfSlab('bottom'),
+      lower: cutGeometry(halfSlab('top'), freeEdgeCutters(spec.bottomEdge, -half.height / 2)),
+    }
+  }, [mode, openBody, half, spec.bottomEdge])
   React.useEffect(
     () => () => {
-      openGeometry.dispose()
-      halfGeometry.dispose()
-      rearHalfGeometry.dispose()
-      flexUpperGeometry?.dispose()
-      flexLowerGeometry?.dispose()
+      for (const value of Object.values(shell)) {
+        if (value instanceof THREE.BufferGeometry) value.dispose()
+      }
     },
-    [openGeometry, halfGeometry, rearHalfGeometry, flexUpperGeometry, flexLowerGeometry]
+    [shell]
   )
 
   const coverGlassGeometry = React.useMemo(
@@ -492,7 +488,7 @@ function FlipImpl({
       radius={display.radius}
       position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
@@ -532,7 +528,7 @@ function FlipImpl({
     </DeviceScreen>
   )
 
-  if (mode === 'flex') {
+  if (shell.mode === 'flex') {
     // Each half pivots around a shared virtual axis at the fold line, sitting
     // just inside the main display surface (the panel's neutral axis) — so
     // the screens meet flush when shut and lie coplanar when flat. The
@@ -574,6 +570,15 @@ function FlipImpl({
           ? [r, r, 0, 0]
           : [0, 0, r, r]
       const localY = (upper ? 1 : -1) * (display.height / 4 - halfH / 2)
+      // Per-pixel depth, not raycasting. A raycast occluder is all-or-nothing
+      // for the whole plane, and at every intermediate angle a half-screen is
+      // PARTIALLY covered by the other panel — so no sample threshold can be
+      // right: strict hides a display that is half in view, lenient lets the
+      // covered part paint straight over the chassis. Blending hands the job
+      // to the depth buffer, which resolves it pixel by pixel at any angle.
+      // The trade is that a blending screen is display-only (the canvas keeps
+      // pointer input, so drag-to-rotate still works everywhere) — acceptable
+      // here, where the display is already composited from two planes.
       return (
         <DeviceScreen
           width={landscape ? display.height / 2 : display.width}
@@ -581,7 +586,7 @@ function FlipImpl({
           radius={radius}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occlude={occlude === false ? undefined : 'blending'}
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's height
@@ -641,7 +646,7 @@ function FlipImpl({
           {/* upper (cover) half folds toward the viewer around the hinge */}
           <group position={[0, 0, pz]} rotation-x={alpha}>
             <group position={[0, halfH / 2, -pz]}>
-              <mesh ref={bodyRef} geometry={flexUpperGeometry ?? halfGeometry}>
+              <mesh ref={bodyRef} geometry={shell.upper}>
                 <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
               </mesh>
               <mesh geometry={coverGlassGeometry} rotation-y={Math.PI} position-z={-half.depth / 2 - 0.002}>
@@ -657,7 +662,7 @@ function FlipImpl({
           {/* lower half folds the opposite way */}
           <group position={[0, 0, pz]} rotation-x={-alpha}>
             <group position={[0, -halfH / 2, -pz]}>
-              <mesh ref={lowerBodyRef} geometry={flexLowerGeometry ?? halfGeometry}>
+              <mesh ref={lowerBodyRef} geometry={shell.lower}>
                 <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
               </mesh>
               <mesh geometry={coverGlassGeometry} rotation-y={Math.PI} position-z={-half.depth / 2 - 0.002}>
@@ -711,12 +716,12 @@ function FlipImpl({
     )
   }
 
-  if (mode === 'open') {
+  if (shell.mode === 'open') {
     return (
       <group {...groupProps}>
         <group key="open" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* chassis */}
-          <mesh ref={bodyRef} geometry={openGeometry}>
+          <mesh ref={bodyRef} geometry={shell.body}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
 
@@ -782,14 +787,14 @@ function FlipImpl({
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* front half (cover screen + cameras) and rear half, with the air gap */}
         <group position-z={halfZ}>
-          <mesh ref={bodyRef} geometry={halfGeometry}>
+          <mesh ref={bodyRef} geometry={shell.upper}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
           {rails}
           {screen}
         </group>
         <group position-z={-halfZ}>
-          <mesh geometry={rearHalfGeometry}>
+          <mesh ref={lowerBodyRef} geometry={shell.lower}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
           {/* back glass colorway on the rear half */}

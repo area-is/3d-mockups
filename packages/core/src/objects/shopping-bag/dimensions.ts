@@ -20,9 +20,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the shopping bag. */
-export const SHOPPING_BAG_MM = 1 / 95
-
 export const SHOPPING_BAG = {
   /** The bag: width (x), height (y), gusset depth (z). */
   body: { width: 3.368, height: 4.421, depth: 1.474, radius: 0.02 },
@@ -37,9 +34,6 @@ export const SHOPPING_BAG = {
   /** Default CSS px width of the virtual front face. */
   resolution: 460,
 } as const
-
-/** Front face aspect ratio (height / width). */
-export const SHOPPING_BAG_ASPECT = SHOPPING_BAG.body.height / SHOPPING_BAG.body.width
 
 /** Bag size in real millimeters. */
 export interface ShoppingBagSizeMm {

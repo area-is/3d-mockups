@@ -12,9 +12,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the billboard. */
-export const BILLBOARD_MM = 1 / 2814
-
 export const BILLBOARD = {
   /** Advertising face (the live area). Content you pass as children maps onto this rect. */
   face: { width: 5.2, height: 1.517, radius: 0.01 },
@@ -36,9 +33,6 @@ export const BILLBOARD = {
   /** Default CSS px width of the virtual face. */
   resolution: 1200,
 } as const
-
-/** Face aspect ratio (height / width) — the 14:48 bulletin. */
-export const BILLBOARD_FACE_ASPECT = BILLBOARD.face.height / BILLBOARD.face.width
 
 /** Live regions: the advertising face. */
 export const BILLBOARD_REGIONS = [

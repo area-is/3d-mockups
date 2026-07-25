@@ -204,9 +204,3 @@ export const FOLD_FRAMING = {
   openAngle?: number
   orientation?: Orientation
 }>
-
-/** Back-compat / default device. */
-export const FOLD = FOLD7
-
-/** Inner (open) display aspect ratio (height / width). */
-export const FOLD_OPEN_ASPECT = FOLD.open.display.height / FOLD.open.display.width

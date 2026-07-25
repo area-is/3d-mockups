@@ -15,9 +15,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the greeting card. */
-export const GREETING_CARD_MM = 1 / 56
-
 export const GREETING_CARD = {
   /** One folded panel. */
   panel: { width: 2.268, height: 3.179, thickness: 0.009, radius: 0.006 },
@@ -26,9 +23,6 @@ export const GREETING_CARD = {
   /** Default CSS px width of one virtual panel face. */
   resolution: 380,
 } as const
-
-/** Panel aspect ratio (height / width). */
-export const GREETING_CARD_ASPECT = GREETING_CARD.panel.height / GREETING_CARD.panel.width
 
 /** Live regions: the four printable faces, front cover first. */
 export const GREETING_CARD_REGIONS = [

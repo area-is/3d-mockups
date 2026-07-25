@@ -8,6 +8,7 @@ import {
   FOLD_DEFAULT_VARIANT,
   SCREEN_REGIONS,
   type FoldVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
@@ -22,7 +23,6 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -56,9 +56,9 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * content bends across the crease — e.g. `openAngle={110}` for the
    * half-open standing pose. The pose is continuous from nearly shut to
    * nearly flat; only ~0° snaps to the dedicated folded pose and ~177°+
-   * to the flat-open one. At intermediate angles the inner display is
-   * composited from two planes, so stateful screen content is best kept
-   * simple.
+   * to the flat-open one. At intermediate angles the display is composited
+   * from two planes that depth-blend against the chassis, so content there is
+   * display-only and stateful screen content is best kept simple.
    */
   openAngle?: number
   /**
@@ -152,60 +152,65 @@ function FoldImpl({
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   const rearRef = React.useRef<THREE.Mesh>(null!)
   const occludeRefs = useScreenOccluders(bodyRef, rearRef)
-  // This device's screens occlude against OTHER registered bodies only. The
-  // backface culler already hides a screen the camera can't face, and at
-  // oblique views the sample rays graze our own slabs (or cross the crease
-  // into the sibling half), hiding a display that is mostly visible — the
-  // all-black main screen at side-on angles. Own shells stay registered so
-  // they still occlude every other mockup in the scene.
-  const otherOccludeRefs = React.useMemo(
-    () => occludeRefs.filter((ref) => ref !== bodyRef && ref !== rearRef),
-    [occludeRefs]
-  )
+  // Screens occlude against EVERY registered body, this device's own panels
+  // included. Excluding them (to stop a grazing corner ray blacking out a
+  // visible display) meant a panel's DOM screen composited straight over its
+  // own chassis — the flex pose's far display piercing through the near one,
+  // and the main display showing through the device's own back. The occlusion
+  // test now needs a MAJORITY of its samples blocked before it hides, which
+  // handles the grazing case without giving up self-occlusion.
 
   // The folded stack: body.depth spans both slabs plus the crevice between them.
   const gap = spec.closed.gap
   const halfDepth = (spec.closed.body.depth - gap) / 2
   const halfZ = gap / 2 + halfDepth / 2
 
-  // Unfolded chassis with its bottom-edge machining (USB, speakers, mics).
-  const openGeometry = React.useMemo(() => {
-    const b = spec.open.body
-    const edge = spec.bottomEdge.open
-    const bottom = -b.height / 2
-    return cutGeometry(slabGeometry(b.width, b.height, b.radius, b.depth, b.bevel), [
-      stadiumCutter(edge.usb.width, edge.usb.height, USB_CUT_DEPTH).translate(edge.usb.x, bottom, 0),
-      ...edge.speakers.map((sp) =>
-        stadiumCutter(sp.width, sp.height, 0.06).translate(sp.x, bottom, 0)
-      ),
-      ...(edge.mics ?? []).map(({ x, r }) => holeCutter(r, 0.05).translate(x, bottom, 0)),
-    ])
-  }, [spec.open.body, spec.bottomEdge.open])
+  // Machined chassis geometry, built ONLY for the pose being rendered. Each
+  // `cutGeometry` is a CSG boolean over a tessellated slab — easily the most
+  // expensive thing this component does — and the three poses never share a
+  // shell, so building all of them on every mount paid that cost three times
+  // over for two shells that never reach the scene graph. One memo keyed on
+  // `mode` also gives the render branches below a discriminated union to
+  // narrow on, instead of three independently-nullable geometries.
+  const shell = React.useMemo(() => {
+    if (mode === 'open') {
+      const b = spec.open.body
+      const edge = spec.bottomEdge.open
+      const bottom = -b.height / 2
+      return {
+        mode: 'open' as const,
+        body: cutGeometry(slabGeometry(b.width, b.height, b.radius, b.depth, b.bevel), [
+          stadiumCutter(edge.usb.width, edge.usb.height, USB_CUT_DEPTH).translate(edge.usb.x, bottom, 0),
+          ...edge.speakers.map((sp) =>
+            stadiumCutter(sp.width, sp.height, 0.06).translate(sp.x, bottom, 0)
+          ),
+          ...(edge.mics ?? []).map(({ x, r }) => holeCutter(r, 0.05).translate(x, bottom, 0)),
+        ]),
+      }
+    }
 
-  // Folded slabs, each machining its own opening: the speaker lives on the
-  // cover (front) half, the USB-C on the camera (rear) half — like the scan.
-  const frontHalfGeometry = React.useMemo(() => {
-    const b = spec.closed.body
-    const sp = spec.bottomEdge.closed.speaker
-    return cutGeometry(slabGeometry(b.width, b.height, b.radius, halfDepth, b.bevel), [
-      stadiumCutter(sp.width, sp.height, 0.06).translate(sp.x, -b.height / 2, 0),
-    ])
-  }, [spec.closed.body, spec.bottomEdge.closed, halfDepth])
-  const rearHalfGeometry = React.useMemo(() => {
-    const b = spec.closed.body
-    const usb = spec.bottomEdge.closed.usb
-    return cutGeometry(slabGeometry(b.width, b.height, b.radius, halfDepth, b.bevel), [
-      stadiumCutter(usb.width, usb.height, USB_CUT_DEPTH).translate(usb.x, -b.height / 2, 0),
-    ])
-  }, [spec.closed.body, spec.bottomEdge.closed, halfDepth])
+    if (mode === 'closed') {
+      // Folded slabs, each machining its own opening: the speaker lives on
+      // the cover (front) half, the USB-C on the camera (rear) half.
+      const b = spec.closed.body
+      const { speaker, usb } = spec.bottomEdge.closed
+      const slab = () => slabGeometry(b.width, b.height, b.radius, halfDepth, b.bevel)
+      return {
+        mode: 'closed' as const,
+        front: cutGeometry(slab(), [
+          stadiumCutter(speaker.width, speaker.height, 0.06).translate(speaker.x, -b.height / 2, 0),
+        ]),
+        rear: cutGeometry(slab(), [
+          stadiumCutter(usb.width, usb.height, USB_CUT_DEPTH).translate(usb.x, -b.height / 2, 0),
+        ]),
+      }
+    }
 
-  // Flex pose panels: the open slab split at the hinge line, each half
-  // machining only the bottom-edge openings that live on its side. The
-  // fold-side corners are nearly square (the display bends there — the real
-  // panels run straight into the hinge), so the two panels stay tight at
-  // the crease instead of opening rounded-corner gaps.
-  const flexGeometries = React.useMemo(() => {
-    if (mode !== 'flex') return null
+    // Flex pose panels: the open slab split at the hinge line, each half
+    // machining only the bottom-edge openings that live on its side. The
+    // fold-side corners are nearly square (the display bends there — the real
+    // panels run straight into the hinge), so the two panels stay tight at
+    // the crease instead of opening rounded-corner gaps.
     const b = spec.open.body
     const hw = b.width / 2
     const edge = spec.bottomEdge.open
@@ -244,6 +249,7 @@ function FoldImpl({
       return g
     }
     return {
+      mode: 'flex' as const,
       left: cutGeometry(panelSlab(1), cutters(-1)),
       right: cutGeometry(panelSlab(-1), cutters(1)),
       back: new THREE.ShapeGeometry(
@@ -255,15 +261,14 @@ function FoldImpl({
         16
       ),
     }
-  }, [mode, spec.open.body, spec.bottomEdge.open])
+  }, [mode, spec.open.body, spec.closed.body, spec.bottomEdge, halfDepth])
   React.useEffect(
     () => () => {
-      flexGeometries?.left.dispose()
-      flexGeometries?.right.dispose()
-      flexGeometries?.back.dispose()
-      flexGeometries?.glass.dispose()
+      for (const value of Object.values(shell)) {
+        if (value instanceof THREE.BufferGeometry) value.dispose()
+      }
     },
-    [flexGeometries]
+    [shell]
   )
 
   const backGeometry = React.useMemo(
@@ -319,9 +324,6 @@ function FoldImpl({
 
   React.useEffect(() => {
     return () => {
-      openGeometry.dispose()
-      frontHalfGeometry.dispose()
-      rearHalfGeometry.dispose()
       backGeometry.dispose()
       glassGeometry.dispose()
       plateauGeometry.dispose()
@@ -329,9 +331,6 @@ function FoldImpl({
       spineLogoGeometry.dispose()
     }
   }, [
-    openGeometry,
-    frontHalfGeometry,
-    rearHalfGeometry,
     backGeometry,
     glassGeometry,
     plateauGeometry,
@@ -481,7 +480,7 @@ function FoldImpl({
       radius={display.radius}
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
@@ -500,7 +499,7 @@ function FoldImpl({
     </DeviceScreen>
   )
 
-  if (mode === 'flex' && flexGeometries) {
+  if (shell.mode === 'flex') {
     // Each panel pivots around a shared virtual axis at the fold line, at the
     // inner display's neutral plane. Because both back faces stay a constant
     // distance from that axis at every angle, the Armor FlexHinge spine is
@@ -550,6 +549,15 @@ function FoldImpl({
           ? [r, 0, 0, r]
           : [0, r, r, 0]
       const localX = (left ? 1 : -1) * (hw / 2 - display.width / 4)
+      // Per-pixel depth, not raycasting. A raycast occluder is all-or-nothing
+      // for the whole plane, and at every intermediate angle a half-screen is
+      // PARTIALLY covered by the other panel — so no sample threshold can be
+      // right: strict hides a display that is half in view, lenient lets the
+      // covered part paint straight over the chassis. Blending hands the job
+      // to the depth buffer, which resolves it pixel by pixel at any angle.
+      // The trade is that a blending screen is display-only (the canvas keeps
+      // pointer input, so drag-to-rotate still works everywhere) — acceptable
+      // here, where the display is already composited from two planes.
       return (
         <DeviceScreen
           width={landscape ? display.height : display.width / 2}
@@ -557,7 +565,7 @@ function FoldImpl({
           radius={radius}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occlude={occlude === false ? undefined : 'blending'}
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's width
@@ -595,13 +603,13 @@ function FoldImpl({
           {/* left (cover-screen) panel folds toward the viewer */}
           <group position={[0, 0, pz]} rotation-y={alpha}>
             <group position={[-hw / 2, 0, -pz]}>
-              <mesh ref={bodyRef} geometry={flexGeometries.left}>
+              <mesh ref={bodyRef} geometry={shell.left}>
                 {chassisMaterial}
               </mesh>
-              <mesh geometry={flexGeometries.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
+              <mesh geometry={shell.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
                 <meshPhysicalMaterial color={color} metalness={0.3} roughness={0.34} clearcoat={0.8} clearcoatRoughness={0.3} />
               </mesh>
-              <mesh geometry={flexGeometries.glass} position-z={b.depth / 2 + 0.002}>
+              <mesh geometry={shell.glass} position-z={b.depth / 2 + 0.002}>
                 <meshPhysicalMaterial color="#040507" metalness={0.1} roughness={0.09} clearcoat={1} />
               </mesh>
               {/* body-coordinate details, shifted into this half's local frame */}
@@ -637,13 +645,13 @@ function FoldImpl({
           {/* right (camera) panel folds the opposite way */}
           <group position={[0, 0, pz]} rotation-y={-alpha}>
             <group position={[hw / 2, 0, -pz]}>
-              <mesh ref={rearRef} geometry={flexGeometries.right}>
+              <mesh ref={rearRef} geometry={shell.right}>
                 {chassisMaterial}
               </mesh>
-              <mesh geometry={flexGeometries.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
+              <mesh geometry={shell.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
                 <meshPhysicalMaterial color={color} metalness={0.3} roughness={0.34} clearcoat={0.8} clearcoatRoughness={0.3} />
               </mesh>
-              <mesh geometry={flexGeometries.glass} position-z={b.depth / 2 + 0.002}>
+              <mesh geometry={shell.glass} position-z={b.depth / 2 + 0.002}>
                 <meshPhysicalMaterial color="#040507" metalness={0.1} roughness={0.09} clearcoat={1} />
               </mesh>
               <group position-x={-hw / 2}>
@@ -713,12 +721,12 @@ function FoldImpl({
     )
   }
 
-  if (mode === 'open') {
+  if (shell.mode === 'open') {
     return (
       <group {...groupProps}>
         <group key="open" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* chassis */}
-          <mesh ref={bodyRef} geometry={openGeometry}>
+          <mesh ref={bodyRef} geometry={shell.body}>
             {chassisMaterial}
           </mesh>
 
@@ -808,7 +816,7 @@ function FoldImpl({
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* front (cover) slab — carries the cover screen and the speaker slot */}
         <group position-z={halfZ}>
-          <mesh ref={bodyRef} geometry={frontHalfGeometry}>
+          <mesh ref={bodyRef} geometry={shell.front}>
             {chassisMaterial}
           </mesh>
           <mesh geometry={glassGeometry} position-z={halfDepth / 2 + 0.002}>
@@ -826,7 +834,7 @@ function FoldImpl({
 
         {/* rear (camera) slab — colorway back, camera stack, buttons, USB-C */}
         <group position-z={-halfZ}>
-          <mesh ref={rearRef} geometry={rearHalfGeometry}>
+          <mesh ref={rearRef} geometry={shell.rear}>
             {chassisMaterial}
           </mesh>
           <mesh geometry={backGeometry} rotation-y={Math.PI} position-z={-halfDepth / 2 - 0.002}>

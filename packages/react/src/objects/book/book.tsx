@@ -2,9 +2,8 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BOOK, BOOK_REGIONS, bookSpec, type BookSize } from '@area-mockups/core'
+import { BOOK, BOOK_REGIONS, bookSpec, type BookSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -83,10 +82,17 @@ function BookImpl({
   const screenProps = {
     occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
   }
-  // spine strip: rides the crown of the convex backbone, narrowed so its
-  // flat DOM plane stays tight against the curved shell
-  const spineWidth = thickness * 0.75
-  const spineX = -board.width / 2 + 0.012 - (spine.bulge + 0.012) - 0.002
+  // A cased-in hardback's backbone is NOT a half-round tube: it is flat
+  // across the printed area and rolls off into the joints. Modelling it as a
+  // half-cylinder left the flat DOM spine strip floating off the shell
+  // everywhere but its centre line — a visible gap down both sides of the
+  // spine art. The joint roll is set first (~5 mm of real cloth), and the
+  // printed strip is exactly the flat crown that remains, so it sits ON the
+  // surface at every point.
+  const spineOut = spine.bulge + 0.012
+  const spineJoint = Math.min(spineOut * 0.95, thickness * 0.18)
+  const spineWidth = thickness - spineJoint * 2
+  const spineX = -board.width / 2 + 0.012 - spineOut - 0.002
 
   // the boards stop short of the spine by the french groove width — the
   // groove itself is a thinner recessed strip added separately below
@@ -109,7 +115,29 @@ function BookImpl({
     return geometry
   }, [board, groove])
 
-  React.useEffect(() => () => boardGeometry.dispose(), [boardGeometry])
+  // The backbone's cross-section, extruded along the book's height: a
+  // rounded rectangle whose straight run is the printed crown and whose two
+  // rolls are the joints. Only the outboard half is ever seen — the rest is
+  // buried behind the page block.
+  const spineGeometry = React.useMemo(() => {
+    const shape = roundedRectShape(spineOut * 2, thickness, spineJoint)
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: board.height,
+      bevelEnabled: false,
+      curveSegments: 12,
+    })
+    geometry.translate(0, 0, -board.height / 2)
+    // Extrusion runs along +Z; stand it up so it runs along the book's height.
+    geometry.rotateX(-Math.PI / 2)
+    return geometry
+  }, [spineOut, spineJoint, thickness, board.height])
+
+  React.useEffect(() => {
+    return () => {
+      boardGeometry.dispose()
+      spineGeometry.dispose()
+    }
+  }, [boardGeometry, spineGeometry])
 
   const boardZ = thickness / 2 - board.thickness / 2
 
@@ -145,11 +173,10 @@ function BookImpl({
         <meshPhysicalMaterial color={pageColor} metalness={0} roughness={0.92} />
       </RoundedBox>
 
-      {/* convex cloth backbone: a half-cylinder shell wrapping OUTSIDE the
-          bound edge, projecting past the boards (scaled unit cylinder so the
-          shell spans the full closed thickness) */}
-      <mesh position-x={-board.width / 2 + 0.012} scale={[spine.bulge + 0.012, 1, thickness / 2]}>
-        <cylinderGeometry args={[1, 1, board.height, 24, 1, false, Math.PI, Math.PI]} />
+      {/* cloth backbone wrapping OUTSIDE the bound edge and projecting past
+          the boards: a flat crown carrying the spine print, rolling off into
+          the joints at both hinges */}
+      <mesh geometry={spineGeometry} position-x={-board.width / 2 + 0.012}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.72} />
       </mesh>
 

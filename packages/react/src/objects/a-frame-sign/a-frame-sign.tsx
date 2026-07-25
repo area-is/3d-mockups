@@ -1,10 +1,8 @@
 import * as React from 'react'
 import * as THREE from 'three'
-import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { A_FRAME_SIGN, A_FRAME_SIGN_REGIONS } from '@area-mockups/core'
+import { A_FRAME_SIGN, A_FRAME_SIGN_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 

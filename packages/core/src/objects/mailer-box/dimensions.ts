@@ -15,9 +15,6 @@
 
 import type { MockupFraming, RegionSpec } from '../../regions'
 
-/** World units per millimeter for the mailer box. */
-export const MAILER_BOX_MM = 1 / 78
-
 export const MAILER_BOX = {
   /** The shipper: width (x), height (y), depth (z). `radius` softens the corrugated edges. */
   body: { width: 4.487, height: 1.538, depth: 3.205, radius: 0.03 },
@@ -26,9 +23,6 @@ export const MAILER_BOX = {
   /** Default CSS px width of the virtual top face; other faces share its dpi. */
   resolution: 520,
 } as const
-
-/** Top face aspect ratio (depth / width). */
-export const MAILER_BOX_TOP_ASPECT = MAILER_BOX.body.depth / MAILER_BOX.body.width
 
 /** Shipper size in real millimeters. */
 export interface MailerBoxSizeMm {

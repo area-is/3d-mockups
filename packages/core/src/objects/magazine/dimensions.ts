@@ -48,9 +48,6 @@ export type MagazineSpec = ReturnType<typeof magazineSpec>
 /** The default US letter-trim monthly (216 x 279 x 6 mm). */
 export const MAGAZINE: MagazineSpec = magazineSpec()
 
-/** Cover aspect ratio (height / width) of the default trim. */
-export const MAGAZINE_COVER_ASPECT = MAGAZINE.cover.height / MAGAZINE.cover.width
-
 /** Live regions: front cover, back cover and the bound-edge spine strip. */
 export const MAGAZINE_REGIONS = [
   { name: 'cover', label: 'Front cover' },

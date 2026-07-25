@@ -9,12 +9,12 @@ import {
   LAPTOP_STAGE_OFFSET_Y,
   SCREEN_REGIONS,
   type LaptopVariant,
+  roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'
 import { UsbC, EdgeSocket, cutGeometry, stadiumCutter, holeCutter } from '../details'
-import { roundedRectShape } from '@area-mockups/core'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 

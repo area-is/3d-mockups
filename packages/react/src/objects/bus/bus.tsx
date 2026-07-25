@@ -7,6 +7,7 @@ import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { RoadWheel } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
@@ -576,41 +577,42 @@ function BusImpl({
         <meshPhysicalMaterial color="#0d0e11" metalness={0.1} roughness={0.95} />
       </mesh>
 
-      {/* wheels: single steer tires up front — tire, rim, hub */}
-      {[1, -1].map((side) => (
-        <group key={side} position={[wheels.frontX, wheels.centerY, side * (body.width / 2 - 0.12)]}>
-          <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[wheels.radius, wheels.radius, wheels.width, 28]} />
-            <meshPhysicalMaterial color="#15161a" metalness={0} roughness={0.95} />
-          </mesh>
-          <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.15, 0.15, wheels.width + 0.006, 24]} />
-            <meshPhysicalMaterial color="#c6cad1" metalness={0.85} roughness={0.35} />
-          </mesh>
-          <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.05, 0.05, wheels.width + 0.012, 16]} />
-            <meshPhysicalMaterial color="#3c4046" metalness={0.7} roughness={0.4} />
-          </mesh>
-        </group>
+      {/* wheels: single steer tires up front, duals on the drive axle. The
+          shared road wheel lathes a real tire carcass — bulged sidewalls,
+          rounded shoulders, grooved tread — on a dished ten-lug rim. */}
+      {([1, -1] as const).map((side) => (
+        <RoadWheel
+          key={side}
+          radius={wheels.radius}
+          width={wheels.width}
+          face={side}
+          lugs={10}
+          rimRatio={0.6}
+          position={[wheels.frontX, wheels.centerY, side * (body.width / 2 - 0.12)]}
+        />
       ))}
-      {/* drive axle runs dual tires per side; rim and hub only on the outer */}
-      {[1, -1].map((side) => (
-        <group key={side} position={[wheels.rearX, wheels.centerY, 0]}>
-          {[dualOuterZ, dualInnerZ].map((z) => (
-            <mesh key={z} rotation-x={Math.PI / 2} position={[0, 0, side * z]}>
-              <cylinderGeometry args={[wheels.radius, wheels.radius, wheels.dualWidth, 28]} />
-              <meshPhysicalMaterial color="#15161a" metalness={0} roughness={0.95} />
-            </mesh>
-          ))}
-          <mesh rotation-x={Math.PI / 2} position={[0, 0, side * dualOuterZ]}>
-            <cylinderGeometry args={[0.15, 0.15, wheels.dualWidth + 0.006, 24]} />
-            <meshPhysicalMaterial color="#c6cad1" metalness={0.85} roughness={0.35} />
-          </mesh>
-          <mesh rotation-x={Math.PI / 2} position={[0, 0, side * dualOuterZ]}>
-            <cylinderGeometry args={[0.05, 0.05, wheels.dualWidth + 0.012, 16]} />
-            <meshPhysicalMaterial color="#3c4046" metalness={0.7} roughness={0.4} />
-          </mesh>
-        </group>
+      {/* the inner tire of each dual pair shows only its tread, so it keeps a
+          plain dark rim face rather than a second set of polished hardware */}
+      {([1, -1] as const).map((side) => (
+        <React.Fragment key={side}>
+          <RoadWheel
+            radius={wheels.radius}
+            width={wheels.dualWidth}
+            face={side}
+            lugs={10}
+            rimRatio={0.6}
+            position={[wheels.rearX, wheels.centerY, side * dualOuterZ]}
+          />
+          <RoadWheel
+            radius={wheels.radius}
+            width={wheels.dualWidth}
+            face={side}
+            lugs={10}
+            rimRatio={0.6}
+            rimColor="#3c4046"
+            position={[wheels.rearX, wheels.centerY, side * dualInnerZ]}
+          />
+        </React.Fragment>
       ))}
 
       {/* bumpers */}
