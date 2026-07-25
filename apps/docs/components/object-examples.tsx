@@ -42,8 +42,7 @@ import {
   WatchMockup,
   FlipMockup,
 } from 'area-mockups'
-import { LazyScene } from './lazy-scene'
-import { withPreviewControls } from './preview-controls'
+import { PreviewStage } from './preview-controls'
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
 import { DEMO_SOURCES } from '../lib/demo-sources.generated'
 import {
@@ -1171,9 +1170,9 @@ export function ObjectDemo({
   const sources = DEMO_SOURCES[demo]
   return (
     <>
-      <div className={`object-demo${checker ? ' object-demo--checker' : ''}`} style={{ height }}>
-        <LazyScene>{withPreviewControls(scene)}</LazyScene>
-      </div>
+      <PreviewStage height={height} checker={checker}>
+        {scene}
+      </PreviewStage>
       {sources && (
         <details className="object-demo-source">
           <summary>View the full TSX behind this demo</summary>

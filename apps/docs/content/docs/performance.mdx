@@ -13,5 +13,6 @@ description: How the rendering pipeline stays fast and predictable.
   environment map rendered once on the GPU.
 - `dpr` is clamped to `[1, 2]` by default; lower the maximum on constrained
   devices for guaranteed frame rates.
-- The MacBook's 78 keycap legends render as one instanced draw call plus a
-  single canvas texture, so the keyboard costs almost nothing.
+- The MacBook's 78 keycaps render as one instanced draw call per key footprint
+  (seven in all) plus a single canvas texture for every printed legend, so the
+  keyboard costs almost nothing.
