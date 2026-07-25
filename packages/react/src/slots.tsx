@@ -25,7 +25,10 @@ const REGION = Symbol.for('area-mockups.region')
 
 /** Per-surface settings, available on every slot element. */
 export interface SurfaceProps {
-  /** CSS background painted behind this region's content. */
+  /**
+   * CSS background painted behind this region's content — see
+   * `SurfaceDefaults.surfaceBackground` for when it shows.
+   */
   background?: string
   /** CSS pixel width of this region's virtual surface. */
   resolution?: number
@@ -46,7 +49,20 @@ export interface SurfaceProps {
  * `SurfaceProps` win over these for that region.
  */
 export interface SurfaceDefaults {
-  /** CSS background painted behind each region's content. */
+  /**
+   * CSS background painted behind each region's content, under whatever you
+   * render. Defaults to black on lit screens, white on print surfaces.
+   *
+   * It only shows where your content does NOT paint: a logo on a transparent
+   * PNG, a layout shorter than the surface, a rounded card over the corners,
+   * the moment before an `<iframe>` loads. Pass full-bleed opaque artwork and
+   * you will never see it — which is why changing it often appears to do
+   * nothing.
+   *
+   * Do not set it to `transparent` expecting the hardware to show through.
+   * A screen's DOM sits UNDER the canvas (see `interactive`), so transparent
+   * pixels fall through to the PAGE, and the mockup reads as a hole.
+   */
   surfaceBackground?: string
   /** CSS pixel width of the (primary) virtual surface; regions share its dpi. */
   resolution?: number

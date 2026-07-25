@@ -1,12 +1,13 @@
 import * as React from 'react'
 import type * as THREE from 'three'
-import { Group } from 'three'
+import { Group, ShapeGeometry } from 'three'
 import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import {
   SCREEN_LAYER_CSS,
   createBackfaceCuller,
   createScreenDragHandoff,
+  roundedRectShapeCorners,
   screenDistanceFactor,
   screenLayerClass,
   screenSurfaceStyle,
@@ -31,6 +32,15 @@ const SCREEN_Z_RANGE: [number, number] = [10, 0]
  * while eating their clicks.
  */
 export const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
+
+/**
+ * How far inside the screen's own outline the blending depth mask is held, as
+ * a fraction of the screen's shorter side. Covers the antialiasing seam where
+ * the mask's edge and the DOM's edge coincide (see `silhouette` below).
+ * Exported so a component authoring its OWN `occluderGeometry` can hold the
+ * same margin — inward at the outline, outward around any punched hole.
+ */
+export const SCREEN_MASK_INSET = 0.004
 
 // Staggered retry thresholds for the drei <Html> mount race (see below):
 // screens created back-to-back get different frame counts, so their
@@ -87,10 +97,11 @@ export interface DeviceScreenProps {
   blending?: boolean
   /**
    * Custom depth-occluder geometry for blending mode, in world units on the
-   * screen plane. By default the blending occluder is the screen's full
-   * rect — a screen whose DOM is clipped (rounded corners, punched holes)
-   * should pass a matching shape here, or hardware showing through the
-   * clipped openings gets depth-hidden by the invisible rect.
+   * screen plane. Defaults to the screen's own silhouette (`width` x `height`
+   * rounded by `radius`), which is what the DOM is clipped to. Pass a shape
+   * here when the DOM is clipped to something else again — a livery with the
+   * glass carved out, a label with a punched hole — or the extra area masks
+   * hardware that should stay visible.
    */
   occluderGeometry?: THREE.BufferGeometry
   /** Extra styles merged onto the screen wrapper. */
@@ -132,6 +143,38 @@ export function DeviceScreen({
   // clicked, and a clickable surface can only occlude by raycast.
   const usingBlending = blending || !interactive
   const clickable = interactive && !blending
+
+  // The depth mask that makes the canvas transparent over the screen so the
+  // DOM beneath shows through. drei's default is a plain rectangle, which on
+  // any screen the DOM rounds off — a watch face, a round record label —
+  // clears the canvas out past the artwork and the PAGE shows through the
+  // corners. Build it from the screen's own silhouette instead, the same
+  // numbers `border-radius` is built from. `radius` is spread into scalars so
+  // a caller passing a fresh array literal doesn't rebuild it every render.
+  const [radiusTL, radiusTR, radiusBR, radiusBL] =
+    typeof radius === 'number' ? [radius, radius, radius, radius] : radius
+  const silhouette = React.useMemo(() => {
+    if (!usingBlending || occluderGeometry) return null
+    // Held a hair inside the DOM's own edge. Both edges are antialiased, and
+    // where they coincide the mask's partial transparency wins over the DOM's
+    // partial opacity and a pixel of PAGE bleeds through all the way round.
+    // Insetting keeps the canvas solid under that fade, so the boundary is
+    // the DOM's edge over device hardware — the seam reads as the display's
+    // own rim rather than a hole. Proportional, so it stays a rim at any zoom.
+    const inset = Math.min(width, height) * SCREEN_MASK_INSET
+    const shrink = (r: number) => Math.max(0, r - inset)
+    return new ShapeGeometry(
+      roundedRectShapeCorners(width - inset * 2, height - inset * 2, [
+        shrink(radiusTL),
+        shrink(radiusTR),
+        shrink(radiusBR),
+        shrink(radiusBL),
+      ]),
+      24
+    )
+  }, [usingBlending, occluderGeometry, width, height, radiusTL, radiusTR, radiusBR, radiusBL])
+  React.useEffect(() => () => silhouette?.dispose(), [silhouette])
+  const blendGeometry = occluderGeometry ?? silhouette
 
   // drei's 'blending' mode turns the CANVAS to pointer-events:none so DOM
   // stacked under it stays clickable — which silently kills orbit drags on
@@ -235,8 +278,8 @@ export function DeviceScreen({
         transform
         occlude={usingBlending ? 'blending' : undefined}
         geometry={
-          usingBlending && occluderGeometry ? (
-            <primitive object={occluderGeometry} attach="geometry" />
+          usingBlending && blendGeometry ? (
+            <primitive object={blendGeometry} attach="geometry" />
           ) : undefined
         }
         distanceFactor={screenDistanceFactor(width, resolution)}

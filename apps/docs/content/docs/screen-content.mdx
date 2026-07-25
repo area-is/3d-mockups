@@ -47,7 +47,7 @@ Every device accepts the same screen behavior props:
 | --- | --- | --- | --- |
 | `interactive` | `boolean` | `false` | Let pointer events (clicks, scrolling, typing) reach the screen content. **Also changes how the mockup looks — read the warning below.** |
 | `dragToRotate` | `boolean` | `true` | Drags that start on the screen spin the device after about 10 px of travel; taps still click. Disable when your content needs its own drag gestures (sliders, drawing, horizontal swipes). |
-| `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content. |
+| `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content, under whatever you render. See [Surface background](#surface-background). |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
 <Callout type="warn" title="interactive costs you visual accuracy">
@@ -93,6 +93,29 @@ A few surfaces are per-pixel no matter what you pass, because raycasting simply
 cannot describe what covers them: the full-coverage wrap sides on `<VanMockup>`
 and `<BusMockup>`, the glass on `<BusShelterMockup>`, and the outer cover of
 `<FoldMockup>` / `<FlipMockup>`. Those never become clickable.
+
+## Surface background
+
+`surfaceBackground` paints *underneath* your content — black on lit screens,
+white on print surfaces. It only shows where your content does **not** paint:
+a logo on a transparent PNG, a layout shorter than the surface, rounded corners
+on a card, the moment before an `<iframe>` finishes loading.
+
+Pass full-bleed opaque artwork and you will never see it. That is why nudging
+it in these demos looks like it does nothing — every demo here ships art that
+covers the whole surface.
+
+Do **not** set it to `transparent` hoping the hardware shows through. A
+screen's DOM sits under the canvas (see the warning above), so transparent
+pixels fall through to the page behind the mockup, and the screen reads as a
+hole cut in the device. If you want the glass to look off, use a dark color.
+
+```tsx
+{/* a logo centered on brand color, not stretched to the corners */}
+<IPadMockup surfaceBackground="#1d4ed8">
+  <YourLogo />
+</IPadMockup>
+```
 
 ## Touch behavior
 

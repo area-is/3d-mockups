@@ -141,7 +141,15 @@ function HarnessScene() {
   const cy = Number(params.get('cy') ?? 0)
   const shadows = params.get('shadows') === '1'
   const controls = params.get('controls') === '1'
+  // Screens are display-only here by default, like the library. `interactive=1`
+  // flips them to raycast occlusion, which is how this probe compares the two
+  // modes' masking against each other.
+  const interactive = params.get('interactive') === '1'
   const screen =
+    // `clear` paints nothing at all: it exists to show what the surface
+    // background is FOR — with it, content that doesn't cover every pixel
+    // shows the page straight through the glass.
+    params.get('screen') === 'clear' ? null :
     params.get('screen') === 'dark' ? (
       <div style={{ width: '100%', height: '100%', background: '#000' }} />
     ) : params.get('screen') === 'light' ? (
@@ -215,7 +223,7 @@ function HarnessScene() {
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         wrapOverWindows={params.get('over') !== '0'}
         color={color}
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -238,7 +246,7 @@ function HarnessScene() {
       <VanMockup
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         color={color}
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -258,7 +266,7 @@ function HarnessScene() {
     const arrivalsBack = params.get('arrivalsBack')
     return (
       <BusShelterMockup
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -287,7 +295,7 @@ function HarnessScene() {
         size={params.get('inches') ? Number(params.get('inches')) : undefined}
         variant={(params.get('tvvariant') ?? undefined) as 'legs' | 'pedestal' | 'frame' | undefined}
         color={color}
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -303,7 +311,9 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 12)
     return (
       <StorefrontMockup
-        interactive={false}
+        color={color}
+        windowColor={params.get('windowColor') ?? undefined}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -329,7 +339,7 @@ function HarnessScene() {
     return (
       <MagazineMockup
         glossy={params.get('glossy') === '1'}
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -347,7 +357,7 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 6)
     return (
       <IDCardMockup
-        interactive={false}
+        interactive={interactive}
         dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -421,7 +431,7 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          interactive={false}
+          interactive={interactive}
           dragToRotate={false}
         >
           {screen}
@@ -440,7 +450,7 @@ function HarnessScene() {
       color,
       bandColor: params.get('bandColor') ?? undefined,
       rotation: [rx, ry, 0] as [number, number, number],
-      interactive: false,
+      interactive,
       dragToRotate: false,
     }
     return (
@@ -466,7 +476,7 @@ function HarnessScene() {
           color={color}
           openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : undefined}
           rotation={[rx, ry, 0]}
-          interactive={false}
+          interactive={interactive}
           dragToRotate={false}
         >
           {screen}
@@ -489,7 +499,7 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          interactive={false}
+          interactive={interactive}
           dragToRotate={false}
         >
           {screen}
@@ -501,7 +511,7 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          interactive={false}
+          interactive={interactive}
           dragToRotate={false}
         >
           {screen}

@@ -387,7 +387,7 @@ const MODELS = new Map<unknown, ModelControls>([
       ],
     },
   ],
-  [StorefrontMockup, {}],
+  [StorefrontMockup, { controls: [swatch('windowColor', 'glass')] }],
   [
     TVSetMockup,
     {
@@ -429,7 +429,14 @@ const SCREEN_CONTROLS: Control[] = [
     'Let clicks, scrolling and typing reach the content — at the cost of per-pixel occlusion (see /docs/screen-content)'
   ),
   toggle('dragToRotate', 'drag→rotate', true, 'Hand drags off the screen to the orbit controls'),
-  { prop: 'surfaceBackground', label: 'surface bg', kind: 'color', preset: '#000000' },
+  {
+    prop: 'surfaceBackground',
+    label: 'surface bg',
+    kind: 'color',
+    preset: '#000000',
+    title:
+      'CSS background behind the screen content. Only shows where the content does not paint — these demos ship full-bleed art, so it looks inert here',
+  },
 ]
 
 /** The two rotation toggles the compact gallery bar keeps alongside the model's. */

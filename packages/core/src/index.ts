@@ -20,7 +20,7 @@ export {
 } from './regions'
 
 // Geometry math.
-export { roundedRectShape } from './geometry/rounded-rect'
+export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'
 export { gearShape } from './geometry/gear'
 export {
   type WristLoop,
