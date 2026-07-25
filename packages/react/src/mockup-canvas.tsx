@@ -241,11 +241,19 @@ export function MockupCanvas({
   // Wrap so the overlay buttons anchor to the canvas box — and so the
   // Fullscreen API has an element to expand. A dark backdrop fills the letter-
   // boxing only while actually full-screen, using `background` when provided.
+  //
+  // This wrapper is also the stacking context that confines the screen
+  // z-index band (see SCREEN_Z_RANGE): it holds the canvas AND every screen
+  // drei portals next to it, so isolating it here — statically, in the same
+  // render that creates them — settles the question before any screen mounts.
+  // DeviceScreen still derives a host at runtime for a foreign <Canvas>, but
+  // inside a MockupCanvas it only ever re-finds this element.
   return (
     <div
       ref={wrapperRef}
       style={{
         position: 'relative',
+        isolation: 'isolate',
         width: '100%',
         height: '100%',
         background: isFullscreen ? background ?? '#0b0d12' : undefined,
