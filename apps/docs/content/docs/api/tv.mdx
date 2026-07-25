@@ -1,22 +1,18 @@
 ---
 title: TV (32–98 inch)
-description: A flat-screen TV sized in inches, on real splayed feet, with a live 1920x1080 display.
+description: Three premium TV designs — splayed feet, center pedestal, picture frame — sized in inches with a live 1920x1080 display.
 ---
 
 `<TVSet>` and `<TVSetMockup>` render a modern flat-screen (65" by default,
-any diagonal from 32" to 98" via `size`): a near-bezel-less 16:9 panel with
-a subtle off-state gloss, thin edges with a shallow electronics bulge low
-on the back, a recessed rear input bay (HDMI ×3, USB ×2, LAN, optical
-audio, antenna coax) and two slim feet near the ends — each a pair of
-wide-splayed struts, the shallow Λ stance of current retail stands
-(referenced from LG UT8000 / Samsung DU7200-class product photos). The
-screen is a live 1920×1080 DOM surface — full desktop layouts, showreels,
-and `<video>` all apply.
+any diagonal from 32" to 98" via `size`) in one of three designs, each
+proportioned from the published dimensions of current Samsung and LG sets.
+The screen is a live 1920×1080 DOM surface — full desktop layouts,
+showreels, and `<video>` all apply.
 
 Sizing follows real product ranges rather than uniform scaling: the panel
-scales with the diagonal, while the bezels, cabinet depth, ports and feet
-keep hardware dimensions — the feet hold a near-constant inset from the
-panel ends and grow only mildly across the range.
+scales with the diagonal, while the bezels, cabinet depth, ports and stand
+keep hardware dimensions — feet hold a near-constant inset from the panel
+ends and grow only mildly across the range.
 
 <ObjectDemo demo="tv-basic" checker />
 
@@ -32,11 +28,55 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `number` | `65` | Diagonal in inches, clamped to 32–98. Panel scales; bezels, ports and feet follow real product ratios. |
-| `color` | `string` | `'#15171b'` | Enclosure colorway (frame, back, feet). |
+| `variant` | `'legs' \| 'pedestal' \| 'frame'` | `'legs'` | Which design: splayed A-frame feet, a center pedestal, or the picture-frame set on blade feet. |
+| `size` | `number` | `65` | Diagonal in inches, clamped to 32–98. Panel scales; bezels, ports and stand follow real product ratios. |
+| `color` | `string` | `'#15171b'` | Enclosure colorway (frame, back, stand). |
 | `resolution` | `number` | `1920` | Virtual display width; 1920 gives 1920×1080. |
 
 There is no `orientation` prop; it lives on a media stand.
+
+## The three designs
+
+### `legs` — the wide 4K set
+
+A near-bezel-less panel (~7.6 mm frame, ~14.6 mm chin), thin at the edges
+with a shallow electronics bulge low on the back, a recessed rear input bay
+(HDMI ×3, USB ×2, LAN, optical audio, antenna coax), and two feet near the
+ends — each a pair of wide-splayed struts, the shallow Λ stance of current
+retail stands.
+
+### `pedestal` — the OLED on a center plate
+
+Proportioned from the 65" LG C5: 1441 mm of cabinet over a 1428.5 mm panel,
+so a ~6.2 mm frame, standing 880 mm tall on a 470 × 230 mm plate. One slim
+neck drops from the cabinet onto that plate, so the set fits furniture
+narrower than the panel.
+
+<ObjectDemo demo="tv-pedestal" />
+
+```tsx
+<TVSetMockup variant="pedestal" rotation={[0, -0.25, 0]}>
+  <YourShowreel />
+</TVSetMockup>
+```
+
+### `frame` — the picture-frame set
+
+Proportioned from the 65" Samsung The Frame LS03F: 1458 × 833 × 25.4 mm
+over the same panel, which works out to a **uniform ~14.75 mm bezel with no
+chin** on a slab of even thickness (its electronics live in an external
+connect box, so there is no bulge and no rear bay). It stands on the
+snap-in blade feet Samsung ships for tabletop placement. Set `color` to one
+of the bezel finishes — `#1b1c1e` black, `#e8e4dd` white, `#a9825a` teak,
+`#6d5341` brown.
+
+<ObjectDemo demo="tv-frame" />
+
+```tsx
+<TVSetMockup variant="frame" color="#a9825a" rotation={[0, -0.22, 0]}>
+  <YourArtwork />
+</TVSetMockup>
+```
 
 ## Mockup-able areas
 

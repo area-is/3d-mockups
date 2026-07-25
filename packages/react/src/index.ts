@@ -136,6 +136,7 @@ export type {
   GalaxyWatchVariant,
   FoldVariant,
   FlipVariant,
+  TVVariant,
 } from '@area-mockups/core'
 export type {
   BookSize,

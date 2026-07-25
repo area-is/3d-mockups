@@ -391,7 +391,20 @@ const MODELS = new Map<unknown, ModelControls>([
   [
     TVSetMockup,
     {
-      controls: [{ prop: 'size', label: 'inches', kind: 'range', min: 32, max: 98, step: 1, preset: 65 }],
+      controls: [
+        {
+          prop: 'variant',
+          label: 'design',
+          kind: 'select',
+          preset: 'legs',
+          options: [
+            { value: 'legs', label: 'splayed feet' },
+            { value: 'pedestal', label: 'pedestal' },
+            { value: 'frame', label: 'picture frame' },
+          ],
+        },
+        { prop: 'size', label: 'inches', kind: 'range', min: 32, max: 98, step: 1, preset: 65 },
+      ],
     },
   ],
   [VanMockup, { controls: [COVERAGE, WRAP_OVER_WINDOWS(false)] }],

@@ -781,6 +781,16 @@ const DEMOS: Record<string, React.ReactNode> = {
       <TVShowArt />
     </TVSetMockup>
   ),
+  'tv-pedestal': (
+    <TVSetMockup variant="pedestal" rotation={[0, -0.25, 0]}>
+      <TVShowArt />
+    </TVSetMockup>
+  ),
+  'tv-frame': (
+    <TVSetMockup variant="frame" color="#a9825a" rotation={[0, -0.22, 0]}>
+      <TVShowArt />
+    </TVSetMockup>
+  ),
 
   // ---- A-frame sign -----------------------------------------------------------------
   'aframe-basic': (

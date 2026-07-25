@@ -285,6 +285,8 @@ function HarnessScene() {
     return (
       <TVSetMockup
         size={params.get('inches') ? Number(params.get('inches')) : undefined}
+        variant={(params.get('tvvariant') ?? undefined) as 'legs' | 'pedestal' | 'frame' | undefined}
+        color={color}
         interactive={false}
         dragToRotate={false}
         controls={controls}

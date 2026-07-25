@@ -33,7 +33,7 @@ const TVSetMockupBase = createMockup({
  * ```
  */
 function TVSetMockupImpl({ camera, ...props }: TVSetMockupProps) {
-  const framed = tvCameraFraming(props.size)
+  const framed = tvCameraFraming(props.size, props.variant)
   return (
     <TVSetMockupBase
       {...props}
