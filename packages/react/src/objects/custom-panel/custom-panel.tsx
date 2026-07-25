@@ -21,12 +21,6 @@ export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>
   color?: string
   /** Corner rounding in millimeters. */
   cornerRadius?: number
-  /**
-   * How face content hides when that face turns away from the camera.
-   * `true` raycasts against the panel (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -52,9 +46,8 @@ function CustomPanelImpl({
   cornerRadius = 2,
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_PANEL.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: CustomPanelProps) {
@@ -79,7 +72,7 @@ function CustomPanelImpl({
     width: w,
     height: h,
     radius: Math.max(radius, 0),
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

@@ -24,12 +24,6 @@ export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>,
   children?: React.ReactNode
   /** Street-furniture steel color (roof, posts, frames, bench). */
   color?: string
-  /**
-   * How poster content hides when its face turns away from the camera.
-   * `true` raycasts against the lightbox (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -55,9 +49,8 @@ function BusShelterImpl({
   color = '#2f333a',
   surfaceBackground = '#ffffff',
   resolution = BUS_SHELTER.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BusShelterProps) {
@@ -124,7 +117,7 @@ function BusShelterImpl({
     width: poster.width,
     height: poster.height,
     radius: poster.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (
@@ -210,7 +203,7 @@ function BusShelterImpl({
             // so pillars, glass frames and the roof edge cross in front of it
             // at many angles — raycast's all-or-nothing hide either blanks
             // the whole board or lets the LED text pierce a thin pillar.
-            occlude={occlude === false ? undefined : 'blending'}
+            blending
           >
             {board}
           </DeviceScreen>
@@ -223,7 +216,7 @@ function BusShelterImpl({
               {...resolveSurface(regions.arrivalsBack, boardDefaults)}
               position={[0, 0, -0.049]}
               rotation={[0, Math.PI, 0]}
-              occlude={occlude === false ? undefined : 'blending'}
+              blending
             >
               {backBoard}
             </DeviceScreen>

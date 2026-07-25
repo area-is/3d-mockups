@@ -16,12 +16,6 @@ export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'>,
   children?: React.ReactNode
   /** Frame color — classic dark-stained wood by default. */
   color?: string
-  /**
-   * How panel content hides when that panel turns away from the camera.
-   * `true` raycasts against the panels (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -47,9 +41,8 @@ function AFrameSignImpl({
   color = '#4a3826',
   surfaceBackground = '#20241f',
   resolution = A_FRAME_SIGN.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: AFrameSignProps) {
@@ -105,7 +98,7 @@ function AFrameSignImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

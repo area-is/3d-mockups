@@ -7,8 +7,8 @@ import { Quaternion, Vector3 } from 'three'
  * CSS backface-visibility can't see the HTML bridge's transform chain, and two
  * overlapping DOM planes (a card's front and back) otherwise paint in DOM
  * order — the reverse face would bleed through, mirrored. Hiding the plane
- * whenever its normal points away from the camera is deterministic and also
- * covers `occlude: false` setups.
+ * whenever its normal points away from the camera is deterministic, and it
+ * works the same in both occlusion modes.
  *
  * Bindings call the returned function once per frame with the screen's anchor
  * object, its content element, and the active camera.

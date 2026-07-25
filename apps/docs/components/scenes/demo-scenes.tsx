@@ -107,12 +107,13 @@ export default function DemoScenes() {
         title="Bring your own UI"
         description={
           <>
-            Plain React state on the 3D screen, and the button below really clicks. Drag anywhere,
-            even on the screen, to spin the device; taps still reach the UI.
+            Plain React state on the 3D screen: with <code>interactive</code> opted in, the
+            button below really clicks. Drag anywhere, even on the screen, to spin the
+            device; taps still reach the UI.
           </>
         }
       >
-        <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+        <GalaxyMockup interactive color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
           <TapCounter />
         </GalaxyMockup>
       </DemoCard>
@@ -142,11 +143,12 @@ export default function DemoScenes() {
         description={
           <>
             An <code>&lt;iframe&gt;</code> pointed at <code>/embedded</code>, a real route of
-            this site, scrolling and clicking inside the glass.
+            this site — scrolling and clicking inside the glass, with{' '}
+            <code>interactive</code> opted in.
           </>
         }
       >
-        <GalaxyMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
+        <GalaxyMockup interactive color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
@@ -160,7 +162,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;LaptopMockup&gt;</code>: a procedural MacBook Air-style laptop in Sky
-            Blue. The desktop is live DOM too: click the window, drag to orbit.
+            Blue. The desktop is live DOM too, not a texture: drag to orbit.
           </>
         }
       >

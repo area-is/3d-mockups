@@ -17,12 +17,6 @@ export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, 
   children?: React.ReactNode
   /** Steel color (panel, pole, catwalk, light fixtures). */
   color?: string
-  /**
-   * How face content hides when the billboard faces away from the camera.
-   * `true` raycasts against the panel (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -46,9 +40,8 @@ function BillboardImpl({
   color = '#2c313a',
   surfaceBackground = '#ffffff',
   resolution = BILLBOARD.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BillboardProps) {
@@ -177,7 +170,7 @@ function BillboardImpl({
         height={face.height}
         radius={face.radius}
         position={[0, 0, panel.depth / 2 + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(faceSlot, {
           background: surfaceBackground,
           resolution,

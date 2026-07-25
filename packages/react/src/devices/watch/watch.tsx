@@ -68,12 +68,6 @@ export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>
    * 240×240 on the Galaxy Watch — so content lays out like on the real device.
    */
   resolution?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the case (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** The shared implementation's props: one variant space, `bandOpen` and all. */
@@ -108,9 +102,8 @@ function WatchBody({
   bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: WatchBodyProps) {
@@ -766,7 +759,7 @@ function WatchBody({
         height={display.height}
         radius={display.radius}
         position={[0, 0, faceZ + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution: res,

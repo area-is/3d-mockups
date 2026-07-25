@@ -21,15 +21,6 @@ export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   color?: string
   /** Woven lanyard strap color. */
   lanyardColor?: string
-  /**
-   * How face content composites against the 3D hardware. `'blending'`
-   * (default) uses per-pixel depth blending, so the J-hook pierced through
-   * the slot correctly crosses IN FRONT of the printed face where it
-   * physically does. `true` falls back to raycast hiding (faster, but the
-   * live face then paints over the hook at oblique angles). `false`
-   * disables hiding entirely.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -56,9 +47,8 @@ function IDCardImpl({
   lanyardColor = '#b3223a',
   surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = 'blending',
   surfaceStyle,
   ...groupProps
 }: IDCardProps) {
@@ -207,7 +197,7 @@ function IDCardImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
     occluderGeometry: faceOccluderGeometry,
   }
 

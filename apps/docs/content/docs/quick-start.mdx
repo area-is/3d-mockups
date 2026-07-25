@@ -1,6 +1,6 @@
 ---
 title: Quick start
-description: Render your first interactive 3D phone with a single component.
+description: Render your first 3D phone with a single component.
 ---
 
 Drop a `GalaxyMockup` anywhere in a client component and give it a height. Your
@@ -27,10 +27,12 @@ The mockup fills its parent, so size the wrapper, not the component.
 ## What you get out of the box
 
 - **Drag to orbit** from anywhere: the body, the background, or the screen
-  itself. Drags that start on the screen hand off to the orbit controls after
-  about 10 px of travel, while plain taps and clicks still reach your content.
+  itself.
 - **A live screen**: the content is real DOM projected onto the glass, so state,
-  focus, scrolling, and media playback all keep working.
+  effects, and media playback all keep running, and text stays vector crisp at
+  every angle. Screens are display-only by default so hardware can cover them
+  pixel-perfectly; pass `interactive` when the content has to be clicked, and
+  read [what that trades away](/docs/screen-content#interaction) first.
 - **Studio lighting and soft shadows**, generated on the GPU with no HDR file
   downloads.
 - **A transparent canvas** by default, so your page background shows through.

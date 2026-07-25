@@ -20,12 +20,6 @@ export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>
   vinylColor?: string
   /** Jacket stock color (edges and unprinted faces). */
   color?: string
-  /**
-   * How content hides when a face turns away from the camera.
-   * `true` raycasts against jacket and disc (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -51,9 +45,8 @@ function VinylRecordImpl({
   color = '#f2efe8',
   surfaceBackground = '#ffffff',
   resolution = VINYL_RECORD.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: VinylRecordProps) {
@@ -131,7 +124,7 @@ function VinylRecordImpl({
     style: surfaceStyle,
   }
   const faceProps = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
   // KNOWN LIMITATION — a record carrying live art on BOTH labels can show
   // side B faintly through side A at some angles. The disc is 0.022 units

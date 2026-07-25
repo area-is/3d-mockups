@@ -20,12 +20,6 @@ export interface CustomBoxProps extends Omit<GroupProps, 'children' | 'color'>, 
   size: CustomBoxSizeMm
   /** Stock color for unprinted faces. */
   color?: string
-  /**
-   * How face content hides when that face turns away from the camera.
-   * `true` raycasts against the box (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -49,9 +43,8 @@ function CustomBoxImpl({
   color = '#e8e5df',
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_BOX.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: CustomBoxProps) {
@@ -68,7 +61,7 @@ function CustomBoxImpl({
 
   const shared = {
     radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   const lift = 0.004

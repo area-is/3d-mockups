@@ -63,13 +63,6 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   resolution?: number
   /** Show the front camera punch-hole overlay. */
   punchHole?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the phone body (fast, interactive). `'blending'`
-   * uses per-pixel depth blending (prettier at grazing angles, but the canvas
-   * paints over the DOM, so content is not clickable). `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -91,9 +84,8 @@ function GalaxyImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: GalaxyProps) {
@@ -417,7 +409,7 @@ function GalaxyImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,

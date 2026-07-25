@@ -37,12 +37,6 @@ export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color
    * behave like on the real display.
    */
   resolution?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the enclosure (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -70,9 +64,8 @@ function StudioDisplayImpl({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution = STUDIO_DISPLAY.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: StudioDisplayProps) {
@@ -443,7 +436,7 @@ function StudioDisplayImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,

@@ -52,12 +52,6 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   notch?: boolean
   /** Lid angle in degrees between deck and screen (90 = upright). */
   openAngle?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the lid and base (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** One flat, rounded slab (base or lid), extruded with a soft edge bevel. */
@@ -638,9 +632,8 @@ function LaptopImpl({
   resolution,
   notch = true,
   openAngle,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: LaptopProps) {
@@ -988,7 +981,7 @@ function LaptopImpl({
             height={display.height}
             radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
             position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
-            occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+            occluders={occludeRefs}
             {...resolveSurface(screen, {
               background: surfaceBackground,
               resolution: res,

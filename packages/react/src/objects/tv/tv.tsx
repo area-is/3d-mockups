@@ -42,12 +42,6 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
   color?: string
   /** CSS pixel width of the virtual display. 1920 gives 1920×1080. */
   resolution?: number
-  /**
-   * How screen content hides when the TV faces away from the camera.
-   * `true` raycasts against the enclosure (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -72,9 +66,8 @@ function TVSetImpl({
   color = '#15171b',
   surfaceBackground = '#000000',
   resolution = TV.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: TVProps) {
@@ -405,7 +398,7 @@ function TVSetImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.004]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,

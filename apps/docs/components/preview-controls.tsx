@@ -422,21 +422,13 @@ const SCREEN_CONTROLS: Control[] = [
     step: 8,
     title: 'CSS pixel width of the virtual display (unset = the model’s own default)',
   },
-  toggle('interactive', 'interactive', true, 'Let clicks, scrolling and typing reach the content'),
+  toggle(
+    'interactive',
+    'interactive',
+    false,
+    'Let clicks, scrolling and typing reach the content — at the cost of per-pixel occlusion (see /docs/screen-content)'
+  ),
   toggle('dragToRotate', 'drag→rotate', true, 'Hand drags off the screen to the orbit controls'),
-  {
-    prop: 'occlude',
-    label: 'occlude',
-    kind: 'select',
-    preset: 'true',
-    title: 'Hide content when the surface faces away',
-    options: [
-      { value: 'true', label: 'raycast' },
-      { value: 'blending', label: 'blending' },
-      { value: 'false', label: 'off' },
-    ],
-    parse: (value) => (value === 'blending' ? 'blending' : value === 'false' ? false : true),
-  },
   { prop: 'surfaceBackground', label: 'surface bg', kind: 'color', preset: '#000000' },
 ]
 

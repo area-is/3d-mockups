@@ -64,12 +64,6 @@ export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'
    * so content and breakpoints lay out just like on the real device.
    */
   resolution?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the body (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** The shared implementation's props: one variant space over every spec. */
@@ -97,9 +91,8 @@ function TabletBody({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: TabletBodyProps) {
@@ -533,7 +526,7 @@ function TabletBody({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,

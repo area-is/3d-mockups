@@ -63,15 +63,31 @@ export interface DeviceScreenProps {
   rotation?: [number, number, number]
   /** CSS background painted behind the content. */
   background?: string
-  /** Let pointer events (clicks, scrolling, typing) reach the content. */
+  /**
+   * Let pointer events (clicks, scrolling, typing) reach the content. This is
+   * also what picks the occlusion mode — the two are the same choice, because
+   * only one of the two modes can put the DOM where a pointer can reach it:
+   *
+   * - `false` (the default) composites per-pixel against the depth buffer,
+   *   which is exact but stacks the DOM UNDER the canvas.
+   * - `true` raycasts the enclosure meshes in `occluders` instead, which
+   *   keeps the DOM on top and clickable but hides the whole screen at once.
+   */
   interactive?: boolean
   /** Hand >10px drags off to the orbit controls; taps still reach the content. */
   dragToRotate?: boolean
-  /** Occlusion mode resolved by the device (mesh refs, 'blending', or off). */
-  occlude?: React.RefObject<THREE.Mesh>[] | 'blending' | undefined
+  /** Enclosure meshes to raycast against; used only in interactive mode. */
+  occluders?: React.RefObject<THREE.Mesh>[]
   /**
-   * Custom depth-occluder geometry for `'blending'` mode, in world units on
-   * the screen plane. By default the blending occluder is the screen's full
+   * Force per-pixel blending even when `interactive`, for surfaces raycasting
+   * cannot describe — a full vehicle wrap with proud mirrors standing over it,
+   * glass seen through a shelter's own frame. Such a surface is never
+   * clickable, since blending is what puts its DOM under the canvas.
+   */
+  blending?: boolean
+  /**
+   * Custom depth-occluder geometry for blending mode, in world units on the
+   * screen plane. By default the blending occluder is the screen's full
    * rect — a screen whose DOM is clipped (rounded corners, punched holes)
    * should pass a matching shape here, or hardware showing through the
    * clipped openings gets depth-hidden by the invisible rect.
@@ -99,9 +115,10 @@ export function DeviceScreen({
   position,
   rotation = [0, 0, 0],
   background = '#000000',
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude,
+  occluders,
+  blending = false,
   occluderGeometry,
   screenStyle,
   overlay,
@@ -109,13 +126,19 @@ export function DeviceScreen({
 }: DeviceScreenProps) {
   const gl = useThree((state) => state.gl)
 
+  // The two occlusion modes and interactivity are one decision, not two:
+  // blending is pixel-exact but stacks the DOM under the canvas (see the
+  // pointer-events override below), so a blending surface can never be
+  // clicked, and a clickable surface can only occlude by raycast.
+  const usingBlending = blending || !interactive
+  const clickable = interactive && !blending
+
   // drei's 'blending' mode turns the CANVAS to pointer-events:none so DOM
   // stacked under it stays clickable — which silently kills orbit drags on
   // the empty background. We want the opposite trade for mockups: the
   // canvas keeps ALL input (drag-to-orbit works everywhere) and content
   // behind a blending screen is display-only. Parent layout effects run
   // after the child Html's, so this override wins on mount.
-  const usingBlending = occlude === 'blending'
   React.useLayoutEffect(() => {
     if (!usingBlending) return
     gl.domElement.style.pointerEvents = 'auto'
@@ -152,7 +175,7 @@ export function DeviceScreen({
   const retryThreshold = React.useMemo(nextRetryThreshold, [])
   const cullBackface = React.useMemo(() => createBackfaceCuller(), [])
   const occlusionBlocked = React.useMemo(() => createScreenOcclusionTester(), [])
-  const occludeMeshes = Array.isArray(occlude) ? occlude : undefined
+  const occludeMeshes = usingBlending ? undefined : occluders
   useFrame(({ camera }) => {
     if (usingBlending) {
       const canvas = gl.domElement.style
@@ -193,7 +216,7 @@ export function DeviceScreen({
     // A hidden screen must never intercept pointers either — user content can
     // re-enable its own `visibility`, which would silently eat drags on the
     // device's back (visibility alone doesn't stop such children hit-testing).
-    const pointerEvents = content.style.visibility === 'hidden' || !interactive ? 'none' : 'auto'
+    const pointerEvents = content.style.visibility === 'hidden' || !clickable ? 'none' : 'auto'
     if (content.style.pointerEvents !== pointerEvents) {
       content.style.pointerEvents = pointerEvents
     }
@@ -210,9 +233,9 @@ export function DeviceScreen({
     <group ref={anchorRef} position={position} rotation={rotation}>
       <Html
         transform
-        occlude={occlude === 'blending' ? 'blending' : undefined}
+        occlude={usingBlending ? 'blending' : undefined}
         geometry={
-          occlude === 'blending' && occluderGeometry ? (
+          usingBlending && occluderGeometry ? (
             <primitive object={occluderGeometry} attach="geometry" />
           ) : undefined
         }
@@ -237,7 +260,7 @@ export function DeviceScreen({
               radius,
               resolution,
               background,
-              interactive,
+              interactive: clickable,
               dragToRotate,
             }),
             ...screenStyle,

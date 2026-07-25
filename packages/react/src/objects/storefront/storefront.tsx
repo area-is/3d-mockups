@@ -28,12 +28,6 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
    * own fixed default widths; override per slot with each slot's `resolution`.
    */
   resolution?: number
-  /**
-   * How content hides when its elevation faces away from the camera.
-   * `true` raycasts against the building (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -65,9 +59,8 @@ function StorefrontImpl({
   color = '#2e4638',
   surfaceBackground = '#ffffff',
   resolution = STOREFRONT.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: StorefrontProps) {
@@ -113,7 +106,7 @@ function StorefrontImpl({
   const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
 
   const screenCommon = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
   const surfaceDefaults = {
     background: surfaceBackground,

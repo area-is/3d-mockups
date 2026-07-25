@@ -29,12 +29,6 @@ export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'
   size?: RollupBannerSize
   /** Hardware color (cassette, pole, top rail). Brushed aluminum by default. */
   color?: string
-  /**
-   * How graphic content hides when the banner faces away from the camera.
-   * `true` raycasts against the backing (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -60,9 +54,8 @@ function RollupBannerImpl({
   color = '#b9bdc4',
   surfaceBackground = '#ffffff',
   resolution = ROLLUP_BANNER.resolution,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: RollupBannerProps) {
@@ -140,7 +133,7 @@ function RollupBannerImpl({
         height={graphic.height}
         radius={graphic.radius}
         position={[0, 0, 0.002]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(bannerSlot, {
           background: surfaceBackground,
           resolution,

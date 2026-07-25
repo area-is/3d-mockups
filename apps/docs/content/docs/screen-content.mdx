@@ -5,7 +5,10 @@ description: Put components, whole pages, or video on the glass, and control how
 
 Anything the browser can render can live on a device screen. The screen is a
 real DOM layer composited in 3D by CSS transforms, not a texture, so text stays
-vector crisp at every angle and your content stays fully interactive.
+vector crisp at every angle — React components keep their state and effects,
+`<video>` keeps playing, and an `<iframe>` keeps loading. Screens are
+display-only by default; see [Interaction](#interaction) to make one clickable
+and what that costs.
 
 ```tsx
 // React components: state, effects, and events all keep working
@@ -36,17 +39,60 @@ so the graphic stays true to the panel.
 The full table of defaults per device is in
 [Devices and resolutions](/docs/devices).
 
-## Interaction props
+## Interaction
 
 Every device accepts the same screen behavior props:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `interactive` | `boolean` | `true` | Let pointer events (clicks, scrolling, typing) reach the screen content. |
+| `interactive` | `boolean` | `false` | Let pointer events (clicks, scrolling, typing) reach the screen content. **Also changes how the mockup looks — read the warning below.** |
 | `dragToRotate` | `boolean` | `true` | Drags that start on the screen spin the device after about 10 px of travel; taps still click. Disable when your content needs its own drag gestures (sliders, drawing, horizontal swipes). |
-| `occlude` | `boolean \| 'blending'` | `true` | Hide content when the device faces away. `true` raycasts against the body and keeps content clickable; `'blending'` is per-pixel but disables screen interactivity. |
 | `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content. |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
+
+<Callout type="warn" title="interactive costs you visual accuracy">
+
+Turning `interactive` on is not free, and it is not just a pointer-events
+switch. A screen is real DOM composited into a WebGL scene, and where that DOM
+has to sit in the stacking order decides how it can be hidden behind hardware.
+There are exactly two options and you get one or the other:
+
+**`interactive={false}` (default) — per-pixel blending.** The DOM stacks
+*under* the canvas and is masked by the depth buffer, so anything in front of
+the screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
+screen's reflection, a phone's proud camera ring stands over a wrap, a bus's
+mirrors draw over the livery. Being under the canvas is also precisely why the
+content cannot be clicked.
+
+**`interactive={true}` — raycast occlusion.** The DOM stacks *on top of* the
+canvas so pointers can reach it — which means nothing in the scene can visually
+cover it. Hiding becomes all-or-nothing: sample rays decide whether the screen
+is behind the body, and the whole screen blinks off together. Partial coverage
+goes wrong in both directions — content shows through hardware that should hide
+it (you can see a laptop's screen through its own keyboard), and a screen that
+is mostly visible can blank out entirely.
+
+Turn it on only when the content genuinely has to be *used* — a live embedded
+app, a scrollable prototype, a form someone will type into. For screenshots,
+hero images, landing pages and anything you'll export as a still, leave it off.
+
+</Callout>
+
+Both modes are per-region, so a mockup with several surfaces can mix them —
+set `interactive` on the one slot that needs it and leave the rest display-only:
+
+```tsx
+<LaptopMockup>
+  <LaptopMockup.Screen interactive>
+    <YourLiveApp />
+  </LaptopMockup.Screen>
+</LaptopMockup>
+```
+
+A few surfaces are per-pixel no matter what you pass, because raycasting simply
+cannot describe what covers them: the full-coverage wrap sides on `<VanMockup>`
+and `<BusMockup>`, the glass on `<BusShelterMockup>`, and the outer cover of
+`<FoldMockup>` / `<FlipMockup>`. Those never become clickable.
 
 ## Touch behavior
 

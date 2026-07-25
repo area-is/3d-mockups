@@ -65,12 +65,6 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   resolution?: number
   /** Show the Dynamic Island overlay. */
   dynamicIsland?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the phone body (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -92,9 +86,8 @@ function IPhoneImpl({
   surfaceBackground = '#000000',
   resolution,
   dynamicIsland = true,
-  interactive = true,
+  interactive = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: IPhoneProps) {
@@ -446,7 +439,7 @@ function IPhoneImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
