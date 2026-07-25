@@ -3,11 +3,27 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
+  AFrameSignMockup,
+  BillboardMockup,
+  BookMockup,
+  BrochureMockup,
   BusMockup,
+  BusinessCardMockup,
+  CustomBoxMockup,
+  CustomPanelMockup,
+  DOOHTotemMockup,
+  GreetingCardMockup,
   IPhone,
   type IPhoneVariant,
+  MailerBoxMockup,
   Phone,
   type GalaxyVariant,
+  PosterFrameMockup,
+  ProductBoxMockup,
+  RollupBannerMockup,
+  SemiTrailerMockup,
+  ShoppingBagMockup,
+  VinylRecordMockup,
   BusShelterMockup,
   FlipMockup,
   FoldMockup,
@@ -25,6 +41,64 @@ import {
   Watch,
   type WatchVariant,
 } from 'area-mockups'
+
+/**
+ * Mockups posed straight from their own framing — no per-device wiring, so
+ * every object in the catalog can be probed from arbitrary angles. Anything
+ * needing extra props (a variant, a second screen region, a pose) gets its
+ * own branch below instead.
+ */
+const PLAIN = {
+  aframe: AFrameSignMockup,
+  billboard: BillboardMockup,
+  book: BookMockup,
+  brochure: BrochureMockup,
+  card: BusinessCardMockup,
+  totem: DOOHTotemMockup,
+  greeting: GreetingCardMockup,
+  mailer: MailerBoxMockup,
+  poster: PosterFrameMockup,
+  productbox: ProductBoxMockup,
+  rollup: RollupBannerMockup,
+  semi: SemiTrailerMockup,
+  bag: ShoppingBagMockup,
+  vinyl: VinylRecordMockup,
+} as const satisfies Record<string, React.ComponentType<Record<string, unknown>>>
+
+/**
+ * Fill EVERY live region of a mockup with its own flat hue, labelled. A DOM
+ * screen bridged onto a face cannot depth-test against the WebGL canvas by
+ * itself, so a face on the far side of an object can paint straight through
+ * it; with one colour per region, any such bleed-through is unmistakable
+ * rather than a subtle overlap of two similar gradients.
+ *
+ * Slots are enumerated off the mockup itself (`createSlots` attaches one
+ * capitalized component per region), so this covers objects it has never
+ * heard of — including any added later.
+ */
+function regionProbe(Mockup: object): React.ReactNode {
+  const slots = Object.entries(Mockup).filter(
+    ([key, value]) => /^[A-Z]/.test(key) && typeof value === 'function'
+  ) as [string, React.ComponentType<{ children?: React.ReactNode }>][]
+  return slots.map(([name, Slot], i) => (
+    <Slot key={name}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'grid',
+          placeItems: 'center',
+          background: `hsl(${(i * 360) / Math.max(slots.length, 1)} 72% 52%)`,
+          color: '#fff',
+          font: '700 34px/1 system-ui, sans-serif',
+          letterSpacing: '0.04em',
+        }}
+      >
+        {name.toUpperCase()}
+      </div>
+    </Slot>
+  ))
+}
 
 /**
  * Screenshot harness: renders one device, posed from URL params, on a plain
@@ -80,6 +154,56 @@ function HarnessScene() {
         }}
       />
     )
+
+  // Everything with no extra wiring: posed from the object's own framing
+  // unless `dist` overrides it, so the probe sees what a caller gets.
+  const plain = PLAIN[device as keyof typeof PLAIN]
+  if (plain) {
+    const Mockup = plain as React.ComponentType<Record<string, unknown>>
+    const distParam = params.get('dist')
+    return (
+      <Mockup
+        color={color}
+        controls={controls}
+        camera={distParam ? { position: [0, cy, Number(distParam)], fov: 40 } : undefined}
+        shadows={shadows}
+        rotation={[rx, ry, 0]}
+      >
+        {params.get('regions') === '1' ? regionProbe(plain) : screen}
+      </Mockup>
+    )
+  }
+
+  // The two size-driven objects: a shape is a prop, not a spec, so they need
+  // one passed in. `w`/`h`/`d` are millimeters.
+  if (device === 'custombox' || device === 'custompanel') {
+    const mm = (key: string, fallback: number) => Number(params.get(key) ?? fallback)
+    const distParam = params.get('dist')
+    const camera = distParam ? { position: [0, cy, Number(distParam)] as [number, number, number], fov: 40 } : undefined
+    return device === 'custombox' ? (
+      <CustomBoxMockup
+        size={{ width: mm('w', 180), height: mm('h', 120), depth: mm('d', 60) }}
+        color={color}
+        controls={controls}
+        camera={camera}
+        shadows={shadows}
+        rotation={[rx, ry, 0]}
+      >
+        {screen}
+      </CustomBoxMockup>
+    ) : (
+      <CustomPanelMockup
+        size={{ width: mm('w', 300), height: mm('h', 200), thickness: mm('d', 5) }}
+        color={color}
+        controls={controls}
+        camera={camera}
+        shadows={shadows}
+        rotation={[rx, ry, 0]}
+      >
+        {screen}
+      </CustomPanelMockup>
+    )
+  }
 
   if (device === 'bus') {
     const dist = Number(params.get('dist') ?? 11.8)
