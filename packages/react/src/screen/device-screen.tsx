@@ -4,6 +4,7 @@ import { Group, ShapeGeometry } from 'three'
 import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import {
+  SCREEN_LAYER_CLASS,
   SCREEN_LAYER_CSS,
   createBackfaceCuller,
   createScreenDragHandoff,
@@ -47,15 +48,23 @@ const SCREEN_Z_RANGE: [number, number] = [2_000_000, 0]
 const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
 
 /**
- * Confine that band to the canvas's own container. drei portals every screen
- * into the canvas's parent, so making THAT element a stacking context keeps
- * the canvas and all its screens sorting among themselves, and leaves the
- * page outside free to layer over the mockup with ordinary small z-indexes.
- * Without it a canvas raised to a million would cover the whole page.
+ * Confine that band to the mockup. Making the element that holds the canvas
+ * AND its screens a stacking context keeps them sorting among themselves, and
+ * leaves the page outside free to layer over the mockup with ordinary small
+ * z-indexes; without it a canvas raised to a million covers the whole page.
+ *
+ * It has to be the element holding BOTH. drei portals a screen into r3f's
+ * event target, which is an ANCESTOR of the canvas's own container, not that
+ * container — so isolating the canvas's immediate parent seals the canvas
+ * into a subtree whose own z-index is `auto`, and the screens, sitting
+ * outside it with a z-index in the millions, calmly layer over the canvas:
+ * every screen paints over the hardware from every angle.
  */
-function isolateCanvasStack(canvas: HTMLCanvasElement): void {
-  const host = canvas.parentElement
-  if (host && host.style.isolation !== 'isolate') host.style.isolation = 'isolate'
+function isolateScreenStack(content: HTMLElement, canvas: HTMLCanvasElement): void {
+  const host = content.closest(`.${SCREEN_LAYER_CLASS}`)?.parentElement ?? canvas.parentElement
+  if (host instanceof HTMLElement && host.style.isolation !== 'isolate') {
+    host.style.isolation = 'isolate'
+  }
 }
 
 /**
@@ -217,11 +226,7 @@ export function DeviceScreen({
   // canvas keeps ALL input (drag-to-orbit works everywhere) and content
   // behind a blending screen is display-only. Parent layout effects run
   // after the child Html's, so this override wins on mount.
-  // Isolate in BOTH modes: raycast screens layer in the band's upper half, so
-  // they carry the same huge z-indexes and would otherwise tower over the page
-  // just as the canvas would.
   React.useLayoutEffect(() => {
-    isolateCanvasStack(gl.domElement)
     if (!usingBlending) return
     gl.domElement.style.pointerEvents = 'auto'
   }, [usingBlending, gl])
@@ -267,7 +272,6 @@ export function DeviceScreen({
       if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
       if (canvas.position !== 'absolute') canvas.position = 'absolute'
       if (canvas.pointerEvents !== 'auto') canvas.pointerEvents = 'auto'
-      isolateCanvasStack(gl.domElement)
     }
     // Self-healing for a drei <Html> mount race: Html renders its DOM
     // through its own nested ReactDOM root, and when several screens mount
@@ -291,6 +295,7 @@ export function DeviceScreen({
     }
     if (!anchorRef.current || !contentRef.current) return
     const content = contentRef.current
+    isolateScreenStack(content, gl.domElement)
     cullBackface(anchorRef.current, content, camera)
     // Raycast mode cannot cover a screen partway — the DOM is one element on
     // top of the canvas — so instead of blinking off the moment a majority of
