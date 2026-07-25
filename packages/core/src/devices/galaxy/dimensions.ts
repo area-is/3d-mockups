@@ -6,10 +6,12 @@
  * long-standing Galaxy scale, kept so devices stay in true relative size
  * beside the Fold, Watch and every other object in the catalog).
  *
- * The S26 and S26 Ultra numbers below were measured from reference 3D scans
- * of the retail devices (button pills, camera islands, port cutouts and seam
- * positions taken from the scan geometry), then normalized to the official
- * body dimensions: S26 149.6 x 71.7 x 7.2 mm, S26 Ultra 163.6 x 78.1 x 7.9 mm.
+ * Body sizes are the published ones: S26 149.6 x 71.7 x 7.2 mm, S26 Ultra
+ * 163.6 x 78.1 x 7.9 mm. Every detail on top of them — corner radii, punch
+ * hole, bezel width, camera islands, ring pitch, button pills, wordmark — is
+ * measured off the official four-view product renders, whose panels scale
+ * exactly to those published widths (0.243 mm/px for the S26, 0.265 for the
+ * Ultra), so the numbers come from the hardware rather than from taste.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
@@ -78,33 +80,37 @@ export interface GalaxyPhoneSpec {
 
 /**
  * Galaxy S26 — 149.6 x 71.7 x 7.2 mm, 6.3" 2340x1080 (19.5:9) flat display.
- * The three lenses sit in a single vertical pill island top-left of the back
- * (rings nearly filling the pill's width) with the LED flash on the flat back
- * just inboard of it. Logical resolution 360x780 (the panel at exactly
- * one-third scale).
+ * The three lenses sit in a single vertical capsule island top-left of the back
+ * — a ~2.4 mm shoulder of island showing all the way around every ring — with
+ * the LED flash alone on the flat back just inboard of it. Logical resolution
+ * 360x780 (the panel at exactly one-third scale).
  */
 const S26: GalaxyPhoneSpec = {
   body: { width: 1.956, height: 4.081, depth: 0.196, radius: 0.19, bevel: 0.02 },
   glass: { width: 1.888, height: 4.021, radius: 0.138 },
   display: { width: 1.829, height: 3.962, radius: 0.129 },
-  punchHole: { radius: 0.055, offsetY: 0.111 },
+  // Photo-measured: a 3.65 mm hole, its center 3.77 mm below the display's top edge.
+  punchHole: { radius: 0.05, offsetY: 0.103 },
   resolution: 360,
-  // Measured from the scan: volume pill 20.8 mm at +41.6 mm, power 13.7 mm at +13.9 mm.
+  // Photo-measured on the rail: volume pill 19.6 mm at +39.0 mm, power 12.0 mm at +13.2 mm.
   buttons: [
-    { y: 1.135, length: 0.567 },
-    { y: 0.379, length: 0.374 },
+    { y: 1.064, length: 0.535 },
+    { y: 0.36, length: 0.327 },
   ],
   buttonProfile: { protrusion: 0.012, thickness: 0.068 },
   rearCamera: {
-    ringsX: 0.582,
-    // Top to bottom: 12 MP ultra-wide, 50 MP main, 10 MP 3x tele.
+    ringsX: 0.584,
+    // Top to bottom: 12 MP ultra-wide, 50 MP main, 10 MP 3x tele. Rings are
+    // 14.8 mm across, 16.0 mm apart, their column 21.4 mm off the back's center.
     rings: [
-      { y: 1.624, r: 0.196, pupil: 0.38 },
-      { y: 1.196, r: 0.196, pupil: 0.47 },
-      { y: 0.767, r: 0.196, pupil: 0.34 },
+      { y: 1.647, r: 0.201, pupil: 0.38 },
+      { y: 1.21, r: 0.201, pupil: 0.47 },
+      { y: 0.774, r: 0.201, pupil: 0.34 },
     ],
     flash: { x: 0.169, y: 1.413 },
-    island: { x: 0.581, y: 1.196, width: 0.404, height: 1.26, radius: 0.202, raise: 0.028 },
+    // Photo-measured capsule: 19.3 x 51.4 mm, i.e. a ~2.4 mm shoulder of
+    // island around every ring — not the tight sleeve a ring-width pill gives.
+    island: { x: 0.584, y: 1.21, width: 0.527, height: 1.402, radius: 0.2635, raise: 0.028 },
     ringHeight: 0.026,
   },
   bottomEdge: {
@@ -114,29 +120,35 @@ const S26: GalaxyPhoneSpec = {
     sim: { x: -0.535, width: 0.374, height: 0.071 },
   },
   antennaLines: [1.71, -1.47],
-  logo: { y: -1.269, width: 0.586, height: 0.09 },
+  // Photo-measured print: 23.3 x 3.5 mm, centered, 43.5 mm below the back's center.
+  logo: { y: -1.186, width: 0.634, height: 0.095 },
 }
 
 /**
  * Galaxy S26 Ultra — 163.6 x 78.1 x 7.9 mm, 6.9" 3120x1440 display, titanium
- * frame with boxier corners and the S Pen silo on the bottom-left. The rear
- * array moves to the S26 pill language, scaled up: three large rings stacked
- * in a raised stadium island top-left (each ring standing proud of the pill),
- * with the 3x/5x tele pair, laser-AF dot and flash in a second column on the
- * flat back beside it. Logical resolution 384x832 (One UI's default FHD+
- * render at 450 dpi). Detail geometry measured from a retail-unit scan.
+ * frame with newly rounded corners and the S Pen silo on the bottom-left. The
+ * rear array moves to the S26 pill language, scaled up: three large rings
+ * stacked in a raised stadium island top-left (each ring standing proud of the
+ * pill), with the 3x/5x tele pair split into a second column on the flat back
+ * beside it, the flash sitting between them. Logical resolution 384x832 (One
+ * UI's default FHD+ render at 450 dpi). Detail geometry measured off the
+ * official product renders (the 297 px panel scales to the published 78.1 mm,
+ * so one pixel is 0.265 mm).
  */
 const S26_ULTRA: GalaxyPhoneSpec = {
-  body: { width: 2.13, height: 4.463, depth: 0.216, radius: 0.175, bevel: 0.02 },
-  glass: { width: 2.07, height: 4.403, radius: 0.157 },
-  display: { width: 1.995, height: 4.328, radius: 0.121 },
-  punchHole: { radius: 0.036, offsetY: 0.106 },
+  // The 2026 Ultra dropped the S25 Ultra's boxy corners: the silhouette
+  // measures a 7.3 mm corner radius, the same as the base S26's.
+  body: { width: 2.13, height: 4.463, depth: 0.216, radius: 0.199, bevel: 0.02 },
+  glass: { width: 2.07, height: 4.403, radius: 0.179 },
+  display: { width: 1.995, height: 4.328, radius: 0.138 },
+  // Photo-measured: a 3.68 mm hole, its center 3.94 mm below the display's top edge.
+  punchHole: { radius: 0.05, offsetY: 0.106 },
   resolution: 384,
-  // Measured from the scan: volume pill 20.0 mm at +40.8 mm, power 13.3 mm at +14.6 mm,
-  // 0.45 mm proud of the rail, 2.5 mm thick.
+  // Photo-measured on the rail: volume pill 20.4 mm at +44.6 mm, power 13.5 mm
+  // at +17.5 mm, 0.45 mm proud of the rail, 2.5 mm thick.
   buttons: [
-    { y: 1.114, length: 0.546 },
-    { y: 0.4, length: 0.364 },
+    { y: 1.217, length: 0.546 },
+    { y: 0.477, length: 0.364 },
   ],
   buttonProfile: { protrusion: 0.012, thickness: 0.069 },
   rearCamera: {
@@ -144,17 +156,15 @@ const S26_ULTRA: GalaxyPhoneSpec = {
     rings: [
       // Main column, top to bottom: 50 MP ultra-wide, 200 MP main (widest
       // pupil), 50 MP 5x periscope (small pupil deep in the barrel).
-      { y: 1.826, r: 0.231, pupil: 0.4 },
-      { y: 1.329, r: 0.231, pupil: 0.47 },
-      { y: 0.833, r: 0.231, pupil: 0.3 },
-      // Second column on the flat back: 9.4 mm tele rings, much flatter (~1.4 mm proud).
+      { y: 1.826, r: 0.224, pupil: 0.4 },
+      { y: 1.329, r: 0.224, pupil: 0.47 },
+      { y: 0.833, r: 0.224, pupil: 0.3 },
+      // Second column on the flat back: 9.3 mm tele rings, much flatter (~1.4 mm
+      // proud), sharing the top two rings' rows with the flash between them.
       { x: 0.169, y: 1.826, r: 0.128, h: 0.038, pupil: 0.34 },
       { x: 0.169, y: 1.329, r: 0.128, h: 0.038, pupil: 0.34 },
     ],
     flash: { x: 0.169, y: 1.576 },
-    dots: [
-      { x: 0.169, y: 1.68, r: 0.024 }, // laser AF between the top tele ring and the flash
-    ],
     // The stadium pill hugs the main column only (21.4 x 57.7 mm, 1.2 mm proud).
     island: { x: 0.66, y: 1.329, width: 0.584, height: 1.576, radius: 0.292, raise: 0.032 },
     // The Ultra's rings stand well proud of the pill face (~3.3 mm).
