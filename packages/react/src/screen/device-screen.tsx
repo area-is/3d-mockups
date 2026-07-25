@@ -19,19 +19,40 @@ export type { ScreenRadius }
 
 /**
  * Every DeviceScreen passes this zIndexRange to drei's <Html>: raycast and
- * unoccluded screens layer in [10, 5], blending screens in [4, 0].
+ * unoccluded screens layer in the upper half, blending screens in the lower
+ * half, with the canvas itself at the midpoint.
+ *
+ * The range is enormous because drei spreads it LINEARLY over the camera's
+ * whole near..far span, and blending screens have to sort against each other
+ * by that z-index alone — the DOM is what you actually see through the hole
+ * the depth mask cuts, so two overlapping screens stack by z-index, not by
+ * the depth buffer. A greeting card's cover and its inside face are ~25 mm
+ * apart in a 1000-unit frustum; on drei's default band both rounded to the
+ * same integer and the inside face painted straight over the cover. A
+ * million steps resolves a few thousandths of a unit, which is finer than any
+ * two surfaces on one object. `isolateCanvasStack` below keeps the big
+ * numbers from ever reaching the page.
  */
-const SCREEN_Z_RANGE: [number, number] = [10, 0]
+const SCREEN_Z_RANGE: [number, number] = [2_000_000, 0]
 
 /**
  * The z-index drei raises the WebGL canvas to while any 'blending' screen
  * is live (zIndexRange[0] / 2 — OUR range, not drei's default) — blending
- * screen DOM stacks below the canvas, raycast screen DOM above it. Page UI
- * overlaid on the canvas (zoom / fullscreen buttons) must stack above the
- * whole band, or the transparent canvas shows the buttons through itself
- * while eating their clicks.
+ * screen DOM stacks below the canvas, raycast screen DOM above it.
  */
-export const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
+const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
+
+/**
+ * Confine that band to the canvas's own container. drei portals every screen
+ * into the canvas's parent, so making THAT element a stacking context keeps
+ * the canvas and all its screens sorting among themselves, and leaves the
+ * page outside free to layer over the mockup with ordinary small z-indexes.
+ * Without it a canvas raised to a million would cover the whole page.
+ */
+function isolateCanvasStack(canvas: HTMLCanvasElement): void {
+  const host = canvas.parentElement
+  if (host && host.style.isolation !== 'isolate') host.style.isolation = 'isolate'
+}
 
 /**
  * How far inside the screen's own outline the blending depth mask is held, as
@@ -182,7 +203,11 @@ export function DeviceScreen({
   // canvas keeps ALL input (drag-to-orbit works everywhere) and content
   // behind a blending screen is display-only. Parent layout effects run
   // after the child Html's, so this override wins on mount.
+  // Isolate in BOTH modes: raycast screens layer in the band's upper half, so
+  // they carry the same huge z-indexes and would otherwise tower over the page
+  // just as the canvas would.
   React.useLayoutEffect(() => {
+    isolateCanvasStack(gl.domElement)
     if (!usingBlending) return
     gl.domElement.style.pointerEvents = 'auto'
   }, [usingBlending, gl])
@@ -225,6 +250,7 @@ export function DeviceScreen({
       if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
       if (canvas.position !== 'absolute') canvas.position = 'absolute'
       if (canvas.pointerEvents !== 'auto') canvas.pointerEvents = 'auto'
+      isolateCanvasStack(gl.domElement)
     }
     // Self-healing for a drei <Html> mount race: Html renders its DOM
     // through its own nested ReactDOM root, and when several screens mount

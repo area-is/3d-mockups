@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Canvas, useFrame, useThree, type CanvasProps } from '@react-three/fiber'
 import { ContactShadows, Environment, Lightformer } from '@react-three/drei'
 import { TumbleControls, type TumbleControlsHandle } from './tumble-controls'
-import { BLENDING_CANVAS_Z } from './screen/device-screen'
 import {
   CONTACT_SHADOW,
   DEFAULT_CAMERA_FOV,
@@ -176,10 +175,11 @@ export function MockupCanvas({
     setZoomPercent((previous) => (previous === percent ? previous : percent))
   }, [])
 
-  // Above the raised blending canvas (see BLENDING_CANVAS_Z) — a plain
-  // low z-index leaves the buttons visible through the transparent canvas
-  // but unclickable on devices using per-pixel screen compositing.
-  const overlayZ = BLENDING_CANVAS_Z + 10
+  // The canvas's own container is a stacking context (see isolateCanvasStack
+  // in device-screen), so the blending band is sealed inside it however large
+  // it gets, and these buttons only have to beat the container itself. A
+  // small number keeps the mockup from towering over the host page.
+  const overlayZ = 2
 
   const canvas = (
     <Canvas

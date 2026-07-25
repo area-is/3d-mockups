@@ -174,6 +174,7 @@ function HarnessScene() {
     return (
       <Mockup
         color={color}
+        interactive={interactive}
         controls={controls}
         camera={distParam ? { position: [0, cy, Number(distParam)], fov: 40 } : undefined}
         shadows={shadows}
@@ -194,6 +195,7 @@ function HarnessScene() {
       <CustomBoxMockup
         size={{ width: mm('w', 180), height: mm('h', 120), depth: mm('d', 60) }}
         color={color}
+        interactive={interactive}
         controls={controls}
         camera={camera}
         shadows={shadows}
@@ -205,6 +207,7 @@ function HarnessScene() {
       <CustomPanelMockup
         size={{ width: mm('w', 300), height: mm('h', 200), thickness: mm('d', 5) }}
         color={color}
+        interactive={interactive}
         controls={controls}
         camera={camera}
         shadows={shadows}
