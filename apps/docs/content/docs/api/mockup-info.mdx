@@ -117,13 +117,8 @@ catalog.entries.find((e) => e.kind === 'galaxy' && e.props.variant === 's26')
 
 ## Coverage
 
-`MOCKUP_KINDS` is the authoritative list of what can be measured — 32 kinds
-today.
-
-`storefront` is the one exception. Its ten window panes are still sized inside
-the React scene component rather than declared in its core spec, and publishing
-numbers copied out of a component is exactly the drift this API exists to
-prevent. It joins the registry when that geometry moves into core.
+`MOCKUP_KINDS` is the authoritative list of what can be measured. Every mockup
+in the catalog is measurable — 33 kinds.
 
 Vehicles take a `coverage` prop, since a full wrap and a panel ad are different
 surfaces:

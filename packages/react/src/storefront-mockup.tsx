@@ -1,4 +1,4 @@
-import { STOREFRONT_FRAMING } from '@area-mockups/core'
+import { STOREFRONT_FRAMING, STOREFRONT_REGIONS, STOREFRONT_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Storefront, storefrontSlots, type StorefrontProps } from './objects/storefront/storefront'
 
@@ -19,6 +19,9 @@ export type StorefrontMockupProps = MockupProps<StorefrontProps>
  * Bare children are shorthand for the front fascia sign.
  */
 export const StorefrontMockup = createMockup({
+  kind: 'storefront',
+  regions: STOREFRONT_REGIONS,
+  metrics: STOREFRONT_METRICS,
   object: Storefront,
   framing: STOREFRONT_FRAMING,
   slots: storefrontSlots,

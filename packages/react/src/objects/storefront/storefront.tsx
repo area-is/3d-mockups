@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { STOREFRONT, STOREFRONT_REGIONS } from '@area-mockups/core'
+import {
+  STOREFRONT,
+  STOREFRONT_REGIONS,
+  storefrontLayout,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceProps } from '../../slots'
 
@@ -70,7 +74,7 @@ function StorefrontImpl({
   ...groupProps
 }: StorefrontProps) {
   const regions = collectSlots(children, STOREFRONT_REGIONS)
-  const { body, fascia, sign, sideSign, rearSign: rearSignSpec, riser, window: win, roof, standHeight } = STOREFRONT
+  const { body, fascia, sign, sideSign, rearSign: rearSignSpec, riser, window: win, roof, standHeight, paneRadius, paneResolution } = STOREFRONT
 
   // Shop glass reflects the street: a lighter blue-gray with strong env
   // reflections, instead of a pitch-black hole in the façade.
@@ -91,21 +95,12 @@ function StorefrontImpl({
   // Corner pilasters end AT the pavement — no leg stubs lifting the shop.
   const postTop = fascia.y + fascia.height / 4 + 0.35
   const cornerPost = { height: postTop + standHeight, y: (postTop - standHeight) / 2 }
-  const windowH = win.top - riserTop
   const frontZ = body.depth / 2
-  // front window glazing extent (the door bay sits to its right)
-  const glazeX = (win.doorX - 0.35 - body.width / 2) / 2
-  const glazeW = win.doorX - 0.35 + body.width / 2 - 0.3
-  // transom rail ~450 mm below the window head
-  const transomY = win.top - 0.409
-  // The big display panes (live mockup areas) run riser-top to transom rail.
-  const paneTop = transomY - 0.033
-  const paneBottom = riserTop + 0.02
-  const paneH = paneTop - paneBottom
-  const paneCY = (paneTop + paneBottom) / 2
-  // Front bays either side of the mullion (mullion is 0.1 wide).
-  const bayL = { x0: glazeX - glazeW / 2, x1: win.mullionX - 0.06 }
-  const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
+  // The façade layout — riser, glazing extent, transom, pane band and the two
+  // front bays — is declared in the spec so it can be measured (see
+  // storefrontLayout in core).
+  const { windowH, glazeX, glazeW, transomY, paneTop, paneBottom, paneH, paneCY, bayL, bayR, elevationPaneWidth, door } =
+    storefrontLayout()
 
   const surfaceDefaults = {
     surfaceBackground,
@@ -180,10 +175,10 @@ function StorefrontImpl({
         {/* live center pane between the two mullions */}
         {windowSlot != null && (
           <DeviceScreen
-            {...resolveSurface(windowSlot, { ...surfaceDefaults, resolution: 420 })}
-            width={(glazeL * 2) / 3 - 0.12}
+            {...resolveSurface(windowSlot, { ...surfaceDefaults, resolution: paneResolution.side })}
+            width={elevationPaneWidth(faceLen)}
             height={paneH}
-            radius={0.004}
+            radius={paneRadius}
             position={[0, paneCY, faceDist + 0.012]}
           >
             {windowSlot.children}
@@ -324,10 +319,10 @@ function StorefrontImpl({
       {/* the two front display bays, live either side of the mullion */}
       {regions.frontLeft != null && (
         <DeviceScreen
-          {...resolveSurface(regions.frontLeft, { ...surfaceDefaults, resolution: 480 })}
+          {...resolveSurface(regions.frontLeft, { ...surfaceDefaults, resolution: paneResolution.frontLeft })}
           width={bayL.x1 - bayL.x0}
           height={paneH}
-          radius={0.004}
+          radius={paneRadius}
           position={[(bayL.x0 + bayL.x1) / 2, paneCY, frontZ + 0.012]}
         >
           {regions.frontLeft.children}
@@ -335,10 +330,10 @@ function StorefrontImpl({
       )}
       {regions.frontRight != null && (
         <DeviceScreen
-          {...resolveSurface(regions.frontRight, { ...surfaceDefaults, resolution: 460 })}
+          {...resolveSurface(regions.frontRight, { ...surfaceDefaults, resolution: paneResolution.frontRight })}
           width={bayR.x1 - bayR.x0}
           height={paneH}
-          radius={0.004}
+          radius={paneRadius}
           position={[(bayR.x0 + bayR.x1) / 2, paneCY, frontZ + 0.012]}
         >
           {regions.frontRight.children}
@@ -347,10 +342,10 @@ function StorefrontImpl({
       {/* the glazed door leaf, live above its kick rail */}
       {regions.door != null && (
         <DeviceScreen
-          {...resolveSurface(regions.door, { ...surfaceDefaults, resolution: 260 })}
-          width={win.doorWidth - 0.24}
-          height={windowH + riser.height - 0.36}
-          radius={0.004}
+          {...resolveSurface(regions.door, { ...surfaceDefaults, resolution: paneResolution.door })}
+          width={door.width}
+          height={door.height}
+          radius={paneRadius}
           position={[win.doorX + win.doorWidth / 2, riserTop + windowH / 2 - 0.15, frontZ + 0.062]}
         >
           {regions.door.children}

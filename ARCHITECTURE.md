@@ -190,7 +190,9 @@ tables.
    > inline in JSX cannot be measured, cannot be unit-tested, and has to be
    > re-derived by every other binding. This is the one rule that keeps
    > `mockupInfo` trustworthy — and the reason `van`, `bus` and `storefront` were
-   > initially absent from the registry.
+   > initially absent from the registry. All three now declare their layout in
+   > core (`BUS_FULL_SIDE`, `VAN_FULL_WRAP`, `storefrontLayout`), which is the
+   > shape to copy for anything with a derived façade or wrap.
 
 5. **The scene component** (`packages/react/src/…`) — reads its numbers from the
    spec, never the reverse.
