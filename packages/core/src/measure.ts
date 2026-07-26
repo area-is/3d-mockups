@@ -26,9 +26,10 @@ export interface RegionInfo {
   name: string
   /** Short human label, e.g. `'Front cover'`. */
   label: string
-  /** Whether the region takes any number of slot elements. */
-  repeats: boolean
-  /** Position within a repeating region; `0` for single regions. */
+  /**
+   * Position within a region painted onto several surfaces; `0` for the
+   * single-surface regions, which is nearly all of them.
+   */
   index: number
   /** The live rect in three.js world units. */
   units: Size
@@ -61,11 +62,12 @@ export interface MockupInfo {
    */
   primary: RegionInfo
   /**
-   * Every region by name. A repeating region (brochure panels) holds an array,
-   * one entry per surface.
+   * Every region by name. A region whose one slot is painted onto several
+   * surfaces of differing size (the van's licence plates) holds an array, one
+   * entry per surface.
    */
   regions: Record<string, RegionInfo | RegionInfo[]>
-  /** Every region in declaration order, repeats flattened. */
+  /** Every region in declaration order, multi-surface regions flattened. */
   list: RegionInfo[]
 }
 
@@ -94,7 +96,6 @@ function describe(spec: RegionSpec, metrics: RegionMetrics, mmPerUnit: number, i
   return {
     name: spec.name,
     label: spec.label,
-    repeats: spec.repeats === true,
     index,
     units: { width, height },
     mm: { width: round(width * mmPerUnit, 1), height: round(height * mmPerUnit, 1) },

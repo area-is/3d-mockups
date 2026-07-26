@@ -25,11 +25,6 @@ export interface RegionSpec {
   name: string
   /** Short human label for docs and dev warnings. */
   label: string
-  /**
-   * The region accepts any number of slot elements, collected in document
-   * order (e.g. brochure panels), instead of a single element.
-   */
-  repeats?: boolean
 }
 
 /** The single-screen region list shared by every device (phone, laptop…). */
@@ -68,8 +63,9 @@ export interface RegionMetrics {
  * metrics sibling of `MockupFraming`.
  *
  * `P` is the (plain-data) subset of the object's props the geometry depends
- * on: variant, orientation, physical size, open/closed… A region that repeats
- * (`RegionSpec.repeats`) resolves to an array, one entry per surface.
+ * on: variant, orientation, physical size, open/closed… A region resolves to an
+ * array when its one slot is painted onto several surfaces of differing size —
+ * the van's front and rear licence plates.
  */
 export interface MockupMetrics<P = Record<string, never>> {
   /**

@@ -107,9 +107,9 @@ export function createSlots<const R extends readonly RegionSpec[]>(regions: R): 
   return out as SlotsFor<R>
 }
 
-/** What `collectSlots` returns: per region, its slot props (an array if the region repeats). */
+/** What `collectSlots` returns: per region, the props of the slot that filled it. */
 export type CollectedSlots<R extends readonly RegionSpec[]> = {
-  [K in R[number] as K['name']]?: K['repeats'] extends true ? SlotProps[] : SlotProps
+  [K in R[number] as K['name']]?: SlotProps
 }
 
 function regionOf(type: unknown): string | undefined {
@@ -122,15 +122,14 @@ function regionOf(type: unknown): string | undefined {
  * Split a mockup's children into regions. Slot elements land under their
  * region name; everything else is bare content and lands in the primary
  * (first-listed) region. Fragments are flattened; unknown slots (a slot of a
- * different mockup) and duplicate non-repeating slots warn in development —
- * last one wins.
+ * different mockup) and duplicate slots warn in development — last one wins.
  */
 export function collectSlots<const R extends readonly RegionSpec[]>(
   children: React.ReactNode,
   regions: R
 ): CollectedSlots<R> {
   const specs = new Map(regions.map((region) => [region.name, region]))
-  const out: Record<string, SlotProps | SlotProps[]> = {}
+  const out: Record<string, SlotProps> = {}
   const primary: React.ReactNode[] = []
 
   const visit = (node: React.ReactNode): void => {
@@ -151,15 +150,10 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
           warnDev(`<${String(region)}> is not a region of this mockup — it renders nothing here.`)
           return
         }
-        const props = node.props as SlotProps
-        if (spec.repeats) {
-          ;((out[region] ??= []) as SlotProps[]).push(props)
-        } else {
-          if (out[region]) {
-            warnDev(`Duplicate <${spec.label}> slot — the last one wins.`)
-          }
-          out[region] = props
+        if (out[region]) {
+          warnDev(`Duplicate <${spec.label}> slot — the last one wins.`)
         }
+        out[region] = node.props as SlotProps
         return
       }
     }
@@ -179,7 +173,7 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
         `Both bare children and an explicit ${first.label} slot were given — the explicit slot wins, bare children are ignored.`
       )
     } else {
-      out[first.name] = first.repeats ? [bare] : bare
+      out[first.name] = bare
     }
   }
 

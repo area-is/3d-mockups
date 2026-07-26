@@ -119,8 +119,8 @@ export type VanCoverage = 'panel' | 'full' | 'perforated'
  * Live geometry of both flanks, the rear doors and the plates.
  *
  * `licensePlate` resolves to TWO rects — the front and rear plates differ in
- * size but share one slot, so `repeats` stays false while the value is an
- * array (see ARCHITECTURE.md, "Adding a device or object").
+ * size but share one slot, which is what an array-valued region means (see
+ * ARCHITECTURE.md, "Adding a device or object").
  */
 export const VAN_METRICS = {
   mmPerUnit: VAN_MM_PER_UNIT,

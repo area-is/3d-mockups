@@ -40,9 +40,8 @@ book.regions.spine.mm      // { width: 20.9, height: 232.3 }
 book.primary               // === book.regions.cover — where bare children go
 ```
 
-A region can resolve to an **array**, which means one of two things — `repeats`
-tells them apart. Every built-in array region is the `repeats: false` case: one
-slot, painted onto surfaces of differing size.
+A region can resolve to an **array**, which means one slot is painted onto
+several surfaces of differing size — one design, several places it lands:
 
 ```ts
 const plates = mockupInfo('van').regions.licensePlate
@@ -50,9 +49,8 @@ plates[0].mm   // { width: 525, height: 126 }   front plate
 plates[1].mm   // { width: 273, height: 120.8 } rear plate
 ```
 
-The other case, `repeats: true`, takes one slot child per rect in document
-order. No built-in object uses it — the brochure did until its panels became
-six named regions — but it stays available for objects you build yourself.
+Every other region resolves to a single rect. There is no region that takes a
+variable number of slot children — every surface has its own name.
 
 ### What's in a region
 
@@ -65,7 +63,7 @@ six named regions — but it stays available for objects you build yourself.
 | `resolution` | Default CSS pixel width of the virtual surface. |
 | `radius` | Corner rounding, in world units and CSS pixels. |
 | `aspect` | `width ÷ height`. |
-| `repeats`, `index` | Whether the region takes many slots, and which one this is. |
+| `index` | Which surface this is, for a region painted onto several; `0` otherwise. |
 
 The `px` numbers come from the same helpers the renderer feeds its screen
 bridge, so what this reports and what actually renders cannot drift apart.

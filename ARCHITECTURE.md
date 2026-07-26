@@ -201,18 +201,17 @@ tables.
    deliberate: a registry lookup would make every mockup reference every spec, so
    importing one component would pull in all of them.
 
-A region that resolves to an **array** of rects means one of two things, and the
-`repeats` flag tells them apart:
+A region that resolves to an **array** of rects means exactly one thing: a
+single slot painted onto several surfaces of differing size, like the van's
+front and rear licence plates. One slot, one design, several places it lands.
 
-- `repeats: false` — a single slot painted onto several surfaces of differing
-  size (the van's front and rear licence plates). Every built-in array region
-  is this case.
-- `repeats: true` — one rect per slot child, collected in document order. No
-  built-in object uses it. The brochure did, and moving it to six named panels
-  is the reason: with positional slots, panel identity depended on document
-  order, so a conditionally rendered panel silently shifted every panel after
-  it onto the wrong surface. Prefer named regions unless the count genuinely
-  varies at runtime.
+There is deliberately no way to say "this region takes N slot children in
+document order." A `repeats` flag used to allow it, for the brochure's panels.
+Positional slots make a surface's identity depend on where it sits in the JSX,
+so a conditionally rendered panel silently shifts every panel after it onto the
+wrong surface — and nothing catches it, because the render is still valid. Give
+each surface a name instead. If a future object has surfaces that genuinely
+vary in count at runtime, that is worth reopening; nothing so far has.
 
 ### Verifying it
 
