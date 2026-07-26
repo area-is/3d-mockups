@@ -64,14 +64,15 @@ export const VAN = {
   rearFull: { width: 1.9, height: 1.81, y: 0.225, radius: 0.03 },
   /** Default CSS px width of the virtual side wrap panel. */
   /**
-   * The two licence plates, front (long EU-style recess) and rear (short
-   * stacked plate low on the door). One `licensePlate` slot paints both, so
-   * they are the library's only region backed by surfaces of differing size.
+   * The licence plate: the US standard 6 x 12 in (152.4 x 304.8 mm), which is
+   * 0.1451 x 0.2903 units at this scale.
+   *
+   * ONE rect, used by both the front recess and the rear door — deliberately
+   * not a front/rear pair. A vehicle's plates carry the same registration, so
+   * the `licensePlate` slot paints both, and sharing the rect is what stops
+   * an edit to one from silently reshaping only half of them.
    */
-  plates: {
-    front: { width: 0.5, height: 0.12, radius: 0.008, resolution: 200 },
-    rear: { width: 0.26, height: 0.115, radius: 0.006, resolution: 160 },
-  },
+  plate: { width: 0.2903, height: 0.1451, radius: 0.008, resolution: 200 },
   resolution: 900,
 } as const
 
@@ -118,8 +119,10 @@ export type VanCoverage = 'panel' | 'full' | 'perforated'
 /**
  * Live geometry of both flanks, the rear doors and the plates.
  *
- * `licensePlate` resolves to TWO rects — the front and rear plates differ in
- * size but share one slot, which is what an array-valued region means (see
+ * `licensePlate` resolves to TWO rects — the nose and the tail — from one
+ * shared plate size. They are equal, and the array still carries the count:
+ * there are two plate surfaces on this van, and a caller measuring the object
+ * should see both. That is what an array-valued region means (see
  * ARCHITECTURE.md, "Adding a device or object").
  */
 export const VAN_METRICS = {
@@ -142,7 +145,7 @@ export const VAN_METRICS = {
         radius: rear.radius,
         resolution: Math.round(rear.width * (resolution / side.width)),
       },
-      licensePlate: [VAN.plates.front, VAN.plates.rear],
+      licensePlate: [VAN.plate, VAN.plate],
     }
   },
 } as const satisfies MockupMetrics<{ coverage?: VanCoverage }>

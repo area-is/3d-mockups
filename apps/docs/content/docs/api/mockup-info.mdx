@@ -41,13 +41,16 @@ book.primary               // === book.regions.cover — where bare children go
 ```
 
 A region can resolve to an **array**, which means one slot is painted onto
-several surfaces of differing size — one design, several places it lands:
+several distinct surfaces — one design, several places it lands:
 
 ```ts
 const plates = mockupInfo('van').regions.licensePlate
-plates[0].mm   // { width: 525, height: 126 }   front plate
-plates[1].mm   // { width: 273, height: 120.8 } rear plate
+plates.length  // 2 — the van carries a plate at the nose and at the tail
+plates[0].mm   // { width: 304.8, height: 152.4 }   both are the US 6 × 12 in
 ```
+
+The length counts *surfaces*, not sizes: these two are the same rect and it is
+still an array of two, because there really are two plates on the van.
 
 Every other region resolves to a single rect. There is no region that takes a
 variable number of slot children — every surface has its own name.

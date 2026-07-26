@@ -47,6 +47,12 @@ const CASES = [
   ['van-full', 'device=van&regions=1&coverage=full&ry=32&rx=8'],
   ['van-perforated', 'device=van&regions=1&coverage=perforated&ry=32&rx=8'],
   ['van-rear', 'device=van&regions=1&ry=155&rx=8'],
+  // Framed on the nose plate. The wide van poses above are a global pixel
+  // percentage over a mostly-empty frame, so a small feature barely moves the
+  // number: reshaping the plate from 525x126 to 305x152 mm scored 0.0191%
+  // against a 0.02% threshold and passed. Anything this small needs its own
+  // close-up to be defended at all.
+  ['van-plate', 'device=van&regions=1&ry=270&dist=4.5&cy=-0.42'],
   ['store-front', 'device=store&regions=1&ry=18&rx=4'],
   ['store-angle', 'device=store&regions=1&ry=52&rx=10'],
 

@@ -63,8 +63,8 @@ export interface MockupInfo {
   primary: RegionInfo
   /**
    * Every region by name. A region whose one slot is painted onto several
-   * surfaces of differing size (the van's licence plates) holds an array, one
-   * entry per surface.
+   * distinct surfaces (the van's two licence plates) holds an array, one entry
+   * per surface — whether or not those surfaces are the same size.
    */
   regions: Record<string, RegionInfo | RegionInfo[]>
   /** Every region in declaration order, multi-surface regions flattened. */

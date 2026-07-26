@@ -64,8 +64,9 @@ export interface RegionMetrics {
  *
  * `P` is the (plain-data) subset of the object's props the geometry depends
  * on: variant, orientation, physical size, open/closed… A region resolves to an
- * array when its one slot is painted onto several surfaces of differing size —
- * the van's front and rear licence plates.
+ * array when its one slot is painted onto several distinct surfaces — the van's
+ * nose and tail licence plates. The array carries the surface COUNT; the entries
+ * may or may not differ in size.
  */
 export interface MockupMetrics<P = Record<string, never>> {
   /**

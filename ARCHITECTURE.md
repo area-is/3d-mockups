@@ -202,8 +202,12 @@ tables.
    importing one component would pull in all of them.
 
 A region that resolves to an **array** of rects means exactly one thing: a
-single slot painted onto several surfaces of differing size, like the van's
-front and rear licence plates. One slot, one design, several places it lands.
+single slot painted onto several distinct surfaces, like the van's nose and
+tail licence plates. One slot, one design, several places it lands.
+
+The array's length is a count of *surfaces*, not of sizes. The van's two plates
+are the same 6 × 12 in rect and it is still an array of two, because a caller
+measuring the object should see that there are two of them.
 
 There is deliberately no way to say "this region takes N slot children in
 document order." A `repeats` flag used to allow it, for the brochure's panels.

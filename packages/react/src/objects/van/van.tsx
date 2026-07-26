@@ -773,19 +773,20 @@ function VanImpl({
       <RoundedBox args={[0.05, 0.12, 1.2]} radius={0.02} position={[2.86, -0.72, 0]}>
         <meshPhysicalMaterial color="#141619" metalness={0.3} roughness={0.65} />
       </RoundedBox>
-      {/* license-plate recess between grille and bumper */}
-      <RoundedBox args={[0.03, 0.13, 0.52]} radius={0.012} position={[2.82, -0.42, 0]}>
+      {/* license-plate recess between grille and bumper, sized off the plate
+          so the surround stays even if the plate format ever changes */}
+      <RoundedBox args={[0.03, VAN.plate.height + 0.01, VAN.plate.width + 0.02]} radius={0.012} position={[2.82, -0.42, 0]}>
         <meshPhysicalMaterial color="#dfe2e6" metalness={0.1} roughness={0.5} />
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={VAN.plates.front.width}
-          height={VAN.plates.front.height}
-          radius={VAN.plates.front.radius}
+          width={VAN.plate.width}
+          height={VAN.plate.height}
+          radius={VAN.plate.radius}
           {...resolveSurface(plateSlot, {
             ...surfaceDefaults,
             surfaceBackground: '#f4f6f8',
-            resolution: VAN.plates.front.resolution,
+            resolution: VAN.plate.resolution,
           })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
@@ -877,18 +878,18 @@ function VanImpl({
       <RoundedBox args={[0.03, 0.17, 0.34]} radius={0.012} position={[-2.822, -0.78, -0.3]}>
         <meshPhysicalMaterial color="#15171a" metalness={0.2} roughness={0.7} />
       </RoundedBox>
-      <RoundedBox args={[0.014, 0.125, 0.27]} radius={0.008} position={[-2.834, -0.78, -0.3]}>
+      <RoundedBox args={[0.014, VAN.plate.height + 0.01, VAN.plate.width + 0.01]} radius={0.008} position={[-2.834, -0.78, -0.3]}>
         <meshPhysicalMaterial color="#e6e9ed" metalness={0.05} roughness={0.5} />
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={VAN.plates.rear.width}
-          height={VAN.plates.rear.height}
-          radius={VAN.plates.rear.radius}
+          width={VAN.plate.width}
+          height={VAN.plate.height}
+          radius={VAN.plate.radius}
           {...resolveSurface(plateSlot, {
             ...surfaceDefaults,
             surfaceBackground: '#f4f6f8',
-            resolution: VAN.plates.rear.resolution,
+            resolution: VAN.plate.resolution,
           })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
