@@ -20,12 +20,6 @@ export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>
   vinylColor?: string
   /** Jacket stock color (edges and unprinted faces). */
   color?: string
-  /**
-   * How content hides when a face turns away from the camera.
-   * `true` raycasts against jacket and disc (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -51,9 +45,8 @@ function VinylRecordImpl({
   color = '#f2efe8',
   surfaceBackground = '#ffffff',
   resolution = VINYL_RECORD.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: VinylRecordProps) {
@@ -126,43 +119,62 @@ function VinylRecordImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
   const faceProps = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
-  // KNOWN LIMITATION — a record carrying live art on BOTH labels can show
-  // side B faintly through side A at some angles. The disc is 0.022 units
-  // thick, which is the same order as the occlusion tester's self-hit
-  // margins (the ones that stop a screen hiding behind its own cover glass),
-  // so the two labels sit too close together for the raycast test to
-  // separate cleanly. Depth blending sorts them correctly but is worse
-  // overall here: its depth-writing occluder is a RECTANGLE, so on a round
-  // label it punches a square hole in the render and the page shows through
-  // the corners. Raycast is the lesser defect until the tester's margin can
-  // be scaled per screen rather than fixed in world units.
+  // Both labels share the cover's dpi unless their slot overrides it, and both
+  // carry the spindle bore in their own style so the art can't paint over it.
+  const labelSurface = (slot: Parameters<typeof resolveSurface>[0]) => {
+    const surface = resolveSurface(slot, {
+      ...surfaceDefaults,
+      resolution: Math.round(labelPxPerUnit * disc.labelRadius * 2),
+    })
+    return { ...surface, screenStyle: { ...surface.screenStyle, ...spindleMask } }
+  }
+  // KNOWN LIMITATION — with `allowInput` on, a record carrying live art on
+  // BOTH labels can show side B faintly through side A at some angles. The
+  // disc is 0.022 units thick, the same order as the occlusion tester's
+  // self-hit margins (the ones that stop a screen hiding behind its own cover
+  // glass), so the two labels sit too close together for the raycast test to
+  // separate them. The default blending mode sorts them correctly by depth.
 
   const stock = { color, metalness: 0, roughness: 0.75 }
 
-  const spindleOverlay = (
-    <div
-      aria-hidden
-      style={{
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: `${((disc.spindleRadius * 2) / (disc.labelRadius * 2)) * 100}%`,
-        aspectRatio: '1',
-        borderRadius: '50%',
-        background: '#050506',
-        pointerEvents: 'none',
-        zIndex: 2147483647,
-      }}
-    />
-  )
+  // The spindle hole is a real hole: bored through the disc, out of the paper
+  // label, out of the live label's DOM, and out of the depth mask that clears
+  // the canvas over it — so you see whatever is BEHIND the record through it
+  // (the inner sleeve, the jacket, or nothing at all), not a painted dot.
+  const spindleStop = (disc.spindleRadius / disc.labelRadius) * 100
+  const spindleBore = `radial-gradient(circle closest-side at 50% 50%, transparent ${spindleStop}%, #000 ${spindleStop + 1}%)`
+  const spindleMask = { WebkitMaskImage: spindleBore, maskImage: spindleBore }
+
+  // Label mask: the label disc with the spindle bored out. Held a hair inside
+  // the DOM at both edges, for the reason DeviceScreen's own default is.
+  const labelOccluder = React.useMemo(() => {
+    const inset = disc.labelRadius * 2 * 0.004
+    const shape = new THREE.Shape().absarc(0, 0, disc.labelRadius - inset, 0, Math.PI * 2, false)
+    shape.holes.push(new THREE.Path().absarc(0, 0, disc.spindleRadius + inset, 0, Math.PI * 2, true))
+    return new THREE.ShapeGeometry(shape, 64)
+  }, [disc.labelRadius, disc.spindleRadius])
+  React.useEffect(() => () => labelOccluder.dispose(), [labelOccluder])
+
+  // The disc itself, bored through the middle.
+  const discGeometry = React.useMemo(() => {
+    const shape = new THREE.Shape().absarc(0, 0, disc.radius, 0, Math.PI * 2, false)
+    shape.holes.push(new THREE.Path().absarc(0, 0, disc.spindleRadius, 0, Math.PI * 2, true))
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: disc.thickness,
+      bevelEnabled: false,
+      curveSegments: 96,
+    })
+    geometry.translate(0, 0, -disc.thickness / 2)
+    return geometry
+  }, [disc.radius, disc.spindleRadius, disc.thickness])
+  React.useEffect(() => () => discGeometry.dispose(), [discGeometry])
 
   // Both playing faces carry the same pressing details, mirrored.
   const discFace = (s: 1 | -1) => (
@@ -182,7 +194,7 @@ function VinylRecordImpl({
       </mesh>
       {/* paper label — the physical print under the (optional) live design */}
       <mesh position-z={disc.thickness / 2 + 0.0015}>
-        <circleGeometry args={[disc.labelRadius, 48]} />
+        <ringGeometry args={[disc.spindleRadius, disc.labelRadius, 64]} />
         <meshPhysicalMaterial color="#e7e1d3" metalness={0} roughness={0.85} />
       </mesh>
     </group>
@@ -250,29 +262,23 @@ function VinylRecordImpl({
 
         {/* the disc, sliding out of the slot */}
         <group position={[discX, 0, discZ]}>
-          <mesh ref={discRef} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[disc.radius, disc.radius, disc.thickness, 64]} />
+          <mesh ref={discRef} geometry={discGeometry}>
             <meshPhysicalMaterial color={vinylColor} metalness={0.1} roughness={0.32} clearcoat={1} clearcoatRoughness={0.25} />
           </mesh>
 
           {discFace(1)}
           {discFace(-1)}
 
-          {/* live circular label, with the spindle hole punched through the
-              DOM layer (the content would otherwise paint over it) */}
+          {/* live circular label, bored through at the spindle */}
           {regions.label != null && (
             <DeviceScreen
               {...faceProps}
-              {...resolveSurface(regions.label, {
-                ...surfaceDefaults,
-                // the label shares the cover's dpi unless its slot overrides
-                resolution: Math.round(labelPxPerUnit * disc.labelRadius * 2),
-              })}
+              {...labelSurface(regions.label)}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}
               radius={disc.labelRadius}
               position={[0, 0, disc.thickness / 2 + 0.003]}
-              overlay={spindleOverlay}
+              occluderGeometry={labelOccluder}
             >
               {regions.label.children}
             </DeviceScreen>
@@ -282,26 +288,17 @@ function VinylRecordImpl({
           {regions.backLabel != null && (
             <DeviceScreen
               {...faceProps}
-              {...resolveSurface(regions.backLabel, {
-                ...surfaceDefaults,
-                resolution: Math.round(labelPxPerUnit * disc.labelRadius * 2),
-              })}
+              {...labelSurface(regions.backLabel)}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}
               radius={disc.labelRadius}
               position={[0, 0, -disc.thickness / 2 - 0.003]}
               rotation={[0, Math.PI, 0]}
-              overlay={spindleOverlay}
+              occluderGeometry={labelOccluder}
             >
               {regions.backLabel.children}
             </DeviceScreen>
           )}
-
-          {/* spindle hole — unlit black so it reads as a hole, not a plug */}
-          <mesh rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[disc.spindleRadius, disc.spindleRadius, disc.thickness + 0.008, 24]} />
-            <meshBasicMaterial color="#050506" />
-          </mesh>
         </group>
       </group>
     </group>

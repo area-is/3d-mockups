@@ -34,12 +34,6 @@ export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'>, S
    * is matte paper, flat under any light.
    */
   glossy?: boolean
-  /**
-   * How cover content hides when the magazine faces away from the camera.
-   * `true` raycasts against the page block (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -65,9 +59,8 @@ function MagazineImpl({
   glossy = false,
   surfaceBackground = '#ffffff',
   resolution = MAGAZINE.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: MagazineProps) {
@@ -121,12 +114,10 @@ function MagazineImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
-  const screenOcclude =
-    occlude === true ? otherOccludeRefs : occlude === 'blending' ? ('blending' as const) : undefined
 
   return (
     <group {...groupProps}>
@@ -158,7 +149,7 @@ function MagazineImpl({
         height={cover.height}
         radius={cover.radius}
         position={[0, 0, body.thickness / 2 + 0.004]}
-        occlude={screenOcclude}
+        occluders={otherOccludeRefs}
         overlay={glossOverlay}
       >
         {regions.cover?.children}
@@ -173,7 +164,7 @@ function MagazineImpl({
           radius={cover.radius}
           position={[0, 0, -body.thickness / 2 - 0.004]}
           rotation={[0, Math.PI, 0]}
-          occlude={screenOcclude}
+          occluders={otherOccludeRefs}
           overlay={glossOverlay}
         >
           {regions.back.children}
@@ -196,7 +187,7 @@ function MagazineImpl({
           radius={0.006}
           position={[-body.width / 2 - 0.01, 0, 0]}
           rotation={[0, -Math.PI / 2, -Math.PI / 2]}
-          occlude={screenOcclude}
+          occluders={otherOccludeRefs}
           overlay={glossOverlay}
         >
           {regions.spine.children}

@@ -44,12 +44,13 @@ export interface LaptopSpec {
   /** Camera notch: sits at the top-center of the display, menu-bar deep. */
   notch: { width: number; height: number; radius: number }
   /**
-   * Keyboard well (recessed area) and key grid on the deck, hinge side.
-   * `legends` picks the printed style: `text` is the US MacBook Pro convention
-   * (esc/tab/caps lock/return/shift/delete as words), `icons` the M5 Air's
-   * glyph convention (⇥ ⇪ ⇧ ⌫ ⏎ symbols on those caps).
+   * The Magic Keyboard on the deck, hinge side: `width`/`depth` bound the key
+   * grid (14.5 key units across, six rows deep, so they also set the 19 x
+   * 18.5 mm key pitch every Mac laptop shares). `tray` is the black anodized
+   * recess the Pro sets its keys in; the Air has none — its caps sit straight
+   * in the body-colored aluminum deck.
    */
-  keyboard: { width: number; depth: number; offsetZ: number; legends: 'text' | 'icons' }
+  keyboard: { width: number; depth: number; offsetZ: number; tray: boolean }
   /**
    * Lift-lid scoop: the crescent recess machined into the front edge at
    * center. `radius` is the cutting cylinder's radius, `bite` how deep it
@@ -69,6 +70,12 @@ export interface LaptopSpec {
    * Perforated speaker strips flanking the keyboard (Pro): centers at ±x.
    * Hole metrics from the reference scan's grille tile: ~1.0 x 0.93 mm grid
    * of ~0.63 mm drilled holes.
+   *
+   * Photo-measured on Apple's own product shots: the drilling fills the whole
+   * band between the keyboard tray and the chassis edge — 96% of it on the
+   * 16", where the gap is 38.5 mm — leaving only a hairline of bare aluminum
+   * either side, and it sits slightly toward the back of the tray (3 mm below
+   * its top edge, 7 mm above its bottom).
    */
   speakers?: {
     x: number
@@ -96,9 +103,9 @@ const MACBOOK_AIR_13: LaptopSpec = {
   lid: { thickness: 0.05, bevel: 0.008 },
   display: { width: 4.0, height: 2.6, radius: [0.09, 0.09, 0, 0], offsetY: 0.05 },
   notch: { width: 0.48, height: 0.095, radius: 0.045 },
-  // Same word-label legend set as the Pro 14 scan — per the user's direction
-  // the M5 line shares one layout and symbol style across Air and Pro.
-  keyboard: { width: 3.78, depth: 1.5, offsetZ: -0.6, legends: 'text' },
+  // The same Magic Keyboard module as the Pro (identical 272.8 x 108.6 mm key
+  // grid), but set flush in the aluminum deck — the Air has no black tray.
+  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.6, tray: false },
   scoop: { width: 0.75, radius: 0.059, bite: 0.032 },
   trackpad: { width: 1.78, depth: 1.12, offsetZ: 0.78 },
   openAngle: 110,
@@ -129,8 +136,8 @@ const MACBOOK_PRO_14: LaptopSpec = {
   // Active area 301.4 x 196.4 mm, top corners rounded, sitting 7.1 mm high.
   display: { width: 4.163, height: 2.713, radius: [0.063, 0.063, 0, 0], offsetY: 0.098 },
   notch: { width: 0.508, height: 0.088, radius: 0.018 },
-  // Black keyboard well 278.7 x 114.9 mm centered 36.5 mm behind base center.
-  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.504, legends: 'text' },
+  // Black keyboard tray 278.7 x 114.9 mm centered 36.5 mm behind base center.
+  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.504, tray: true },
   // Scan-measured: 54.5 mm wide crescent, 2.5 mm bite fading out 3.9 mm down.
   scoop: { width: 0.753, radius: 0.0593, bite: 0.0345 },
   // 129.7 x 81.6 mm trackpad, centered 64.5 mm ahead of base center.
@@ -150,11 +157,13 @@ const MACBOOK_PRO_14: LaptopSpec = {
     ],
   },
   feet: { x: 1.774, z: 1.146, radius: 0.132 },
+  // The strip runs from 0.4 mm off the tray out to where the deck's edge
+  // bevel starts — 14.5 mm of drilling in a 16.9 mm gap.
   speakers: {
-    x: 2.037,
-    width: 0.213,
+    x: 2.0308,
+    width: 0.2005,
     depth: 1.47,
-    offsetZ: -0.504,
+    offsetZ: -0.533,
     holePitchX: 0.0142,
     holePitchZ: 0.0129,
     holeR: 0.00435,
@@ -176,8 +185,8 @@ const MACBOOK_AIR_15: LaptopSpec = {
   // Active area 326.2 x 211.1 mm.
   display: { width: 4.506, height: 2.916, radius: [0.09, 0.09, 0, 0], offsetY: 0.055 },
   notch: { width: 0.48, height: 0.095, radius: 0.045 },
-  // Identical Magic Keyboard well, seated the same distance from the hinge.
-  keyboard: { width: 3.78, depth: 1.5, offsetZ: -0.756, legends: 'text' },
+  // Identical Magic Keyboard module, seated the same distance from the hinge.
+  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.756, tray: false },
   scoop: { width: 0.75, radius: 0.059, bite: 0.032 },
   // ~136 x 82.5 mm Force Touch trackpad.
   trackpad: { width: 1.878, depth: 1.14, offsetZ: 0.8 },
@@ -208,7 +217,7 @@ const MACBOOK_PRO_16: LaptopSpec = {
   // Active area 345.7 x 223.5 mm.
   display: { width: 4.775, height: 3.087, radius: [0.063, 0.063, 0, 0], offsetY: 0.105 },
   notch: { width: 0.508, height: 0.088, radius: 0.018 },
-  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.69, legends: 'text' },
+  keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.69, tray: true },
   scoop: { width: 0.753, radius: 0.0593, bite: 0.0345 },
   // ~160 x 99.5 mm trackpad.
   trackpad: { width: 2.21, depth: 1.374, offsetZ: 0.836 },
@@ -228,11 +237,14 @@ const MACBOOK_PRO_16: LaptopSpec = {
     ],
   },
   feet: { x: 2.072, z: 1.332, radius: 0.145 },
+  // The 16"'s gap is 38.5 mm and the drilling fills it: 35.6 mm of holes from
+  // 0.4 mm off the tray out to the deck's edge bevel. The strip used to stop
+  // 15 mm short, which read as a wide blank margin beside the speakers.
   speakers: {
-    x: 2.09,
-    width: 0.32,
+    x: 2.1826,
+    width: 0.4918,
     depth: 1.47,
-    offsetZ: -0.69,
+    offsetZ: -0.719,
     holePitchX: 0.0142,
     holePitchZ: 0.0129,
     holeR: 0.00435,

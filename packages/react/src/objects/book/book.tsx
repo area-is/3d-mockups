@@ -26,12 +26,6 @@ export interface BookProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   color?: string
   /** Paper color of the page block edges. */
   pageColor?: string
-  /**
-   * How cover content hides when the book faces away from the camera.
-   * `true` raycasts against the boards (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -56,9 +50,8 @@ function BookImpl({
   pageColor = '#f4eede',
   surfaceBackground = '#ffffff',
   resolution = BOOK.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BookProps) {
@@ -75,12 +68,12 @@ function BookImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
   const screenProps = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
   // A cased-in hardback's backbone is NOT a half-round tube: it is flat
   // across the printed area and rolls off into the joints. Modelling it as a

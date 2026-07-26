@@ -25,12 +25,6 @@ export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'>, 
   size?: DoohTotemSize
   /** Enclosure colorway (street-furniture dark gray by default). */
   color?: string
-  /**
-   * How screen content hides when the totem faces away from the camera.
-   * `true` raycasts against the enclosure (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -57,9 +51,8 @@ function DOOHTotemImpl({
   color = '#2f333a',
   surfaceBackground = '#000000',
   resolution = DOOH_TOTEM.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: DOOHTotemProps) {
@@ -105,7 +98,7 @@ function DOOHTotemImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -113,7 +106,7 @@ function DOOHTotemImpl({
     width: display.width,
     height: display.height,
     radius: display.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

@@ -1,9 +1,9 @@
 ---
-title: Monitor (Studio Display)
+title: Studio Display (27″ 5K)
 description: A 27 inch 5K monitor on its tilt stand with a 2560x1440 live desktop.
 ---
 
-`<Monitor>` and `<MonitorMockup>` render an Apple Studio Display style 27"
+`<StudioDisplay>` and `<StudioDisplayMockup>` render an Apple Studio Display style 27"
 monitor (the March 2026 second generation — the 2022 enclosure carried over
 unchanged), proportioned from the official product photography: ~19.5 mm
 all-aluminum slab with an edge-to-edge glass front (uniform ~13 mm black
@@ -18,12 +18,12 @@ its upper half and the captive cord's open drop through the lower — plus
 (faithfully) no power button. The mockup grounds the stand on a virtual
 desk plane.
 
-<ObjectDemo demo="monitor-basic" checker />
+<ObjectDemo demo="studio-display-basic" checker />
 
 ```tsx
-<MonitorMockup rotation={[0, -0.25, 0]}>
+<StudioDisplayMockup rotation={[0, -0.25, 0]}>
   <YourDesktopApp />
-</MonitorMockup>
+</StudioDisplayMockup>
 ```
 
 ## Props
@@ -32,7 +32,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `colorway` | `string` | – | Retail colorway id from `MONITOR_COLORWAYS` (`silver`). Explicit `color` overrides it. |
+| `colorway` | `string` | – | Retail colorway id from `STUDIO_DISPLAY_COLORWAYS` (`silver`). Explicit `color` overrides it. |
 | `color` | `string` | `'#c8cbd0'` | Aluminum colorway (enclosure and stand). |
 | `resolution` | `number` | `2560` | Virtual display width; 2560 gives 2560×1440, the Studio Display's logical desktop, so real desktop layouts apply. |
 
@@ -41,8 +41,8 @@ There is no `orientation` prop; it lives on a desk.
 ## Regions
 
 One region: the display (bare children). Use the explicit
-`<MonitorMockup.Screen>` slot when you want per-surface overrides —
-`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
+`<StudioDisplayMockup.Screen>` slot when you want per-surface overrides —
+`background`, `resolution`, `allowInput`, `dragToRotate`, `style`.
 
 ## Mockup-able areas
 
@@ -50,16 +50,16 @@ Every live surface filled with chroma green, labeled with the prop that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-monitor" />
+<ObjectDemo demo="chroma-studio-display" />
 
 ## More examples
 
 ### Silver, slow orbit
 
-<ObjectDemo demo="monitor-silver" />
+<ObjectDemo demo="studio-display-silver" />
 
 ```tsx
-<MonitorMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
+<StudioDisplayMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
   <YourDesktopApp />
-</MonitorMockup>
+</StudioDisplayMockup>
 ```

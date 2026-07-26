@@ -19,7 +19,7 @@ single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 
 ## Props
 
-Same API as [`Phone`](/docs/api/phone), except:
+Same API as [`Galaxy`](/docs/api/galaxy), except:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ what stays 3D hardware.
 
 ### Galaxy and iPhone side by side
 
-Bare `<Phone>` and `<IPhone>` objects share one
+Bare `<Galaxy>` and `<IPhone>` objects share one
 [`MockupCanvas`](/docs/api/mockup-canvas) — both families use the same world
 scale, so relative sizes are true.
 
@@ -96,9 +96,9 @@ scale, so relative sizes are true.
 
 ```tsx
 <MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-  <Phone variant="s26ultra" color="#2e3238" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
+  <Galaxy variant="s26ultra" color="#2e3238" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
     <YourAndroidApp />
-  </Phone>
+  </Galaxy>
   <IPhone variant="promax" color="#2b3a55" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
     <YourIOSApp />
   </IPhone>

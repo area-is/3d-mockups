@@ -2,6 +2,7 @@
 
 import {
   AFrameSignMockup,
+  AppleWatchMockup,
   Billboard,
   BillboardMockup,
   Book,
@@ -15,6 +16,7 @@ import {
   CustomPanelMockup,
   DOOHTotemMockup,
   FoldMockup,
+  GalaxyWatchMockup,
   GreetingCardMockup,
   IDCardMockup,
   IPhone,
@@ -23,9 +25,9 @@ import {
   MagazineMockup,
   MailerBoxMockup,
   MockupCanvas,
-  MonitorMockup,
-  Phone,
-  PhoneMockup,
+  StudioDisplayMockup,
+  Galaxy,
+  GalaxyMockup,
   PosterFrame,
   PosterFrameMockup,
   ProductBoxMockup,
@@ -34,16 +36,15 @@ import {
   SemiTrailerMockup,
   ShoppingBagMockup,
   StorefrontMockup,
-  TabletMockup,
+  IPadMockup,
+  GalaxyTabMockup,
   TVSetMockup,
   VanMockup,
   VinylRecord,
   VinylRecordMockup,
-  WatchMockup,
   FlipMockup,
 } from 'area-mockups'
-import { LazyScene } from './lazy-scene'
-import { withPreviewControls } from './preview-controls'
+import { PreviewStage } from './preview-controls'
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
 import { DEMO_SOURCES } from '../lib/demo-sources.generated'
 import {
@@ -265,31 +266,31 @@ function MiniCover({ title, from, to }: { title: string; from: string; to: strin
  * exceeds the browser's WebGL context budget.
  */
 const DEMOS: Record<string, React.ReactNode> = {
-  // ---- Phone (Galaxy) -----------------------------------------------------
-  'phone-basic': (
-    <PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+  // ---- Galaxy (Galaxy) -----------------------------------------------------
+  'galaxy-basic': (
+    <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
       <TapCounter />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
-  'phone-lock': (
-    <PhoneMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
+  'galaxy-lock': (
+    <GalaxyMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
       <LockScreen />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
-  'phone-landscape': (
-    <PhoneMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
+  'galaxy-landscape': (
+    <GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
       <MusicPlayer />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
-  'phone-s26': (
-    <PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
+  'galaxy-s26': (
+    <GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
-  'phone-s26ultra': (
-    <PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
+  'galaxy-s26ultra': (
+    <GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
 
   // ---- Fold (Galaxy Z Fold 7) ---------------------------------------------
@@ -349,9 +350,9 @@ const DEMOS: Record<string, React.ReactNode> = {
   ),
   'phone-duo': (
     <MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-      <Phone variant="s26ultra" color="#2e3238" frameColor="#565b64" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
+      <Galaxy variant="s26ultra" color="#2e3238" frameColor="#565b64" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
         <TapCounter />
-      </Phone>
+      </Galaxy>
       <IPhone variant="promax" color="#2b3a55" frameColor="#3d4d6b" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
         <MusicPlayer />
       </IPhone>
@@ -385,48 +386,48 @@ const DEMOS: Record<string, React.ReactNode> = {
     </LaptopMockup>
   ),
 
-  // ---- Tablet -------------------------------------------------------------------
-  'tablet-landscape': (
-    <TabletMockup orientation="landscape" rotation={[0, -0.3, 0]}>
+  // ---- iPad / Galaxy Tab --------------------------------------------------------
+  'ipad-landscape': (
+    <IPadMockup orientation="landscape" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
-    </TabletMockup>
+    </IPadMockup>
   ),
-  'tablet-ipadpro11': (
-    <TabletMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+  'ipad-pro11': (
+    <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
-    </TabletMockup>
+    </IPadMockup>
   ),
-  'tablet-ipadair13': (
-    <TabletMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+  'ipad-air13': (
+    <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
-    </TabletMockup>
+    </IPadMockup>
   ),
-  'tablet-ipad11': (
-    <TabletMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+  'ipad-a16': (
+    <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
-    </TabletMockup>
+    </IPadMockup>
   ),
-  'tablet-tabs11': (
-    <TabletMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+  'galaxy-tab-s11': (
+    <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
-    </TabletMockup>
+    </GalaxyTabMockup>
   ),
-  'tablet-ultra': (
-    <TabletMockup variant="tabs11ultra" colorway="gray" float rotation={[0, 0.3, 0]}>
+  'galaxy-tab-ultra': (
+    <GalaxyTabMockup variant="tabs11ultra" colorway="gray" float rotation={[0, 0.3, 0]}>
       <MusicPlayer />
-    </TabletMockup>
+    </GalaxyTabMockup>
   ),
 
-  // ---- Monitor --------------------------------------------------------------------
-  'monitor-basic': (
-    <MonitorMockup rotation={[0, -0.25, 0]}>
+  // ---- Studio Display -------------------------------------------------------------
+  'studio-display-basic': (
+    <StudioDisplayMockup rotation={[0, -0.25, 0]}>
       <DesktopScreen />
-    </MonitorMockup>
+    </StudioDisplayMockup>
   ),
-  'monitor-silver': (
-    <MonitorMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
+  'studio-display-silver': (
+    <StudioDisplayMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
       <DesktopScreen />
-    </MonitorMockup>
+    </StudioDisplayMockup>
   ),
 
   // ---- Book -------------------------------------------------------------
@@ -780,6 +781,16 @@ const DEMOS: Record<string, React.ReactNode> = {
       <TVShowArt />
     </TVSetMockup>
   ),
+  'tv-pedestal': (
+    <TVSetMockup variant="pedestal" rotation={[0, -0.25, 0]}>
+      <TVShowArt />
+    </TVSetMockup>
+  ),
+  'tv-frame': (
+    <TVSetMockup variant="frame" color="#a9825a" rotation={[0, -0.22, 0]}>
+      <TVShowArt />
+    </TVSetMockup>
+  ),
 
   // ---- A-frame sign -----------------------------------------------------------------
   'aframe-basic': (
@@ -924,23 +935,28 @@ const DEMOS: Record<string, React.ReactNode> = {
     </CustomBoxMockup>
   ),
 
-  // ---- Watch ------------------------------------------------------------------
-  'watch-band': (
-    <WatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
+  // ---- Watches ----------------------------------------------------------------
+  'apple-watch': (
+    <AppleWatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
       <WatchFace />
-    </WatchMockup>
+    </AppleWatchMockup>
   ),
-  'watch-galaxy': (
-    <WatchMockup variant="watch8" color="#33363c" bandColor="#23252a" float rotation={[0, 0.3, 0]}>
+  'galaxy-watch': (
+    <GalaxyWatchMockup color="#33363c" bandColor="#23252a" float rotation={[0, 0.3, 0]}>
       <GalaxyWatchFace />
-    </WatchMockup>
+    </GalaxyWatchMockup>
+  ),
+  'galaxy-watch-open': (
+    <GalaxyWatchMockup bandOpen color="#33363c" bandColor="#23252a" rotation={[0, 3.14, 0]}>
+      <GalaxyWatchFace />
+    </GalaxyWatchMockup>
   ),
 
   // ---- Chroma surface maps: every mockup-able area in chroma green -----------
-  'chroma-phone': (
-    <PhoneMockup rotation={[0, -0.3, 0]}>
+  'chroma-galaxy': (
+    <GalaxyMockup rotation={[0, -0.3, 0]}>
       <ChromaSurface label="children" />
-    </PhoneMockup>
+    </GalaxyMockup>
   ),
   'chroma-iphone': (
     <IPhoneMockup rotation={[0, 0.3, 0]}>
@@ -952,20 +968,30 @@ const DEMOS: Record<string, React.ReactNode> = {
       <ChromaSurface label="children" />
     </LaptopMockup>
   ),
-  'chroma-tablet': (
-    <TabletMockup rotation={[0, -0.3, 0]}>
+  'chroma-ipad': (
+    <IPadMockup rotation={[0, -0.3, 0]}>
       <ChromaSurface label="children" />
-    </TabletMockup>
+    </IPadMockup>
   ),
-  'chroma-watch': (
-    <WatchMockup rotation={[0, -0.3, 0]}>
+  'chroma-galaxy-tab': (
+    <GalaxyTabMockup rotation={[0, -0.3, 0]}>
       <ChromaSurface label="children" />
-    </WatchMockup>
+    </GalaxyTabMockup>
   ),
-  'chroma-monitor': (
-    <MonitorMockup rotation={[0, -0.25, 0]}>
+  'chroma-apple-watch': (
+    <AppleWatchMockup rotation={[0, -0.3, 0]}>
       <ChromaSurface label="children" />
-    </MonitorMockup>
+    </AppleWatchMockup>
+  ),
+  'chroma-galaxy-watch': (
+    <GalaxyWatchMockup rotation={[0, -0.3, 0]}>
+      <ChromaSurface label="children" />
+    </GalaxyWatchMockup>
+  ),
+  'chroma-studio-display': (
+    <StudioDisplayMockup rotation={[0, -0.25, 0]}>
+      <ChromaSurface label="children" />
+    </StudioDisplayMockup>
   ),
   'chroma-fold': (
     <FoldMockup rotation={[0, -0.25, 0]}>
@@ -1171,9 +1197,9 @@ export function ObjectDemo({
   const sources = DEMO_SOURCES[demo]
   return (
     <>
-      <div className={`object-demo${checker ? ' object-demo--checker' : ''}`} style={{ height }}>
-        <LazyScene>{withPreviewControls(scene)}</LazyScene>
-      </div>
+      <PreviewStage height={height} checker={checker}>
+        {scene}
+      </PreviewStage>
       {sources && (
         <details className="object-demo-source">
           <summary>View the full TSX behind this demo</summary>

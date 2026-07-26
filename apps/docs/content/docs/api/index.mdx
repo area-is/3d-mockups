@@ -5,17 +5,23 @@ description: How the pieces fit together, and the props every mockup shares.
 
 The library has two layers:
 
-1. **All-in-one mockups**: `PhoneMockup`, `IPhoneMockup`, `LaptopMockup`,
-   `TabletMockup`, `WatchMockup`, and `MonitorMockup` for the devices, plus
-   `BookMockup`, `MagazineMockup`, `BrochureMockup`, `BusinessCardMockup`,
-   `PosterFrameMockup`, `BillboardMockup`, and `VanMockup` for the
-   [objects](/docs/objects). Each one bundles the stage and a model, ready to
-   drop into a page.
+1. **All-in-one mockups**: `GalaxyMockup`, `IPhoneMockup`, `LaptopMockup`,
+   `IPadMockup`, `GalaxyTabMockup`, `AppleWatchMockup`, `GalaxyWatchMockup`, and `StudioDisplayMockup`
+   for the devices, plus `BookMockup`, `MagazineMockup`, `BrochureMockup`,
+   `BusinessCardMockup`, `PosterFrameMockup`, `BillboardMockup`, and
+   `VanMockup` for the [objects](/docs/objects). Each one bundles the stage and
+   a model, ready to drop into a page.
 2. **Composable parts**: [`MockupCanvas`](/docs/api/mockup-canvas) (the stage)
-   plus the bare models (`Phone`, `IPhone`, `Laptop`, `Tablet`, `Watch`,
-   `Monitor`, `Book`, `Magazine`, `Brochure`, `BusinessCard`, `PosterFrame`,
-   `Billboard`, `Van`) for your own react-three-fiber scenes. See
+   plus the bare models (`Phone`, `IPhone`, `Laptop`, `IPad`, `GalaxyTab`, `AppleWatch`,
+   `GalaxyWatch`, `StudioDisplay`, `Book`, `Magazine`, `Brochure`, `BusinessCard`,
+   `PosterFrame`, `Billboard`, `Van`) for your own react-three-fiber scenes. See
    [Composing scenes](/docs/composing).
+
+Every live example on these pages is a playground: the bar under the canvas has
+an input for **every** prop of the mockup above it, grouped into the model's own
+props, the [shared screen props](/docs/screen-content), and the
+[stage props](/docs/api/mockup-canvas). Each input starts on the value that
+example uses, and `×` resets it.
 
 ## Shared mockup props
 
@@ -26,7 +32,7 @@ props, all of its device's appearance props, and:
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Screen content: any React node, iframe, or video. |
 | `float` | `boolean` | `false` | Gentle floating idle animation for the device. |
-| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<PhoneMockup rotation={[0, -0.25, 0]}>`). |
+| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<GalaxyMockup rotation={[0, -0.25, 0]}>`). |
 
 ## Regions and slots
 
@@ -35,13 +41,13 @@ book's front cover. Objects with more printable surfaces expose each extra
 region as a compound slot on the component (`<AFrameSignMockup.Back>`,
 `<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
 section. Every slot takes per-surface overrides — `background`, `resolution`,
-`interactive`, `dragToRotate`, `style` — over the mockup-level defaults.
+`allowInput`, `dragToRotate`, `style` — over the mockup-level defaults.
 
 ## Shared screen props
 
 Every device (and therefore every mockup) accepts the screen behavior props
-documented in [Screen content](/docs/screen-content): `interactive`,
-`dragToRotate`, `occlude`, `surfaceBackground`, `surfaceStyle`, and `resolution`.
+documented in [Screen content](/docs/screen-content): `allowInput`,
+`dragToRotate`, `surfaceBackground`, `surfaceStyle`, and `resolution`.
 
 Devices also accept all react-three-fiber group props (`position`, `rotation`,
 `scale`) when rendered inside a canvas.

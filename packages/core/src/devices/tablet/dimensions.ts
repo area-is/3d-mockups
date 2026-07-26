@@ -6,8 +6,16 @@
  * Pro's portrait body is 4.4 units tall), so tablets keep their true relative
  * sizes side by side. Coordinates are portrait-first; `orientation` handles
  * landscape. Rear-hardware coordinates are FRONT-view (they mirror on the
- * back panel). Detail geometry follows the official product photography and
- * spec sheets (photo-measured values noted per variant).
+ * back panel).
+ *
+ * Every iPad detail — camera pod and lens boss, buttons, Smart Connector,
+ * Pencil connector window, speaker drilling — comes from Apple's own
+ * dimensional drawings for accessory makers
+ * (developer.apple.com/accessories/dimensional-drawings). Apple dimensions the
+ * rear view from the top-left corner and the edges from the nearest corner, so
+ * every number below is `half the body size - Apple's number`. The Galaxy Tabs
+ * follow Samsung's product photography and spec sheets (photo-measured values
+ * noted per variant).
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.
@@ -40,11 +48,14 @@ export interface TabletSpec {
       }
     | {
         /** iPad-Air/iPad-style bare raised lens: polished ring straight out of
-         * the aluminum, no plate, no flash — plus the pinhole mic beside it. */
+         * the aluminum, no plate, no flash — plus the pinhole mic beside it.
+         * `r` is the black lens window's ring; `boss` the wider body-colored
+         * mound it rises from (Apple draws Ø16.92 around an Ø11.89 window). */
         style: 'single'
         x: number
         y: number
         r: number
+        boss?: number
         mic: { x: number; y: number }
       }
     | {
@@ -128,16 +139,25 @@ const IPAD_PRO_13: TabletSpec = {
   glass: { width: 3.31, height: 4.343, radius: 0.18 },
   display: { width: 3.095, height: 4.128, radius: 0.16 },
   resolution: 1032,
-  rearCamera: { style: 'pod', x: 3.367 / 2 - 0.36, y: 4.4 / 2 - 0.36, size: 0.5, radius: 0.14 },
-  topButton: { x: 3.367 / 2 - 0.26, length: 0.19 },
+  // Apple's drawing: the pod is a 31.44 mm rounded square whose outer edge sits
+  // 4.32 mm from the top and side edges, so its center is 20.04 mm in.
+  rearCamera: { style: 'pod', x: 3.367 / 2 - 0.3131, y: 4.4 / 2 - 0.3131, size: 0.4913, radius: 0.14 },
+  // Top button 12.06 mm long, 13.98 mm from the corner.
+  topButton: { x: 3.367 / 2 - 0.3127, length: 0.1884 },
+  // Volume pills 10.06 mm long starting 19.33 and 31.39 mm from the top corner.
   sideButtons: [
-    { y: 4.4 / 2 - 0.55, length: 0.165 },
-    { y: 4.4 / 2 - 0.8, length: 0.165 },
+    { y: 4.4 / 2 - 0.3806, length: 0.1572 },
+    { y: 4.4 / 2 - 0.5691, length: 0.1572 },
   ],
-  stylus: { length: 1.6, offsetY: 0 },
-  pogo: { surface: 'back', x: 0, y: -4.4 / 2 + 0.09, axis: 'x', spacing: 0.11 },
+  // The Pencil's magnetic-connector window: a 25.53 mm non-metal strip centered
+  // on the edge — not the whole length the Pencil clings to.
+  stylus: { length: 0.399, offsetY: 0 },
+  // Smart Connector: three Ø3.40 pins 5.27 mm apart, 12.00 mm up from the edge.
+  pogo: { surface: 'back', x: 0, y: -4.4 / 2 + 0.1875, axis: 'x', spacing: 0.0823 },
   logo: { mark: 'apple', y: 0.02, width: 0.63, height: 0.774 },
-  speakers: { style: 'holes', xs: [-0.62, 0.62], count: 8, spacing: 0.052, r: 0.011 },
+  // 28 Ø1.60 holes per edge: two runs of 14 spanning 35.07–65.49 mm from each
+  // corner, so 2.34 mm pitch centered 50.28 mm in.
+  speakers: { style: 'holes', xs: [-0.8982, 0.8982], count: 14, spacing: 0.0366, r: 0.0125 },
 }
 
 /**
@@ -149,16 +169,18 @@ const IPAD_PRO_11: TabletSpec = {
   glass: { width: 2.716, height: 3.845, radius: 0.17 },
   display: { width: 2.508, height: 3.639, radius: 0.15 },
   resolution: 834,
-  rearCamera: { style: 'pod', x: 2.773 / 2 - 0.34, y: 3.902 / 2 - 0.34, size: 0.48, radius: 0.135 },
-  topButton: { x: 2.773 / 2 - 0.25, length: 0.19 },
+  // Apple's drawing gives the 11" the SAME camera pod, buttons, Smart Connector
+  // and speaker runs as the 13" — only the body around them changes.
+  rearCamera: { style: 'pod', x: 2.773 / 2 - 0.3131, y: 3.902 / 2 - 0.3131, size: 0.4913, radius: 0.14 },
+  topButton: { x: 2.773 / 2 - 0.3127, length: 0.1884 },
   sideButtons: [
-    { y: 3.902 / 2 - 0.53, length: 0.165 },
-    { y: 3.902 / 2 - 0.78, length: 0.165 },
+    { y: 3.902 / 2 - 0.3806, length: 0.1572 },
+    { y: 3.902 / 2 - 0.5691, length: 0.1572 },
   ],
-  stylus: { length: 1.5, offsetY: 0 },
-  pogo: { surface: 'back', x: 0, y: -3.902 / 2 + 0.085, axis: 'x', spacing: 0.11 },
+  stylus: { length: 0.399, offsetY: 0 },
+  pogo: { surface: 'back', x: 0, y: -3.902 / 2 + 0.1875, axis: 'x', spacing: 0.0823 },
   logo: { mark: 'apple', y: 0.02, width: 0.6, height: 0.737 },
-  speakers: { style: 'holes', xs: [-0.52, 0.52], count: 7, spacing: 0.052, r: 0.011 },
+  speakers: { style: 'holes', xs: [-0.6011, 0.6011], count: 14, spacing: 0.0366, r: 0.0125 },
 }
 
 /**
@@ -173,23 +195,30 @@ const IPAD_AIR_13: TabletSpec = {
   glass: { width: 3.3, height: 4.327, radius: 0.14 },
   display: { width: 3.08, height: 4.106, radius: 0.12 },
   resolution: 1024,
+  // Apple's drawing: lens center 12.69 mm in from the top and side edges, an
+  // Ø11.89 window inside an Ø16.92 body-colored mound, mic 27.62 mm from the top.
   rearCamera: {
     style: 'single',
-    x: 3.358 / 2 - 0.203,
-    y: 4.384 / 2 - 0.203,
-    r: 0.105,
-    mic: { x: 3.358 / 2 - 0.203, y: 4.384 / 2 - 0.203 - 0.22 },
+    x: 3.358 / 2 - 0.1983,
+    y: 4.384 / 2 - 0.1983,
+    r: 0.1084,
+    boss: 0.1322,
+    mic: { x: 3.358 / 2 - 0.1983, y: 4.384 / 2 - 0.1983 - 0.2333 },
   },
-  topButton: { x: 3.358 / 2 - 0.28, length: 0.26 },
+  // Touch ID top button 12.69 mm long, 17.12 mm from the corner.
+  topButton: { x: 3.358 / 2 - 0.3667, length: 0.1983 },
+  // Volume pills 10.06 mm long starting 19.49 and 31.55 mm from the top corner.
   sideButtons: [
-    { y: 4.384 / 2 - 0.5, length: 0.165 },
-    { y: 4.384 / 2 - 0.75, length: 0.165 },
+    { y: 4.384 / 2 - 0.3831, length: 0.1572 },
+    { y: 4.384 / 2 - 0.5716, length: 0.1572 },
   ],
-  stylus: { length: 1.5, offsetY: 0 },
-  pogo: { surface: 'back', x: 0, y: -4.384 / 2 + 0.085, axis: 'x', spacing: 0.11 },
+  stylus: { length: 0.399, offsetY: 0 },
+  // Smart Connector: three Ø3.40 pins 4.97 mm apart, 10.02 mm up from the edge.
+  pogo: { surface: 'back', x: 0, y: -4.384 / 2 + 0.1566, axis: 'x', spacing: 0.0777 },
   logo: { mark: 'apple', y: 0.03, width: 0.61, height: 0.75 },
   backText: { text: 'iPad Air', y: -4.384 / 2 + 0.34, height: 0.052 },
-  speakers: { style: 'holes', xs: [-0.55, 0.55], count: 7, spacing: 0.052, r: 0.011 },
+  // 24 Ø1.76 holes per edge: two runs of 12 spanning 35.50–63.71 mm from each corner.
+  speakers: { style: 'holes', xs: [-0.9038, 0.9038], count: 12, spacing: 0.0401, r: 0.01375 },
 }
 
 /**
@@ -201,23 +230,26 @@ const IPAD_AIR_11: TabletSpec = {
   glass: { width: 2.732, height: 3.812, radius: 0.13 },
   display: { width: 2.466, height: 3.548, radius: 0.11 },
   resolution: 820,
+  // Same camera module, buttons and Smart Connector as the 13" Air; only the
+  // speaker runs move in with the narrower body (28.22–56.44 mm per Apple).
   rearCamera: {
     style: 'single',
-    x: 2.789 / 2 - 0.203,
-    y: 3.869 / 2 - 0.203,
-    r: 0.105,
-    mic: { x: 2.789 / 2 - 0.203, y: 3.869 / 2 - 0.203 - 0.22 },
+    x: 2.789 / 2 - 0.1983,
+    y: 3.869 / 2 - 0.1983,
+    r: 0.1084,
+    boss: 0.1322,
+    mic: { x: 2.789 / 2 - 0.1983, y: 3.869 / 2 - 0.1983 - 0.2333 },
   },
-  topButton: { x: 2.789 / 2 - 0.28, length: 0.26 },
+  topButton: { x: 2.789 / 2 - 0.3667, length: 0.1983 },
   sideButtons: [
-    { y: 3.869 / 2 - 0.48, length: 0.165 },
-    { y: 3.869 / 2 - 0.73, length: 0.165 },
+    { y: 3.869 / 2 - 0.3831, length: 0.1572 },
+    { y: 3.869 / 2 - 0.5716, length: 0.1572 },
   ],
-  stylus: { length: 1.5, offsetY: 0 },
-  pogo: { surface: 'back', x: 0, y: -3.869 / 2 + 0.085, axis: 'x', spacing: 0.11 },
+  stylus: { length: 0.399, offsetY: 0 },
+  pogo: { surface: 'back', x: 0, y: -3.869 / 2 + 0.1566, axis: 'x', spacing: 0.0777 },
   logo: { mark: 'apple', y: 0.03, width: 0.58, height: 0.712 },
   backText: { text: 'iPad Air', y: -3.869 / 2 + 0.31, height: 0.05 },
-  speakers: { style: 'holes', xs: [-0.5, 0.5], count: 7, spacing: 0.052, r: 0.011 },
+  speakers: { style: 'holes', xs: [-0.7331, 0.7331], count: 12, spacing: 0.0401, r: 0.01375 },
 }
 
 /**
@@ -235,29 +267,31 @@ const IPAD_11: TabletSpec = {
   glass: { width: 2.748, height: 3.828, radius: 0.21 },
   display: { width: 2.464, height: 3.549, radius: 0.1 },
   resolution: 820,
-  // Photo-measured (cross-validated against the reference scan): 13.2 mm
-  // ring — the body-colored anodized boss around the black window — its
-  // center 14.9 mm from the side edge and 15.4 mm from the top, with the
-  // pinhole mic 14.3 mm directly below on the same vertical axis.
+  // Apple's drawing: the same camera module as the Air (Ø11.89 window inside an
+  // Ø16.92 mound), sitting 14.90 mm in from both edges, mic 29.62 from the top.
   rearCamera: {
     style: 'single',
-    x: 2.805 / 2 - 0.233,
-    y: 3.884 / 2 - 0.241,
-    r: 0.103,
-    mic: { x: 2.805 / 2 - 0.233, y: 3.884 / 2 - 0.241 - 0.223 },
+    x: 2.805 / 2 - 0.2328,
+    y: 3.884 / 2 - 0.2328,
+    r: 0.1084,
+    boss: 0.1322,
+    mic: { x: 2.805 / 2 - 0.2328, y: 3.884 / 2 - 0.2328 - 0.23 },
   },
-  topButton: { x: 2.805 / 2 - 0.375, length: 0.266 },
+  // Sleep/wake button 15.15 mm long, 17.12 mm from the corner.
+  topButton: { x: 2.805 / 2 - 0.3855, length: 0.2367 },
+  // Volume pills 10.06 mm long starting 22.72 and 34.78 mm from the top corner.
   sideButtons: [
-    { y: 3.884 / 2 - 0.4375, length: 0.155 },
-    { y: 3.884 / 2 - 0.625, length: 0.155 },
+    { y: 3.884 / 2 - 0.4336, length: 0.1572 },
+    { y: 3.884 / 2 - 0.622, length: 0.1572 },
   ],
-  pogo: { surface: 'edge', x: -2.805 / 2, y: 0, axis: 'y', spacing: 0.083 },
+  // Rail-mounted Smart Connector: three Ø3.20 pins 4.65 mm apart.
+  pogo: { surface: 'edge', x: -2.805 / 2, y: 0, axis: 'y', spacing: 0.0727 },
   // ~26.4 mm glyph, centered on the back within measurement error.
   logo: { mark: 'apple', y: 0.01, width: 0.413, height: 0.55 },
-  // Reference-scan counts: 12 drilled holes per run (2.76 mm pitch), runs
-  // spanning 33.4–65.6 mm from center; the top-right run stops 3 holes short
-  // of the others where the top button interrupts it.
-  speakers: { style: 'holes', xs: [-0.773, 0.773], count: 12, spacing: 0.0431, r: 0.013, topTrim: 3 },
+  // Apple's drawing: Ø1.89 holes in runs spanning 29.44–57.66 mm from each
+  // corner (2.57 mm pitch), and the top edge's runs are dimensioned shorter
+  // (37.14–58.60) where the sleep/wake button interrupts one.
+  speakers: { style: 'holes', xs: [-0.7219, 0.7219], count: 12, spacing: 0.0401, r: 0.0148, topTrim: 3 },
 }
 
 /**
@@ -325,8 +359,9 @@ const TAB_S11_ULTRA: TabletSpec = {
   speakers: { style: 'slots', xs: [-1.075, 1.075], length: 0.64, width: 0.02 },
 }
 
-export const TABLET_VARIANTS: Record<
-  'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11' | 'tabs11' | 'tabs11ultra',
+/** The iPad lineup: two Pros, two Airs and the standard iPad. */
+export const IPAD_VARIANTS: Record<
+  'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11',
   TabletSpec
 > = {
   ipadpro13: IPAD_PRO_13,
@@ -334,14 +369,28 @@ export const TABLET_VARIANTS: Record<
   ipadair13: IPAD_AIR_13,
   ipadair11: IPAD_AIR_11,
   ipad11: IPAD_11,
+}
+
+/** The Galaxy Tab S11 family. */
+export const GALAXY_TAB_VARIANTS: Record<'tabs11' | 'tabs11ultra', TabletSpec> = {
   tabs11: TAB_S11,
   tabs11ultra: TAB_S11_ULTRA,
 }
 
-export type TabletVariant = keyof typeof TABLET_VARIANTS
+export type IPadVariant = keyof typeof IPAD_VARIANTS
+export type GalaxyTabVariant = keyof typeof GALAXY_TAB_VARIANTS
 
-/** The variant every binding defaults to. */
-export const TABLET_DEFAULT_VARIANT: TabletVariant = 'ipadpro13'
+/** Every tablet spec in one table — the shared framing keys off it. */
+export const TABLET_VARIANTS: Record<IPadVariant | GalaxyTabVariant, TabletSpec> = {
+  ...IPAD_VARIANTS,
+  ...GALAXY_TAB_VARIANTS,
+}
+
+export type TabletVariant = IPadVariant | GalaxyTabVariant
+
+/** The variant each family's binding defaults to. */
+export const IPAD_DEFAULT_VARIANT: IPadVariant = 'ipadpro13'
+export const GALAXY_TAB_DEFAULT_VARIANT: GalaxyTabVariant = 'tabs11'
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
 export const TABLET_FRAMING = {
@@ -349,7 +398,7 @@ export const TABLET_FRAMING = {
   floatIntensity: 0.8,
   contactGap: 0.05,
   extent: ({ variant, orientation }) => {
-    const body = TABLET_VARIANTS[variant ?? TABLET_DEFAULT_VARIANT].body
+    const body = TABLET_VARIANTS[variant ?? IPAD_DEFAULT_VARIANT].body
     return (orientation === 'landscape' ? body.width : body.height) / 2
   },
 } as const satisfies MockupFraming<{ variant?: TabletVariant; orientation?: Orientation }>

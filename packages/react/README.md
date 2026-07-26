@@ -1,8 +1,9 @@
 # area-mockups
 
-Interactive, GPU-accelerated **3D device mockups for React**. Put any content on the screen
-of a 3D device — real DOM, projected onto WebGL glass, so it stays fully live: buttons click,
-videos play, iframes scroll.
+GPU-accelerated **3D device mockups for React**. Put any content on the screen of a 3D
+device — real DOM, projected onto WebGL glass, so it stays live: text is vector crisp at
+any angle, videos play, iframes load, React state and effects keep running. Opt into
+`allowInput` when it also has to be clicked.
 
 - **Seventeen devices** — the Galaxy S26 line (S26, S26 Ultra), the Galaxy Z Fold 7 and
   Z Flip 7 foldables, the full iPhone 17 family (17, 17 Air, 17 Pro, 17 Pro Max), MacBook
@@ -19,10 +20,12 @@ videos play, iframes scroll.
 - **Real GPU rendering** — three.js + react-three-fiber, physically-based materials, studio
   lighting, soft shadows, clamped DPR.
 - **Any content on screen** — pass React components, an `<iframe>` or a `<video>` as
-  children. Pointer events, state and scrolling keep working.
-- **Composable** — use the one-liners `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
-  / `<TabletMockup>` / `<WatchMockup>` / `<MonitorMockup>`, or drop `<Phone>` / `<IPhone>` /
-  `<Laptop>` / `<Tablet>` / `<Watch>` / `<Monitor>` into your own react-three-fiber scene.
+  children. State, effects and media playback keep running; add `allowInput` to let
+  pointer events through ([what that trades away](#screen-interaction)).
+- **Composable** — use the one-liners `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
+  / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>`, or
+  drop `<Galaxy>` / `<IPhone>` / `<Laptop>` / `<IPad>` / `<GalaxyTab>` / `<AppleWatch>` / `<GalaxyWatch>` /
+  `<StudioDisplay>` into your own react-three-fiber scene.
 
 ## Install
 
@@ -38,22 +41,21 @@ dependencies.
 ```tsx
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 
 export function Hero() {
   return (
     <div style={{ height: 560 }}>
-      <PhoneMockup autoRotate float>
+      <GalaxyMockup autoRotate float>
         <YourApp />
-      </PhoneMockup>
+      </GalaxyMockup>
     </div>
   )
 }
 ```
 
-Drag anywhere — body, background, or the screen itself — to orbit; taps and clicks on the
-screen still go to your content. In Next.js, load it client-side only
-(`dynamic(() => import('./mockup'), { ssr: false })`).
+Drag anywhere — body, background, or the screen itself — to orbit. In Next.js, load it
+client-side only (`dynamic(() => import('./mockup'), { ssr: false })`).
 
 ## Regions & slots
 
@@ -66,15 +68,15 @@ type `AFrameSignMockup.` and your editor lists exactly the regions the object ha
   <AFrameSignMockup.Front>
     <MenuBoard />
   </AFrameSignMockup.Front>
-  <AFrameSignMockup.Back background="#20241f" interactive={false}>
+  <AFrameSignMockup.Back background="#20241f" allowInput>
     <HoursBoard />
   </AFrameSignMockup.Back>
 </AFrameSignMockup>
 ```
 
-Every slot takes per-surface overrides — `background`, `resolution`, `interactive`,
+Every slot takes per-surface overrides — `background`, `resolution`, `allowInput`,
 `dragToRotate`, `style` — over the mockup-level defaults (`surfaceBackground`,
-`resolution`, `interactive`, `dragToRotate`, `surfaceStyle`). Repeating regions
+`resolution`, `allowInput`, `dragToRotate`, `surfaceStyle`). Repeating regions
 collect in document order:
 
 ```tsx
@@ -91,7 +93,7 @@ names come from each object's spec in the core, so every future binding shares t
 
 ## Components
 
-### `<PhoneMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<TabletMockup>` / `<WatchMockup>` / `<MonitorMockup>` — all-in-one
+### `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>` — all-in-one
 
 Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float`
 (idle floating animation). Transforms are first-class: `position`, `rotation` and `scale`
@@ -113,7 +115,7 @@ flow straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]
 | `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp |
 
-### `<Phone>` — the device
+### `<Galaxy>` — the device
 
 Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation`, `scale`…).
 
@@ -128,14 +130,13 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |
 | `resolution` | `number` | per variant | Virtual display width in CSS px (see resolution table) |
 | `punchHole` | `boolean` | `true` | Front-camera punch hole overlay |
-| `interactive` | `boolean` | `true` | Let pointer events reach the screen |
-| `dragToRotate` | `boolean` | `true` | Drags starting on the screen spin the device (taps still click) |
-| `occlude` | `boolean \| 'blending'` | `true` | Hide content when the device faces away |
+| `allowInput` | `boolean` | `false` | Let pointer events reach the screen. Also switches occlusion from per-pixel blending to all-or-nothing raycasting, which costs visual accuracy — see [Screen interaction](#screen-interaction) |
+| `dragToRotate` | `boolean` | `true` | Drags starting on the screen spin the device (with `allowInput`, taps still click) |
 | `surfaceStyle` | `CSSProperties` | — | Extra styles for the screen wrapper |
 
 ### `<IPhone>` — iPhone 17 family
 
-Same API as `<Phone>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`,
+Same API as `<Galaxy>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`,
 `dynamicIsland` replaces `punchHole`, and `resolution` defaults to the variant's logical
 point grid (see resolution table). Camera architecture follows the real devices: two-lens
 pill (17), ultra-thin single-lens bar (Air), full-width triple-lens plateau with flash +
@@ -143,11 +144,41 @@ LiDAR (Pro / Pro Max).
 
 ### `<Laptop>` — MacBook Air 13" / MacBook Pro 14" (M5)-style
 
-Same screen/interaction API (`interactive`, `dragToRotate`, `occlude`, `surfaceStyle`), plus
+Same screen/interaction API (`allowInput`, `dragToRotate`, `surfaceStyle`), plus
 `notch` (camera notch overlay), `openAngle` (lid angle, default `110`), and `resolution`
 defaulting to the variant's scaled desktop (Air 1280×832, Pro 14 1512×982 — desktop breakpoints
 apply). `color` sets the aluminum finish (Sky Blue `#aec6d9`, Starlight `#e8e0d4`,
 Midnight `#2e3642`).
+
+## Screen interaction
+
+> [!WARNING]
+> `allowInput` is not just a pointer-events switch — it also changes how the
+> mockup looks, and not for the better. Leave it off unless the content
+> genuinely has to be used.
+
+A screen is real DOM composited into a WebGL scene, and where that DOM sits in
+the stacking order decides how hardware can hide it. There are exactly two
+options, and interactivity picks between them:
+
+- **`allowInput={false}` (default) — per-pixel blending.** The DOM stacks
+  *under* the canvas and is masked by the depth buffer, so anything in front of
+  the screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
+  screen's reflection, a proud camera ring stands over a wrap. Being under the
+  canvas is also why the content can't be clicked.
+- **`allowInput={true}` — raycast occlusion.** The DOM stacks *on top of* the
+  canvas so pointers reach it, which means nothing in the scene can visually
+  cover it. Hiding becomes all-or-nothing, decided by sample rays against the
+  body — so content shows through hardware that should hide it (you can see a
+  laptop's screen through its own keyboard), and a mostly-visible screen can
+  blank out entirely.
+
+`allowInput` is a per-region prop as well as a mockup-level default, so a
+multi-surface mockup can turn it on for one slot and leave the rest
+display-only. A few surfaces are per-pixel no matter what you pass, because
+raycasting can't describe what covers them — the full-coverage wrap sides on
+`<Van>` / `<Bus>`, the glass on `<BusShelter>`, and the outer cover of
+`<Fold>` / `<Flip>`.
 
 ## Virtual screen resolutions
 
@@ -175,7 +206,7 @@ Every variant's screen defaults to the real device's logical resolution (CSS px)
 | Apple Watch Series 11 46mm | — | 208×248 | — | 416×496 @ 2x point grid |
 | Studio Display 27" | — | — | 2560×1440 | 5120×2880 @ 2x point grid |
 
-### `<Tablet>` — the iPad lineup / Galaxy Tab S11 family
+### `<IPad>` / `<GalaxyTab>` — the iPad lineup / Galaxy Tab S11 family
 
 Shares the phones' screen/interaction API plus `orientation`, with a `variant` prop
 (`'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11' | 'tabs11' |
@@ -187,16 +218,21 @@ and (on the Ultra) the U-shaped display notch on the Galaxy Tabs; brand marks as
 vector geometry (Apple glyph, edge-aligned SAMSUNG wordmark) and model wordmarks on
 the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
 
-### `<Watch>` — Apple Watch-style · `<Monitor>` — Studio Display-style
+### `<AppleWatch>` / `<GalaxyWatch>` — smartwatches · `<StudioDisplay>` — Studio Display-style
 
-The watch adds `bandColor` (Sport-Band straps) and skips orientation: squircle case,
-knurled Digital Crown, side button, sensor dome and straps. The monitor puts the
+Both watches add `bandColor` and skip orientation. `<AppleWatch>` is the Series 11:
+squircle case, knurled Digital Crown, flush side button, sensor back, worn on the
+seamless Solo Loop — which has no closure, so it takes no `bandOpen`.
+`<GalaxyWatch>` is the Watch 8: cushion case, round display on its dial puck, two
+flat keys, BioActive puck, worn on a buckled two-strap band that `bandOpen` lays
+out flat. The monitor puts the
 2026 Studio Display's 27" 5K panel on its tilt stand — uniform bezel, centered
 camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive power
 cord's circular recess framed by the stand's cable hole and, faithfully, no power
 button.
 
-Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `TABLET_VARIANTS`,
+Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPAD_VARIANTS`,
+`APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
 `PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
 available from the `area-mockups/core` subpath — the same data will drive the planned
 2D (CSS/SVG) renderers.

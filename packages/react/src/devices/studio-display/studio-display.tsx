@@ -3,9 +3,9 @@ import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import {
-  MONITOR,
-  MONITOR_COLORWAYS,
-  MONITOR_STAGE_OFFSET_Y,
+  STUDIO_DISPLAY,
+  STUDIO_DISPLAY_COLORWAYS,
+  STUDIO_DISPLAY_STAGE_OFFSET_Y,
   SCREEN_REGIONS,
   findColorway,
   roundedRectShape,
@@ -17,14 +17,14 @@ import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from 
 
 type GroupProps = ThreeElements['group']
 
-export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the monitor: React components, an <iframe>, a
-   * <video>… Wrap in `<Monitor.Screen>` to set per-screen surface props.
+   * <video>… Wrap in `<StudioDisplay.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from `MONITOR_COLORWAYS` presetting the enclosure
+   * A retail colorway id from `STUDIO_DISPLAY_COLORWAYS` presetting the enclosure
    * color. An explicit `color` prop overrides it.
    */
   colorway?: string
@@ -37,12 +37,6 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, Su
    * behave like on the real display.
    */
   resolution?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the enclosure (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -58,28 +52,27 @@ export interface MonitorProps extends Omit<GroupProps, 'children' | 'color'>, Su
  * Thunderbolt/USB-C port row and the captive power cord's circular recess on
  * the back — and, faithfully, no power button. No 3D asset files are loaded.
  *
- * The monitor renders lifted `MONITOR_STAGE_OFFSET_Y` above the group origin,
+ * The monitor renders lifted `STUDIO_DISPLAY_STAGE_OFFSET_Y` above the group origin,
  * so the panel + stand ensemble is visually centered on it (the stage pose the
  * framing's camera and shadow expect); the desk plane sits
- * `MONITOR.standHeight` below the lifted panel center. Must be rendered inside
+ * `STUDIO_DISPLAY.standHeight` below the lifted panel center. Must be rendered inside
  * a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-function MonitorImpl({
+function StudioDisplayImpl({
   children,
   colorway,
   color: colorProp,
   surfaceBackground = '#000000',
-  resolution = MONITOR.resolution,
-  interactive = true,
+  resolution = STUDIO_DISPLAY.resolution,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
-}: MonitorProps) {
+}: StudioDisplayProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
-  const retail = findColorway(MONITOR_COLORWAYS, colorway)
+  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorway)
   const color = colorProp ?? retail?.color ?? '#c8cbd0'
-  const { body, glass, display, stand, standHeight } = MONITOR
+  const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
   const bodyRef = React.useRef<THREE.Mesh>(null!)
   // The stand pieces occlude too — from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
@@ -126,9 +119,10 @@ function MonitorImpl({
       leanDeg,
       attachY,
       footFrontZ,
+      footBackZ,
       footThickness,
-      outerKneeRadius: Ro,
-      innerKneeRadius: Ri,
+      backFillet: Rb,
+      frontFillet: Rf,
       hingeRadius,
       cutout,
     } = stand
@@ -145,33 +139,37 @@ function MonitorImpl({
     const footTopY = deskY + footThickness
     const tangentAngle = Math.atan2(n.y, n.z) + Math.PI
 
-    // Outer knee: tangent to the desk plane and to the arm's back face.
-    const oC = { y: deskY + Ro, z: 0 }
-    oC.z = (cBack + Ro - n.y * oC.y) / n.z
-    const oTan = { z: oC.z - n.z * Ro, y: oC.y - n.y * Ro }
-    // Inner knee: fillet between the foot's top face and the arm's front face.
-    const iC = { y: footTopY + Ri, z: 0 }
-    iC.z = (cFront + Ri - n.y * iC.y) / n.z
-    const iTan = { z: iC.z - n.z * Ri, y: iC.y - n.y * Ri }
-    // Cap the knee piece just above the tangencies — the cut hides inside
+    // Both fillets are CONCAVE — the corners where the arm rises out of the
+    // plate — so each circle sits outside the metal: above the plate's top
+    // face, and off the arm face it touches.
+    const bC = { y: footTopY + Rb, z: 0 }
+    bC.z = (cBack - Rb - n.y * bC.y) / n.z
+    const bTan = { z: bC.z + n.z * Rb, y: bC.y + n.y * Rb }
+    const fC = { y: footTopY + Rf, z: 0 }
+    fC.z = (cFront + Rf - n.y * fC.y) / n.z
+    const fTan = { z: fC.z - n.z * Rf, y: fC.y - n.y * Rf }
+    // Cap the plate piece just above the tangencies — the cut hides inside
     // the (slightly thicker) arm slab that overlaps it.
-    const yCut = Math.max(oTan.y, iTan.y) + 0.17
-    const zCutBack = oTan.z + (d.z / d.y) * (yCut - oTan.y)
-    const zCutFront = iTan.z + (d.z / d.y) * (yCut - iTan.y)
-    // Rounded front lip of the foot.
+    const yCut = Math.max(bTan.y, fTan.y) + 0.17
+    const zCutBack = bTan.z + (d.z / d.y) * (yCut - bTan.y)
+    const zCutFront = fTan.z + (d.z / d.y) * (yCut - fTan.y)
+    // Rounded lips at both ends of the foot plate.
     const r = footThickness / 2
-    const cap = { z: footFrontZ - r, y: deskY + r }
+    const front = { z: footFrontZ - r, y: deskY + r }
+    const back = { z: footBackZ + r, y: deskY + r }
 
     const shape = new THREE.Shape()
-    shape.moveTo(cap.z, deskY)
-    shape.lineTo(oC.z, deskY)
-    shape.absarc(oC.z, oC.y, Ro, -Math.PI / 2, tangentAngle, true)
+    shape.moveTo(front.z, deskY)
+    shape.lineTo(back.z, deskY)
+    shape.absarc(back.z, back.y, r, -Math.PI / 2, Math.PI / 2, true)
+    shape.lineTo(bC.z, footTopY)
+    shape.absarc(bC.z, bC.y, Rb, -Math.PI / 2, Math.atan2(n.y, n.z), false)
     shape.lineTo(zCutBack, yCut)
     shape.lineTo(zCutFront, yCut)
-    shape.lineTo(iTan.z, iTan.y)
-    shape.absarc(iC.z, iC.y, Ri, tangentAngle, -Math.PI / 2, false)
-    shape.lineTo(cap.z, footTopY)
-    shape.absarc(cap.z, cap.y, r, Math.PI / 2, -Math.PI / 2, true)
+    shape.lineTo(fTan.z, fTan.y)
+    shape.absarc(fC.z, fC.y, Rf, tangentAngle, -Math.PI / 2, false)
+    shape.lineTo(front.z, footTopY)
+    shape.absarc(front.z, front.y, r, Math.PI / 2, -Math.PI / 2, true)
 
     const bevel = 0.012
     const extrudeW = width - bevel * 2
@@ -190,13 +188,16 @@ function MonitorImpl({
     // center at +armLen/2) with the stadium cutout as a real punched
     // opening — the extrude bevel rounds its bore, giving the rim highlight
     // the product photos show around the opening.
-    const armLen = (hinge.y - yCut) / d.y + 0.24
+    // The arm's rounded top stands a little proud of the hinge, exactly as the
+    // rear photography shows it above the pivot.
+    const topProud = 0.1
+    const armLen = (hinge.y - yCut) / d.y + 0.24 + topProud
     const armShape = roundedRectShape(width - 0.016, armLen, 0.05)
     // The cutout's center sits `edgeOffset` above the enclosure's bottom
     // edge: the power inlet shows through its upper half, open air through
     // the lower; from the front it hides behind the panel.
     const holeWorldY = -body.height / 2 + cutout.edgeOffset
-    const holeCenterS = armLen / 2 - (hinge.y - holeWorldY) / d.y
+    const holeCenterS = armLen / 2 - topProud - (hinge.y - holeWorldY) / d.y
     const capR = cutout.width / 2
     const straight = Math.max(0, cutout.length / 2 - capR)
     const holePath = new THREE.Path()
@@ -217,13 +218,12 @@ function MonitorImpl({
     armSlab.rotateX(lean)
     const armPos: [number, number, number] = [
       0,
-      hinge.y - (d.y * armLen) / 2,
-      hinge.z - (d.z * armLen) / 2,
+      hinge.y + d.y * (topProud - armLen / 2),
+      hinge.z + d.z * (topProud - armLen / 2),
     ]
 
-    // Rubber pad positions on the foot's underside — front pair under the
-    // lip, rear pair just ahead of the knee's desk tangency.
-    const feetZ = { front: footFrontZ - 0.15, rear: oC.z + 0.05 }
+    // Rubber pad positions on the plate's underside — a pair inside each lip.
+    const feetZ = { front: footFrontZ - 0.16, rear: footBackZ + 0.16 }
 
     return { footKnee, armSlab, armPos, hinge, feetZ }
   }, [body, stand, standHeight])
@@ -231,7 +231,17 @@ function MonitorImpl({
   // The generation's gloss-black Apple mark on the back — real vector
   // geometry from the SVG, reading as a dark glass inlay on the aluminum.
   const logoGeometry = React.useMemo(
-    () => createLogoGeometry('apple', MONITOR.logo.width, MONITOR.logo.height),
+    () => createLogoGeometry('apple', STUDIO_DISPLAY.logo.width, STUDIO_DISPLAY.logo.height),
+    []
+  )
+  // The Thunderbolt bolt printed above each Thunderbolt slot.
+  const boltGeometry = React.useMemo(
+    () =>
+      createLogoGeometry(
+        'thunderbolt',
+        STUDIO_DISPLAY.ports.thunderbolt.icon.width,
+        STUDIO_DISPLAY.ports.thunderbolt.icon.height
+      ),
     []
   )
 
@@ -263,13 +273,14 @@ function MonitorImpl({
       standParts.footKnee.dispose()
       standParts.armSlab.dispose()
       logoGeometry.dispose()
+      boltGeometry.dispose()
       grilleTexture?.dispose()
     }
-  }, [bodyGeometry, glassGeometry, standParts, logoGeometry, grilleTexture])
+  }, [bodyGeometry, glassGeometry, standParts, logoGeometry, boltGeometry, grilleTexture])
 
   return (
     /* the stage lift centering the panel + stand ensemble on the group origin */
-    <group position-y={MONITOR_STAGE_OFFSET_Y}>
+    <group position-y={STUDIO_DISPLAY_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure */}
       <mesh ref={bodyRef} geometry={bodyGeometry}>
@@ -292,7 +303,7 @@ function MonitorImpl({
       <mesh
         geometry={logoGeometry}
         rotation-y={Math.PI}
-        position={[0, MONITOR.logo.y, -body.depth / 2 - 0.003]}
+        position={[0, STUDIO_DISPLAY.logo.y, -body.depth / 2 - 0.003]}
       >
         <meshPhysicalMaterial
           color="#08090b"
@@ -307,34 +318,63 @@ function MonitorImpl({
       </mesh>
 
       {/* back: the tight 2x Thunderbolt 5 + 2x USB-C cluster, low and left of
-          center seen from behind (front-view right), pill slots ~14.5 mm apart */}
-      {[0, 1, 2, 3].map((i) => (
-        <RoundedBox
-          key={i}
-          args={[MONITOR.ports.slot.width, MONITOR.ports.slot.height, 0.02]}
-          // radius must stay under half the SMALLEST face dimension or the
-          // corner spheres self-intersect into a bowtie
-          radius={Math.min(MONITOR.ports.slot.width, MONITOR.ports.slot.height) / 2 - 0.004}
-          position={[
-            MONITOR.ports.x - i * MONITOR.ports.spacing,
-            -body.height / 2 + MONITOR.ports.y,
-            -body.depth / 2 - 0.004,
-          ]}
-        >
-          <meshPhysicalMaterial color="#07080c" metalness={0.4} roughness={0.4} />
-        </RoundedBox>
-      ))}
+          center seen from behind (front-view right), pill slots ~14.5 mm apart.
+          The two innermost slots are the Thunderbolt pair: each is printed with
+          the bolt above it, and the upstream (innermost) one adds the host dot
+          below — the marking Apple's rear-port callout shows. */}
+      {[0, 1, 2, 3].map((i) => {
+        const { ports } = STUDIO_DISPLAY
+        const x = ports.x - i * ports.spacing
+        const y = -body.height / 2 + ports.y
+        const isThunderbolt = i >= 4 - ports.thunderbolt.count
+        return (
+          <React.Fragment key={i}>
+            <RoundedBox
+              args={[ports.slot.width, ports.slot.height, 0.02]}
+              // radius must stay under half the SMALLEST face dimension or the
+              // corner spheres self-intersect into a bowtie
+              radius={Math.min(ports.slot.width, ports.slot.height) / 2 - 0.004}
+              position={[x, y, -body.depth / 2 - 0.004]}
+            >
+              <meshPhysicalMaterial color="#07080c" metalness={0.4} roughness={0.4} />
+            </RoundedBox>
+            {isThunderbolt && boltGeometry && (
+              <mesh
+                geometry={boltGeometry}
+                rotation-y={Math.PI}
+                position={[x, y + ports.slot.height / 2 + ports.thunderbolt.icon.offset, -body.depth / 2 - 0.002]}
+              >
+                <meshStandardMaterial
+                  color="#25272b"
+                  roughness={0.5}
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                />
+              </mesh>
+            )}
+            {i === 3 && (
+              <mesh
+                rotation-x={Math.PI / 2}
+                position={[x, y - ports.slot.height / 2 - ports.thunderbolt.dot.offset, -body.depth / 2 - 0.002]}
+              >
+                <cylinderGeometry args={[ports.thunderbolt.dot.r, ports.thunderbolt.dot.r, 0.004, 16]} />
+                <meshStandardMaterial color="#25272b" roughness={0.5} />
+              </mesh>
+            )}
+          </React.Fragment>
+        )
+      })}
 
       {/* the captive power cord's circular recess, centered low on the back —
           the cable is not user-detachable, so a molded collar sits proud of
           the machined ring instead of a socket */}
-      <group position={[0, -body.height / 2 + MONITOR.power.y, -body.depth / 2]}>
+      <group position={[0, -body.height / 2 + STUDIO_DISPLAY.power.y, -body.depth / 2]}>
         <mesh rotation-x={Math.PI / 2} position-z={-0.003}>
-          <cylinderGeometry args={[MONITOR.power.r, MONITOR.power.r, 0.006, 32]} />
+          <cylinderGeometry args={[STUDIO_DISPLAY.power.r, STUDIO_DISPLAY.power.r, 0.006, 32]} />
           <meshPhysicalMaterial color="#585b60" metalness={0.6} roughness={0.35} />
         </mesh>
         <mesh rotation-x={Math.PI / 2} position-z={-0.012}>
-          <cylinderGeometry args={[MONITOR.power.r * 0.44, MONITOR.power.r * 0.52, 0.018, 24]} />
+          <cylinderGeometry args={[STUDIO_DISPLAY.power.r * 0.44, STUDIO_DISPLAY.power.r * 0.52, 0.018, 24]} />
           <meshStandardMaterial color="#2c2e32" roughness={0.7} />
         </mesh>
       </group>
@@ -396,11 +436,11 @@ function MonitorImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}
@@ -411,9 +451,9 @@ function MonitorImpl({
     </group>
   )
 }
-MonitorImpl.displayName = 'Monitor'
+StudioDisplayImpl.displayName = 'StudioDisplay'
 
-/** The device's compound slots, shared by `<Monitor>` and `<MonitorMockup>`. */
-export const monitorSlots = createSlots(SCREEN_REGIONS)
+/** The device's compound slots, shared by `<StudioDisplay>` and `<StudioDisplayMockup>`. */
+export const studioDisplaySlots = createSlots(SCREEN_REGIONS)
 
-export const Monitor = Object.assign(MonitorImpl, monitorSlots)
+export const StudioDisplay = Object.assign(StudioDisplayImpl, studioDisplaySlots)

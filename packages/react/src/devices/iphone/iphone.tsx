@@ -65,12 +65,6 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   resolution?: number
   /** Show the Dynamic Island overlay. */
   dynamicIsland?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the phone body (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -92,9 +86,8 @@ function IPhoneImpl({
   surfaceBackground = '#000000',
   resolution,
   dynamicIsland = true,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: IPhoneProps) {
@@ -186,22 +179,27 @@ function IPhoneImpl({
   // (Air / Pro / Pro Max) — extruded so face corners are truly semicircular.
   const pedestalGeometry = React.useMemo(() => {
     const { frame } = rearCamera
-    const bevel = 0.018
+    // `wall` is the sloped skirt between the footprint and the top face — wide
+    // on the retail pedestals (2.6 mm on the 17's pill, 4.7 mm on the Air's
+    // bar), so it is authored per variant instead of following the raise.
+    const wall = frame.wall ?? 0.018
+    const raise = frame.raise ?? 0.048
+    const lift = Math.min(wall, raise * 0.6)
     const radius =
       frame.radius ??
       (rearCamera.style === 'pill'
-        ? (frame.width - bevel * 2) / 2 // fully rounded pill ends
-        : Math.min(0.24, (frame.height - bevel * 2) / 2))
+        ? (frame.width - wall * 2) / 2 // fully rounded pill ends
+        : Math.min(0.24, (frame.height - wall * 2) / 2))
     const shape = roundedRectShape(
-      frame.width - bevel * 2,
-      frame.height - bevel * 2,
-      Math.max(0.01, radius - bevel)
+      frame.width - wall * 2,
+      frame.height - wall * 2,
+      Math.max(0.01, radius - wall)
     )
     const geometry = new THREE.ExtrudeGeometry(shape, {
-      depth: Math.max(0.012, (frame.raise ?? 0.048) - bevel),
+      depth: Math.max(0.008, raise - lift),
       bevelEnabled: true,
-      bevelThickness: bevel,
-      bevelSize: bevel,
+      bevelThickness: lift,
+      bevelSize: wall,
       bevelSegments: 3,
       curveSegments: 24,
     })
@@ -210,6 +208,17 @@ function IPhoneImpl({
 
   // Every lens ring mounts on the pedestal face and stands `h` proud of it.
   const pedestalTop = body.depth / 2 + (rearCamera.frame.raise ?? 0.048)
+  // A flash or sensor mounts on the pedestal face when it falls inside the
+  // pedestal's footprint and on the flat back when it doesn't — on the 17 the
+  // mic sits on the pill while the flash is out on the glass beside it.
+  const onPedestal = (x: number, y: number) => {
+    const { frame } = rearCamera
+    return (
+      Math.abs(x - frame.x) <= frame.width / 2 && Math.abs(y - frame.y) <= frame.height / 2
+    )
+  }
+  const mountZ = (x: number, y: number) =>
+    onPedestal(x, y) ? -pedestalTop - 0.005 : -body.depth / 2 - 0.008
   // Apple badge — real vector geometry from the SVG. The retail logo is
   // tone-on-tone in the back glass ("practically invisible in some light"):
   // a slight tone shift plus a glossier finish, no printed color.
@@ -311,7 +320,7 @@ function IPhoneImpl({
           position={[
             rearCamera.flash.x,
             rearCamera.flash.y,
-            rearCamera.style === 'bar' ? -pedestalTop - 0.005 : -body.depth / 2 - 0.008,
+            mountZ(rearCamera.flash.x, rearCamera.flash.y),
           ]}
         >
           <cylinderGeometry args={[rearCamera.flash.r, rearCamera.flash.r, 0.016, 32]} />
@@ -326,7 +335,7 @@ function IPhoneImpl({
           <mesh
             key={i}
             rotation-x={Math.PI / 2}
-            position={[x, y, rearCamera.style === 'bar' ? -pedestalTop - 0.004 : -body.depth / 2 - 0.006]}
+            position={[x, y, mountZ(x, y) + 0.001]}
           >
             <cylinderGeometry args={[r, r, 0.012, 24]} />
             <meshPhysicalMaterial color="#111318" metalness={0.5} roughness={0.3} clearcoat={0.6} />
@@ -430,11 +439,11 @@ function IPhoneImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

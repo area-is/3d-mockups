@@ -27,12 +27,6 @@ export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'>,
   size?: ProductBoxSizeMm
   /** Carton stock color — every unprinted panel and the fold edges. */
   color?: string
-  /**
-   * How panel content hides when that panel turns away from the camera.
-   * `true` raycasts against the carton (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -57,9 +51,8 @@ function ProductBoxImpl({
   color = '#f4f1ea',
   surfaceBackground = '#ffffff',
   resolution = PRODUCT_BOX.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: ProductBoxProps) {
@@ -81,12 +74,12 @@ function ProductBoxImpl({
 
   const shared = {
     radius: body.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
   const panelDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

@@ -34,12 +34,6 @@ export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>
   matColor?: string
   /** Simulated glazing: a soft acrylic sheen over the art. */
   glazing?: boolean
-  /**
-   * How poster content hides when the frame faces away from the camera.
-   * `true` raycasts against the frame and backing (fast, interactive).
-   * `'blending'` uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -66,9 +60,8 @@ function PosterFrameImpl({
   glazing = true,
   surfaceBackground = '#ffffff',
   resolution = POSTER_FRAME.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: PosterFrameProps) {
@@ -195,11 +188,11 @@ function PosterFrameImpl({
         height={art.height}
         radius={mat ? 0.002 : opening.radius}
         position={[0, 0, sheetZ]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(posterSlot, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

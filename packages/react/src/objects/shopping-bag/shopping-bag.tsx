@@ -26,12 +26,6 @@ export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>
   color?: string
   /** Rope handle color. */
   handleColor?: string
-  /**
-   * How face content hides when that face turns away from the camera.
-   * `true` raycasts against the bag walls (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -59,9 +53,8 @@ function ShoppingBagImpl({
   handleColor = '#7d6142',
   surfaceBackground = '#ffffff',
   resolution = SHOPPING_BAG.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: ShoppingBagProps) {
@@ -162,7 +155,7 @@ function ShoppingBagImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -170,7 +163,7 @@ function ShoppingBagImpl({
     width: body.width,
     height: body.height,
     radius: body.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   // handle hardware hangs from the rim in proportion to the handle itself

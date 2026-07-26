@@ -79,12 +79,6 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   resolution?: number
   /** Show the front-camera punch-hole overlay (open pose only). */
   punchHole?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the body (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (one flip half / body). */
@@ -137,9 +131,8 @@ function FlipImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: FlipProps) {
@@ -488,11 +481,11 @@ function FlipImpl({
       radius={display.radius}
       position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occluders={occludeRefs}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
-        interactive,
+        allowInput,
         dragToRotate,
         style: surfaceStyle,
       })}
@@ -586,12 +579,12 @@ function FlipImpl({
           radius={radius}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === false ? undefined : 'blending'}
+          blending
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's height
             resolution: landscape ? res / 2 : res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

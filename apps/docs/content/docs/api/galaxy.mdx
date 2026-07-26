@@ -1,20 +1,20 @@
 ---
-title: Phone (Galaxy S26 family)
+title: Galaxy (S26 family)
 description: The Galaxy S26 family device and its all-in-one mockup.
 ---
 
-`<Phone>` renders a Galaxy device; `<PhoneMockup>` is the all-in-one version.
+`<Galaxy>` renders a Galaxy device; `<GalaxyMockup>` is the all-in-one version.
 Both variants keep true relative sizes and per-model camera architecture — the
 6.3″ Galaxy S26 and the 6.9″ Galaxy S26 Ultra, with detail geometry (button
 pills, camera island, port cutouts, antenna seams) measured from scans of the
 retail hardware.
 
-<ObjectDemo demo="phone-basic" checker />
+<ObjectDemo demo="galaxy-basic" checker />
 
 ```tsx
-<PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+<GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
   <TapCounter />
-</PhoneMockup>
+</GalaxyMockup>
 ```
 
 ## Props
@@ -35,8 +35,8 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 ## Regions
 
 One region: the screen (bare children). Use the explicit
-`<PhoneMockup.Screen>` slot when you want per-surface overrides —
-`background`, `resolution`, `interactive`, `dragToRotate`, `style`.
+`<GalaxyMockup.Screen>` slot when you want per-surface overrides —
+`background`, `resolution`, `allowInput`, `dragToRotate`, `style`.
 
 ## Colorways
 
@@ -50,7 +50,7 @@ Every live surface filled with chroma green, labeled with the prop that
 feeds it — the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-phone" />
+<ObjectDemo demo="chroma-galaxy" />
 
 ## More examples
 
@@ -58,12 +58,12 @@ Every example is live: drag to spin it, and the screens really work.
 
 ### Colorways with float and auto-orbit
 
-<ObjectDemo demo="phone-lock" />
+<ObjectDemo demo="galaxy-lock" />
 
 ```tsx
-<PhoneMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
+<GalaxyMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
   <LockScreen />
-</PhoneMockup>
+</GalaxyMockup>
 ```
 
 ### Landscape, at the Ultra's real resolution
@@ -71,12 +71,12 @@ Every example is live: drag to spin it, and the screens really work.
 `orientation="landscape"` swaps the virtual display to 832×384 on the
 S26 Ultra — your responsive layout reacts exactly like on the device.
 
-<ObjectDemo demo="phone-landscape" />
+<ObjectDemo demo="galaxy-landscape" />
 
 ```tsx
-<PhoneMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
+<GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
   <MusicPlayer />
-</PhoneMockup>
+</GalaxyMockup>
 ```
 
 ### Galaxy S26 — the vertical pill camera island
@@ -84,12 +84,12 @@ S26 Ultra — your responsive layout reacts exactly like on the device.
 `variant="s26"` renders the 6.3″ design: the three lenses live in a single
 vertical pill island with the flash on the flat back beside it.
 
-<ObjectDemo demo="phone-s26" />
+<ObjectDemo demo="galaxy-s26" />
 
 ```tsx
-<PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478">
+<GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478">
   <MusicPlayer />
-</PhoneMockup>
+</GalaxyMockup>
 ```
 
 ### Galaxy S26 Ultra
@@ -98,10 +98,10 @@ vertical pill island with the flash on the flat back beside it.
 rings on the pill island with the tele column beside it, the S Pen silo, and a
 384×832 virtual screen.
 
-<ObjectDemo demo="phone-s26ultra" />
+<ObjectDemo demo="galaxy-s26ultra" />
 
 ```tsx
-<PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7">
+<GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7">
   <MusicPlayer />
-</PhoneMockup>
+</GalaxyMockup>
 ```

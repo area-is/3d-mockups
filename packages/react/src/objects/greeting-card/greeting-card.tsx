@@ -20,12 +20,6 @@ export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'
   openAngle?: number
   /** Card stock color — edges and unprinted faces. */
   color?: string
-  /**
-   * How face content hides when that face turns away from the camera.
-   * `true` raycasts against the panels (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -50,9 +44,8 @@ function GreetingCardImpl({
   color = '#f6f3ec',
   surfaceBackground = '#ffffff',
   resolution = GREETING_CARD.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: GreetingCardProps) {
@@ -91,7 +84,7 @@ function GreetingCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -99,7 +92,7 @@ function GreetingCardImpl({
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

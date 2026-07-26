@@ -331,12 +331,6 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
    * it). Pass a boolean for both sides or `{ curbSide?, streetSide? }`.
    */
   wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean }
-  /**
-   * How wrap content hides when the van faces away from the camera.
-   * `true` raycasts against the shell (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -368,9 +362,8 @@ function VanImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = false,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: VanProps) {
@@ -432,7 +425,7 @@ function VanImpl({
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
   const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear panel shares the side wrap's dpi.
@@ -490,12 +483,13 @@ function VanImpl({
     [sideOccluderGeometries]
   )
   // Full-coverage sides composite per-pixel so proud hardware (mirrors,
-  // handles, track, hinges) draws over the livery; everything else keeps
-  // the fast raycast mode.
+  // handles, track, hinges) draws over the livery; so they stay per-pixel even when
+  // `allowInput` (and are therefore never clickable). Everything else
+  // follows `allowInput` like any other surface.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
-    fullWrap && occlude !== false
-      ? { occlude: 'blending' as const, occluderGeometry: blendGeometry }
-      : { occlude: occlude === true ? otherOccludeRefs : occlude === 'blending' ? ('blending' as const) : undefined }
+    fullWrap
+      ? { blending: true, occluderGeometry: blendGeometry }
+      : { occluders: otherOccludeRefs }
 
   const shellGeometry = React.useMemo(() => {
     const s = vanProfileShape()
@@ -814,7 +808,7 @@ function VanImpl({
           {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 200 })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={otherOccludeRefs}
         >
           {plateFace}
         </DeviceScreen>
@@ -914,7 +908,7 @@ function VanImpl({
           {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 160 })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={otherOccludeRefs}
         >
           {plateFace}
         </DeviceScreen>
@@ -972,7 +966,7 @@ function VanImpl({
           {...rearSurface}
           position={[-body.length / 2 - 0.026, rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={otherOccludeRefs}
           screenStyle={rearStyle}
         >
           {regions.rear.children}

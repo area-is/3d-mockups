@@ -2,8 +2,15 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { ID_CARD, ID_CARD_REGIONS, clipRoundedRect, clipRoundedRectOutline, roundedRectShape } from '@area-mockups/core'
-import { DeviceScreen } from '../../screen/device-screen'
+import {
+  ID_CARD,
+  ID_CARD_REGIONS,
+  clipRoundedRect,
+  clipRoundedRectOutline,
+  roundedRectShape,
+  roundedRectShapeCorners,
+} from '@area-mockups/core'
+import { DeviceScreen, SCREEN_MASK_INSET } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -21,15 +28,6 @@ export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   color?: string
   /** Woven lanyard strap color. */
   lanyardColor?: string
-  /**
-   * How face content composites against the 3D hardware. `'blending'`
-   * (default) uses per-pixel depth blending, so the J-hook pierced through
-   * the slot correctly crosses IN FRONT of the printed face where it
-   * physically does. `true` falls back to raycast hiding (faster, but the
-   * live face then paints over the hook at oblique angles). `false`
-   * disables hiding entirely.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -56,9 +54,8 @@ function IDCardImpl({
   lanyardColor = '#b3223a',
   surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = 'blending',
   surfaceStyle,
   ...groupProps
 }: IDCardProps) {
@@ -182,22 +179,32 @@ function IDCardImpl({
   // slot punched out, so blending mode never depth-hides the hook where it
   // should show through the real opening.
   const faceOccluderGeometry = React.useMemo(() => {
-    const shape = roundedRectShape(face.width, face.height, face.radius)
-    const punch = roundedRectShape(slot.width, slot.height, slot.height / 2)
+    // True arcs, and held a hair inside the DOM's clip at every edge — the
+    // outline inward, the punch outward — so neither seam shows the page.
+    const inset = Math.min(face.width, face.height) * SCREEN_MASK_INSET
+    const r = Math.max(0, face.radius - inset)
+    const shape = roundedRectShapeCorners(face.width - inset * 2, face.height - inset * 2, [r, r, r, r])
+    const punchH = slot.height + inset * 2
+    const punch = roundedRectShapeCorners(slot.width + inset * 2, punchH, [
+      punchH / 2,
+      punchH / 2,
+      punchH / 2,
+      punchH / 2,
+    ])
     const punchPath = new THREE.Path()
-    punch.getPoints(16).forEach((p, i) => {
+    punch.getPoints(24).forEach((p, i) => {
       if (i === 0) punchPath.moveTo(p.x, p.y + slot.centerY)
       else punchPath.lineTo(p.x, p.y + slot.centerY)
     })
     shape.holes.push(punchPath)
-    return new THREE.ShapeGeometry(shape, 12)
+    return new THREE.ShapeGeometry(shape, 24)
   }, [face, slot])
   React.useEffect(() => () => faceOccluderGeometry.dispose(), [faceOccluderGeometry])
 
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -207,7 +214,7 @@ function IDCardImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
     occluderGeometry: faceOccluderGeometry,
   }
 

@@ -22,12 +22,6 @@ export interface BusinessCardProps extends Omit<GroupProps, 'children' | 'color'
    * seam of color around the card). Defaults to the stock color (unpainted).
    */
   edgeColor?: string
-  /**
-   * How face content hides when that face turns away from the camera.
-   * `true` raycasts against the card (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -50,9 +44,8 @@ function BusinessCardImpl({
   edgeColor,
   surfaceBackground = '#ffffff',
   resolution = BUSINESS_CARD.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BusinessCardProps) {
@@ -85,7 +78,7 @@ function BusinessCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -93,7 +86,7 @@ function BusinessCardImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

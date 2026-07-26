@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  AppleWatchMockup,
+  GalaxyWatchMockup,
   BillboardMockup,
   BookMockup,
   BrochureMockup,
@@ -13,12 +15,12 @@ import {
   ProductBoxMockup,
   RollupBannerMockup,
   MagazineMockup,
-  MonitorMockup,
-  PhoneMockup,
+  StudioDisplayMockup,
+  GalaxyMockup,
   PosterFrameMockup,
-  TabletMockup,
+  IPadMockup,
+  GalaxyTabMockup,
   VanMockup,
-  WatchMockup,
   FlipMockup,
 } from 'area-mockups'
 import { TapCounter } from '../screens/tap-counter'
@@ -105,14 +107,15 @@ export default function DemoScenes() {
         title="Bring your own UI"
         description={
           <>
-            Plain React state on the 3D screen, and the button below really clicks. Drag anywhere,
-            even on the screen, to spin the device; taps still reach the UI.
+            Plain React state on the 3D screen: with <code>allowInput</code> opted in, the
+            button below really clicks. Drag anywhere, even on the screen, to spin the
+            device; taps still reach the UI.
           </>
         }
       >
-        <PhoneMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+        <GalaxyMockup allowInput color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
           <TapCounter />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -124,7 +127,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup
+        <GalaxyMockup
           autoRotate
           float
           color="#d3d6dd"
@@ -132,7 +135,7 @@ export default function DemoScenes() {
           surfaceBackground="#000"
         >
           <LockScreen />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -140,17 +143,18 @@ export default function DemoScenes() {
         description={
           <>
             An <code>&lt;iframe&gt;</code> pointed at <code>/embedded</code>, a real route of
-            this site, scrolling and clicking inside the glass.
+            this site — scrolling and clicking inside the glass, with{' '}
+            <code>allowInput</code> opted in.
           </>
         }
       >
-        <PhoneMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
+        <GalaxyMockup allowInput color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
             style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
           />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -158,7 +162,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;LaptopMockup&gt;</code>: a procedural MacBook Air-style laptop in Sky
-            Blue. The desktop is live DOM too: click the window, drag to orbit.
+            Blue. The desktop is live DOM too, not a texture: drag to orbit.
           </>
         }
       >
@@ -190,9 +194,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -205,9 +209,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <PhoneMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
-        </PhoneMockup>
+        </GalaxyMockup>
       </DemoCard>
 
       <DemoCard
@@ -313,15 +317,15 @@ export default function DemoScenes() {
         title="iPad Pro 13″ (M5)"
         description={
           <>
-            <code>&lt;TabletMockup&gt;</code> in Space Black, landscape — the pencil mount
+            <code>&lt;IPadMockup&gt;</code> in Space Black, landscape — the pencil mount
             and camera pod follow the orientation, and the virtual screen is a true
             1376×1032.
           </>
         }
       >
-        <TabletMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -333,9 +337,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -347,9 +351,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -361,9 +365,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </IPadMockup>
       </DemoCard>
 
       <DemoCard
@@ -375,9 +379,9 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </GalaxyTabMockup>
       </DemoCard>
 
       <DemoCard
@@ -389,59 +393,53 @@ export default function DemoScenes() {
           </>
         }
       >
-        <TabletMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
-        </TabletMockup>
+        </GalaxyTabMockup>
       </DemoCard>
 
       <DemoCard
         title="Studio Display"
         description={
           <>
-            <code>&lt;MonitorMockup&gt;</code>: the 27″ 5K panel on its tilt stand with a
+            <code>&lt;StudioDisplayMockup&gt;</code>: the 27″ 5K panel on its tilt stand with a
             2560×1440 virtual screen (and, faithfully, no power button).
           </>
         }
       >
-        <MonitorMockup rotation={[0, -0.25, 0]}>
+        <StudioDisplayMockup rotation={[0, -0.25, 0]}>
           <DesktopScreen />
-        </MonitorMockup>
+        </StudioDisplayMockup>
       </DemoCard>
 
       <DemoCard
         title="Apple Watch Series 11"
         description={
           <>
-            <code>&lt;WatchMockup&gt;</code>: squircle case, Digital Crown, a full Sport
-            Band loop worn on an invisible wrist, and a live 208×248 face. The
+            <code>&lt;AppleWatchMockup&gt;</code>: squircle case, Digital Crown, a full
+            Solo Loop worn on an invisible wrist, and a live 208×248 face. The
             complication really taps.
           </>
         }
       >
-        <WatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
+        <AppleWatchMockup float color="#1c1d21" bandColor="#33415c" rotation={[0, -0.35, 0]}>
           <WatchFace />
-        </WatchMockup>
+        </AppleWatchMockup>
       </DemoCard>
 
       <DemoCard
         title="Galaxy Watch 8"
         description={
           <>
-            <code>variant=&quot;watch8&quot;</code>: the cushion case with a fully round
+            <code>&lt;GalaxyWatchMockup&gt;</code>: the cushion case with a fully round
             1.47″ display — a live circular 240×240 face — two flat keys, and the
             Dynamic Lug band.
           </>
         }
       >
-        <WatchMockup
-          variant="watch8"
-          float
-          color="#33363c"
-          bandColor="#23252a"
-          rotation={[0, 0.3, 0]}
-        >
+        <GalaxyWatchMockup float color="#33363c" bandColor="#23252a" rotation={[0, 0.3, 0]}>
           <GalaxyWatchFace />
-        </WatchMockup>
+        </GalaxyWatchMockup>
       </DemoCard>
 
       <DemoCard
@@ -667,8 +665,8 @@ export default function DemoScenes() {
         title="65″ TV"
         description={
           <>
-            <code>&lt;TVSetMockup&gt;</code>: a near-bezel-less 65″ panel on blade feet
-            with a live 1920×1080 screen — desktop layouts and video apply directly.
+            <code>&lt;TVSetMockup&gt;</code>: a near-bezel-less 65″ panel on splayed
+            feet with a live 1920×1080 screen — desktop layouts and video apply directly.
           </>
         }
       >
@@ -828,11 +826,11 @@ export default function DemoScenes() {
         }
       >
         <div className="alpha-checker">
-          <PhoneMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
+          <GalaxyMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
             <div className="aurora-screen">
               <p>alpha</p>
             </div>
-          </PhoneMockup>
+          </GalaxyMockup>
         </div>
       </DemoCard>
     </div>

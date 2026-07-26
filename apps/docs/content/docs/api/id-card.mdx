@@ -35,7 +35,6 @@ Beyond the [shared screen props](/docs/screen-content):
 | `lanyardColor` | `string` | `'#b3223a'` | Woven strap color (lanyards come in saturated solids). |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
 | `resolution` | `number` | `420` | Virtual face width in CSS px; height follows the full card. |
-| `occlude` | `boolean \| 'blending'` | `'blending'` | Per-pixel depth blending by default, so the pierced J-hook crosses in front of the printed face where it physically does. `true` = raycast hiding, `false` = off. |
 
 ## Regions
 
@@ -45,7 +44,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<IDCardMockup.Back>` | Back face — plain stock when omitted. |
 
 Every slot takes per-surface overrides — `background`, `resolution`,
-`interactive`, `dragToRotate`, `style` — over the mockup-level defaults. The
+`allowInput`, `dragToRotate`, `style` — over the mockup-level defaults. The
 same slots exist on the bare `<IDCard>`.
 
 ## Mockup-able areas

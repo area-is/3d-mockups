@@ -17,12 +17,6 @@ export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, 
   children?: React.ReactNode
   /** Steel color (panel, pole, catwalk, light fixtures). */
   color?: string
-  /**
-   * How face content hides when the billboard faces away from the camera.
-   * `true` raycasts against the panel (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -46,9 +40,8 @@ function BillboardImpl({
   color = '#2c313a',
   surfaceBackground = '#ffffff',
   resolution = BILLBOARD.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BillboardProps) {
@@ -60,6 +53,20 @@ function BillboardImpl({
   const panelTop = panel.height / 2
   const apronCenterY = -panelTop - apron.height / 2 + 0.02
   const steel = { color, metalness: 0.6, roughness: 0.45 }
+
+  // The access ladder and the gap it is held off the pole in. The pole's skin
+  // curves away from its centerline, so the bracket at a rail has further to
+  // reach than one at the middle would: measure to the skin AT the rail's x,
+  // then bury the end a little inside it so no seam opens up at any angle.
+  const poleZ = -pole.radius - panel.depth / 2 - 0.02
+  const ladder = React.useMemo(() => {
+    const railX = 0.11
+    const z = poleZ - pole.radius - 0.055
+    const skinZ = poleZ - Math.sqrt(Math.max(0, pole.radius ** 2 - railX ** 2))
+    return { railX, z, rungs: 12, standoff: skinZ - z + 0.02 }
+  }, [poleZ, pole.radius])
+  const rungY = (i: number) =>
+    -standHeight + 0.35 + i * ((standHeight + apronCenterY - 0.5) / (ladder.rungs - 1))
 
   return (
     <group {...groupProps}>
@@ -81,7 +88,7 @@ function BillboardImpl({
       ))}
 
       {/* monopole rising into the apron, and the foundation collar */}
-      <mesh position={[0, (apronCenterY - standHeight) / 2, -pole.radius - panel.depth / 2 - 0.02]}>
+      <mesh position={[0, (apronCenterY - standHeight) / 2, poleZ]}>
         <cylinderGeometry args={[pole.radius, pole.radius, standHeight + apronCenterY + 0.2, 24]} />
         <meshPhysicalMaterial {...steel} />
       </mesh>
@@ -89,7 +96,7 @@ function BillboardImpl({
         <boxGeometry args={[0.6, apron.height - 0.08, pole.radius + 0.1]} />
         <meshPhysicalMaterial {...steel} />
       </mesh>
-      <mesh position={[0, -standHeight + pole.collarHeight / 2, -pole.radius - panel.depth / 2 - 0.02]}>
+      <mesh position={[0, -standHeight + pole.collarHeight / 2, poleZ]}>
         <cylinderGeometry args={[pole.collarRadius, pole.collarRadius, pole.collarHeight, 24]} />
         <meshPhysicalMaterial {...steel} roughness={0.7} />
       </mesh>
@@ -155,20 +162,36 @@ function BillboardImpl({
         <meshPhysicalMaterial {...steel} roughness={0.55} />
       </mesh>
 
-      {/* fixed access ladder up the rear of the pole */}
-      <group position={[0, 0, -pole.radius * 2 - panel.depth / 2 - 0.06]}>
+      {/* fixed access ladder up the rear of the pole, bolted on with
+          standoff brackets — a fixed ladder is held clear of the structure
+          so a climber's boots have somewhere to go, but it is BOLTED to it,
+          not floating beside it */}
+      <group position={[0, 0, ladder.z]}>
         {([1, -1] as const).map((s) => (
-          <mesh key={s} position={[s * 0.11, (apronCenterY - standHeight) / 2 + 0.1, 0]}>
+          <mesh key={s} position={[s * ladder.railX, (apronCenterY - standHeight) / 2 + 0.1, 0]}>
             <boxGeometry args={[0.022, standHeight + apronCenterY - 0.1, 0.022]} />
             <meshPhysicalMaterial {...steel} />
           </mesh>
         ))}
-        {Array.from({ length: 12 }, (_, i) => (
-          <mesh key={i} rotation-z={Math.PI / 2} position={[0, -standHeight + 0.35 + i * ((standHeight + apronCenterY - 0.5) / 11), 0]}>
+        {Array.from({ length: ladder.rungs }, (_, i) => (
+          <mesh key={i} rotation-z={Math.PI / 2} position={[0, rungY(i), 0]}>
             <cylinderGeometry args={[0.011, 0.011, 0.22, 8]} />
             <meshPhysicalMaterial {...steel} />
           </mesh>
         ))}
+        {/* the brackets: one pair every third rung, each running from the
+            rail into the pole's skin so the two read as one assembly */}
+        {[0, 3, 6, 9, 11].map((i) =>
+          ([1, -1] as const).map((s) => (
+            <mesh
+              key={`${i}:${s}`}
+              position={[s * ladder.railX, rungY(i), ladder.standoff / 2]}
+            >
+              <boxGeometry args={[0.016, 0.016, ladder.standoff]} />
+              <meshPhysicalMaterial {...steel} roughness={0.55} />
+            </mesh>
+          ))
+        )}
       </group>
 
       {/* the live face: real DOM, CSS3D-transformed onto the vinyl */}
@@ -177,11 +200,11 @@ function BillboardImpl({
         height={face.height}
         radius={face.radius}
         position={[0, 0, panel.depth / 2 + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(faceSlot, {
           background: surfaceBackground,
           resolution,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}

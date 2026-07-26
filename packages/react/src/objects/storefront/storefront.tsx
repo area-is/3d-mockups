@@ -24,16 +24,18 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
   /** Shopfront paint (fascia surrounds, frames, door, stall risers). */
   color?: string
   /**
+   * Glazing color — every display pane, the transom lights and the door leaf.
+   * The default is the blue-gray of glass reflecting a street. Warm it toward
+   * bronze (`'#6b5a44'`) or green (`'#4d6b60'`) for tinted glass, or darken it
+   * for a shop that reads as closed. It tints the reflection rather than
+   * painting the pane flat: the material keeps its mirror finish either way.
+   */
+  windowColor?: string
+  /**
    * CSS pixel width of the virtual fascia signs. The window panes keep their
    * own fixed default widths; override per slot with each slot's `resolution`.
    */
   resolution?: number
-  /**
-   * How content hides when its elevation faces away from the camera.
-   * `true` raycasts against the building (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -63,11 +65,11 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
 function StorefrontImpl({
   children,
   color = '#2e4638',
+  windowColor = '#5a6d75',
   surfaceBackground = '#ffffff',
   resolution = STOREFRONT.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: StorefrontProps) {
@@ -81,7 +83,7 @@ function StorefrontImpl({
   // reflections, instead of a pitch-black hole in the façade.
   const glassMaterial = (
     <meshPhysicalMaterial
-      color="#5a6d75"
+      color={windowColor}
       metalness={0.5}
       roughness={0.05}
       clearcoat={1}
@@ -113,12 +115,12 @@ function StorefrontImpl({
   const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
 
   const screenCommon = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }

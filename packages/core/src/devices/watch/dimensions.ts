@@ -266,15 +266,30 @@ const GALAXY_WATCH_8: WatchSpec = {
   },
 }
 
-export const WATCH_VARIANTS: Record<'series11' | 'watch8', WatchSpec> = {
+/** The Apple Watch family, worn on a seamless Solo Loop. */
+export const APPLE_WATCH_VARIANTS: Record<'series11', WatchSpec> = {
   series11: SERIES_11,
+}
+
+/** The Galaxy Watch family, worn on a buckled two-strap band. */
+export const GALAXY_WATCH_VARIANTS: Record<'watch8', WatchSpec> = {
   watch8: GALAXY_WATCH_8,
 }
 
-export type WatchVariant = keyof typeof WATCH_VARIANTS
+export type AppleWatchVariant = keyof typeof APPLE_WATCH_VARIANTS
+export type GalaxyWatchVariant = keyof typeof GALAXY_WATCH_VARIANTS
 
-/** The variant every binding defaults to. */
-export const WATCH_DEFAULT_VARIANT: WatchVariant = 'series11'
+/** Every watch spec in one table — the shared framing and camera math key off it. */
+export const WATCH_VARIANTS: Record<AppleWatchVariant | GalaxyWatchVariant, WatchSpec> = {
+  ...APPLE_WATCH_VARIANTS,
+  ...GALAXY_WATCH_VARIANTS,
+}
+
+export type WatchVariant = AppleWatchVariant | GalaxyWatchVariant
+
+/** The variant each family's binding defaults to. */
+export const APPLE_WATCH_DEFAULT_VARIANT: AppleWatchVariant = 'series11'
+export const GALAXY_WATCH_DEFAULT_VARIANT: GalaxyWatchVariant = 'watch8'
 
 /** Framing distance for the worn pose, which every variant shares. */
 const WORN_DISTANCE = 7.7
@@ -286,8 +301,8 @@ const FOV = 40
  * badly; back off far enough that the full extent fits the vertical field with
  * a little air around it.
  */
-export function watchCameraDistance(variant: WatchVariant | undefined, bandOpen: boolean): number {
-  const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
+export function watchCameraDistance(variant: WatchVariant, bandOpen: boolean): number {
+  const { band } = WATCH_VARIANTS[variant]
   if (!bandOpen || band.closure === 'seamless') return WORN_DISTANCE
   const fit = watchOpenExtent(band) / Math.tan((FOV / 2) * (Math.PI / 180))
   return Math.max(WORN_DISTANCE, fit * 1.12)
@@ -305,7 +320,7 @@ export const WATCH_FRAMING = {
   floatIntensity: 0.6,
   contactGap: 0.1,
   extent: ({ variant, bandOpen }) => {
-    const { band } = WATCH_VARIANTS[variant ?? WATCH_DEFAULT_VARIANT]
+    const { band } = WATCH_VARIANTS[variant ?? APPLE_WATCH_DEFAULT_VARIANT]
     // A seamless band has no closure to undo, so `bandOpen` cannot change it.
     if (bandOpen && band.closure !== 'seamless') return watchOpenExtent(band)
     return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05

@@ -22,7 +22,7 @@ export type FlipMockupProps = MockupProps<FlipProps>
  *
  * ```tsx
  * <FlipMockup openAngle={100}>
- *   <FlipMockup.Screen background="#000" interactive={false}>
+ *   <FlipMockup.Screen background="#000" allowInput={false}>
  *     <YourApp />
  *   </FlipMockup.Screen>
  * </FlipMockup>

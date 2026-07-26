@@ -1,36 +1,120 @@
 import * as React from 'react'
 import type * as THREE from 'three'
-import { Group } from 'three'
+import { Group, ShapeGeometry } from 'three'
 import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import {
   SCREEN_LAYER_CSS,
   createBackfaceCuller,
   createScreenDragHandoff,
+  roundedRectShapeCorners,
   screenDistanceFactor,
   screenLayerClass,
   screenSurfaceStyle,
   type ScreenRadius,
 } from '@area-mockups/core'
-import { createScreenOcclusionTester } from './occluders'
+import {
+  createScreenOcclusionTester,
+  SCREEN_COVER_HIDDEN,
+  SCREEN_COVER_VISIBLE,
+} from './occluders'
 
 export type { ScreenRadius }
 
 /**
  * Every DeviceScreen passes this zIndexRange to drei's <Html>: raycast and
- * unoccluded screens layer in [10, 5], blending screens in [4, 0].
+ * unoccluded screens layer in the upper half, blending screens in the lower
+ * half, with the canvas itself at the midpoint.
+ *
+ * The range is enormous because drei spreads it LINEARLY over the camera's
+ * whole near..far span, and blending screens have to sort against each other
+ * by that z-index alone — the DOM is what you actually see through the hole
+ * the depth mask cuts, so two overlapping screens stack by z-index, not by
+ * the depth buffer. A greeting card's cover and its inside face are ~25 mm
+ * apart in a 1000-unit frustum; on drei's default band both rounded to the
+ * same integer and the inside face painted straight over the cover. A
+ * million steps resolves a few thousandths of a unit, which is finer than any
+ * two surfaces on one object. `isolateScreenStack` below keeps the big
+ * numbers from ever reaching the page.
  */
-const SCREEN_Z_RANGE: [number, number] = [10, 0]
+const SCREEN_Z_RANGE: [number, number] = [2_000_000, 0]
 
 /**
  * The z-index drei raises the WebGL canvas to while any 'blending' screen
  * is live (zIndexRange[0] / 2 — OUR range, not drei's default) — blending
- * screen DOM stacks below the canvas, raycast screen DOM above it. Page UI
- * overlaid on the canvas (zoom / fullscreen buttons) must stack above the
- * whole band, or the transparent canvas shows the buttons through itself
- * while eating their clicks.
+ * screen DOM stacks below the canvas, raycast screen DOM above it.
  */
-export const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
+const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
+
+/**
+ * Confine that band to the mockup. Making the element that holds the canvas
+ * AND its screens a stacking context keeps them sorting among themselves, and
+ * leaves the page outside free to layer over the mockup with ordinary small
+ * z-indexes; without it a canvas raised to a million covers the whole page.
+ *
+ * It has to be the element holding BOTH, so it is derived as their nearest
+ * common ancestor rather than guessed at. drei portals a screen into r3f's
+ * event target, which is an ANCESTOR of the canvas's own container, not that
+ * container — isolate the canvas's immediate parent by mistake and the canvas
+ * is sealed into a subtree whose own z-index is `auto`, while the screens,
+ * sitting outside it with a z-index in the millions, calmly layer over it:
+ * every screen paints over the hardware from every angle.
+ *
+ * The ancestor is re-derived every frame and the isolation MOVES with it,
+ * because the tree it is read from is not stable at mount: drei portals into
+ * `portal ?? events.connected ?? gl.domElement.parentNode`, and on a busy
+ * commit `events.connected` can still be unset, so the first frames put the
+ * screen INSIDE the canvas's own container. Isolate that and leave it
+ * isolated, and once r3f connects and drei re-portals the screen out to the
+ * event target, the canvas is sealed in a z-index:auto subtree with every
+ * screen stacked above it — the failure this whole function exists to
+ * prevent, arrived at from the other direction. Only isolation this function
+ * applied is ever released (marked with `dataset.areaMockupsIsolated`), so a
+ * page that isolates the host itself keeps it.
+ */
+const ISOLATED_FLAG = 'areaMockupsIsolated'
+
+function isolateScreenStack(content: HTMLElement, canvas: HTMLCanvasElement): HTMLElement | null {
+  const above = new Set<HTMLElement>()
+  for (let node = canvas.parentElement; node; node = node.parentElement) above.add(node)
+  let host = content.parentElement
+  while (host && !above.has(host)) host = host.parentElement
+  // Never reach past the mockup's own wrapper: <body> and <html> are the page,
+  // and they are the root stacking context already, so there is nothing there
+  // to confine the band to.
+  if (!host || host === document.body || host === document.documentElement) return null
+  if (host.style.isolation !== 'isolate') {
+    host.style.isolation = 'isolate'
+    host.dataset[ISOLATED_FLAG] = ''
+  }
+  return host
+}
+
+function releaseScreenStack(host: HTMLElement | null): void {
+  if (host && host.dataset[ISOLATED_FLAG] !== undefined) {
+    host.style.isolation = ''
+    delete host.dataset[ISOLATED_FLAG]
+  }
+}
+
+/**
+ * How far inside the screen's own outline the blending depth mask is held, as
+ * a fraction of the screen's shorter side. Covers the antialiasing seam where
+ * the mask's edge and the DOM's edge coincide (see `silhouette` below).
+ * Exported so a component authoring its OWN `occluderGeometry` can hold the
+ * same margin — inward at the outline, outward around any punched hole.
+ */
+export const SCREEN_MASK_INSET = 0.004
+
+/**
+ * Time constant, in seconds, for easing a raycast screen's opacity toward the
+ * coverage ramp's verdict. The five sample rays give a coverage that steps in
+ * fifths, so a screen grazing an edge can rattle between two steps as the
+ * camera moves; easing turns that rattle into a steady mid-fade instead of a
+ * strobe. Short enough that a screen passing behind a body still reads as
+ * being covered by it rather than dimming on its own schedule.
+ */
+const FADE_TAU = 0.07
 
 // Staggered retry thresholds for the drei <Html> mount race (see below):
 // screens created back-to-back get different frame counts, so their
@@ -63,18 +147,35 @@ export interface DeviceScreenProps {
   rotation?: [number, number, number]
   /** CSS background painted behind the content. */
   background?: string
-  /** Let pointer events (clicks, scrolling, typing) reach the content. */
-  interactive?: boolean
+  /**
+   * Let pointer events (clicks, scrolling, typing) reach the content. This is
+   * also what picks the occlusion mode — the two are the same choice, because
+   * only one of the two modes can put the DOM where a pointer can reach it:
+   *
+   * - `false` (the default) composites per-pixel against the depth buffer,
+   *   which is exact but stacks the DOM UNDER the canvas.
+   * - `true` raycasts the enclosure meshes in `occluders` instead, which
+   *   keeps the DOM on top and clickable but hides the whole screen at once.
+   */
+  allowInput?: boolean
   /** Hand >10px drags off to the orbit controls; taps still reach the content. */
   dragToRotate?: boolean
-  /** Occlusion mode resolved by the device (mesh refs, 'blending', or off). */
-  occlude?: React.RefObject<THREE.Mesh>[] | 'blending' | undefined
+  /** Enclosure meshes to raycast against; used only when `allowInput` is on. */
+  occluders?: React.RefObject<THREE.Mesh>[]
   /**
-   * Custom depth-occluder geometry for `'blending'` mode, in world units on
-   * the screen plane. By default the blending occluder is the screen's full
-   * rect — a screen whose DOM is clipped (rounded corners, punched holes)
-   * should pass a matching shape here, or hardware showing through the
-   * clipped openings gets depth-hidden by the invisible rect.
+   * Force per-pixel blending even when `allowInput`, for surfaces raycasting
+   * cannot describe — a full vehicle wrap with proud mirrors standing over it,
+   * glass seen through a shelter's own frame. Such a surface is never
+   * clickable, since blending is what puts its DOM under the canvas.
+   */
+  blending?: boolean
+  /**
+   * Custom depth-occluder geometry for blending mode, in world units on the
+   * screen plane. Defaults to the screen's own silhouette (`width` x `height`
+   * rounded by `radius`), which is what the DOM is clipped to. Pass a shape
+   * here when the DOM is clipped to something else again — a livery with the
+   * glass carved out, a label with a punched hole — or the extra area masks
+   * hardware that should stay visible.
    */
   occluderGeometry?: THREE.BufferGeometry
   /** Extra styles merged onto the screen wrapper. */
@@ -99,9 +200,10 @@ export function DeviceScreen({
   position,
   rotation = [0, 0, 0],
   background = '#000000',
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude,
+  occluders,
+  blending = false,
   occluderGeometry,
   screenStyle,
   overlay,
@@ -109,13 +211,51 @@ export function DeviceScreen({
 }: DeviceScreenProps) {
   const gl = useThree((state) => state.gl)
 
+  // The two occlusion modes and interactivity are one decision, not two:
+  // blending is pixel-exact but stacks the DOM under the canvas (see the
+  // pointer-events override below), so a blending surface can never be
+  // clicked, and a clickable surface can only occlude by raycast.
+  const usingBlending = blending || !allowInput
+  const clickable = allowInput && !blending
+
+  // The depth mask that makes the canvas transparent over the screen so the
+  // DOM beneath shows through. drei's default is a plain rectangle, which on
+  // any screen the DOM rounds off — a watch face, a round record label —
+  // clears the canvas out past the artwork and the PAGE shows through the
+  // corners. Build it from the screen's own silhouette instead, the same
+  // numbers `border-radius` is built from. `radius` is spread into scalars so
+  // a caller passing a fresh array literal doesn't rebuild it every render.
+  const [radiusTL, radiusTR, radiusBR, radiusBL] =
+    typeof radius === 'number' ? [radius, radius, radius, radius] : radius
+  const silhouette = React.useMemo(() => {
+    if (!usingBlending || occluderGeometry) return null
+    // Held a hair inside the DOM's own edge. Both edges are antialiased, and
+    // where they coincide the mask's partial transparency wins over the DOM's
+    // partial opacity and a pixel of PAGE bleeds through all the way round.
+    // Insetting keeps the canvas solid under that fade, so the boundary is
+    // the DOM's edge over device hardware — the seam reads as the display's
+    // own rim rather than a hole. Proportional, so it stays a rim at any zoom.
+    const inset = Math.min(width, height) * SCREEN_MASK_INSET
+    const shrink = (r: number) => Math.max(0, r - inset)
+    return new ShapeGeometry(
+      roundedRectShapeCorners(width - inset * 2, height - inset * 2, [
+        shrink(radiusTL),
+        shrink(radiusTR),
+        shrink(radiusBR),
+        shrink(radiusBL),
+      ]),
+      24
+    )
+  }, [usingBlending, occluderGeometry, width, height, radiusTL, radiusTR, radiusBR, radiusBL])
+  React.useEffect(() => () => silhouette?.dispose(), [silhouette])
+  const blendGeometry = occluderGeometry ?? silhouette
+
   // drei's 'blending' mode turns the CANVAS to pointer-events:none so DOM
   // stacked under it stays clickable — which silently kills orbit drags on
   // the empty background. We want the opposite trade for mockups: the
   // canvas keeps ALL input (drag-to-orbit works everywhere) and content
   // behind a blending screen is display-only. Parent layout effects run
   // after the child Html's, so this override wins on mount.
-  const usingBlending = occlude === 'blending'
   React.useLayoutEffect(() => {
     if (!usingBlending) return
     gl.domElement.style.pointerEvents = 'auto'
@@ -150,10 +290,21 @@ export function DeviceScreen({
   const [, setHtmlEpoch] = React.useState(0)
   const retryState = React.useRef({ frames: 0, retries: 0 })
   const retryThreshold = React.useMemo(nextRetryThreshold, [])
+  // The stacking context currently confining the z-index band, so a host this
+  // screen isolated before the tree settled can be released (see
+  // isolateScreenStack) rather than left behind trapping the canvas.
+  // Not released on unmount: several screens share one host, so the last one
+  // to leave would strip the isolation the others still need and the page
+  // would flash a million-z canvas over itself for the frame it takes them to
+  // put it back. A stray `isolation` on a wrapper that held a mockup is inert.
+  const isolatedHost = React.useRef<HTMLElement | null>(null)
   const cullBackface = React.useMemo(() => createBackfaceCuller(), [])
-  const occlusionBlocked = React.useMemo(() => createScreenOcclusionTester(), [])
-  const occludeMeshes = Array.isArray(occlude) ? occlude : undefined
-  useFrame(({ camera }) => {
+  const occlusionCover = React.useMemo(() => createScreenOcclusionTester(), [])
+  const occludeMeshes = usingBlending ? undefined : occluders
+  // Current eased opacity of a raycast screen. 1 whenever nothing occludes it,
+  // which is every frame in blending mode.
+  const fade = React.useRef(1)
+  useFrame(({ camera }, delta) => {
     if (usingBlending) {
       const canvas = gl.domElement.style
       if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
@@ -182,18 +333,41 @@ export function DeviceScreen({
     }
     if (!anchorRef.current || !contentRef.current) return
     const content = contentRef.current
+    const host = isolateScreenStack(content, gl.domElement)
+    if (host !== isolatedHost.current) {
+      releaseScreenStack(isolatedHost.current)
+      isolatedHost.current = host
+    }
     cullBackface(anchorRef.current, content, camera)
-    if (
-      occludeMeshes?.length &&
-      content.style.visibility !== 'hidden' &&
-      occlusionBlocked(anchorRef.current, width, height, occludeMeshes, camera)
-    ) {
-      content.style.visibility = 'hidden'
+    // Raycast mode cannot cover a screen partway — the DOM is one element on
+    // top of the canvas — so instead of blinking off the moment a majority of
+    // sample rays are blocked, it eases across the coverage ramp and dissolves
+    // behind whatever is passing in front of it.
+    if (!occludeMeshes?.length) {
+      if (fade.current !== 1) {
+        fade.current = 1
+        content.style.opacity = ''
+      }
+    } else if (content.style.visibility !== 'hidden') {
+      const covered = occlusionCover(anchorRef.current, width, height, occludeMeshes, camera)
+      const ramp = (covered - SCREEN_COVER_VISIBLE) / (SCREEN_COVER_HIDDEN - SCREEN_COVER_VISIBLE)
+      const target = 1 - Math.min(1, Math.max(0, ramp))
+      // Frame-rate independent ease, snapped once it is within a step nobody
+      // can see so the opacity stops being rewritten every frame.
+      fade.current += (target - fade.current) * (1 - Math.exp(-delta / FADE_TAU))
+      if (Math.abs(target - fade.current) < 0.004) fade.current = target
+      content.style.opacity = fade.current > 0.995 ? '' : fade.current.toFixed(3)
+      // Fully faded is the old all-or-nothing hidden state: take it out of
+      // hit-testing and off the compositor rather than leaving an invisible
+      // pane over the device's back.
+      if (fade.current <= 0.004) content.style.visibility = 'hidden'
     }
     // A hidden screen must never intercept pointers either — user content can
     // re-enable its own `visibility`, which would silently eat drags on the
     // device's back (visibility alone doesn't stop such children hit-testing).
-    const pointerEvents = content.style.visibility === 'hidden' || !interactive ? 'none' : 'auto'
+    // Nor may a mostly-faded one: opacity does not stop hit-testing at all.
+    const pointerEvents =
+      content.style.visibility === 'hidden' || !clickable || fade.current < 0.5 ? 'none' : 'auto'
     if (content.style.pointerEvents !== pointerEvents) {
       content.style.pointerEvents = pointerEvents
     }
@@ -210,17 +384,17 @@ export function DeviceScreen({
     <group ref={anchorRef} position={position} rotation={rotation}>
       <Html
         transform
-        occlude={occlude === 'blending' ? 'blending' : undefined}
+        occlude={usingBlending ? 'blending' : undefined}
         geometry={
-          occlude === 'blending' && occluderGeometry ? (
-            <primitive object={occluderGeometry} attach="geometry" />
+          usingBlending && blendGeometry ? (
+            <primitive object={blendGeometry} attach="geometry" />
           ) : undefined
         }
         distanceFactor={screenDistanceFactor(width, resolution)}
         zIndexRange={SCREEN_Z_RANGE}
         wrapperClass={screenLayerClass(dragToRotate)}
         // Keep drei's inner transform div from hit-testing: pointer handling
-        // lives on the content div alone (visible + interactive → auto,
+        // lives on the content div alone (visible + clickable → auto,
         // hidden → none). Otherwise the invisible bridge div spanning the
         // screen rect eats drags over the device's BACK, so drag-to-rotate
         // dies exactly where the body should be grabbable.
@@ -237,7 +411,7 @@ export function DeviceScreen({
               radius,
               resolution,
               background,
-              interactive,
+              allowInput: clickable,
               dragToRotate,
             }),
             ...screenStyle,

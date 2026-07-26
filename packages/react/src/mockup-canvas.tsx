@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Canvas, useFrame, useThree, type CanvasProps } from '@react-three/fiber'
 import { ContactShadows, Environment, Lightformer } from '@react-three/drei'
 import { TumbleControls, type TumbleControlsHandle } from './tumble-controls'
-import { BLENDING_CANVAS_Z } from './screen/device-screen'
 import {
   CONTACT_SHADOW,
   DEFAULT_CAMERA_FOV,
@@ -176,10 +175,11 @@ export function MockupCanvas({
     setZoomPercent((previous) => (previous === percent ? previous : percent))
   }, [])
 
-  // Above the raised blending canvas (see BLENDING_CANVAS_Z) — a plain
-  // low z-index leaves the buttons visible through the transparent canvas
-  // but unclickable on devices using per-pixel screen compositing.
-  const overlayZ = BLENDING_CANVAS_Z + 10
+  // The canvas's own container is a stacking context (see isolateCanvasStack
+  // in device-screen), so the blending band is sealed inside it however large
+  // it gets, and these buttons only have to beat the container itself. A
+  // small number keeps the mockup from towering over the host page.
+  const overlayZ = 2
 
   const canvas = (
     <Canvas
@@ -241,11 +241,19 @@ export function MockupCanvas({
   // Wrap so the overlay buttons anchor to the canvas box — and so the
   // Fullscreen API has an element to expand. A dark backdrop fills the letter-
   // boxing only while actually full-screen, using `background` when provided.
+  //
+  // This wrapper is also the stacking context that confines the screen
+  // z-index band (see SCREEN_Z_RANGE): it holds the canvas AND every screen
+  // drei portals next to it, so isolating it here — statically, in the same
+  // render that creates them — settles the question before any screen mounts.
+  // DeviceScreen still derives a host at runtime for a foreign <Canvas>, but
+  // inside a MockupCanvas it only ever re-finds this element.
   return (
     <div
       ref={wrapperRef}
       style={{
         position: 'relative',
+        isolation: 'isolate',
         width: '100%',
         height: '100%',
         background: isFullscreen ? background ?? '#0b0d12' : undefined,

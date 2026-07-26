@@ -236,12 +236,6 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
    * (doors, driver's window) is always carved out regardless.
    */
   wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean; rear?: boolean }
-  /**
-   * How ad content hides when the bus faces away from the camera.
-   * `true` raycasts against the shell (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -275,9 +269,8 @@ function BusImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = true,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BusProps) {
@@ -319,7 +312,7 @@ function BusImpl({
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
@@ -397,12 +390,13 @@ function BusImpl({
     [sideOccluderGeometries]
   )
   // Full-coverage sides composite per-pixel so proud hardware (the door
-  // mirrors and their arms) draws over the livery; everything else keeps
-  // the fast raycast mode.
+  // mirrors and their arms) draws over the livery; so they stay per-pixel even when
+  // `allowInput` (and are therefore never clickable). Everything else
+  // follows `allowInput` like any other surface.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
-    fullWrap && occlude !== false
-      ? { occlude: 'blending' as const, occluderGeometry: blendGeometry }
-      : { occlude: occlude === true ? otherOccludeRefs : occlude === 'blending' ? ('blending' as const) : undefined }
+    fullWrap
+      ? { blending: true, occluderGeometry: blendGeometry }
+      : { occluders: otherOccludeRefs }
 
   // Plain strings become the built-in LED destination sign; custom nodes
   // pass straight through.
@@ -491,7 +485,7 @@ function BusImpl({
             {...resolveSurface(signSlot, { ...surfaceDefaults, background: '#0a0a08', resolution: 480 })}
             position={[0.016, destination.y - frontBand.mid[1], 0]}
             rotation={[0, Math.PI / 2, 0]}
-            occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+            occluders={otherOccludeRefs}
           >
             {sign}
           </DeviceScreen>
@@ -766,7 +760,7 @@ function BusImpl({
           {...rearSurface}
           position={[-body.length / 2 - (fullWrap ? 0.029 : 0.028), rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          occlude={occlude === true ? otherOccludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={otherOccludeRefs}
           screenStyle={rearStyle}
         >
           {regions.rear.children}

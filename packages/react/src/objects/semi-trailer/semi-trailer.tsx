@@ -21,12 +21,6 @@ export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'>
   color?: string
   /** Side-skirt paint. Defaults to the box `color`. */
   skirtColor?: string
-  /**
-   * How wrap content hides when the trailer faces away from the camera.
-   * `true` raycasts against the box (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -53,9 +47,8 @@ function SemiTrailerImpl({
   skirtColor,
   surfaceBackground = '#ffffff',
   resolution = SEMI_TRAILER.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: SemiTrailerProps) {
@@ -70,9 +63,9 @@ function SemiTrailerImpl({
   const dualOuterZ = body.width / 2 - 0.03 - wheels.width / 2
   const dualInnerZ = dualOuterZ - wheels.width - wheels.dualGap
 
-  const surfaceDefaults = { background: surfaceBackground, interactive, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const wrapProps = {
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   return (

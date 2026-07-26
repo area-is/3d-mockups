@@ -78,12 +78,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   resolution?: number
   /** Show the front-camera punch-hole overlay. */
   punchHole?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the body (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (a fold half / the open body). */
@@ -123,9 +117,8 @@ function FoldImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: FoldProps) {
@@ -480,11 +473,11 @@ function FoldImpl({
       radius={display.radius}
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+      occluders={occludeRefs}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
-        interactive,
+        allowInput,
         dragToRotate,
         style: surfaceStyle,
       })}
@@ -565,12 +558,12 @@ function FoldImpl({
           radius={radius}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === false ? undefined : 'blending'}
+          blending
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's width
             resolution: landscape ? res : res / 2,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}

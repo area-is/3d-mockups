@@ -85,18 +85,27 @@ interface BoundsTree {
 }
 
 /**
+ * Coverage below which a raycast screen is drawn at full strength, and at or
+ * above which it is gone entirely. Between them it fades, which is the whole
+ * trick: the samples are five discrete rays, so a screen sliding behind a body
+ * steps 2/5 -> 3/5 -> 4/5 and a hard threshold anywhere in there pops. Fading
+ * across the middle band turns the step into a ramp, and leaves a dead zone at
+ * each end so a screen hovering near the boundary settles instead of blinking.
+ */
+export const SCREEN_COVER_VISIBLE = 0.4
+export const SCREEN_COVER_HIDDEN = 0.8
+
+/**
  * Multi-sample occlusion test for a DOM screen plane. A single ray to the
  * plane's center (what a naive raycast occluder checks) misses partial
  * overlaps, letting the screen pierce through chassis edges and silhouette
  * gaps; this samples the center plus four inset corners.
  *
- * The verdict is a MAJORITY, not "any sample blocked". Hiding on the first
- * blocked ray makes a screen vanish outright the moment one corner grazes a
- * neighbouring body — a foldable's far panel blinking to black while most of
- * it is plainly in view. A majority means a mostly-hidden screen still hides
- * (the case that actually looks broken, the far display painting over the
- * near panel) while a slightly-clipped one keeps rendering, overlapping by
- * the sliver the DOM bridge cannot depth-test. Returns whether to hide.
+ * Returns HOW MUCH of the screen is blocked, 0 to 1, rather than a yes/no.
+ * The caller ramps that into an opacity (see the constants above): a screen
+ * cannot be partly covered by 3D geometry in this mode — the DOM is one
+ * element sitting on top of the canvas — so the honest thing it can do while
+ * passing behind something is dissolve rather than vanish between frames.
  */
 export function createScreenOcclusionTester(): (
   anchor: THREE.Object3D,
@@ -104,7 +113,7 @@ export function createScreenOcclusionTester(): (
   height: number,
   occluders: React.RefObject<THREE.Mesh>[],
   camera: THREE.Camera
-) => boolean {
+) => number {
   // Scratch values reused across frames — no per-frame allocation.
   const sample = new THREE.Vector3()
   const localRay = new THREE.Ray()
@@ -127,8 +136,11 @@ export function createScreenOcclusionTester(): (
   // plane — hiding a screen that is plainly visible. A real blocker (a
   // roof, another device's body) stands well off the plane.
   const PLANE_EPS = 0.02
-  /** Samples that must be blocked before the screen hides. */
-  const MAJORITY = Math.floor(SAMPLES.length / 2) + 1
+  // Once this many are blocked the screen is gone whatever the rest say, and
+  // once this many can still come back clear it is at full strength whatever
+  // they say — so the loop can stop casting in both cases.
+  const HIDES_AT = SCREEN_COVER_HIDDEN * SAMPLES.length
+  const SHOWS_UNDER = SCREEN_COVER_VISIBLE * SAMPLES.length
   return (anchor, width, height, occluders, camera) => {
     anchorInverse.copy(anchor.matrixWorld).invert()
     const blockedAt = (point: THREE.Vector3) =>
@@ -136,9 +148,8 @@ export function createScreenOcclusionTester(): (
     let blocked = 0
     let remaining = SAMPLES.length
     for (const [sx, sy] of SAMPLES) {
-      // Bail as soon as the verdict can no longer change either way.
-      if (blocked >= MAJORITY) return true
-      if (blocked + remaining < MAJORITY) return false
+      if (blocked >= HIDES_AT) return 1
+      if (blocked + remaining <= SHOWS_UNDER) return SCREEN_COVER_VISIBLE
       remaining--
       sample.set(sx * width, sy * height, 0)
       anchor.localToWorld(sample)
@@ -175,6 +186,6 @@ export function createScreenOcclusionTester(): (
       }
       if (hitThisSample) blocked++
     }
-    return blocked >= MAJORITY
+    return blocked / SAMPLES.length
   }
 }

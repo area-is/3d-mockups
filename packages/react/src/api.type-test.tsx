@@ -14,7 +14,7 @@ import {
   CustomBoxMockup,
   type CustomBoxMockupProps,
   IPhoneMockup,
-  PhoneMockup,
+  GalaxyMockup,
   type MockupProps,
   type SlotProps,
   type SurfaceProps,
@@ -34,7 +34,7 @@ type _noPanelsProp = Expect<Not<Has<'panels', React.ComponentProps<typeof Brochu
 // ---- surface vocabulary is unified ---------------------------------------------------
 type _surfaceBackground = Expect<Has<'surfaceBackground', AFrameSignProps>>
 type _slotShape = Expect<
-  Equal<keyof SurfaceProps, 'background' | 'resolution' | 'interactive' | 'dragToRotate' | 'style'>
+  Equal<keyof SurfaceProps, 'background' | 'resolution' | 'allowInput' | 'dragToRotate' | 'style'>
 >
 type _slotChildren = Expect<Has<'children', SlotProps>>
 
@@ -52,7 +52,7 @@ const _slotsUsage = (
       <AFrameSignMockup.Front background="#20241f">
         <div />
       </AFrameSignMockup.Front>
-      <AFrameSignMockup.Back resolution={640} interactive={false}>
+      <AFrameSignMockup.Back resolution={640} allowInput={false}>
         <div />
       </AFrameSignMockup.Back>
     </AFrameSignMockup>
@@ -64,9 +64,9 @@ const _slotsUsage = (
     </AFrameSign>
 
     {/* bare children stay the primary-region shorthand */}
-    <PhoneMockup float>
+    <GalaxyMockup float>
       <div />
-    </PhoneMockup>
+    </GalaxyMockup>
 
     <IPhoneMockup variant="pro">
       <IPhoneMockup.Screen background="#000" resolution={860}>

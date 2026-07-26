@@ -52,12 +52,6 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   notch?: boolean
   /** Lid angle in degrees between deck and screen (90 = upright). */
   openAngle?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the lid and base (fast, interactive). `'blending'`
-   * uses per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /** One flat, rounded slab (base or lid), extruded with a soft edge bevel. */
@@ -99,11 +93,15 @@ const KEY_PAD_X = 0.0414
 const KEY_PAD_Z = 0.0456
 /** 2.5 mm air between neighboring caps. */
 const KEY_GAP = 0.0345
+/** 2.2 mm keycap corner radius — the same on every cap, from 1u to the space bar. */
+const CAP_RADIUS = 0.03
+/** Height of a keycap's flat top face (0.012 extrusion + the 0.005 bevel). */
+const CAP_TOP_Y = 0.017
 
 type KeyIcon =
   | 'sunlo' | 'sunhi' | 'mission' | 'spot' | 'mic' | 'moon'
   | 'rew' | 'play' | 'fwd' | 'mute' | 'voldn' | 'volup'
-  | 'globe' | 'cmd' | 'opt' | 'shift' | 'caps' | 'tab' | 'back' | 'ret'
+  | 'globe' | 'cmd' | 'opt'
 
 type KeyLegend =
   /** Centered glyph (letters). `nub` prints the home-row bar under F / J. */
@@ -112,8 +110,6 @@ type KeyLegend =
   | { t: 'dual'; a: string; b: string }
   /** Word in a bottom corner (esc, tab, return…). `dot` = caps-lock light. */
   | { t: 'word'; s: string; align: 'bl' | 'br'; dot?: boolean }
-  /** Glyph icon in a bottom corner (the M5 Air's ⇥ ⇪ ⇧ ⌫ ⏎ style). */
-  | { t: 'ic'; i: KeyIcon; align: 'bl' | 'br'; dot?: boolean }
   /**
    * Modifier: word along the bottom with the symbol in the TOP-OUTER corner —
    * top-left on the left-hand keys, mirrored to top-right on the right-hand
@@ -135,13 +131,12 @@ const F_ICONS: KeyIcon[] = [
 ]
 
 /**
- * The US layout in standard key units (every row sums to 14.5u), with
- * per-variant legend styles: `text` prints words on the editing keys the way
- * the MacBook Pro does, `icons` the M5 Air's glyphs. Coordinates are
- * keyboard-local, +z toward the user.
+ * The US layout in standard key units (every row sums to 14.5u). Every current
+ * MacBook — Air and Pro alike — prints the editing keys as words (esc, tab,
+ * caps lock, delete, return, shift), so one layout covers all four variants.
+ * Coordinates are keyboard-local, +z toward the user.
  */
-function buildKeyboardLayout(keyboard: { width: number; depth: number; legends: 'text' | 'icons' }) {
-  const icons = keyboard.legends === 'icons'
+function buildKeyboardLayout(keyboard: { width: number; depth: number }) {
   const usable = keyboard.width - KEY_PAD_X * 2
   const pitch = (usable + KEY_GAP) / 14.5
   const pitchZ = (keyboard.depth - KEY_PAD_Z * 2 + KEY_GAP) / 6
@@ -149,9 +144,7 @@ function buildKeyboardLayout(keyboard: { width: number; depth: number; legends: 
 
   const dual = (a: string, b: string): KeyLegend => ({ t: 'dual', a, b })
   const txt = (s: string, nub?: boolean): KeyLegend => ({ t: 'txt', s, nub })
-  // The editing keys: words on the Pro, bare glyphs on the Air.
-  const edit = (s: string, i: KeyIcon, align: 'bl' | 'br', dot?: boolean): KeyLegend =>
-    icons ? { t: 'ic', i, align, dot } : { t: 'word', s, align, dot }
+  const edit = (s: string, align: 'bl' | 'br', dot?: boolean): KeyLegend => ({ t: 'word', s, align, dot })
 
   const ROWS: [number, KeyLegend][][] = [
     [
@@ -163,25 +156,25 @@ function buildKeyboardLayout(keyboard: { width: number; depth: number; legends: 
       [1, dual('~', '`')], [1, dual('!', '1')], [1, dual('@', '2')], [1, dual('#', '3')],
       [1, dual('$', '4')], [1, dual('%', '5')], [1, dual('^', '6')], [1, dual('&', '7')],
       [1, dual('*', '8')], [1, dual('(', '9')], [1, dual(')', '0')], [1, dual('_', '-')],
-      [1, dual('+', '=')], [1.5, edit('delete', 'back', 'br')],
+      [1, dual('+', '=')], [1.5, edit('delete', 'br')],
     ],
     [
-      [1.5, edit('tab', 'tab', 'bl')],
+      [1.5, edit('tab', 'bl')],
       ...'QWERTYUIOP'.split('').map((s) => [1, txt(s)] as [number, KeyLegend]),
       [1, dual('{', '[')], [1, dual('}', ']')], [1, dual('|', '\\')],
     ],
     [
-      [1.75, edit('caps lock', 'caps', 'bl', true)],
+      [1.75, edit('caps lock', 'bl', true)],
       [1, txt('A')], [1, txt('S')], [1, txt('D')], [1, txt('F', true)], [1, txt('G')],
       [1, txt('H')], [1, txt('J', true)], [1, txt('K')], [1, txt('L')],
       [1, dual(':', ';')], [1, dual('"', "'")],
-      [1.75, edit('return', 'ret', 'br')],
+      [1.75, edit('return', 'br')],
     ],
     [
-      [2.25, edit('shift', 'shift', 'bl')],
+      [2.25, edit('shift', 'bl')],
       ...'ZXCVBNM'.split('').map((s) => [1, txt(s)] as [number, KeyLegend]),
       [1, dual('<', ',')], [1, dual('>', '.')], [1, dual('?', '/')],
-      [2.25, edit('shift', 'shift', 'br')],
+      [2.25, edit('shift', 'br')],
     ],
     [
       [1, { t: 'fn' }],
@@ -255,9 +248,42 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
     if (close) ctx.closePath()
     fill ? ctx.fill() : ctx.stroke()
   }
-  // Apple's F10-F12 speaker glyph is a stroked outline, not a filled solid.
+  const roundRect = (cx: number, cy: number, w: number, h: number, r: number) => {
+    ctx.beginPath()
+    ctx.roundRect(cx - w / 2, cy - h / 2, w, h, r)
+    ctx.stroke()
+  }
+  /**
+   * F10-F12 share one stroked speaker outline: a shallow box on the left
+   * opening into a cone that flares right. Measured off Apple's own art at
+   * 36 x 53 px — so 1.47x as tall as wide, with the box only 0.30 of the
+   * cone's height. `SPK` is the speaker's width; everything follows from it.
+   */
+  const SPK = 0.523 * s
   const speaker = (cx: number) => {
-    poly([[cx - 0.3 * s, -0.11 * s], [cx - 0.15 * s, -0.11 * s], [cx + 0.02 * s, -0.28 * s], [cx + 0.02 * s, 0.28 * s], [cx - 0.15 * s, 0.11 * s], [cx - 0.3 * s, 0.11 * s]])
+    const box = 0.222 * SPK
+    const mouth = 0.736 * SPK
+    poly([
+      [cx - 0.46 * SPK, -box],
+      [cx + 0.03 * SPK, -box],
+      [cx + 0.46 * SPK, -mouth],
+      [cx + 0.46 * SPK, mouth],
+      [cx + 0.03 * SPK, box],
+      [cx - 0.46 * SPK, box],
+    ])
+  }
+  /**
+   * The waves to its right: arcs struck from a point 0.34 speaker-widths
+   * right of the speaker's center, at 0.635 / 0.985 / 1.337 of that width.
+   * F11 shows the first alone, F12 all three.
+   */
+  const waves = (cx: number, n: number) => {
+    const at = cx + 0.34 * SPK
+    for (const r of [0.635, 0.985, 1.337].slice(0, n)) {
+      ctx.beginPath()
+      ctx.arc(at, 0, r * SPK, -0.197 * Math.PI, 0.197 * Math.PI)
+      ctx.stroke()
+    }
   }
   const rays = (r0: number, r1: number, n: number) => {
     for (let i = 0; i < n; i++) {
@@ -266,84 +292,95 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
     }
   }
   switch (icon) {
+    // F1 / F2 are the SAME sun at the same size with the same 28 px disc, and
+    // differ ONLY in how far the eight rays reach. (They used to differ in
+    // overall size by a third, which is not what the keys do.)
     case 'sunlo':
-      circle(0, 0, 0.14 * s)
-      rays(0.24 * s, 0.32 * s, 8)
+      circle(0, 0, 0.201 * s)
+      rays(0.294 * s, 0.394 * s, 8)
       break
     case 'sunhi':
-      circle(0, 0, 0.18 * s)
-      rays(0.3 * s, 0.42 * s, 8)
+      circle(0, 0, 0.2 * s)
+      rays(0.265 * s, 0.423 * s, 8)
       break
     case 'mission': {
-      const r = 0.06 * s
-      ctx.beginPath()
-      ctx.roundRect(-0.42 * s, -0.26 * s, 0.46 * s, 0.52 * s, r)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.roundRect(0.14 * s, -0.26 * s, 0.3 * s, 0.2 * s, r)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.roundRect(0.14 * s, 0.06 * s, 0.3 * s, 0.2 * s, r)
-      ctx.stroke()
+      // Mission Control is TWO stacked panes on the LEFT beside one tall pane
+      // on the RIGHT — this had it mirrored, with the tall pane left and two
+      // equal panes right. Apple's three are all different sizes: the
+      // upper-left is widest, the lower-left is smaller and steps right, and
+      // the right-hand one is the tall one. It is also the widest glyph in the
+      // row (1.5x as wide as tall), which is why it gets more width than `s`.
+      const r = 0.05 * s
+      roundRect(-0.337 * s, -0.222 * s, 0.546 * s, 0.33 * s, r)
+      roundRect(-0.251 * s, 0.251 * s, 0.488 * s, 0.273 * s, r)
+      roundRect(0.388 * s, 0.007 * s, 0.445 * s, 0.645 * s, r)
       break
     }
     case 'spot':
-      circle(-0.08 * s, -0.08 * s, 0.26 * s)
-      line(0.12 * s, 0.12 * s, 0.36 * s, 0.36 * s)
+      // A big lens with a stub of a handle, not the small lens on a long
+      // handle this drew: Apple's lens is 0.72 of the glyph across.
+      circle(-0.073 * s, -0.08 * s, 0.302 * s)
+      line(0.141 * s, 0.134 * s, 0.395 * s, 0.395 * s)
       break
     case 'mic': {
+      // Dictation: capsule, U-shaped cradle, stem, and the FOOT that was
+      // missing entirely. The glyph is 1.45x as tall as wide; `W` is its
+      // width and each step down the stack is a fraction of it.
+      const W = 0.574 * s
+      const y = (u: number) => -0.416 * s + u * W
       ctx.beginPath()
-      ctx.roundRect(-0.1 * s, -0.42 * s, 0.2 * s, 0.44 * s, 0.1 * s)
+      ctx.roundRect(-0.0935 * s, y(0.075), 0.187 * s, 0.402 * s, 0.0935 * s)
       ctx.stroke()
       ctx.beginPath()
-      ctx.arc(0, -0.02 * s, 0.24 * s, 0.15 * Math.PI, 0.85 * Math.PI)
+      ctx.arc(0, y(0.6), 0.244 * s, 0, Math.PI)
       ctx.stroke()
-      line(0, 0.22 * s, 0, 0.4 * s)
+      line(0, y(1.1), 0, y(1.32))
+      line(-0.158 * s, y(1.36), 0.158 * s, y(1.36))
       break
     }
     case 'moon': {
-      // crescent ☾: full outer arc, inner arc carved back with an offset center
+      // Do Not Disturb is an OUTLINED crescent, not the solid one this drew:
+      // the boundary between a disc and a second, larger disc overlapping it
+      // from the upper right. Both circles were fitted to Apple's art to
+      // within 3% of the crescent's area.
+      const R = 0.39 * s
       ctx.beginPath()
-      ctx.arc(-0.02 * s, 0, 0.32 * s, -0.3 * Math.PI, 0.7 * Math.PI)
-      ctx.arc(0.12 * s, -0.12 * s, 0.22 * s, 0.62 * Math.PI, -0.22 * Math.PI, true)
+      // The arcs meet at the horns. These sweep directions are the pair that
+      // keeps the outer arc clear of the bite and the inner arc inside it.
+      ctx.arc(0, 0, R, 0.1868, 4.5942, false)
+      ctx.arc(0.47 * R, -0.439 * R, 0.808 * R, 3.8972, 0.8834, true)
       ctx.closePath()
       ctx.stroke()
       break
     }
-    // F7-F9 transport glyphs are hollow outlined triangles on the real caps
+    // F7-F9 are hollow outlined triangles, a shared 0.56s tall
     case 'rew':
-      poly([[0.02 * s, -0.22 * s], [-0.32 * s, 0], [0.02 * s, 0.22 * s]])
-      poly([[0.38 * s, -0.22 * s], [0.04 * s, 0], [0.38 * s, 0.22 * s]])
+      poly([[0, -0.28 * s], [-0.53 * s, 0], [0, 0.28 * s]])
+      poly([[0.53 * s, -0.28 * s], [0, 0], [0.53 * s, 0.28 * s]])
       break
     case 'play':
-      poly([[-0.36 * s, -0.22 * s], [-0.05 * s, 0], [-0.36 * s, 0.22 * s]])
-      line(0.12 * s, -0.22 * s, 0.12 * s, 0.22 * s)
-      line(0.28 * s, -0.22 * s, 0.28 * s, 0.22 * s)
+      poly([[-0.466 * s, -0.28 * s], [0.021 * s, 0], [-0.466 * s, 0.28 * s]])
+      line(0.193 * s, -0.301 * s, 0.193 * s, 0.301 * s)
+      line(0.466 * s, -0.301 * s, 0.466 * s, 0.301 * s)
       break
     case 'fwd':
-      poly([[-0.38 * s, -0.22 * s], [-0.04 * s, 0], [-0.38 * s, 0.22 * s]])
-      poly([[-0.02 * s, -0.22 * s], [0.32 * s, 0], [-0.02 * s, 0.22 * s]])
+      poly([[-0.53 * s, -0.28 * s], [0, 0], [-0.53 * s, 0.28 * s]])
+      poly([[0, -0.28 * s], [0.53 * s, 0], [0, 0.28 * s]])
       break
     case 'mute':
-      // F10 is the bare speaker — no waves, no cross
-      speaker(0.12 * s)
+      // The bare speaker struck through corner to corner. Apple's slash falls
+      // from the TOP-LEFT to the bottom right; this used to rise the other way.
+      speaker(-0.074 * s)
+      line(-0.42 * s, -0.42 * s, 0.42 * s, 0.42 * s)
       break
-    case 'voldn': {
-      speaker(-0.04 * s)
-      ctx.beginPath()
-      ctx.arc(0.04 * s, 0, 0.2 * s, -0.3 * Math.PI, 0.3 * Math.PI)
-      ctx.stroke()
+    case 'voldn':
+      speaker(-0.121 * s)
+      waves(-0.121 * s, 1)
       break
-    }
-    case 'volup': {
-      speaker(-0.14 * s)
-      for (const r of [0.16, 0.28, 0.4]) {
-        ctx.beginPath()
-        ctx.arc(-0.06 * s, 0, r * s, -0.3 * Math.PI, 0.3 * Math.PI)
-        ctx.stroke()
-      }
+    case 'volup':
+      speaker(-0.309 * s)
+      waves(-0.309 * s, 3)
       break
-    }
     case 'globe': {
       circle(0, 0, 0.36 * s)
       line(-0.36 * s, 0, 0.36 * s, 0)
@@ -367,45 +404,102 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
       line(0.1 * s, -0.26 * s, 0.42 * s, -0.26 * s)
       poly([[-0.42 * s, -0.26 * s], [-0.14 * s, -0.26 * s], [0.14 * s, 0.26 * s], [0.42 * s, 0.26 * s]], false, false)
       break
-    case 'shift':
-      poly([[0, -0.38 * s], [0.32 * s, 0.02 * s], [0.14 * s, 0.02 * s], [0.14 * s, 0.34 * s], [-0.14 * s, 0.34 * s], [-0.14 * s, 0.02 * s], [-0.32 * s, 0.02 * s]])
-      break
-    case 'caps':
-      poly([[0, -0.42 * s], [0.3 * s, -0.04 * s], [0.13 * s, -0.04 * s], [0.13 * s, 0.2 * s], [-0.13 * s, 0.2 * s], [-0.13 * s, -0.04 * s], [-0.3 * s, -0.04 * s]])
-      line(-0.13 * s, 0.36 * s, 0.13 * s, 0.36 * s)
-      break
-    case 'tab':
-      line(-0.4 * s, 0, 0.22 * s, 0)
-      poly([[0.06 * s, -0.14 * s], [0.22 * s, 0], [0.06 * s, 0.14 * s]], false, false)
-      line(0.36 * s, -0.2 * s, 0.36 * s, 0.2 * s)
-      break
-    case 'back':
-      poly([[-0.44 * s, 0], [-0.18 * s, -0.26 * s], [0.44 * s, -0.26 * s], [0.44 * s, 0.26 * s], [-0.18 * s, 0.26 * s]])
-      line(-0.02 * s, -0.1 * s, 0.18 * s, 0.1 * s)
-      line(0.18 * s, -0.1 * s, -0.02 * s, 0.1 * s)
-      break
-    case 'ret':
-      ctx.beginPath()
-      ctx.moveTo(0.3 * s, -0.28 * s)
-      ctx.lineTo(0.3 * s, 0.08 * s)
-      ctx.lineTo(-0.22 * s, 0.08 * s)
-      ctx.stroke()
-      poly([[-0.08 * s, -0.08 * s], [-0.26 * s, 0.08 * s], [-0.08 * s, 0.24 * s]], false, false)
-      break
   }
   ctx.restore()
 }
 
 /**
- * The Magic Keyboard: rounded keycaps as a single instanced mesh (one draw
- * call), a canvas-painted legends layer just above the caps (letters, stacked
- * shift symbols, corner words or glyph icons per variant, hand-drawn media
- * icons, home-row nubs), and the Touch ID disc on the top-right key.
+ * One keycap, extruded at its true size: a unit cap scaled to width would
+ * stretch its corner radius and edge bevel with it, so the 5u space bar would
+ * end up with 10 mm elliptical corners against the letters' 2 mm ones. Caps of
+ * the same size share one geometry and draw as a single instanced mesh.
  */
-function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ: number; legends: 'text' | 'icons' } }) {
-  const meshRef = React.useRef<THREE.InstancedMesh>(null!)
+function keycapGeometry(width: number, depth: number) {
+  const bevel = 0.005
+  const g = new THREE.ExtrudeGeometry(roundedRectShape(width - bevel * 2, depth - bevel * 2, CAP_RADIUS - bevel), {
+    depth: 0.012,
+    bevelEnabled: true,
+    bevelThickness: bevel,
+    bevelSize: bevel,
+    bevelSegments: 2,
+    curveSegments: 6,
+  })
+  g.rotateX(-Math.PI / 2)
+  return g
+}
 
+/**
+ * The raised home-row markers on F and J: a stadium bar standing proud of the
+ * cap, the same molding as the cap itself rather than print. Photo-measured
+ * off a straight-on Magic Keyboard — 0.237 cap widths long, 0.053 cap depths
+ * across, its center 0.816 of the way down the cap (3.9 x 0.9 mm, 5.1 mm below
+ * the cap's center on a 16 mm cap), standing ~0.2 mm off the face.
+ */
+function HomeRowNubs({ keys }: { keys: KeyDef[] }) {
+  const geometry = React.useMemo(() => {
+    if (!keys.length) return null
+    const width = keys[0]!.w * 0.237
+    const depth = keys[0]!.d * 0.053
+    const bevel = 0.001
+    const g = new THREE.ExtrudeGeometry(
+      roundedRectShape(width - bevel * 2, depth - bevel * 2, depth / 2 - bevel),
+      { depth: 0.003, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 8 }
+    )
+    g.rotateX(-Math.PI / 2)
+    return g
+  }, [keys])
+  React.useEffect(() => () => geometry?.dispose(), [geometry])
+  if (!geometry) return null
+  return (
+    <>
+      {keys.map((key, i) => (
+        <mesh key={i} geometry={geometry} position={[key.x, CAP_TOP_Y, key.z + key.d * 0.316]}>
+          <meshPhysicalMaterial color="#17181d" metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
+        </mesh>
+      ))}
+    </>
+  )
+}
+
+/** Every cap of one footprint, in one draw call. */
+function CapCluster({ width, depth, keys }: { width: number; depth: number; keys: KeyDef[] }) {
+  const meshRef = React.useRef<THREE.InstancedMesh>(null!)
+  const geometry = React.useMemo(() => keycapGeometry(width, depth), [width, depth])
+  React.useEffect(() => () => geometry.dispose(), [geometry])
+  React.useLayoutEffect(() => {
+    const m = new THREE.Matrix4()
+    keys.forEach((k, i) => meshRef.current.setMatrixAt(i, m.makeTranslation(k.x, 0, k.z)))
+    meshRef.current.instanceMatrix.needsUpdate = true
+  }, [keys])
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, keys.length]} geometry={geometry}>
+      {/* matte keycaps: tame the studio env so the black doesn't wash out */}
+      <meshPhysicalMaterial color="#17181d" metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
+    </instancedMesh>
+  )
+}
+
+/**
+ * The Magic Keyboard: rounded keycaps grouped by footprint into a handful of
+ * instanced meshes, a canvas-painted legends layer just above the caps
+ * (letters, stacked shift symbols, corner words, modifier glyphs, hand-drawn
+ * media icons), the raised F / J home-row markers, and the Touch ID sensor on
+ * the top-right key.
+ */
+function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ: number } }) {
   const layout = React.useMemo(() => buildKeyboardLayout(keyboard), [keyboard])
+
+  // Caps bucketed by footprint — six widths plus the half-height arrows.
+  const clusters = React.useMemo(() => {
+    const byFootprint = new Map<string, { width: number; depth: number; keys: KeyDef[] }>()
+    for (const key of layout.keys) {
+      const id = `${key.w.toFixed(5)}x${key.d.toFixed(5)}`
+      let cluster = byFootprint.get(id)
+      if (!cluster) byFootprint.set(id, (cluster = { width: key.w, depth: key.d, keys: [] }))
+      cluster.keys.push(key)
+    }
+    return [...byFootprint.entries()]
+  }, [layout])
 
   // All legends painted once into a texture spanning the keyboard well.
   const legendsTexture = React.useMemo(() => {
@@ -419,7 +513,9 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
     const INK = 'rgba(228, 231, 240, 0.85)'
     ctx.fillStyle = INK
     ctx.strokeStyle = INK
-    const font = (size: number, weight = 500) =>
+    // Apple laser-etches these legends in a light-to-regular weight; 400 keeps
+    // the hairline look on real keycaps rather than the chunkier UI-label 500.
+    const font = (size: number, weight = 400) =>
       (ctx.font = `${weight} ${Math.round(size)}px -apple-system, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif`)
     const arrowTri = (px: number, py: number, s: number, d: 'l' | 'r' | 'u' | 'd') => {
       const rot = { u: 0, r: Math.PI / 2, d: Math.PI, l: -Math.PI / 2 }[d]
@@ -458,15 +554,8 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(legend.s, px, py)
-          if (legend.nub) {
-            // home-row locator bar under F and J
-            ctx.save()
-            ctx.globalAlpha = 0.55
-            ctx.beginPath()
-            ctx.roundRect(px - u(0.034), py + hd - u(0.02), u(0.068), u(0.008), u(0.004))
-            ctx.fill()
-            ctx.restore()
-          }
+          // the F / J home-row markers are RAISED bars, not print — real
+          // geometry standing on those two caps (see HomeRowNubs).
           break
         case 'dual':
           // shifted symbol centered 4.5 mm from the cap top, base symbol
@@ -485,23 +574,13 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           ctx.fillText(legend.s, legend.align === 'bl' ? blX : brX, cornerY)
           if (legend.dot) dot()
           break
-        case 'ic':
-          drawKeyIcon(
-            ctx,
-            legend.i,
-            legend.align === 'bl' ? blX + u(0.036) : brX - u(0.036),
-            cornerY - u(0.026),
-            u(0.075)
-          )
-          if (legend.dot) dot()
-          break
         case 'mod': {
           // symbol in the top-outer corner: center 5.2 mm in from the outer
           // edge, 4.6 mm down from the cap top (mirrored on right-hand keys)
           const sx = legend.side === 'l' ? px - hw + u(0.072) : px + hw - u(0.072)
           const sy = py - hd + u(0.063)
           if (legend.c) {
-            font(u(0.062), 600)
+            font(u(0.062), 500)
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText(legend.c, sx, sy)
@@ -523,9 +602,10 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           ctx.fillText('fn', brX, cornerY)
           break
         case 'fk':
-          // media icon ~3.3 mm centered 5.6 mm from the cap top, F-label
-          // 2.3 mm font centered 12.2 mm down
-          drawKeyIcon(ctx, legend.i, px, py - u(0.0325), u(0.045))
+          // media icon ~4 mm (the glyphs run 15-29% of the cap width on a
+          // retail unit) centered 2.4 mm above the cap's middle, F-label
+          // 2.3 mm font centered 4.3 mm below it
+          drawKeyIcon(ctx, legend.i, px, py - u(0.0325), u(0.055))
           font(u(0.032))
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
@@ -543,38 +623,16 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
   }, [layout, keyboard])
   React.useEffect(() => () => legendsTexture?.dispose(), [legendsTexture])
 
-  // Rounded keycap: an extruded rounded-rect, laid flat (footprint in XZ).
-  // Small corner radius and a tight edge bevel per the reference scan.
-  const capGeometry = React.useMemo(() => {
-    const g = new THREE.ExtrudeGeometry(roundedRectShape(1, 1, 0.1), {
-      depth: 0.012,
-      bevelEnabled: true,
-      bevelThickness: 0.005,
-      bevelSize: 0.02,
-      bevelSegments: 2,
-      curveSegments: 6,
-    })
-    g.rotateX(-Math.PI / 2)
-    return g
-  }, [])
-  React.useEffect(() => () => capGeometry.dispose(), [capGeometry])
-
-  React.useLayoutEffect(() => {
-    const m = new THREE.Matrix4()
-    layout.keys.forEach((k, i) => {
-      m.makeScale(k.w, 1, k.d)
-      m.setPosition(k.x, 0, k.z)
-      meshRef.current.setMatrixAt(i, m)
-    })
-    meshRef.current.instanceMatrix.needsUpdate = true
-  }, [layout])
+  // Touch ID's sensor fills two thirds of its cap (scan-measured Ø11 mm).
+  const sensorR = layout.touchId.w * 0.335
 
   return (
     <>
-      <instancedMesh ref={meshRef} args={[undefined, undefined, layout.keys.length]} geometry={capGeometry}>
-        {/* matte keycaps: tame the studio env so the black doesn't wash out */}
-        <meshPhysicalMaterial color="#17181d" metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
-      </instancedMesh>
+      {clusters.map(([id, cluster]) => (
+        <CapCluster key={id} width={cluster.width} depth={cluster.depth} keys={cluster.keys} />
+      ))}
+      {/* the raised F / J home-row markers */}
+      <HomeRowNubs keys={layout.keys.filter((k) => k.legend.t === 'txt' && k.legend.nub)} />
       {/* printed legends, floating just above the caps */}
       {legendsTexture && (
         <mesh position={[0, 0.0195, 0]} rotation-x={-Math.PI / 2}>
@@ -584,11 +642,11 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
       )}
       {/* Touch ID: recessed sensor disc + hairline ring on the top-right key */}
       <mesh position={[layout.touchId.x, 0.0185, layout.touchId.z]} rotation-x={-Math.PI / 2}>
-        <circleGeometry args={[0.055, 28]} />
+        <circleGeometry args={[sensorR, 32]} />
         <meshPhysicalMaterial color="#0c0d11" metalness={0.35} roughness={0.32} envMapIntensity={0.7} />
       </mesh>
       <mesh position={[layout.touchId.x, 0.019, layout.touchId.z]} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[0.049, 0.055, 28]} />
+        <ringGeometry args={[sensorR - 0.006, sensorR, 32]} />
         <meshPhysicalMaterial color="#26282e" metalness={0.5} roughness={0.35} envMapIntensity={0.8} />
       </mesh>
     </>
@@ -615,9 +673,8 @@ function LaptopImpl({
   resolution,
   notch = true,
   openAngle,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: LaptopProps) {
@@ -664,8 +721,13 @@ function LaptopImpl({
   React.useEffect(() => () => baseGeometry.dispose(), [baseGeometry])
   const lidGeometry = useSlabGeometry(footprint.width, footprint.depth, footprint.radius, lid.thickness, lid.bevel)
 
-  const wellGeometry = React.useMemo(
-    () => new THREE.ShapeGeometry(roundedRectShape(keyboard.width, keyboard.depth, 0.06), 12),
+  // The Pro's black keyboard tray. The Air has none: its caps sit straight in
+  // the aluminum deck, which shows between them.
+  const trayGeometry = React.useMemo(
+    () =>
+      keyboard.tray
+        ? new THREE.ShapeGeometry(roundedRectShape(keyboard.width, keyboard.depth, 0.06), 12)
+        : null,
     [keyboard]
   )
   const trackpadGeometry = React.useMemo(
@@ -695,13 +757,13 @@ function LaptopImpl({
   )
   React.useEffect(() => {
     return () => {
-      wellGeometry.dispose()
+      trayGeometry?.dispose()
       trackpadGeometry.dispose()
       trackpadRimGeometry.dispose()
       bottomPlateGeometry.dispose()
       glassGeometry.dispose()
     }
-  }, [wellGeometry, trackpadGeometry, trackpadRimGeometry, bottomPlateGeometry, glassGeometry])
+  }, [trayGeometry, trackpadGeometry, trackpadRimGeometry, bottomPlateGeometry, glassGeometry])
 
   // Speaker grille: the scan resolves each strip as a ~1.0 x 0.93 mm grid of
   // ~0.63 mm drilled holes. Painted once into a transparent canvas (dark hole
@@ -798,12 +860,14 @@ function LaptopImpl({
             {aluminum}
           </mesh>
 
-          {/* keyboard well (recess) + keys */}
-          <mesh geometry={wellGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.002, keyboard.offsetZ]}>
-            <meshPhysicalMaterial color="#101216" metalness={0.3} roughness={0.5} />
-          </mesh>
-          {/* caps sit nearly flush with the deck (scan: tops +0.3 mm), rising
-              out of the black well tub */}
+          {/* the Pro's black keyboard tray (the Air seats its keys in bare
+              aluminum, so nothing is painted under them) */}
+          {trayGeometry && (
+            <mesh geometry={trayGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.002, keyboard.offsetZ]}>
+              <meshPhysicalMaterial color="#101216" metalness={0.3} roughness={0.5} />
+            </mesh>
+          )}
+          {/* caps sit nearly flush with the deck (scan: tops +0.3 mm) */}
           <group position={[0, deckY - 0.013, keyboard.offsetZ]}>
             <Keys keyboard={keyboard} />
           </group>
@@ -958,11 +1022,11 @@ function LaptopImpl({
             height={display.height}
             radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
             position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
-            occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+            occluders={occludeRefs}
             {...resolveSurface(screen, {
               background: surfaceBackground,
               resolution: res,
-              interactive,
+              allowInput,
               dragToRotate,
               style: surfaceStyle,
             })}

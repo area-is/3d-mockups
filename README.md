@@ -17,13 +17,13 @@ on the roadmap.
 ```tsx
 'use client'
 
-import { PhoneMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-mockups'
 
 export function Hero() {
   return (
-    <PhoneMockup autoRotate float>
+    <GalaxyMockup autoRotate float>
       <YourApp /> {/* any React node, iframe, video… */}
-    </PhoneMockup>
+    </GalaxyMockup>
   )
 }
 ```

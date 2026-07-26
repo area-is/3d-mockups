@@ -108,7 +108,7 @@ A new binding (say `@area-mockups/svelte`) implements four pieces, in order:
    using the same specs, materials and transforms. Map each spec's `*_REGIONS` onto
    the framework's native slot mechanism (Svelte `<svelte:fragment slot="front">`,
    Vue `#front`) with the same names and the same bare-children-→-primary shorthand.
-4. **Wrappers** — the one-liner mockups (`PhoneMockup`…). All per-object stage math
+4. **Wrappers** — the one-liner mockups (`GalaxyMockup`…). All per-object stage math
    comes from the core `*_FRAMING` specs (camera via `framing.camera`, shadow via
    `framedShadowY`, float via `framing.floatIntensity`) — a binding writes one
    generic factory like React's `create-mockup.tsx`, not per-object arithmetic.
@@ -153,7 +153,7 @@ change only, no API change.
    `tsconfig.base.json` with the `@area-mockups/core` → `../core/src/index.ts` paths
    mapping, and a build aliasing the core like `packages/react/tsup.config.ts` does.
 2. Implement the stage and screen pieces of the binding contract above.
-3. Port `Phone` first — it exercises specs, screen, overlays and orientation; verify
+3. Port `Galaxy` first — it exercises specs, screen, overlays and orientation; verify
    against the React rendering side by side in the docs app.
 4. Port remaining devices/objects and wrappers incrementally; each is independent.
 5. Add root scripts (`build`, `typecheck`) for the new workspace, docs examples, and
@@ -168,4 +168,4 @@ change only, no API change.
   from React is what moves down. (Framing and region registries already made this
   move; geometry is next.)
 - **2D renderers**: the same specs are designed to drive CSS/SVG mockups that share
-  the public API (`PhoneMockup` etc., including the compound slots) without WebGL.
+  the public API (`GalaxyMockup` etc., including the compound slots) without WebGL.

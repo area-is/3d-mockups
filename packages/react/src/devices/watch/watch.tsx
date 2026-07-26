@@ -3,11 +3,16 @@ import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import {
-  WATCH_COLORWAYS,
+  APPLE_WATCH_COLORWAYS,
+  APPLE_WATCH_DEFAULT_VARIANT,
+  GALAXY_WATCH_COLORWAYS,
+  GALAXY_WATCH_DEFAULT_VARIANT,
   findColorway,
   WATCH_VARIANTS,
-  WATCH_DEFAULT_VARIANT,
   SCREEN_REGIONS,
+  type AppleWatchVariant,
+  type Colorway,
+  type GalaxyWatchVariant,
   type WatchVariant,
   roundedRectShape,
   gearShape,
@@ -26,21 +31,30 @@ import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from 
 
 type GroupProps = ThreeElements['group']
 
-export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+/**
+ * How far the unbuckled band sinks below the plane it and the case back both
+ * rest on (~0.2 mm at watch scale): enough that the buried run loses the depth
+ * test to the case back outright instead of tying with it, far too little to
+ * read as a band floating off the surface.
+ */
+const BAND_SINK = 0.012
+
+/**
+ * Everything both watch families take. Each brand's component adds its own
+ * `variant` union on top — and the Galaxy adds `bandOpen`, which an Apple Watch
+ * has no closure to honor.
+ */
+export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the watch screen: React components, a <video>…
-   * Wrap in `<Watch.Screen>` to set per-screen surface props.
+   * Wrap in `<AppleWatch.Screen>` / `<GalaxyWatch.Screen>` to set per-screen
+   * surface props.
    */
   children?: React.ReactNode
   /**
-   * Which watch to render, at true relative sizes: `series11` (Apple Watch
-   * Series 11, 46 mm — default) or `watch8` (Galaxy Watch 8, 44 mm cushion
-   * case with a round display).
-   */
-  variant?: WatchVariant
-  /**
-   * A retail colorway id from `WATCH_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
+   * A retail colorway id from the family's catalog (`APPLE_WATCH_COLORWAYS` /
+   * `GALAXY_WATCH_COLORWAYS`) presetting the device colors. Explicit color
+   * props override it.
    */
   colorway?: string
   /** Case colorway. Apple aluminum: Jet Black `#1c1d21` (default), Silver
@@ -49,66 +63,53 @@ export interface WatchProps extends Omit<GroupProps, 'children' | 'color'>, Surf
   /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
   bandColor?: string
   /**
-   * `true` renders the band unbuckled and laid open: the straps run out from
-   * the case on a wide, near-flat arc, so the hole row, the closure AND the
-   * case back all face the camera — the pose product photography uses. The
-   * default (`false`) wears it, fastened around an invisible wrist behind the
-   * case, which necessarily hides the back.
-   *
-   * Ignored on the Apple Watch: its Solo Loop is seamless, so there is no
-   * closure to undo. Applies to `watch8`.
-   */
-  bandOpen?: boolean
-  /**
    * CSS pixel width of the virtual display. The default matches the device's
    * logical grid: 208 gives 208×248 on the Apple Watch; 240 gives a round
    * 240×240 on the Galaxy Watch — so content lays out like on the real device.
    */
   resolution?: number
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the case (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
+}
+
+/** The shared implementation's props: one variant space, `bandOpen` and all. */
+interface WatchBodyProps extends WatchCommonProps {
+  variant: WatchVariant
+  /** The family's colorway catalog, for resolving the `colorway` id. */
+  catalog: Colorway[]
+  bandOpen?: boolean
 }
 
 /**
- * A procedurally built smartwatch — Apple Watch Series 11 (46 mm squircle
- * case, Digital Crown, Sport Band) or Samsung Galaxy Watch 8 (44 mm cushion
- * case with the round display raised on its dial puck, two flat keys, a
- * tapering Dynamic-Lug-style band) depending on `variant`.
- *
- * Each wears its real band. The Apple gets the Solo Loop: ONE seamless
- * stretchy band with no closure, no holes and no hardware, flaring into the
- * lug slots at both ends. The Galaxy gets a two-strap band closing with a
- * stainless pin buckle, a keeper and punched adjustment holes, sized from the
- * retail fit range — `bandOpen` lays that one out flat instead of wearing it.
- * Both cases carry their real sensor back: an optical cluster behind a round
- * crystal, sunk flush into Apple's body-colour plate, raised on Samsung's
- * BioActive puck. No 3D asset files are loaded — the whole device is generated
- * from geometry at runtime.
- *
- * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ * The smartwatch both families are built from — a case machined out of its
+ * spec, wearing that spec's real band. `style: 'apple'` gives the squircle case
+ * with the knurled Digital Crown and an edge-to-edge crystal; `style: 'galaxy'`
+ * the cushion case with the round display raised on its dial puck and two flat
+ * keys. The band follows its own `closure`: Apple's Solo Loop is ONE seamless
+ * stretchy loop with no closure, no holes and no hardware, flaring into the lug
+ * slots at both ends, while the Galaxy's two-strap band closes with a stainless
+ * pin buckle, a keeper and punched adjustment holes sized from the retail fit
+ * range — and only that one can be laid open with `bandOpen`. Both carry their
+ * real sensor back: an optical cluster behind a round crystal, sunk flush into
+ * Apple's body-colour plate, raised on Samsung's BioActive puck. No 3D asset
+ * files are loaded — the whole device is generated from geometry at runtime.
  */
-function WatchImpl({
+function WatchBody({
   children,
-  variant = WATCH_DEFAULT_VARIANT,
+  variant,
+  catalog,
   colorway,
   color: colorProp,
   bandColor = '#2a2c31',
   bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
-}: WatchProps) {
+}: WatchBodyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = WATCH_VARIANTS[variant]
-  const retail = findColorway(WATCH_COLORWAYS[variant], colorway)
+  const retail = findColorway(catalog, colorway)
   const color = colorProp ?? retail?.color ?? '#1c1d21'
   const { body, glass, display, crown, buttons, mic, speaker, bandSlot, band } = spec
   const res = resolution ?? spec.resolution
@@ -249,8 +250,12 @@ function WatchImpl({
       // loop (core's `watchStrapLengths`), so laying the band out neither
       // stretches nor shortens it.
       const length = watchStrapLengths(band)
-      // Its inner face flush with the case back, as if set down on a surface.
-      const z = -body.depth / 2 + band.thickness / 2
+      // Laid down flat on the same plane the case back rests on — but sunk a
+      // hair INTO the case rather than dead flush with it. Flush, the strap's
+      // flat inner face and the case's back face are coplanar exactly where
+      // each strap runs under the case into its lug slot, and the two z-fight
+      // into blotches that crawl over the sensor back as the watch turns.
+      const z = -body.depth / 2 + band.thickness / 2 + BAND_SINK
       const pin = flatStrapPath({ startY: WATCH_OPEN_START_Y, z, length: length.pin, direction: 1 })
       const tail = flatStrapPath({ startY: -WATCH_OPEN_START_Y, z, length: length.tail, direction: -1 })
       return {
@@ -754,11 +759,11 @@ function WatchImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, faceZ + 0.006]}
-        occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution: res,
-          interactive,
+          allowInput,
           dragToRotate,
           style: surfaceStyle,
         })}
@@ -768,9 +773,71 @@ function WatchImpl({
     </group>
   )
 }
-WatchImpl.displayName = 'Watch'
+WatchBody.displayName = 'WatchBody'
 
-/** The device's compound slots, shared by `<Watch>` and `<WatchMockup>`. */
+/** The compound slots both watches share with their mockups. */
 export const watchSlots = createSlots(SCREEN_REGIONS)
 
-export const Watch = Object.assign(WatchImpl, watchSlots)
+export interface AppleWatchProps extends WatchCommonProps {
+  /**
+   * Which Apple Watch to render: `series11` (Series 11, 46 mm — the default and
+   * only model today).
+   */
+  variant?: AppleWatchVariant
+}
+
+/**
+ * A procedurally built Apple Watch Series 11: 46 mm squircle case with the
+ * knurled Digital Crown, the flush side button, an edge-to-edge crystal over
+ * the 416x496 display, and the optical sensor back sunk flush into a
+ * body-colour plate.
+ *
+ * It wears the Solo Loop — ONE seamless stretchy band with no closure, no
+ * adjustment holes and no hardware, flaring into the lug slots at both ends.
+ * There is nothing to unfasten, so unlike `<GalaxyWatch>` it takes no
+ * `bandOpen`.
+ *
+ * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ */
+function AppleWatchImpl({ variant = APPLE_WATCH_DEFAULT_VARIANT, ...props }: AppleWatchProps) {
+  return <WatchBody variant={variant} catalog={APPLE_WATCH_COLORWAYS[variant]} {...props} />
+}
+AppleWatchImpl.displayName = 'AppleWatch'
+
+export const AppleWatch = Object.assign(AppleWatchImpl, watchSlots)
+
+export interface GalaxyWatchProps extends WatchCommonProps {
+  /**
+   * Which Galaxy Watch to render: `watch8` (Galaxy Watch 8, 44 mm cushion case
+   * with the round display — the default and only model today).
+   */
+  variant?: GalaxyWatchVariant
+  /**
+   * `true` lays the band out unbuckled and flat: both straps run straight out
+   * from the case, so the hole row, the buckle AND the case back all face the
+   * camera — the pose product photography uses. The default (`false`) wears it,
+   * fastened around an invisible wrist behind the case, which necessarily hides
+   * the back.
+   */
+  bandOpen?: boolean
+}
+
+/**
+ * A procedurally built Samsung Galaxy Watch 8: 44 mm cushion case with the
+ * fully round 480x480 display raised on its dial puck, two flat chamfered keys,
+ * machined speaker slots, and the BioActive sensor puck standing proud of the
+ * aluminium back.
+ *
+ * It wears the tapering Dynamic-Lug-style band: two straps closing with a
+ * stainless pin buckle and keeper over a row of punched adjustment holes, sized
+ * from the retail fit range. `bandOpen` lays that band out flat instead of
+ * wearing it.
+ *
+ * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
+ */
+function GalaxyWatchImpl({ variant = GALAXY_WATCH_DEFAULT_VARIANT, ...props }: GalaxyWatchProps) {
+  return <WatchBody variant={variant} catalog={GALAXY_WATCH_COLORWAYS[variant]} {...props} />
+}
+GalaxyWatchImpl.displayName = 'GalaxyWatch'
+
+export const GalaxyWatch = Object.assign(GalaxyWatchImpl, watchSlots)

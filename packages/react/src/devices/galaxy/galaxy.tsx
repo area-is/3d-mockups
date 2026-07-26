@@ -27,10 +27,10 @@ type GroupProps = ThreeElements['group']
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
-export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
   /**
    * Anything you want on the phone screen: React components, an <iframe>, a
-   * <video>… Wrap in `<Phone.Screen>` to set per-screen surface props.
+   * <video>… Wrap in `<Galaxy.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
@@ -63,13 +63,6 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, Surf
   resolution?: number
   /** Show the front camera punch-hole overlay. */
   punchHole?: boolean
-  /**
-   * How screen content hides when the device faces away from the camera.
-   * `true` raycasts against the phone body (fast, interactive). `'blending'`
-   * uses per-pixel depth blending (prettier at grazing angles, but the canvas
-   * paints over the DOM, so content is not clickable). `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -81,7 +74,7 @@ export interface PhoneProps extends Omit<GroupProps, 'children' | 'color'>, Surf
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
-function PhoneImpl({
+function GalaxyImpl({
   children,
   variant = GALAXY_DEFAULT_VARIANT,
   colorway,
@@ -91,12 +84,11 @@ function PhoneImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
-}: PhoneProps) {
+}: GalaxyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = GALAXY_VARIANTS[variant]
   const retail = findColorway(GALAXY_COLORWAYS[variant], colorway)
@@ -417,11 +409,11 @@ function PhoneImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occlude={occlude === true ? occludeRefs : occlude === 'blending' ? 'blending' : undefined}
+          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            interactive,
+            allowInput,
             dragToRotate,
             style: surfaceStyle,
           })}
@@ -454,9 +446,9 @@ function PhoneImpl({
     </group>
   )
 }
-PhoneImpl.displayName = 'Phone'
+GalaxyImpl.displayName = 'Galaxy'
 
-/** The device's compound slots, shared by `<Phone>` and `<PhoneMockup>`. */
-export const phoneSlots = createSlots(SCREEN_REGIONS)
+/** The device's compound slots, shared by `<Galaxy>` and `<GalaxyMockup>`. */
+export const galaxySlots = createSlots(SCREEN_REGIONS)
 
-export const Phone = Object.assign(PhoneImpl, phoneSlots)
+export const Galaxy = Object.assign(GalaxyImpl, galaxySlots)

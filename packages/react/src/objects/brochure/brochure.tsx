@@ -35,12 +35,6 @@ export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, S
   foldAngle?: number
   /** Paper stock color of the panel backs and edges. */
   color?: string
-  /**
-   * How panel content hides when the brochure faces away from the camera.
-   * `true` raycasts against the panels (fast, interactive). `'blending'` uses
-   * per-pixel depth blending. `false` disables hiding.
-   */
-  occlude?: boolean | 'blending'
 }
 
 /**
@@ -66,9 +60,8 @@ function BrochureImpl({
   color = '#f5f4f0',
   surfaceBackground = '#ffffff',
   resolution = BROCHURE.resolution,
-  interactive = true,
+  allowInput = false,
   dragToRotate = true,
-  occlude = true,
   surfaceStyle,
   ...groupProps
 }: BrochureProps) {
@@ -110,7 +103,7 @@ function BrochureImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    interactive,
+    allowInput,
     dragToRotate,
     style: surfaceStyle,
   }
@@ -118,7 +111,7 @@ function BrochureImpl({
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    occlude: occlude === true ? occludeRefs : occlude === 'blending' ? ('blending' as const) : undefined,
+    occluders: occludeRefs,
   }
 
   /**
