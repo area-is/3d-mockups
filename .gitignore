@@ -24,3 +24,6 @@ yarn-error.log*
 
 # fumadocs generated
 .source/
+
+# visual regression diffs (baselines are committed, diffs are not)
+.visual-diffs/

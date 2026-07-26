@@ -233,12 +233,18 @@ function HarnessScene() {
         shadows={shadows}
         rotation={[rx, ry, 0]}
       >
-        {screen}
-        {sign ? (
-          <BusMockup.DestinationSign>{sign.includes('|') ? sign.split('|') : sign}</BusMockup.DestinationSign>
-        ) : null}
-        <BusMockup.StreetSide>{screen}</BusMockup.StreetSide>
-        <BusMockup.Rear>{screen}</BusMockup.Rear>
+        {params.get('regions') === '1' ? (
+          regionProbe(BusMockup)
+        ) : (
+          <>
+            {screen}
+            {sign ? (
+              <BusMockup.DestinationSign>{sign.includes('|') ? sign.split('|') : sign}</BusMockup.DestinationSign>
+            ) : null}
+            <BusMockup.StreetSide>{screen}</BusMockup.StreetSide>
+            <BusMockup.Rear>{screen}</BusMockup.Rear>
+          </>
+        )}
       </BusMockup>
     )
   }
@@ -256,9 +262,15 @@ function HarnessScene() {
         shadows={shadows}
         rotation={[rx, ry, 0]}
       >
-        {screen}
-        <VanMockup.StreetSide>{screen}</VanMockup.StreetSide>
-        <VanMockup.Rear>{screen}</VanMockup.Rear>
+        {params.get('regions') === '1' ? (
+          regionProbe(VanMockup)
+        ) : (
+          <>
+            {screen}
+            <VanMockup.StreetSide>{screen}</VanMockup.StreetSide>
+            <VanMockup.Rear>{screen}</VanMockup.Rear>
+          </>
+        )}
       </VanMockup>
     )
   }
@@ -323,16 +335,22 @@ function HarnessScene() {
         shadows={shadows}
         rotation={[rx, ry, 0]}
       >
-        {screen}
-        <StorefrontMockup.FrontLeft>{screen}</StorefrontMockup.FrontLeft>
-        <StorefrontMockup.FrontRight>{screen}</StorefrontMockup.FrontRight>
-        <StorefrontMockup.Door>{screen}</StorefrontMockup.Door>
-        <StorefrontMockup.Left>{screen}</StorefrontMockup.Left>
-        <StorefrontMockup.Right>{screen}</StorefrontMockup.Right>
-        <StorefrontMockup.Rear>{screen}</StorefrontMockup.Rear>
-        <StorefrontMockup.LeftSign>{screen}</StorefrontMockup.LeftSign>
-        <StorefrontMockup.RightSign>{screen}</StorefrontMockup.RightSign>
-        <StorefrontMockup.RearSign>{screen}</StorefrontMockup.RearSign>
+        {params.get('regions') === '1' ? (
+          regionProbe(StorefrontMockup)
+        ) : (
+          <>
+            {screen}
+            <StorefrontMockup.FrontLeft>{screen}</StorefrontMockup.FrontLeft>
+            <StorefrontMockup.FrontRight>{screen}</StorefrontMockup.FrontRight>
+            <StorefrontMockup.Door>{screen}</StorefrontMockup.Door>
+            <StorefrontMockup.Left>{screen}</StorefrontMockup.Left>
+            <StorefrontMockup.Right>{screen}</StorefrontMockup.Right>
+            <StorefrontMockup.Rear>{screen}</StorefrontMockup.Rear>
+            <StorefrontMockup.LeftSign>{screen}</StorefrontMockup.LeftSign>
+            <StorefrontMockup.RightSign>{screen}</StorefrontMockup.RightSign>
+            <StorefrontMockup.RearSign>{screen}</StorefrontMockup.RearSign>
+          </>
+        )}
       </StorefrontMockup>
     )
   }
@@ -527,6 +545,9 @@ function HarnessScene() {
 export default function HarnessPage() {
   return (
     <div id="harness-stage" style={{ width: '100vw', height: '100vh', background: '#f4f5f7' }}>
+      {/* The dev-mode indicator floats over the stage and animates, which would
+          make every screenshot differ from the last. */}
+      <style>{'nextjs-portal{display:none!important}'}</style>
       <Suspense>
         <HarnessScene />
       </Suspense>

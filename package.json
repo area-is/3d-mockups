@@ -1,7 +1,7 @@
 {
   "name": "area-mockups-monorepo",
   "private": true,
-  "description": "Monorepo for area-mockups — interactive, GPU-accelerated 3D device mockups. Framework-agnostic core + per-framework bindings (React today; Svelte/Vue planned).",
+  "description": "Monorepo for area-mockups \u2014 interactive, GPU-accelerated 3D device mockups. Framework-agnostic core + per-framework bindings (React today; Svelte/Vue planned).",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -13,7 +13,8 @@
     "build:docs": "npm run build -w docs",
     "dev": "concurrently -n pkg,docs -c cyan,magenta \"npm run dev -w area-mockups\" \"npm run dev -w docs\"",
     "start:docs": "npm run start -w docs",
-    "typecheck": "npm run typecheck -w @area-mockups/core && npm run typecheck -w area-mockups && npm run typecheck -w docs"
+    "typecheck": "npm run typecheck -w @area-mockups/core && npm run typecheck -w area-mockups && npm run typecheck -w docs",
+    "visual": "node apps/docs/scripts/visual-check.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

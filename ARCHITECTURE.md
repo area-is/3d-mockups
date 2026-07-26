@@ -159,6 +159,63 @@ change only, no API change.
 5. Add root scripts (`build`, `typecheck`) for the new workspace, docs examples, and
    a README modeled on `packages/react/README.md`.
 
+## Adding a device or object
+
+Five pieces, all of them in `@area-mockups/core` except the last two. The first
+four are what make an object measurable, portable to another binding, and
+documentable without anyone re-deriving numbers by hand — skip one and the
+object silently drops out of `mockupInfo`, the generated catalog and the docs
+tables.
+
+1. **`dimensions.ts`** — the physical spec as pure data, with a documented world
+   scale. If the object takes a millimetre `size` prop, express the scale as a
+   `*Layout(size)` / `*Scale(size)` function (see `productBoxLayout`,
+   `customBoxScale`) rather than computing it in the scene component. Everything
+   downstream — metrics, the catalog, a second binding, a 2D renderer — is a
+   consumer of that function.
+2. **`*_REGIONS`** — every live surface, in slot order. The first is the primary
+   one (bare children land there).
+3. **`*_FRAMING`** — camera pose, float intensity, the ground line.
+4. **`*_METRICS`** — `mmPerUnit` plus a `regions(props)` resolver returning each
+   region's rect in world units and its default `resolution`. Then add the row to
+   `REGISTRY` and the props entry to `MockupPropsMap` in `core/src/metrics.ts`.
+
+   > **The geometry must live here, not in the scene component.** A rect computed
+   > inline in JSX cannot be measured, cannot be unit-tested, and has to be
+   > re-derived by every other binding. This is the one rule that keeps
+   > `mockupInfo` trustworthy — and the reason `van`, `bus` and `storefront` were
+   > initially absent from the registry.
+
+5. **The scene component** (`packages/react/src/…`) — reads its numbers from the
+   spec, never the reverse.
+6. **The wrapper** — one `createMockup({ kind, regions, metrics, object, framing, slots })`
+   call. Passing `metrics` directly rather than looking it up by `kind` is
+   deliberate: a registry lookup would make every mockup reference every spec, so
+   importing one component would pull in all of them.
+
+A region that resolves to an **array** of rects means one of two things, and the
+`repeats` flag tells them apart:
+
+- `repeats: true` — one rect per slot child, collected in document order
+  (a brochure's panels).
+- `repeats: false` — a single slot painted onto several surfaces of differing
+  size (the van's front and rear licence plates).
+
+### Verifying it
+
+`npm run visual` renders every mockup on the `/harness` route and diffs the
+frames against `apps/docs/visual-baselines/`. The cases use the harness's
+`regions=1` probe, which fills each live region with its own flat labelled
+colour — so it is specifically a *geometry* check: a surface that changes size,
+moves, or starts bleeding through the body changes a coloured rect and fails.
+
+Run it before and after any change that touches region geometry, and especially
+when moving math out of a scene component into a spec. WebGL runs on
+SwiftShader, so frames are reproducible without a GPU; repeat runs of an
+unchanged build come back bit-identical. Requires the docs dev server
+(`npm run dev`), and `npm run visual -- --update` rewrites the baselines once
+you have reviewed the diffs in `apps/docs/.visual-diffs/`.
+
 ## Direction
 
 - **Deeper core**: per-device geometry/material builders (imperative
