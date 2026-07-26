@@ -41,10 +41,11 @@ const CASES = [
   // --- geometry still in the scene components: the refactor targets ---
   ['bus-panel', 'device=bus&regions=1&ry=28&rx=6'],
   ['bus-full', 'device=bus&regions=1&coverage=full&ry=28&rx=6'],
-  ['bus-full-under-glass', 'device=bus&regions=1&coverage=full&over=0&ry=28&rx=6'],
+  ['bus-perforated', 'device=bus&regions=1&coverage=perforated&ry=28&rx=6'],
   ['bus-rear', 'device=bus&regions=1&ry=150&rx=6'],
   ['van-panel', 'device=van&regions=1&ry=32&rx=8'],
   ['van-full', 'device=van&regions=1&coverage=full&ry=32&rx=8'],
+  ['van-perforated', 'device=van&regions=1&coverage=perforated&ry=32&rx=8'],
   ['van-rear', 'device=van&regions=1&ry=155&rx=8'],
   ['store-front', 'device=store&regions=1&ry=18&rx=4'],
   ['store-angle', 'device=store&regions=1&ry=52&rx=10'],
