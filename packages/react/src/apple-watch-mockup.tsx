@@ -27,7 +27,7 @@ const AppleWatchMockupBase = createMockup({
  *
  * ```tsx
  * <AppleWatchMockup rotation={[0, 0.25, 0]}>
- *   <AppleWatchMockup.Screen background="#000" resolution={416}>
+ *   <AppleWatchMockup.Screen surfaceBackground="#000" resolution={416}>
  *     <YourWatchFace />
  *   </AppleWatchMockup.Screen>
  * </AppleWatchMockup>

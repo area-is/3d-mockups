@@ -106,8 +106,14 @@ export const VAN_FULL_WRAP = {
 /** Default CSS px width of the full-side wrap — same dpi as the panel wrap. */
 export const VAN_FULL_WRAP_RESOLUTION = Math.round(VAN.resolution * (VAN_FULL_WRAP.width / VAN.wrap.width))
 
-/** How much of the bodywork a wrap covers. */
-export type VanCoverage = 'panel' | 'full'
+/**
+ * How much of the bodywork a wrap covers.
+ *
+ * `perforated` is the full wrap running OVER the operational glass as
+ * perforated film, so it shares `full`'s rects exactly — the two differ only
+ * in what the clip path carves out, which is not a measurement.
+ */
+export type VanCoverage = 'panel' | 'full' | 'perforated'
 
 /**
  * Live geometry of both flanks, the rear doors and the plates.
@@ -119,7 +125,7 @@ export type VanCoverage = 'panel' | 'full'
 export const VAN_METRICS = {
   mmPerUnit: VAN_MM_PER_UNIT,
   regions: ({ coverage }) => {
-    const full = coverage === 'full'
+    const full = coverage !== 'panel'
     const side = full
       ? { width: VAN_FULL_WRAP.width, height: VAN_FULL_WRAP.height, radius: 0 }
       : { width: VAN.wrap.width, height: VAN.wrap.height, radius: VAN.wrap.radius }

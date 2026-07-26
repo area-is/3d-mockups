@@ -23,12 +23,11 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the active display: React components, an <iframe>, a
    * <video>… Wrap in `<Fold.Screen>` to set per-screen surface props.
@@ -36,11 +35,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   children?: React.ReactNode
   /** Which Galaxy Z Fold device to render. */
   variant?: FoldVariant
-  /**
-   * A retail colorway id from `FOLD_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
-   */
-  colorway?: string
   /**
    * `true` (default) renders the unfolded tablet — your content fills the large,
    * nearly square inner display (with a faint center crease). `false` renders the
@@ -66,7 +60,12 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * H×W with upright content — exactly like rotating the real device.
    */
   orientation?: 'portrait' | 'landscape'
-  /** Back panel colorway. */
+  /**
+   * Back panel color. Takes a retail colorway id from `FOLD_COLORWAYS`,
+   * which also presets `frameColor`, or any CSS color for a custom finish.
+   * A colorway id wins over a CSS color of the same name — pass hex if you
+   * meant the CSS one.
+   */
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
@@ -76,8 +75,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * whichever screen is showing (inner display when open, cover when closed).
    */
   resolution?: number
-  /** Show the front-camera punch-hole overlay. */
-  punchHole?: boolean
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (a fold half / the open body). */
@@ -111,21 +108,20 @@ function FoldImpl({
   open = true,
   openAngle,
   orientation = 'portrait',
-  colorway,
   color: colorProp,
   frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
-  punchHole = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: FoldProps) {
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FOLD_VARIANTS[variant]
-  const retail = findColorway(FOLD_COLORWAYS[variant], colorway)
-  const color = colorProp ?? retail?.color ?? '#3a3d42'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(FOLD_COLORWAYS[variant], colorProp)
+  const color = retail?.color ?? colorProp ?? '#3a3d42'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#54585f'
   // Resolve the pose: an explicit fold angle wins over the boolean; the
   // extremes snap to the dedicated flat-open / folded-shut paths so the
@@ -142,9 +138,6 @@ function FoldImpl({
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(state.resolution * (landscape ? aspect : 1))
   // Open pose: one body mesh. Closed pose: front (cover) + rear (camera) slabs.
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const rearRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef, rearRef)
   // Screens occlude against EVERY registered body, this device's own panels
   // included. Excluding them (to stop a grazing corner ray blacking out a
   // visible display) meant a panel's DOM screen composited straight over its
@@ -473,18 +466,15 @@ function FoldImpl({
       radius={display.radius}
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occluders={occludeRefs}
       {...resolveSurface(screenSlot, {
-        background: surfaceBackground,
+        surfaceBackground,
         resolution: res,
-        allowInput,
-        dragToRotate,
-        style: surfaceStyle,
+        surfaceStyle,
       })}
       overlay={
         <>
           {mode === 'open' && creaseOverlay}
-          {punchHole && punchHoleOverlay}
+          {punchHoleOverlay}
         </>
       }
     >
@@ -542,15 +532,9 @@ function FoldImpl({
           ? [r, 0, 0, r]
           : [0, r, r, 0]
       const localX = (left ? 1 : -1) * (hw / 2 - display.width / 4)
-      // Per-pixel depth, not raycasting. A raycast occluder is all-or-nothing
-      // for the whole plane, and at every intermediate angle a half-screen is
-      // PARTIALLY covered by the other panel — so no sample threshold can be
-      // right: strict hides a display that is half in view, lenient lets the
-      // covered part paint straight over the chassis. Blending hands the job
-      // to the depth buffer, which resolves it pixel by pixel at any angle.
-      // The trade is that a blending screen is display-only (the canvas keeps
-      // pointer input, so drag-to-rotate still works everywhere) — acceptable
-      // here, where the display is already composited from two planes.
+      // The half panes lean on the depth buffer harder than most screens: at
+      // every intermediate hinge angle one half is PARTIALLY covered by the
+      // other panel, which only per-pixel compositing can resolve.
       return (
         <DeviceScreen
           width={landscape ? display.height : display.width / 2}
@@ -558,14 +542,11 @@ function FoldImpl({
           radius={radius}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          blending
           {...resolveSurface(screenSlot, {
-            background: surfaceBackground,
+            surfaceBackground,
             // each half pane carries half the virtual display's width
             resolution: landscape ? res : res / 2,
-            allowInput,
-            dragToRotate,
-            style: surfaceStyle,
+            surfaceStyle,
           })}
         >
           <div
@@ -579,7 +560,7 @@ function FoldImpl({
           >
             {screenSlot?.children}
             {creaseOverlay}
-            {punchHole && punchHoleOverlay}
+            {punchHoleOverlay}
           </div>
         </DeviceScreen>
       )
@@ -596,7 +577,7 @@ function FoldImpl({
           {/* left (cover-screen) panel folds toward the viewer */}
           <group position={[0, 0, pz]} rotation-y={alpha}>
             <group position={[-hw / 2, 0, -pz]}>
-              <mesh ref={bodyRef} geometry={shell.left}>
+              <mesh geometry={shell.left}>
                 {chassisMaterial}
               </mesh>
               <mesh geometry={shell.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
@@ -638,7 +619,7 @@ function FoldImpl({
           {/* right (camera) panel folds the opposite way */}
           <group position={[0, 0, pz]} rotation-y={-alpha}>
             <group position={[hw / 2, 0, -pz]}>
-              <mesh ref={rearRef} geometry={shell.right}>
+              <mesh geometry={shell.right}>
                 {chassisMaterial}
               </mesh>
               <mesh geometry={shell.back} rotation-y={Math.PI} position-z={-b.depth / 2 - 0.002}>
@@ -719,7 +700,7 @@ function FoldImpl({
       <group {...groupProps}>
         <group key="open" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* chassis */}
-          <mesh ref={bodyRef} geometry={shell.body}>
+          <mesh geometry={shell.body}>
             {chassisMaterial}
           </mesh>
 
@@ -809,7 +790,7 @@ function FoldImpl({
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* front (cover) slab — carries the cover screen and the speaker slot */}
         <group position-z={halfZ}>
-          <mesh ref={bodyRef} geometry={shell.front}>
+          <mesh geometry={shell.front}>
             {chassisMaterial}
           </mesh>
           <mesh geometry={glassGeometry} position-z={halfDepth / 2 + 0.002}>
@@ -827,7 +808,7 @@ function FoldImpl({
 
         {/* rear (camera) slab — colorway back, camera stack, buttons, USB-C */}
         <group position-z={-halfZ}>
-          <mesh ref={rearRef} geometry={shell.rear}>
+          <mesh geometry={shell.rear}>
             {chassisMaterial}
           </mesh>
           <mesh geometry={backGeometry} rotation-y={Math.PI} position-z={-halfDepth / 2 - 0.002}>

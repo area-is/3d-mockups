@@ -32,10 +32,6 @@ export interface SurfaceInfo {
   resolution: number
   /** Corner rounding in world units. */
   radius: ScreenRadius
-  /** Whether pointer events reach this content. */
-  allowInput: boolean
-  /** Whether drags past the threshold are handed to the orbit controls. */
-  dragToRotate: boolean
   /** The CSS background painted behind this content. */
   background?: string
 }
@@ -48,8 +44,6 @@ export interface SurfaceProviderProps {
   height: number
   radius: ScreenRadius
   resolution: number
-  allowInput: boolean
-  dragToRotate: boolean
   background?: string
   children?: React.ReactNode
 }
@@ -64,8 +58,6 @@ export function SurfaceProvider({
   height,
   radius,
   resolution,
-  allowInput,
-  dragToRotate,
   background,
   children,
 }: SurfaceProviderProps) {
@@ -78,11 +70,9 @@ export function SurfaceProvider({
       pxPerUnit: screenPxPerUnit(resolution, width),
       resolution,
       radius,
-      allowInput,
-      dragToRotate,
       background,
     }),
-    [region, width, height, radius, resolution, allowInput, dragToRotate, background]
+    [region, width, height, radius, resolution, background]
   )
   return <SurfaceContext.Provider value={value}>{children}</SurfaceContext.Provider>
 }

@@ -36,6 +36,9 @@ const AXES = {
   fold: { variant: Object.keys(core.FOLD_VARIANTS), open: [true, false], orientation: ['portrait', 'landscape'] },
   flip: { variant: Object.keys(core.FLIP_VARIANTS), open: [true, false], orientation: ['portrait', 'landscape'] },
   posterFrame: { mat: [false, true] },
+  // `perforated` shares `full`'s rects, so enumerating it would duplicate rows.
+  bus: { coverage: ['panel', 'full'] },
+  van: { coverage: ['panel', 'full'] },
 }
 
 /** The two kinds whose `size` prop is required have no meaningful default. */

@@ -26,7 +26,7 @@ const GalaxyTabMockupBase = createMockup({
  *
  * ```tsx
  * <GalaxyTabMockup variant="tabs11ultra" rotation={[0, 0.25, 0]}>
- *   <GalaxyTabMockup.Screen background="#000" resolution={1480}>
+ *   <GalaxyTabMockup.Screen surfaceBackground="#000" resolution={1480}>
  *     <Dashboard />
  *   </GalaxyTabMockup.Screen>
  * </GalaxyTabMockup>

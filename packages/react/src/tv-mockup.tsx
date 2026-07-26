@@ -29,7 +29,7 @@ const TVSetMockupBase = createMockup({
  *
  * ```tsx
  * <TVSetMockup size={85}>
- *   <TVSetMockup.Screen background="#000" resolution={1280}>
+ *   <TVSetMockup.Screen surfaceBackground="#000" resolution={1280}>
  *     <YourShowreel />
  *   </TVSetMockup.Screen>
  * </TVSetMockup>

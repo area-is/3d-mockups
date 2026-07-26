@@ -12,23 +12,22 @@ import {
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the monitor: React components, an <iframe>, a
    * <video>… Wrap in `<StudioDisplay.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from `STUDIO_DISPLAY_COLORWAYS` presetting the enclosure
-   * color. An explicit `color` prop overrides it.
+   * Aluminum color (enclosure + stand). Takes a retail colorway id from
+   * `STUDIO_DISPLAY_COLORWAYS` or any CSS color for a custom finish. A
+   * colorway id wins over a CSS color of the same name — pass hex if you
+   * meant the CSS one.
    */
-  colorway?: string
-  /** Aluminum colorway (enclosure + stand). */
   color?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 16:9 panel.
@@ -60,26 +59,22 @@ export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color
  */
 function StudioDisplayImpl({
   children,
-  colorway,
   color: colorProp,
   surfaceBackground = '#000000',
   resolution = STUDIO_DISPLAY.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: StudioDisplayProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
-  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorway)
-  const color = colorProp ?? retail?.color ?? '#c8cbd0'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorProp)
+  const color = retail?.color ?? colorProp ?? '#c8cbd0'
   const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
   // The stand pieces occlude too — from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
   // screen paint right through them.
-  const footRef = React.useRef<THREE.Mesh>(null!)
-  const armRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef, footRef, armRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -283,7 +278,7 @@ function StudioDisplayImpl({
     <group position-y={STUDIO_DISPLAY_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
 
@@ -389,10 +384,10 @@ function StudioDisplayImpl({
 
       {/* tilt stand: knee-and-foot profile + the arm slab with its
           cable-routing hole, all in the enclosure finish */}
-      <mesh ref={footRef} geometry={standParts.footKnee}>
+      <mesh geometry={standParts.footKnee}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
-      <mesh ref={armRef} geometry={standParts.armSlab} position={standParts.armPos}>
+      <mesh geometry={standParts.armSlab} position={standParts.armPos}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
 
@@ -436,13 +431,10 @@ function StudioDisplayImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.006]}
-        occluders={occludeRefs}
         {...resolveSurface(screen, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {screen?.children}

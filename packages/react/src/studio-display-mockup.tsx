@@ -17,7 +17,7 @@ export type StudioDisplayMockupProps = MockupProps<StudioDisplayProps>
  *
  * ```tsx
  * <StudioDisplayMockup autoRotate>
- *   <StudioDisplayMockup.Screen background="#0b0d12" resolution={1920}>
+ *   <StudioDisplayMockup.Screen surfaceBackground="#0b0d12" resolution={1920}>
  *     <Dashboard />
  *   </StudioDisplayMockup.Screen>
  * </StudioDisplayMockup>

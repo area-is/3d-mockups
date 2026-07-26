@@ -36,8 +36,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'watch8'` | `'watch8'` | Which Galaxy Watch to render. |
-| `colorway` | `string` | — | A retail colorway id from `GALAXY_WATCH_COLORWAYS` (`graphite`, `silver`). Presets `color`; an explicit `color` prop overrides it. |
-| `color` | `string` | `'#1c1d21'` | Case colorway (aluminium). Graphite is `#33363c`. |
+| `color` | `string` | `'#1c1d21'` | Aluminium case. Takes a retail colorway id from `GALAXY_WATCH_COLORWAYS` (`graphite`, `silver`) or any CSS color. |
 | `bandColor` | `string` | `'#2a2c31'` | Strap colorway (fluoroelastomer). |
 | `bandOpen` | `boolean` | `false` | Lay the band out unbuckled and flat instead of wearing it. |
 | `resolution` | `number` | `240` | Virtual display width — 240 is the watch's own dp grid, and the display is round, so give your face a `border-radius: 50%` root (or design edge-to-edge and let the crystal mask it). |

@@ -25,8 +25,8 @@ example uses, and `×` resets it.
 
 ## Shared mockup props
 
-Every `*Mockup` component accepts all [`MockupCanvas`](/docs/api/mockup-canvas)
-props, all of its device's appearance props, and:
+Every `*Mockup` component accepts its device's appearance props, the staging
+props below, and:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -34,20 +34,35 @@ props, all of its device's appearance props, and:
 | `float` | `boolean` | `false` | Gentle floating idle animation for the device. |
 | `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<GalaxyMockup rotation={[0, -0.25, 0]}>`). |
 
+### Staging props
+
+These come from [`MockupCanvas`](/docs/api/mockup-canvas) and work on every
+mockup — the ones that change what the mockup looks like on your page, or what
+a visitor can do with it:
+
+`controls` · `autoRotate` · `autoRotateSpeed` · `zoom` · `fullscreen` ·
+`shadows` · `background` · `camera` · `className` · `style`
+
+`MockupCanvas` has a few more (`freeRotation`, `shadowY`, `dpr`) that tune the
+rendering machinery rather than the picture. A mockup does not advertise those:
+its framing already derives the shadow's ground line from the object's spec,
+and the remaining defaults are chosen to look right. Compose
+[`MockupCanvas`](/docs/api/mockup-canvas) directly when you want them.
+
 ## Regions and slots
 
 Bare children always fill a mockup's **primary region** — a phone's screen, a
 book's front cover. Objects with more printable surfaces expose each extra
 region as a compound slot on the component (`<AFrameSignMockup.Back>`,
 `<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
-section. Every slot takes per-surface overrides — `background`, `resolution`,
-`allowInput`, `dragToRotate`, `style` — over the mockup-level defaults.
+section. Every slot takes per-surface overrides — `surfaceBackground`,
+`resolution`, `surfaceStyle` — over the mockup-level defaults.
 
 ## Shared screen props
 
-Every device (and therefore every mockup) accepts the screen behavior props
-documented in [Screen content](/docs/screen-content): `allowInput`,
-`dragToRotate`, `surfaceBackground`, `surfaceStyle`, and `resolution`.
+Every device (and therefore every mockup) accepts the screen props documented
+in [Screen content](/docs/screen-content): `surfaceBackground`, `surfaceStyle`,
+and `resolution`.
 
 Devices also accept all react-three-fiber group props (`position`, `rotation`,
 `scale`) when rendered inside a canvas.

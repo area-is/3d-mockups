@@ -71,7 +71,6 @@ export {
   type SlotsFor,
   type CollectedSlots,
   type SurfaceProps,
-  type SurfaceDefaults,
   type ResolvedSurface,
 } from './slots'
 export { type BrochurePanelProps } from './objects/brochure/brochure'

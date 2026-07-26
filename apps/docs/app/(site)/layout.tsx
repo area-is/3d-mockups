@@ -5,9 +5,9 @@ import '../globals.css'
 import '../screens.css'
 
 export const metadata: Metadata = {
-  title: 'area-mockups: interactive 3D device mockups for React',
+  title: 'area-mockups: 3D device mockups for React',
   description:
-    'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it stays fully live and interactive.',
+    'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live — real DOM, not a texture.',
 }
 
 // Root layout for the marketing site (home, demos). The docs and embedded

@@ -25,9 +25,8 @@ import {
   type StrapPath,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
@@ -44,7 +43,7 @@ const BAND_SINK = 0.012
  * `variant` union on top — and the Galaxy adds `bandOpen`, which an Apple Watch
  * has no closure to honor.
  */
-export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the watch screen: React components, a <video>…
    * Wrap in `<AppleWatch.Screen>` / `<GalaxyWatch.Screen>` to set per-screen
@@ -52,13 +51,12 @@ export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from the family's catalog (`APPLE_WATCH_COLORWAYS` /
-   * `GALAXY_WATCH_COLORWAYS`) presetting the device colors. Explicit color
-   * props override it.
+   * Case color. Takes a retail colorway id from the family's catalog
+   * (`APPLE_WATCH_COLORWAYS` / `GALAXY_WATCH_COLORWAYS` — Apple aluminum Jet
+   * Black / Silver / Rose Gold, Galaxy Graphite and Silver) or any CSS color
+   * for a custom finish. A colorway id wins over a CSS color of the same
+   * name — pass hex if you meant the CSS one.
    */
-  colorway?: string
-  /** Case colorway. Apple aluminum: Jet Black `#1c1d21` (default), Silver
-   * `#dfe0e3`, Rose Gold `#dcb8a8`. Galaxy: Graphite `#33363c`, Silver `#d9dade`. */
   color?: string
   /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
   bandColor?: string
@@ -96,25 +94,23 @@ function WatchBody({
   children,
   variant,
   catalog,
-  colorway,
   color: colorProp,
   bandColor = '#2a2c31',
   bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: WatchBodyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = WATCH_VARIANTS[variant]
-  const retail = findColorway(catalog, colorway)
-  const color = colorProp ?? retail?.color ?? '#1c1d21'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(catalog, colorProp)
+  const color = retail?.color ?? colorProp ?? '#1c1d21'
   const { body, glass, display, crown, buttons, mic, speaker, bandSlot, band } = spec
   const res = resolution ?? spec.resolution
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   // Squircle / cushion case: extruded rounded-rect with a deep bevel for the
   // curved sides (the Galaxy cushion is the same construction, wider and
@@ -432,7 +428,7 @@ function WatchBody({
     <group {...groupProps}>
       {/* case — no sharp clearcoat: mirror-reflected light panels turn into
           hard-edged patches on the tight case curvature */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.85}
@@ -759,13 +755,10 @@ function WatchBody({
         height={display.height}
         radius={display.radius}
         position={[0, 0, faceZ + 0.006]}
-        occluders={occludeRefs}
         {...resolveSurface(screen, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution: res,
-          allowInput,
-          dragToRotate,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {screen?.children}

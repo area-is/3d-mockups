@@ -32,8 +32,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `colorway` | `string` | – | Retail colorway id from `STUDIO_DISPLAY_COLORWAYS` (`silver`). Explicit `color` overrides it. |
-| `color` | `string` | `'#c8cbd0'` | Aluminum colorway (enclosure and stand). |
+| `color` | `string` | `'#c8cbd0'` | Aluminum enclosure and stand. Takes a retail colorway id from `STUDIO_DISPLAY_COLORWAYS` or any CSS color. |
 | `resolution` | `number` | `2560` | Virtual display width; 2560 gives 2560×1440, the Studio Display's logical desktop, so real desktop layouts apply. |
 
 There is no `orientation` prop; it lives on a desk.
@@ -42,7 +41,7 @@ There is no `orientation` prop; it lives on a desk.
 
 One region: the display (bare children). Use the explicit
 `<StudioDisplayMockup.Screen>` slot when you want per-surface overrides —
-`background`, `resolution`, `allowInput`, `dragToRotate`, `style`.
+`surfaceBackground`, `resolution`, `surfaceStyle`.
 
 ## Mockup-able areas
 

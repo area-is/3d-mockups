@@ -17,7 +17,7 @@ export type IPadMockupProps = MockupProps<IPadProps>
  *
  * ```tsx
  * <IPadMockup variant="ipadair11" rotation={[0, 0.25, 0]}>
- *   <IPadMockup.Screen background="#000" resolution={1180}>
+ *   <IPadMockup.Screen surfaceBackground="#000" resolution={1180}>
  *     <Dashboard />
  *   </IPadMockup.Screen>
  * </IPadMockup>

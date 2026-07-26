@@ -31,9 +31,8 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 | `open` | `boolean` | `true` | Unfolded tall phone (content on the 360×837 main display) versus the folded compact (content on the nearly square 316×353 cover display, lens rings overlaid like cutouts). |
 | `openAngle` | `number` | – | Degree of openness (0 = shut, 180 = flat), overriding `open`. Intermediate angles render the real Flex Mode pose: the halves pivot around the Armor FlexHinge while its glossy spine band (with the SAMSUNG engraving) rolls into the gap, and your content bends across the fold on two composited planes. The pose is continuous from nearly shut to nearly flat — only ~0° snaps to the dedicated folded pose, ~177°+ to the flat-open one. |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display with upright content. |
-| `color` | `string` | `'#22252b'` | Back glass / cover colorway. |
+| `color` | `string` | `'#22252b'` | Back glass / cover. Takes a retail colorway id from `FLIP_COLORWAYS`, which also presets `frameColor`, or any CSS color. |
 | `frameColor` | `string` | `'#4a4f59'` | Metal frame, buttons, hinge band, and camera rings. |
-| `punchHole` | `boolean` | `true` | Front camera punch hole overlay on the main display (open only). |
 | `resolution` | `number` | per state | CSS pixel width of the active display; height follows the panel aspect. |
 
 ## The two states
@@ -58,7 +57,7 @@ bending across it:
 <ObjectDemo demo="flip-flex" />
 
 ```tsx
-<FlipMockup openAngle={100} colorway="blueshadow">
+<FlipMockup openAngle={100} color="blueshadow">
   <YourApp />
 </FlipMockup>
 ```

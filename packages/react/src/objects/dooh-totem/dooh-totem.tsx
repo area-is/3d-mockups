@@ -4,12 +4,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { DOOH_TOTEM, DOOH_TOTEM_REGIONS, doohTotemSpec, type DoohTotemSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * The creative on the portrait 9:16 displays. Bare children fill the front
    * display; name displays explicitly with `<DOOHTotem.Front>` and
@@ -51,8 +50,6 @@ function DOOHTotemImpl({
   color = '#2f333a',
   surfaceBackground = '#000000',
   resolution = DOOH_TOTEM.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: DOOHTotemProps) {
@@ -61,8 +58,6 @@ function DOOHTotemImpl({
     () => (size ? doohTotemSpec(size) : DOOH_TOTEM),
     [size?.width, size?.height]
   )
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -96,23 +91,20 @@ function DOOHTotemImpl({
   }, [bodyGeometry, glassGeometry])
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const screenProps = {
     width: display.width,
     height: display.height,
     radius: display.radius,
-    occluders: occludeRefs,
   }
 
   return (
     <group {...groupProps}>
       {/* enclosure */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial color={color} metalness={0.65} roughness={0.4} />
       </mesh>
 

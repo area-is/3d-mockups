@@ -9,11 +9,11 @@ import {
   clipCircle,
   clipRoundedRect,
   clipRoundedRectOutline,
+  type BusCoverage,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 import { RoadWheel } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
@@ -192,7 +192,7 @@ function buildFullRearClip(pxPerUnit: number, overWindows: boolean): string {
   return (outline + lamps + windowHole).trim()
 }
 
-export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Creative for the ad surfaces. Bare children fill the curb-side (+Z)
    * surface — the king-size panel by default, the whole side with
@@ -212,25 +212,16 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
    */
   resolution?: number
   /**
-   * How much of the bus the live ad surfaces cover. `'panel'` (default) is
-   * the classic king-size (30"x144") side panel and 21"x70" tail panel.
-   * `'full'` is the full transit wrap: the entire side elevation — skirts to
-   * roofline, tail to nose — and the entire tail between bumper and roof
-   * dome. The wheel arches, door leaves, driver's window and taillights are
-   * carved out (CSS `clip-path`), so the 3D wheels, the glass the driver
-   * needs and the lights stay visible through your livery.
+   * How much of the vehicle the live wraps cover.
+   *
+   * - `'panel'` (default) — the classic mid-panel ad rect.
+   * - `'full'` — the whole side elevation and rear face, with the glass and
+   *   hardware carved out of the wrap so they stay visible through it.
+   * - `'perforated'` — the same full wrap, but running OVER the glass as
+   *   perforated window film (the full-print fleet look). Operational glass
+   *   is always carved out regardless.
    */
-  coverage?: 'panel' | 'full'
-  /**
-   * Whether a full-coverage wrap runs OVER the passenger glass (`true`,
-   * default — perforated-film style: the graphic covers the side window
-   * band and the rear window) or UNDER it (`false` — the glass is carved
-   * out of the wrap and stays visible). Pass a boolean for all surfaces or
-   * an object to set each surface separately, e.g.
-   * `{ curbSide: true, streetSide: true, rear: false }`. Operational glass
-   * (doors, driver's window) is always carved out regardless.
-   */
-  wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean; rear?: boolean }
+  coverage?: BusCoverage
 }
 
 /**
@@ -263,9 +254,6 @@ function BusImpl({
   surfaceBackground = '#ffffff',
   resolution,
   coverage = 'panel',
-  wrapOverWindows = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BusProps) {
@@ -285,29 +273,24 @@ function BusImpl({
     rearWindow,
     destination,
   } = BUS
-  const shellRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(shellRef)
   // Screens occlude against OTHER registered bodies only. The shell is a
   // convex hull, so the backface culler already hides every surface the
   // body itself could cover — own-shell ray hits at oblique angles were
   // false positives that blanked a plainly visible surface (the rear wrap
   // vanishing at rear-quarter views). The shell stays registered so it
   // still occludes every other mockup in the scene.
-  const otherOccludeRefs = React.useMemo(() => occludeRefs.filter((ref) => ref !== shellRef), [occludeRefs])
 
   // The ad rect the DeviceScreens cover: the classic king-size panel, or the
   // whole side elevation with the operational glass carved out via clip-path.
-  const fullWrap = coverage === 'full'
-  const over =
-    typeof wrapOverWindows === 'boolean'
-      ? { curbSide: wrapOverWindows, streetSide: wrapOverWindows, rear: wrapOverWindows }
-      : { curbSide: true, streetSide: true, rear: true, ...wrapOverWindows }
+  const fullWrap = coverage !== 'panel'
+  // Perforated film runs the graphic over the glass; a plain full wrap carves it out.
+  const overGlass = coverage === 'perforated'
   const side = fullWrap
     ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, x: BUS_FULL_SIDE.x, y: BUS_FULL_SIDE.y, radius: 0 }
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
-  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { surfaceBackground, surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
@@ -320,14 +303,14 @@ function BusImpl({
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
     return {
-      curb: `path("${buildFullSideClip(curbSurface.resolution / BUS_FULL_SIDE.width, false, over.curbSide)}")`,
-      street: `path("${buildFullSideClip(streetSurface.resolution / BUS_FULL_SIDE.width, true, over.streetSide)}")`,
+      curb: `path("${buildFullSideClip(curbSurface.resolution / BUS_FULL_SIDE.width, false, overGlass)}")`,
+      street: `path("${buildFullSideClip(streetSurface.resolution / BUS_FULL_SIDE.width, true, overGlass)}")`,
     }
-  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
+  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, overGlass])
   const rearClip = React.useMemo(() => {
     if (!fullWrap) return null
-    return `path("${buildFullRearClip(rearSurface.resolution / rearFull.width, over.rear)}")`
-  }, [fullWrap, rearSurface.resolution, rearFull.width, over.rear])
+    return `path("${buildFullRearClip(rearSurface.resolution / rearFull.width, overGlass)}")`
+  }, [fullWrap, rearSurface.resolution, rearFull.width, overGlass])
   const curbStyle = sideClip ? { clipPath: sideClip.curb, ...curbSurface.screenStyle } : curbSurface.screenStyle
   const streetStyle = sideClip ? { clipPath: sideClip.street, ...streetSurface.screenStyle } : streetSurface.screenStyle
   const rearStyle = rearClip ? { clipPath: rearClip, ...rearSurface.screenStyle } : rearSurface.screenStyle
@@ -340,7 +323,7 @@ function BusImpl({
     if (!fullWrap) return null
     const margin = 0.004
     const doorTopY = windowBand.y + windowBand.height / 2
-    const build = (overGlass: boolean, mirroredSide: boolean) => {
+    const build = (mirroredSide: boolean) => {
       const s = busProfileShape()
       // Door holes meet (never cross) the band hole — see buildFullSideClip.
       const doorHoleTop = overGlass ? doorTopY + margin : windowBand.y - windowBand.height / 2 - margin
@@ -375,8 +358,8 @@ function BusImpl({
       if (mirroredSide) geometry.scale(-1, 1, 1)
       return geometry
     }
-    return { curb: build(over.curbSide, false), street: build(over.streetSide, true) }
-  }, [fullWrap, over.curbSide, over.streetSide, windowBand, doors, driverWindow])
+    return { curb: build(false), street: build(true) }
+  }, [fullWrap, overGlass, windowBand, doors, driverWindow])
   React.useEffect(
     () => () => {
       sideOccluderGeometries?.curb.dispose()
@@ -384,14 +367,13 @@ function BusImpl({
     },
     [sideOccluderGeometries]
   )
-  // Full-coverage sides composite per-pixel so proud hardware (the door
-  // mirrors and their arms) draws over the livery; so they stay per-pixel even when
-  // `allowInput` (and are therefore never clickable). Everything else
-  // follows `allowInput` like any other surface.
+  // Only the full-coverage sides need a custom depth mask: their DOM is
+  // clipped to the wrap outline, so the mask must carve the same glass out of
+  // the silhouette — otherwise the livery's rectangle would hide the door
+  // mirrors and their arms, which stand proud of it. A panel ad is a plain
+  // rect, and its own silhouette already is its mask.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
-    fullWrap
-      ? { blending: true, occluderGeometry: blendGeometry }
-      : { occluders: otherOccludeRefs }
+    fullWrap ? { occluderGeometry: blendGeometry } : {}
 
   // Plain strings become the built-in LED destination sign; custom nodes
   // pass straight through.
@@ -449,7 +431,7 @@ function BusImpl({
   return (
     <group {...groupProps}>
       {/* painted shell */}
-      <mesh ref={shellRef} geometry={shellGeometry}>
+      <mesh geometry={shellGeometry}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.4}
@@ -479,12 +461,11 @@ function BusImpl({
             radius={destination.radius}
             {...resolveSurface(signSlot, {
               ...surfaceDefaults,
-              background: '#0a0a08',
+              surfaceBackground: '#0a0a08',
               resolution: destination.resolution,
             })}
             position={[0.016, destination.y - frontBand.mid[1], 0]}
             rotation={[0, Math.PI / 2, 0]}
-            occluders={otherOccludeRefs}
           >
             {sign}
           </DeviceScreen>
@@ -497,7 +478,7 @@ function BusImpl({
           the window carve-out. */}
       {[1, -1].map((s) => {
         const wrapped =
-          fullWrap && (s === 1 ? regions.curbSide != null && over.curbSide : regions.streetSide != null && over.streetSide)
+          fullWrap && (s === 1 ? regions.curbSide != null && overGlass : regions.streetSide != null && overGlass)
         if (wrapped) return null
         return (
           <RoundedBox
@@ -759,7 +740,6 @@ function BusImpl({
           {...rearSurface}
           position={[-body.length / 2 - (fullWrap ? 0.029 : 0.028), rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          occluders={otherOccludeRefs}
           screenStyle={rearStyle}
         >
           {regions.rear.children}

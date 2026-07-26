@@ -1,15 +1,13 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { MAILER_BOX, MAILER_BOX_REGIONS, mailerBoxLayout, type MailerBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Panel content. Bare children fill the top panel — the hero face of a
    * shipper, with the tape overlaying it like real tape over print. Name
@@ -55,8 +53,6 @@ function MailerBoxImpl({
   tapeColor = 'rgba(168, 127, 79, 0.82)',
   surfaceBackground = '#ffffff',
   resolution = MAILER_BOX.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: MailerBoxProps) {
@@ -66,8 +62,6 @@ function MailerBoxImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [size?.width, size?.height, size?.depth]
   )
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
   const pxPerUnit = resolution / body.width
 
   // fixed dressing scaled down for small shippers
@@ -118,14 +112,11 @@ function MailerBoxImpl({
 
   const shared = {
     radius: body.radius,
-    occluders: occludeRefs,
   }
   const panelDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   // the end panels' virtual width follows the box depth at the top dpi
   const endDefaults = { ...panelDefaults, resolution: Math.round(body.depth * pxPerUnit) }
@@ -133,7 +124,7 @@ function MailerBoxImpl({
   return (
     <group {...groupProps}>
       {/* the shipper */}
-      <RoundedBox ref={bodyRef} args={[body.width, body.height, body.depth]} radius={body.radius}>
+      <RoundedBox args={[body.width, body.height, body.depth]} radius={body.radius}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.85} />
       </RoundedBox>
 

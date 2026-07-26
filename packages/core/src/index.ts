@@ -53,12 +53,11 @@ export {
   clipCircle,
 } from './geometry/clip-path'
 
-// Live-screen behaviors (CSS px math, wrapper styles, gesture handoff, culling).
+// Live-screen behaviors (CSS px math, wrapper styles, culling).
 export {
   type ScreenRadius,
   SCREEN_LAYER_CLASS,
   SCREEN_LAYER_CSS,
-  screenLayerClass,
   screenPxPerUnit,
   screenCssHeight,
   screenCornerRadiusCss,
@@ -67,11 +66,6 @@ export {
   type ScreenSurfaceStyle,
   screenSurfaceStyle,
 } from './screen/surface'
-export {
-  SCREEN_DRAG_THRESHOLD_PX,
-  type ScreenDragHandoff,
-  createScreenDragHandoff,
-} from './screen/drag-handoff'
 export { type BackfaceCuller, createBackfaceCuller } from './screen/backface'
 export {
   LED_TEXT_COLOR,

@@ -97,8 +97,6 @@ export interface MockupCanvasProps {
    * the device on its shadow instead of leaving it floating in mid-air.
    */
   shadowY?: number
-  /** Procedural studio lighting + reflections. No HDR downloads — works offline. */
-  environment?: boolean
   /** CSS background of the canvas (any CSS color/gradient/image value). */
   background?: string
   /** Override the default camera (position [0, 0.5, 7.4], fov 40). */
@@ -127,7 +125,6 @@ export function MockupCanvas({
   fullscreen = false,
   shadows = true,
   shadowY = DEFAULT_SHADOW_Y,
-  environment = true,
   background,
   camera,
   dpr = [1, 2],
@@ -196,22 +193,23 @@ export function MockupCanvas({
       <ambientLight intensity={STAGE_AMBIENT_LIGHT.intensity} />
       <directionalLight position={STAGE_KEY_LIGHT.position} intensity={STAGE_KEY_LIGHT.intensity} />
 
-      {environment && (
-        <Environment resolution={STUDIO_ENV_RESOLUTION}>
-          {/* The core's procedural light studio, rendered once into an env map. */}
-          {STUDIO_LIGHTFORMERS.map((lf, i) => (
-            <Lightformer
-              key={i}
-              form={lf.form}
-              intensity={lf.intensity}
-              position={lf.position}
-              scale={lf.scale}
-              rotation-x={lf.rotationX ?? 0}
-              rotation-y={lf.rotationY ?? 0}
-            />
-          ))}
-        </Environment>
-      )}
+      {/* The core's procedural light studio, rendered once into an env map.
+          Not optional: it is what gives every material its reflections, and a
+          mockup without it reads as flat untextured plastic. No HDR files are
+          fetched, so it costs nothing at load and works offline. */}
+      <Environment resolution={STUDIO_ENV_RESOLUTION}>
+        {STUDIO_LIGHTFORMERS.map((lf, i) => (
+          <Lightformer
+            key={i}
+            form={lf.form}
+            intensity={lf.intensity}
+            position={lf.position}
+            scale={lf.scale}
+            rotation-x={lf.rotationX ?? 0}
+            rotation-y={lf.rotationY ?? 0}
+          />
+        ))}
+      </Environment>
 
       {children}
 

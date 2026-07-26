@@ -19,26 +19,20 @@ export type ScreenRadius = number | [number, number, number, number]
 export const SCREEN_LAYER_CLASS = 'area-mockups-screen-layer'
 
 /**
- * Stylesheet every binding must inject alongside the screen:
+ * Stylesheet every binding must inject alongside the screen.
  *
- * - **Compositor-layer promotion.** The portal root (the element carrying the
- *   CSS `perspective`) gets `will-change: transform`. Without it, Chromium can
- *   rasterize the perspective → preserve-3d → matrix3d chain against a
- *   pixel-snapped origin when the canvas lands on a fractional page offset
- *   (e.g. an odd window width centering a max-width layout), painting the
- *   screen visibly detached from the glass.
+ * **Compositor-layer promotion.** The portal root (the element carrying the
+ * CSS `perspective`) gets `will-change: transform`. Without it, Chromium can
+ * rasterize the perspective → preserve-3d → matrix3d chain against a
+ * pixel-snapped origin when the canvas lands on a fractional page offset
+ * (e.g. an odd window width centering a max-width layout), painting the
+ * screen visibly detached from the glass.
  *
- * - **Touch pan-y.** With drag-to-rotate on, `touch-action: pan-y` must cover
- *   the whole transformed div chain — the 3D layers are compositor boundaries,
- *   and Chromium ignores a pan-y set only on the content inside them, which
- *   would trap page scrolling.
+ * Nothing here has to deal with touch: a screen's DOM is composited UNDER the
+ * canvas (see `screenSurfaceStyle`), so the canvas owns every gesture and its
+ * own `canvasTouchAction` is the only touch policy in play.
  */
-export const SCREEN_LAYER_CSS = `.${SCREEN_LAYER_CLASS}{will-change:transform}.${SCREEN_LAYER_CLASS}--pan,.${SCREEN_LAYER_CLASS}--pan>div,.${SCREEN_LAYER_CLASS}--pan>div>div,.${SCREEN_LAYER_CLASS}--pan>div>div>div{touch-action:pan-y}`
-
-/** The wrapper class for the HTML bridge's portal root. */
-export function screenLayerClass(dragToRotate: boolean): string {
-  return dragToRotate ? `${SCREEN_LAYER_CLASS} ${SCREEN_LAYER_CLASS}--pan` : SCREEN_LAYER_CLASS
-}
+export const SCREEN_LAYER_CSS = `.${SCREEN_LAYER_CLASS}{will-change:transform}`
 
 /** CSS px per world unit for a virtual display `resolution` CSS px wide. */
 export function screenPxPerUnit(resolution: number, width: number): number {
@@ -75,10 +69,6 @@ export interface ScreenSurfaceStyleOptions {
   resolution: number
   /** CSS background painted behind the content. */
   background?: string
-  /** Let pointer events (clicks, scrolling, typing) reach the content. */
-  allowInput?: boolean
-  /** Whether >10px drags are handed off to the orbit controls (see drag-handoff). */
-  dragToRotate?: boolean
 }
 
 /**
@@ -92,8 +82,7 @@ export interface ScreenSurfaceStyle {
   borderRadius: string
   overflow: 'hidden'
   background: string
-  pointerEvents: 'auto' | 'none'
-  touchAction: 'pan-y' | undefined
+  pointerEvents: 'none'
   backfaceVisibility: 'hidden'
   WebkitBackfaceVisibility: 'hidden'
   WebkitFontSmoothing: 'antialiased'
@@ -105,8 +94,6 @@ export function screenSurfaceStyle({
   radius,
   resolution,
   background = '#000000',
-  allowInput = true,
-  dragToRotate = true,
 }: ScreenSurfaceStyleOptions): ScreenSurfaceStyle {
   const pxPerUnit = screenPxPerUnit(resolution, width)
   return {
@@ -116,11 +103,11 @@ export function screenSurfaceStyle({
     borderRadius: screenCornerRadiusCss(radius, pxPerUnit),
     overflow: 'hidden',
     background,
-    pointerEvents: allowInput ? 'auto' : 'none',
-    // pan-y mirrors the canvas: on touch, vertical swipes over the screen
-    // scroll the page; horizontal drags past the threshold rotate the
-    // device; taps still click content.
-    touchAction: dragToRotate ? 'pan-y' : undefined,
+    // Mockup screens are decorative: the DOM is composited under the canvas
+    // so hardware masks it per-pixel, which also puts it out of reach of the
+    // pointer. Declaring it keeps user content from hit-testing if a page
+    // ever lifts the wrapper out of that stack.
+    pointerEvents: 'none',
     backfaceVisibility: 'hidden',
     WebkitBackfaceVisibility: 'hidden',
     WebkitFontSmoothing: 'antialiased',

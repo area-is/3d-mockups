@@ -125,8 +125,14 @@ export const BUS_FULL_SIDE = {
   y: (BUS.profile.roofY + BUS.skirtY) / 2,
 } as const
 
-/** How much of the bodywork a wrap covers. */
-export type BusCoverage = 'panel' | 'full'
+/**
+ * How much of the bodywork a wrap covers.
+ *
+ * `perforated` is the full wrap running OVER the operational glass as
+ * perforated film, so it shares `full`'s rects exactly — the two differ only
+ * in what the clip path carves out, which is not a measurement.
+ */
+export type BusCoverage = 'panel' | 'full' | 'perforated'
 
 /**
  * Live geometry of both flanks, the tail and the destination sign.
@@ -138,7 +144,7 @@ export type BusCoverage = 'panel' | 'full'
 export const BUS_METRICS = {
   mmPerUnit: BUS_MM_PER_UNIT,
   regions: ({ coverage }) => {
-    const full = coverage === 'full'
+    const full = coverage !== 'panel'
     const side = full
       ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, radius: 0 }
       : { width: BUS.ad.width, height: BUS.ad.height, radius: BUS.ad.radius }

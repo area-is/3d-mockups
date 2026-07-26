@@ -15,7 +15,7 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8')
 const ART_FILES = [
   'components/screens/print-art.tsx',
   'components/screens/watch-face.tsx',
-  'components/screens/tap-counter.tsx',
+  'components/screens/live-counter.tsx',
   'components/screens/lock-screen.tsx',
   'components/screens/desktop-screen.tsx',
   'components/screens/music-player.tsx',

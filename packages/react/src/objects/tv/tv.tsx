@@ -12,12 +12,11 @@ import {
   type TVVariant,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the TV: React components, an <iframe>, a <video>…
    * Wrap in `<TVSet.Screen>` to set per-screen surface props.
@@ -66,8 +65,6 @@ function TVSetImpl({
   color = '#15171b',
   surfaceBackground = '#000000',
   resolution = TV.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: TVProps) {
@@ -77,8 +74,6 @@ function TVSetImpl({
     [size, variant]
   )
   const { body, display, backBulge, stand, portBay } = spec
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -236,7 +231,7 @@ function TVSetImpl({
     <group position-y={TV_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure, dropped by the chin offset so the display stays centered */}
-      <mesh ref={bodyRef} geometry={bodyGeometry} position={[0, body.centerY, 0]}>
+      <mesh geometry={bodyGeometry} position={[0, body.centerY, 0]}>
         <meshPhysicalMaterial color={color} metalness={0.6} roughness={0.4} />
       </mesh>
 
@@ -398,13 +393,10 @@ function TVSetImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.004]}
-        occluders={occludeRefs}
         {...resolveSurface(screen, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
         overlay={
           <div
