@@ -126,17 +126,10 @@ const COVERAGE: Control = {
   options: [
     { value: 'panel', label: 'panel' },
     { value: 'full', label: 'full wrap' },
+    { value: 'perforated', label: 'full + window perf' },
   ],
   preset: 'panel',
 }
-
-const WRAP_OVER_WINDOWS = (preset: boolean): Control => ({
-  prop: 'wrapOverWindows',
-  label: 'over glass',
-  kind: 'toggle',
-  preset,
-  title: 'Carry the wrap across the glazing',
-})
 
 const ORIENTATION: Control = {
   prop: 'orientation',
@@ -330,7 +323,7 @@ const MODELS = new Map<unknown, ModelControls>([
       ],
     },
   ],
-  [BusMockup, { controls: [COVERAGE, WRAP_OVER_WINDOWS(true)] }],
+  [BusMockup, { controls: [COVERAGE] }],
   [BusShelterMockup, {}],
   [BusinessCardMockup, { controls: [swatch('edgeColor', 'edge')] }],
   [CustomBoxMockup, { controls: [size('box mm', [['width', 180], ['height', 120], ['depth', 60]])] }],
@@ -407,7 +400,7 @@ const MODELS = new Map<unknown, ModelControls>([
       ],
     },
   ],
-  [VanMockup, { controls: [COVERAGE, WRAP_OVER_WINDOWS(false)] }],
+  [VanMockup, { controls: [COVERAGE] }],
   [VinylRecordMockup, { controls: [swatch('vinylColor', 'vinyl')] }],
 ])
 
@@ -422,13 +415,6 @@ const SCREEN_CONTROLS: Control[] = [
     step: 8,
     title: 'CSS pixel width of the virtual display (unset = the model’s own default)',
   },
-  toggle(
-    'allowInput',
-    'allowInput',
-    false,
-    'Let clicks, scrolling and typing reach the content — at the cost of per-pixel occlusion (see /docs/screen-content)'
-  ),
-  toggle('dragToRotate', 'drag→rotate', true, 'Hand drags off the screen to the orbit controls'),
   {
     prop: 'surfaceBackground',
     label: 'surface bg',
@@ -439,22 +425,18 @@ const SCREEN_CONTROLS: Control[] = [
   },
 ]
 
-/** The two rotation toggles the compact gallery bar keeps alongside the model's. */
-const FREE_ROTATION = toggle('freeRotation', '360°', false, 'Free rotation: drag over the top and bottom too')
+/** The rotation toggle the compact gallery bar keeps alongside the model's. */
 const AUTO_ROTATE = toggle('autoRotate', 'spin', false, 'Slow auto-orbit')
 
 /** The stage props from `MockupCanvas`, valid on every mockup. */
 const STAGE_CONTROLS: Control[] = [
   toggle('controls', 'controls', true, 'Drag-to-rotate orbit controls'),
-  FREE_ROTATION,
   AUTO_ROTATE,
   { prop: 'autoRotateSpeed', label: 'spin speed', kind: 'range', min: 0.2, max: 6, step: 0.2, preset: 1 },
   toggle('zoom', 'zoom', false, 'Pinch / wheel zoom plus overlay +/− buttons'),
   toggle('fullscreen', 'fullscreen', false, 'Overlay button that fills the screen'),
   toggle('shadows', 'shadow', true, 'Soft contact shadow under the model'),
-  toggle('environment', 'studio env', true, 'Procedural studio lighting and reflections'),
   { prop: 'background', label: 'canvas bg', kind: 'color', title: 'CSS background of the canvas (unset = transparent)' },
-  { prop: 'dpr', label: 'dpr', kind: 'range', min: 1, max: 3, step: 0.5, preset: 2 },
 ]
 
 /** `float` belongs to the mockup wrapper, not to a bare `MockupCanvas`. */
@@ -528,13 +510,6 @@ const NUMBER_STYLE: React.CSSProperties = {
   font: 'inherit',
 }
 
-const SPIN_ICON = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-    <path d="M21 3v6h-6" />
-  </svg>
-)
-
 function Toggle({
   label,
   title,
@@ -583,7 +558,7 @@ function ControlInput({
     const on = control.on
     return (
       <Toggle
-        label={prop === 'freeRotation' ? <>{SPIN_ICON}360°</> : label}
+        label={label}
         title={title}
         value={on !== undefined ? shown === on : Boolean(shown)}
         onChange={(next) => onChange(on !== undefined ? (next ? on : control.off) : next)}
@@ -728,12 +703,15 @@ function useMockupControls(children: React.ReactNode) {
         preset: variant,
       })
     }
+    // `color` takes a colorway id or a raw CSS color, so the catalog picker and
+    // the swatch write to the SAME prop — picking a retail finish and nudging a
+    // custom one are the same control, whichever you reach for last.
     if (catalog?.length) {
       own.push({
-        prop: 'colorway',
+        prop: 'color',
         label: 'colorway',
         kind: 'select',
-        title: 'Retail colorway (presets the colors)',
+        title: 'Retail colorway id (also presets frame/band colors)',
         options: [{ value: '', label: 'colorway…' }, ...catalog.map((c) => ({ value: c.id, label: c.name }))],
       })
     }
@@ -746,17 +724,26 @@ function useMockupControls(children: React.ReactNode) {
 
   /**
    * Set one prop. A few props supersede each other in the library, so the bar
-   * keeps them consistent: a retail colorway drops explicit colors, and
-   * `openAngle` and the `open` shorthand each clear the other.
+   * keeps them consistent: a retail colorway id drops the explicit frame/band
+   * colors it presets, and `openAngle` and the `open` shorthand each clear the
+   * other.
    */
   const change = (prop: string, next: unknown) =>
     setValues((prev) => {
       if (prop === 'variant') {
-        const kept = model?.catalogs?.[next as string]?.some((c) => c.id === prev.colorway)
-        return { ...prev, variant: next, colorway: kept ? prev.colorway : undefined }
+        // A colorway id belongs to one variant's catalog; drop it if the new
+        // variant has no such finish (a raw CSS color always survives).
+        const kept = model?.catalogs?.[next as string]?.some((c) => c.id === prev.color)
+        const custom = typeof prev.color === 'string' && prev.color.startsWith('#')
+        return { ...prev, variant: next, color: kept || custom ? prev.color : undefined }
       }
-      if (prop === 'colorway') {
-        return { ...prev, colorway: next || undefined, color: undefined, frameColor: undefined }
+      if (prop === 'color') {
+        // Selecting from the catalog presets frameColor/bandColor; clear any
+        // explicit ones so the retail finish shows as authored.
+        const isCatalogId = catalog?.some((c) => c.id === next)
+        return isCatalogId
+          ? { ...prev, color: next || undefined, frameColor: undefined, bandColor: undefined }
+          : { ...prev, color: next || undefined }
       }
       if (prop === 'openAngle') return { ...prev, openAngle: next, open: undefined }
       if (prop === 'open') return { ...prev, open: next, openAngle: undefined }
@@ -870,7 +857,7 @@ export function PreviewStage({
 
 /**
  * The gallery-card flavor: the bar sits inside the card's own viewport, so it
- * carries the model's own props plus the two rotation toggles and nothing else.
+ * carries the model's own props plus the auto-orbit toggle and nothing else.
  */
 export function withPreviewControls(node: React.ReactNode): React.ReactNode {
   return <CompactControls>{node}</CompactControls>
@@ -879,7 +866,7 @@ export function withPreviewControls(node: React.ReactNode): React.ReactNode {
 function CompactControls({ children }: { children: React.ReactNode }) {
   const { scene, rows, values, authored, change, clear } = useMockupControls(children)
   const own = rows.find((row) => row.label === 'model')?.controls ?? []
-  const controls = [...own, FREE_ROTATION, AUTO_ROTATE]
+  const controls = [...own, AUTO_ROTATE]
   return (
     <ToneContext.Provider value="overlay">
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>

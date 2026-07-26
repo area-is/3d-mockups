@@ -4,13 +4,12 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BUS_SHELTER, BUS_SHELTER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Region content. Bare children fill the outward 6-sheet lightbox face;
    * name regions explicitly with `<BusShelter.Poster>`, `<BusShelter.Inner>`
@@ -49,20 +48,14 @@ function BusShelterImpl({
   color = '#2f333a',
   surfaceBackground = '#ffffff',
   resolution = BUS_SHELTER.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BusShelterProps) {
   const regions = collectSlots(children, BUS_SHELTER_REGIONS)
   const { body, roof, backGlass, post, bench, lightbox, poster, flag, display, standHeight } = BUS_SHELTER
-  const boxRef = React.useRef<THREE.Mesh>(null!)
   // The roof and the arrivals board's housing must occlude too — without
   // them the live poster and LED board composite straight through the roof
   // when the shelter is seen from above.
-  const roofRef = React.useRef<THREE.Mesh>(null!)
-  const boardRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(boxRef, roofRef, boardRef)
 
   // Plain strings become the built-in LED arrivals board — an array is one
   // row per arrival; custom nodes pass straight through.
@@ -99,31 +92,26 @@ function BusShelterImpl({
   const floorY = -standHeight
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   // The arrivals board is a dark LED surface at the display's own resolution.
   const boardDefaults = {
-    background: '#0b0c0e',
+    surfaceBackground: '#0b0c0e',
     resolution: display.resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const posterProps = {
     width: poster.width,
     height: poster.height,
     radius: poster.radius,
-    occluders: occludeRefs,
   }
 
   return (
     <group {...groupProps}>
       {/* flat roof slab */}
-      <RoundedBox ref={roofRef} args={[roof.width, roof.thickness, roof.depth]} radius={0.03} position={[0, roofY, 0]}>
+      <RoundedBox args={[roof.width, roof.thickness, roof.depth]} radius={0.03} position={[0, roofY, 0]}>
         <meshPhysicalMaterial {...steel} />
       </RoundedBox>
 
@@ -190,7 +178,7 @@ function BusShelterImpl({
               <meshPhysicalMaterial {...steel} />
             </mesh>
           ))}
-          <RoundedBox ref={boardRef} args={[display.width + 0.09, display.height + 0.09, 0.09]} radius={0.02}>
+          <RoundedBox args={[display.width + 0.09, display.height + 0.09, 0.09]} radius={0.02}>
             <meshPhysicalMaterial color="#1c1e22" metalness={0.4} roughness={0.5} />
           </RoundedBox>
           <DeviceScreen
@@ -199,11 +187,6 @@ function BusShelterImpl({
             radius={0.01}
             {...resolveSurface(regions.arrivals, boardDefaults)}
             position={[0, 0, 0.049]}
-            // Per-pixel blending: the hanging board sits INSIDE the shelter,
-            // so pillars, glass frames and the roof edge cross in front of it
-            // at many angles — raycast's all-or-nothing hide either blanks
-            // the whole board or lets the LED text pierce a thin pillar.
-            blending
           >
             {board}
           </DeviceScreen>
@@ -216,7 +199,6 @@ function BusShelterImpl({
               {...resolveSurface(regions.arrivalsBack, boardDefaults)}
               position={[0, 0, -0.049]}
               rotation={[0, Math.PI, 0]}
-              blending
             >
               {backBoard}
             </DeviceScreen>
@@ -234,7 +216,7 @@ function BusShelterImpl({
         <RoundedBox args={[0.3, 0.36, 0.9]} radius={0.02} position={[0, roofY - roof.thickness / 2 + 0.05 - 0.18, 0]}>
           <meshPhysicalMaterial {...steel} />
         </RoundedBox>
-        <RoundedBox ref={boxRef} args={[lightbox.depth, lightbox.height, lightbox.width]} radius={0.04}>
+        <RoundedBox args={[lightbox.depth, lightbox.height, lightbox.width]} radius={0.04}>
           <meshPhysicalMaterial {...steel} />
         </RoundedBox>
         {/* backlit white diffusers behind each poster */}

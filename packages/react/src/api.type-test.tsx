@@ -15,6 +15,11 @@ import {
   type CustomBoxMockupProps,
   IPhoneMockup,
   GalaxyMockup,
+  type GalaxyProps,
+  type IPhoneProps,
+  type LaptopProps,
+  type VanProps,
+  type MockupCanvasProps,
   type MockupProps,
   type SlotProps,
   type SurfaceProps,
@@ -33,10 +38,29 @@ type _noPanelsProp = Expect<Not<Has<'panels', React.ComponentProps<typeof Brochu
 
 // ---- surface vocabulary is unified ---------------------------------------------------
 type _surfaceBackground = Expect<Has<'surfaceBackground', AFrameSignProps>>
-type _slotShape = Expect<
-  Equal<keyof SurfaceProps, 'background' | 'resolution' | 'allowInput' | 'dragToRotate' | 'style'>
->
+// one vocabulary: a slot and its mockup spell the same setting the same way
+type _slotMatchesDefaults = Expect<Equal<Omit<SlotProps, 'children'>, SurfaceProps>>
+type _slotShape = Expect<Equal<keyof SurfaceProps, 'surfaceBackground' | 'resolution' | 'surfaceStyle'>>
 type _slotChildren = Expect<Has<'children', SlotProps>>
+
+// ---- mockups are decorative: there is no input/occlusion vocabulary ------------------
+type _noAllowInput = Expect<Not<Has<'allowInput', AFrameSignProps>>>
+type _noDragToRotate = Expect<Not<Has<'dragToRotate', AFrameSignProps>>>
+type _noSlotAllowInput = Expect<Not<Has<'allowInput', SlotProps>>>
+type _noMockupAllowInput = Expect<Not<Has<'allowInput', AFrameSignMockupProps>>>
+
+// ---- the front camera is hardware, not a prop ----------------------------------------
+type _noPunchHole = Expect<Not<Has<'punchHole', GalaxyProps>>>
+type _noDynamicIsland = Expect<Not<Has<'dynamicIsland', IPhoneProps>>>
+type _noNotch = Expect<Not<Has<'notch', LaptopProps>>>
+
+// ---- `color` absorbed `colorway`, and stays a plain string ---------------------------
+type _colorIsString = Expect<Equal<GalaxyProps['color'], string | undefined>>
+type _noColorway = Expect<Not<Has<'colorway', GalaxyProps>>>
+
+// ---- coverage absorbed wrapOverWindows; no mixed-primitive unions left ---------------
+type _coverage = Expect<Equal<VanProps['coverage'], 'panel' | 'full' | 'perforated' | undefined>>
+type _noWrapOverWindows = Expect<Not<Has<'wrapOverWindows', VanProps>>>
 
 // ---- wrappers merge stage + object props, and transforms are first-class -------------
 type _stageProps = Expect<Has<'autoRotate', AFrameSignMockupProps>>
@@ -45,14 +69,23 @@ type _floatProp = Expect<Has<'float', AFrameSignMockupProps>>
 type _sizeRequired = Expect<Equal<CustomBoxMockupProps['size'], { width: number; height: number; depth: number }>>
 type _mockupPropsRoundtrip = Expect<Equal<MockupProps<AFrameSignProps>, AFrameSignMockupProps>>
 
+// ---- a mockup advertises what it looks like; machinery stays on MockupCanvas ---------
+type _noFreeRotation = Expect<Not<Has<'freeRotation', AFrameSignMockupProps>>>
+type _noShadowY = Expect<Not<Has<'shadowY', AFrameSignMockupProps>>>
+type _noDpr = Expect<Not<Has<'dpr', AFrameSignMockupProps>>>
+type _canvasKeepsThem = Expect<Has<'freeRotation', MockupCanvasProps>>
+type _mockupKeepsSpeed = Expect<Has<'autoRotateSpeed', AFrameSignMockupProps>>
+// ---- studio lighting is not optional -------------------------------------------------
+type _noEnvironment = Expect<Not<Has<'environment', MockupCanvasProps>>>
+
 // ---- compound slots exist on both the mockup and the raw scene component -------------
 const _slotsUsage = (
   <>
     <AFrameSignMockup autoRotate autoRotateSpeed={0.8} rotation={[0, 0.25, 0]}>
-      <AFrameSignMockup.Front background="#20241f">
+      <AFrameSignMockup.Front surfaceBackground="#20241f">
         <div />
       </AFrameSignMockup.Front>
-      <AFrameSignMockup.Back resolution={640} allowInput={false}>
+      <AFrameSignMockup.Back resolution={640}>
         <div />
       </AFrameSignMockup.Back>
     </AFrameSignMockup>
@@ -69,14 +102,14 @@ const _slotsUsage = (
     </GalaxyMockup>
 
     <IPhoneMockup variant="pro">
-      <IPhoneMockup.Screen background="#000" resolution={860}>
+      <IPhoneMockup.Screen surfaceBackground="#000" resolution={860}>
         <div />
       </IPhoneMockup.Screen>
     </IPhoneMockup>
 
     <CustomBoxMockup size={{ width: 250, height: 90, depth: 160 }}>
       <div />
-      <CustomBoxMockup.Top background="#111">
+      <CustomBoxMockup.Top surfaceBackground="#111">
         <div />
       </CustomBoxMockup.Top>
     </CustomBoxMockup>

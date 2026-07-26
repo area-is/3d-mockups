@@ -1,14 +1,12 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { GREETING_CARD, GREETING_CARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face content. Bare children fill the front cover; name faces explicitly
    * with `<GreetingCard.Front>`, `<GreetingCard.InsideLeft>`,
@@ -44,17 +42,11 @@ function GreetingCardImpl({
   color = '#f6f3ec',
   surfaceBackground = '#ffffff',
   resolution = GREETING_CARD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: GreetingCardProps) {
   const regions = collectSlots(children, GREETING_CARD_REGIONS)
   const { panel } = GREETING_CARD
-  const leftRef = React.useRef<THREE.Mesh>(null!)
-  const rightRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(leftRef, rightRef)
-
   // Tent pose with the fold toward the viewer: the panels yaw ∓a around the
   // shared spine, keeping the card centered on the group origin.
   const a = ((180 - openAngle) / 2) * (Math.PI / 180)
@@ -62,9 +54,9 @@ function GreetingCardImpl({
   const spineZ = (half * Math.sin(a)) / 1
   const panels = [
     // left panel (back cover outward)
-    { x: -half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: -a, ref: leftRef, outer: regions.back, inner: regions.insideRight },
+    { x: -half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: -a, outer: regions.back, inner: regions.insideRight },
     // right panel (front cover outward)
-    { x: half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: a, ref: rightRef, outer: regions.front, inner: regions.insideLeft },
+    { x: half * Math.cos(a), z: spineZ - half * Math.sin(a), yaw: a, outer: regions.front, inner: regions.insideLeft },
   ]
 
   // paper bows into the crease: darken each face gently toward the spine
@@ -82,17 +74,14 @@ function GreetingCardImpl({
   )
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const screenProps = {
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    occluders: occludeRefs,
   }
 
   return (
@@ -104,10 +93,10 @@ function GreetingCardImpl({
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.85} />
       </mesh>
 
-      {panels.map(({ x, z, yaw, ref, outer, inner }, i) => (
+      {panels.map(({ x, z, yaw, outer, inner }, i) => (
         <group key={i} position={[x, 0, z]} rotation-y={yaw}>
           {/* heavy card stock */}
-          <mesh ref={ref}>
+          <mesh>
             <boxGeometry args={[panel.width, panel.height, panel.thickness]} />
             <meshPhysicalMaterial color={color} metalness={0} roughness={0.85} />
           </mesh>

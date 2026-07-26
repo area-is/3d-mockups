@@ -32,8 +32,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | `variant` | `'ipadpro13' \| 'ipadpro11' \| 'ipadair13' \| 'ipadair11' \| 'ipad11'` | `'ipadpro13'` | Which iPad: Pro 13"/11" (camera pod, Pencil strip, Face ID), Air 13"/11" (single lens, Touch ID top button), or the A16 iPad (single lens, edge Smart Connector). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display (for example 1376×1032 on the 13" Pro) with upright content. |
 | `resolution` | `number` | per variant | Defaults to the variant's logical grid: 1032×1376 (ipadpro13), 834×1210 (ipadpro11), 1024×1366 (ipadair13), 820×1180 (ipadair11, ipad11). |
-| `colorway` | `string` | first entry | A retail colorway id from `IPAD_COLORWAYS` — Pro `spaceblack`/`silver`, Air `spacegray`/`starlight`/`purple`/`blue`, iPad `silver`/`blue`/`pink`/`yellow`. |
-| `color` | `string` | per colorway | Any explicit body color, overriding the colorway. |
+| `color` | `string` | per variant | Body color. Takes a retail colorway id from `IPAD_COLORWAYS` — Pro `spaceblack`/`silver`, Air `spacegray`/`starlight`/`purple`/`blue`, iPad `silver`/`blue`/`pink`/`yellow` — or any CSS color. |
 
 ## All variants
 
@@ -45,7 +44,7 @@ button, Smart Connector dots on the back — in Starlight.
 <ObjectDemo demo="ipad-air13" />
 
 ```tsx
-<IPadMockup variant="ipadair13" colorway="starlight">
+<IPadMockup variant="ipadair13" color="starlight">
   <YourApp />
 </IPadMockup>
 ```
@@ -58,7 +57,7 @@ the edge-mounted Smart Connector of the 10th-gen chassis.
 <ObjectDemo demo="ipad-a16" />
 
 ```tsx
-<IPadMockup variant="ipad11" colorway="blue">
+<IPadMockup variant="ipad11" color="blue">
   <YourApp />
 </IPadMockup>
 ```
@@ -70,7 +69,7 @@ The same Pro design language at the smaller true relative size, in Silver.
 <ObjectDemo demo="ipad-pro11" />
 
 ```tsx
-<IPadMockup variant="ipadpro11" colorway="silver">
+<IPadMockup variant="ipadpro11" color="silver">
   <YourApp />
 </IPadMockup>
 ```

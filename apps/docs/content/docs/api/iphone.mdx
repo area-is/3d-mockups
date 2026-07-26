@@ -24,11 +24,9 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'17' \| 'air' \| 'pro' \| 'promax'` | `'17'` | Which iPhone 17 family device: 17 (two-lens pill), air (ultra-thin, single-lens bar), pro and promax (full-width plateau, flash + LiDAR). |
-| `colorway` | `string` | — | A retail colorway id from `IPHONE_COLORWAYS` (17: `black`, `white`, `lavender`, `mistblue`, `sage`; Air: `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max: `silver`, `cosmicorange`, `deepblue`). Presets `color` + `frameColor`; explicit color props override it. |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content. |
-| `dynamicIsland` | `boolean` | `true` | Dynamic Island overlay (replaces `punchHole`). |
 | `resolution` | `number` | per variant | Defaults to the variant's point grid: 402×874 (17, pro), 420×912 (air), 440×956 (promax). |
-| `color` | `string` | `'#1a1c20'` | Back colorway. |
+| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` — 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` — which also presets `frameColor`, or any CSS color. |
 
 ## Colorways
 

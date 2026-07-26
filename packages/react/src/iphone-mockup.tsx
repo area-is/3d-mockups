@@ -17,7 +17,7 @@ export type IPhoneMockupProps = MockupProps<IPhoneProps>
  *
  * ```tsx
  * <IPhoneMockup variant="pro" rotation={[0, 0.25, 0]}>
- *   <IPhoneMockup.Screen background="#000" resolution={860}>
+ *   <IPhoneMockup.Screen surfaceBackground="#000" resolution={860}>
  *     <MusicPlayer />
  *   </IPhoneMockup.Screen>
  * </IPhoneMockup>

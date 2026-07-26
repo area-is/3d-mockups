@@ -56,10 +56,14 @@ What that puts in the core today:
   work, minus the framework portal itself:
   - `screenSurfaceStyle`, `screenCssHeight`, `screenCornerRadiusCss`,
     `screenDistanceFactor` — the CSS-pixel math mapping a world-unit display onto DOM;
-  - `SCREEN_LAYER_CSS` / `screenLayerClass` — the compositor-layer promotion and
-    touch-action rules the bridge element needs;
-  - `createScreenDragHandoff` — the tap-vs-drag gesture handoff to the orbit controls;
+  - `SCREEN_LAYER_CLASS` / `SCREEN_LAYER_CSS` — the compositor-layer promotion the
+    bridge element needs;
   - `createBackfaceCuller` — hides the DOM plane when it faces away from the camera.
+
+  Screens are decorative by design: their DOM always composites UNDER the canvas so
+  the depth buffer masks it per-pixel, which also means no binding has to deal with
+  pointer input, hit-testing or gesture handoff on a screen. The canvas owns every
+  gesture.
 - **Stage** (`src/stage`) — the shared look and feel of every mockup canvas:
   camera pose, orbit constraints and damping, contact-shadow settings, the
   procedural studio light rig (`STUDIO_LIGHTFORMERS`), the idle float animation
@@ -71,8 +75,9 @@ What stays in a binding (React's versions in parentheses):
 - The **canvas/stage component** wiring core config into the renderer
   (`mockup-canvas.tsx` over r3f `<Canvas>`, drei `Environment`/`ContactShadows`/`OrbitControls`).
 - The **HTML screen bridge**: portaling framework content onto the display glass
-  (`screen/device-screen.tsx` over drei `<Html transform>`), calling the core's
-  drag handoff and backface culler.
+  (`screen/device-screen.tsx` over drei `<Html transform occlude="blending">`),
+  calling the core's backface culler and confining drei's z-index band to the
+  mockup's own stacking context.
 - The **device/object scene components** — declarative meshes built from core specs
   (`devices/*/*.tsx`, `objects/*/*.tsx`), plus per-device DOM overlays (punch hole,
   notch) computed from the same specs.
@@ -97,11 +102,12 @@ A new binding (say `@area-mockups/svelte`) implements four pieces, in order:
    `OVERLAY_BUTTON_STYLE` + the icon paths (`orbitZoomBy` and `toggleFullscreen`
    already do the work).
 2. **Screen** — a `DeviceScreen` equivalent over the renderer's HTML bridge
-   (Threlte's `<HTML transform>`, Tres's `CientosHtml`): wrapper class from
-   `screenLayerClass`, inject `SCREEN_LAYER_CSS`, scale by `screenDistanceFactor`,
-   style the content div with `screenSurfaceStyle`, forward `pointerdown` to
-   `createScreenDragHandoff`'s handler after stopping propagation, and run
-   `createBackfaceCuller` once per frame.
+   (Threlte's `<HTML transform>`, Tres's `CientosHtml`): wrapper class
+   `SCREEN_LAYER_CLASS`, inject `SCREEN_LAYER_CSS`, scale by `screenDistanceFactor`,
+   style the content div with `screenSurfaceStyle`, put the bridge in the renderer's
+   depth-blending mode with the screen silhouette as its occluder geometry, and run
+   `createBackfaceCuller` once per frame. The canvas keeps `pointer-events: auto`
+   throughout — screens never take input.
 3. **Devices/objects** — port scene components one at a time from
    `packages/react/src/devices` and `objects`. All numbers come from core specs, so a
    port is a mechanical JSX → framework-template translation; visual parity means
@@ -122,7 +128,7 @@ drei → equivalents cheat sheet:
 | React (drei/r3f) | Svelte (Threlte) | Vue (TresJS) |
 | --- | --- | --- |
 | `<Canvas>` | `<Canvas>` (`@threlte/core`) | `<TresCanvas>` |
-| `<Html transform occlude>` | `<HTML transform>` (`@threlte/extras`) | `<Html transform>` (cientos) |
+| `<Html transform occlude="blending">` | `<HTML transform>` (`@threlte/extras`) | `<Html transform>` (cientos) |
 | `<Environment>` + `<Lightformer>` | `<Environment>` / custom env scene | `<Environment>` (cientos) |
 | `<ContactShadows>` | `<ContactShadows>` (`@threlte/extras`) | `<ContactShadows>` (cientos) |
 | `<OrbitControls>` | `<OrbitControls>` (`@threlte/extras`) | `<OrbitControls>` (cientos) |

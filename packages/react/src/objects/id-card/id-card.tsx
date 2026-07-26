@@ -11,12 +11,11 @@ import {
   roundedRectShapeCorners,
 } from '@area-mockups/core'
 import { DeviceScreen, SCREEN_MASK_INSET } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face designs — full bleed over the WHOLE card (punch strip included);
    * the slot punch is carved out of the live area. Bare children fill the
@@ -54,15 +53,11 @@ function IDCardImpl({
   lanyardColor = '#b3223a',
   surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: IDCardProps) {
   const regions = collectSlots(children, ID_CARD_REGIONS)
   const { body, slot, face, hook, strap } = ID_CARD
-  const cardRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(cardRef)
 
   const cardGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -202,11 +197,9 @@ function IDCardImpl({
   React.useEffect(() => () => faceOccluderGeometry.dispose(), [faceOccluderGeometry])
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const front = resolveSurface(regions.front, surfaceDefaults)
   const back = resolveSurface(regions.back, surfaceDefaults)
@@ -214,14 +207,13 @@ function IDCardImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occluders: occludeRefs,
     occluderGeometry: faceOccluderGeometry,
   }
 
   return (
     <group {...groupProps}>
       {/* PVC card with the punched slot */}
-      <mesh ref={cardRef} geometry={cardGeometry}>
+      <mesh geometry={cardGeometry}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.55} clearcoat={0.4} clearcoatRoughness={0.4} />
       </mesh>
 

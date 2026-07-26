@@ -23,7 +23,7 @@ import {
   VanMockup,
   FlipMockup,
 } from 'area-mockups'
-import { TapCounter } from '../screens/tap-counter'
+import { LiveCounter } from '../screens/live-counter'
 import { LockScreen } from '../screens/lock-screen'
 import { DesktopScreen } from '../screens/desktop-screen'
 import { GalaxyWatchFace, WatchFace } from '../screens/watch-face'
@@ -107,14 +107,14 @@ export default function DemoScenes() {
         title="Bring your own UI"
         description={
           <>
-            Plain React state on the 3D screen: with <code>allowInput</code> opted in, the
-            button below really clicks. Drag anywhere, even on the screen, to spin the
-            device; taps still reach the UI.
+            Plain React state on the 3D screen: the counter below is a{' '}
+            <code>useState</code> ticking inside the glass, re-rendering while you drag the
+            device around it.
           </>
         }
       >
-        <GalaxyMockup allowInput color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
-          <TapCounter />
+        <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+          <LiveCounter />
         </GalaxyMockup>
       </DemoCard>
 
@@ -143,12 +143,11 @@ export default function DemoScenes() {
         description={
           <>
             An <code>&lt;iframe&gt;</code> pointed at <code>/embedded</code>, a real route of
-            this site — scrolling and clicking inside the glass, with{' '}
-            <code>allowInput</code> opted in.
+            this site — loading and rendering live inside the glass, animations and all.
           </>
         }
       >
-        <GalaxyMockup allowInput color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
+        <GalaxyMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
@@ -323,7 +322,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro13" orientation="landscape" color="spaceblack" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -337,7 +336,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro11" color="silver" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -351,7 +350,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadair13" color="starlight" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -365,7 +364,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipad11" color="blue" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -379,7 +378,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11" color="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </GalaxyTabMockup>
       </DemoCard>
@@ -393,7 +392,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" color="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </GalaxyTabMockup>
       </DemoCard>

@@ -15,12 +15,11 @@ import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'
 import { UsbC, EdgeSocket, cutGeometry, stadiumCutter, holeCutter } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the laptop screen: React components, an <iframe>, a
    * <video>… Wrap in `<Laptop.Screen>` to set per-screen surface props.
@@ -34,12 +33,11 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    */
   variant?: LaptopVariant
   /**
-   * A retail colorway id from `LAPTOP_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
+   * Aluminum color (lid, deck, bottom). Takes a retail colorway id from
+   * `LAPTOP_COLORWAYS` (`'skyblue'`, `'starlight'`, `'midnight'`…) or any
+   * CSS color for a custom finish. A colorway id wins over a CSS color of
+   * the same name — pass hex if you meant the CSS one.
    */
-  colorway?: string
-  /** Aluminum colorway (lid, deck, bottom). MacBook Air M5 finishes work well:
-   * Silver `#e3e4e6` (default), Sky Blue `#aec6d9`, Starlight `#e8e0d4`, Midnight `#2e3642`. */
   color?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 13.6" panel's
@@ -48,8 +46,6 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    * breakpoints behave like on the real machine. Style your content with % / flex.
    */
   resolution?: number
-  /** Show the camera-notch overlay at the top of the display. */
-  notch?: boolean
   /** Lid angle in degrees between deck and screen (90 = upright). */
   openAngle?: number
 }
@@ -667,29 +663,25 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
 function LaptopImpl({
   children,
   variant = LAPTOP_DEFAULT_VARIANT,
-  colorway,
   color: colorProp,
   surfaceBackground = '#000000',
   resolution,
-  notch = true,
   openAngle,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: LaptopProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = LAPTOP_VARIANTS[variant]
-  const retail = findColorway(LAPTOP_COLORWAYS[variant], colorway)
-  const color = colorProp ?? retail?.color ?? '#e3e4e6'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(LAPTOP_COLORWAYS[variant], colorProp)
+  const color = retail?.color ?? colorProp ?? '#e3e4e6'
   const { footprint, base, lid, display, notch: notchDims, keyboard, trackpad } = spec
   // Default scaled desktops (native/2): 1280x832 / 1440x932 on the Airs,
   // 1512x982 / 1728x1117 on the Pros.
   const res = resolution ?? { air13: 1280, air15: 1440, pro14: 1512, pro16: 1728 }[variant]
   const lidAngle = openAngle ?? spec.openAngle
-  const baseRef = React.useRef<THREE.Mesh>(null!)
-  const lidRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(lidRef, baseRef)
 
   // Base chassis: the slab is baked into its resting orientation (footprint in
   // XZ) so every side-wall port opening can be machined out of it in place —
@@ -856,7 +848,7 @@ function LaptopImpl({
       <group position={[0, LAPTOP_STAGE_OFFSET_Y, 0]}>
         {/* ---------------- base: unibody chassis with the keyboard deck ---------------- */}
         <group>
-          <mesh ref={baseRef} geometry={baseGeometry}>
+          <mesh geometry={baseGeometry}>
             {aluminum}
           </mesh>
 
@@ -990,7 +982,7 @@ function LaptopImpl({
           </mesh>
 
           {/* lid slab — local +y is "up the screen", inner face toward +z */}
-          <mesh ref={lidRef} geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
+          <mesh geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
             {aluminum}
           </mesh>
 
@@ -1022,45 +1014,43 @@ function LaptopImpl({
             height={display.height}
             radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
             position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
-            occluders={occludeRefs}
             {...resolveSurface(screen, {
-              background: surfaceBackground,
+              surfaceBackground,
               resolution: res,
-              allowInput,
-              dragToRotate,
-              style: surfaceStyle,
+              surfaceStyle,
             })}
+            // The camera notch is part of the hardware, so it is always drawn:
+            // it eats the same strip of your layout here that it eats on the
+            // real panel, which is most of the point of looking at a mockup.
             overlay={
-              notch ? (
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: px(notchDims.width),
+                  height: px(notchDims.height),
+                  borderRadius: `0 0 ${px(notchDims.radius)}px ${px(notchDims.radius)}px`,
+                  background: '#04050a',
+                  pointerEvents: 'none',
+                  zIndex: 2147483647,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <div
-                  aria-hidden
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: px(notchDims.width),
-                    height: px(notchDims.height),
-                    borderRadius: `0 0 ${px(notchDims.radius)}px ${px(notchDims.radius)}px`,
-                    background: '#04050a',
-                    pointerEvents: 'none',
-                    zIndex: 2147483647,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    width: px(0.045),
+                    height: px(0.045),
+                    borderRadius: '50%',
+                    background:
+                      'radial-gradient(circle at 38% 38%, #1c2536 0%, #05060a 60%, #000 100%)',
                   }}
-                >
-                  <div
-                    style={{
-                      width: px(0.045),
-                      height: px(0.045),
-                      borderRadius: '50%',
-                      background:
-                        'radial-gradient(circle at 38% 38%, #1c2536 0%, #05060a 60%, #000 100%)',
-                    }}
-                  />
-                </div>
-              ) : undefined
+                />
+              </div>
             }
           >
             {screen?.children}

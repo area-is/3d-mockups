@@ -17,7 +17,7 @@ export type LaptopMockupProps = MockupProps<LaptopProps>
  *
  * ```tsx
  * <LaptopMockup variant="pro14" openAngle={100}>
- *   <LaptopMockup.Screen background="#000" resolution={1512}>
+ *   <LaptopMockup.Screen surfaceBackground="#000" resolution={1512}>
  *     <Dashboard />
  *   </LaptopMockup.Screen>
  * </LaptopMockup>

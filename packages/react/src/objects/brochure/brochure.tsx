@@ -1,10 +1,8 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { BROCHURE, BROCHURE_REGIONS, brochureSpec, type BrochureSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlot, resolveSurface, type SlotProps, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlot, resolveSurface, type SlotProps, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
@@ -17,7 +15,7 @@ export interface BrochurePanelProps extends SlotProps {
   side?: 'front' | 'back'
 }
 
-export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Panel content: repeat `<Brochure.Panel>` left to right (up to three per
    * side; add `side="back"` for the reverse faces). Bare children are
@@ -60,8 +58,6 @@ function BrochureImpl({
   color = '#f5f4f0',
   surfaceBackground = '#ffffff',
   resolution = BROCHURE.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BrochureProps) {
@@ -70,13 +66,6 @@ function BrochureImpl({
     () => (size ? brochureSpec(size) : BROCHURE),
     [size?.width, size?.height]
   )
-  const refs = [
-    React.useRef<THREE.Mesh>(null!),
-    React.useRef<THREE.Mesh>(null!),
-    React.useRef<THREE.Mesh>(null!),
-  ]
-  const occludeRefs = useScreenOccluders(...refs)
-
   // Zig-zag accordion: panel yaws alternate +a, -a, +a, hinged edge to edge.
   // Chaining the hinges keeps every panel center on z = 0, so the brochure
   // rotates about its own visual center.
@@ -101,17 +90,14 @@ function BrochureImpl({
   const backContent = [backs[2], backs[1], backs[0]]
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const screenProps = {
     width: panel.width,
     height: panel.height,
     radius: panel.radius,
-    occluders: occludeRefs,
   }
 
   /**
@@ -149,7 +135,7 @@ function BrochureImpl({
       {layout.map(({ x, z, yaw }, i) => (
         <group key={i} position={[x, 0, z]} rotation-y={yaw}>
           {/* heavy paper stock — bare stock shows wherever a face is unprinted */}
-          <mesh ref={refs[i]}>
+          <mesh>
             <boxGeometry args={[panel.width, panel.height, panel.thickness]} />
             <meshPhysicalMaterial color={paperColor} metalness={0} roughness={0.85} />
           </mesh>

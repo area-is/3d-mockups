@@ -25,11 +25,11 @@ export default function HomePage() {
             Your app, on a phone, <span className="grad-text">in 3D.</span>
           </h1>
           <p className="lede">
-            <code>area-mockups</code> renders GPU-accelerated, fully interactive 3D devices
-            (Galaxy and iPhone families, iPad Pro and Galaxy Tab tablets, a MacBook Air, an
-            Apple Watch and a Studio Display-style monitor) and maps <em>real, live DOM</em>{' '}
-            onto their screens. Buttons click, videos play, iframes scroll. No 3D asset
-            files, no screenshots.
+            <code>area-mockups</code> renders GPU-accelerated 3D devices (Galaxy and iPhone
+            families, iPad Pro and Galaxy Tab tablets, a MacBook Air, an Apple Watch and a
+            Studio Display-style monitor) and maps <em>real, live DOM</em> onto their
+            screens. Text stays vector crisp, videos play, iframes load. No 3D asset files,
+            no screenshots.
           </p>
           <p className="install-line">$ npm install area-mockups</p>
           <div className="hero-actions">
@@ -46,7 +46,7 @@ export default function HomePage() {
             <HeroMockup />
           </div>
           <p className="viewport-hint">
-            Drag to spin. The screen is a live React tree, so try the play button.
+            Drag to spin. The screen is a live React tree, rendering as you turn it.
           </p>
         </div>
       </section>

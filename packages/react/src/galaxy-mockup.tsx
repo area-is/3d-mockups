@@ -17,7 +17,7 @@ export type GalaxyMockupProps = MockupProps<GalaxyProps>
  *
  * ```tsx
  * <GalaxyMockup variant="s26ultra" rotation={[0, 0.25, 0]}>
- *   <GalaxyMockup.Screen background="#000" resolution={720}>
+ *   <GalaxyMockup.Screen surfaceBackground="#000" resolution={720}>
  *     <MusicPlayer />
  *   </GalaxyMockup.Screen>
  * </GalaxyMockup>

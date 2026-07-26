@@ -1,15 +1,13 @@
 import * as React from 'react'
-import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BILLBOARD, BILLBOARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * The creative — any React node. It fills the whole face, full bleed;
    * wrap in `<Billboard.Face>` to set per-surface props.
@@ -40,15 +38,11 @@ function BillboardImpl({
   color = '#2c313a',
   surfaceBackground = '#ffffff',
   resolution = BILLBOARD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BillboardProps) {
   const faceSlot = collectSlots(children, BILLBOARD_REGIONS).face
   const { face, panel, apron, standHeight, pole, catwalk, lights } = BILLBOARD
-  const panelRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(panelRef)
 
   const panelTop = panel.height / 2
   const apronCenterY = -panelTop - apron.height / 2 + 0.02
@@ -71,7 +65,7 @@ function BillboardImpl({
   return (
     <group {...groupProps}>
       {/* steel face panel with trim lip */}
-      <RoundedBox ref={panelRef} args={[panel.width, panel.height, panel.depth]} radius={panel.radius}>
+      <RoundedBox args={[panel.width, panel.height, panel.depth]} radius={panel.radius}>
         <meshPhysicalMaterial {...steel} />
       </RoundedBox>
 
@@ -200,13 +194,10 @@ function BillboardImpl({
         height={face.height}
         radius={face.radius}
         position={[0, 0, panel.depth / 2 + 0.006]}
-        occluders={occludeRefs}
         {...resolveSurface(faceSlot, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {faceSlot?.children}

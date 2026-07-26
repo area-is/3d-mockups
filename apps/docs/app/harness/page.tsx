@@ -50,6 +50,10 @@ import {
  * needing extra props (a variant, a second screen region, a pose) gets its
  * own branch below instead.
  */
+/** `coverage` for the two wrappable vehicles, defaulting to the panel ad. */
+const COVERAGE_PARAM = (value: string | null): 'panel' | 'full' | 'perforated' =>
+  value === 'full' || value === 'perforated' ? value : 'panel'
+
 const PLAIN = {
   aframe: AFrameSignMockup,
   billboard: BillboardMockup,
@@ -114,11 +118,10 @@ function regionProbe(Mockup: object): React.ReactNode {
  *   pvariant    device variant id                  (phone, iphone)
  *   bandOpen    1 | 0 — unbuckled band             (watch)
  *   variant     device variant id                  (tablet only)
- *   colorway    retail colorway id                 | color=#hex overrides
+ *   color       retail colorway id, or any CSS color (colorway= also accepted)
  *   orientation portrait | landscape               (tablet)
  *   open        1 | 0                              (flip)
- *   coverage    panel | full                       (bus, van)
- *   over        1 | 0 — wrap over the glass        (bus, default 1)
+ *   coverage    panel | full | perforated          (bus, van)
  *   sign        LED text; '|' splits pages         (bus destination sign)
  *   arrivals    LED text; '|' splits board rows    (shelter)
  *   arrivalsBack LED text for the board's back     (shelter; defaults to mirror)
@@ -133,18 +136,14 @@ function HarnessScene() {
   const params = useSearchParams()
   const device = params.get('device') ?? 'tablet'
   const variant = params.get('variant') ?? 'ipadpro13'
-  const colorway = params.get('colorway') ?? undefined
-  const color = params.get('color') ?? undefined
+  // `color` takes a retail colorway id or a raw CSS color, so one param serves both.
+  const color = params.get('color') ?? params.get('colorway') ?? undefined
   const orientation = params.get('orientation') === 'landscape' ? 'landscape' : 'portrait'
   const rx = (Number(params.get('rx') ?? 0) * Math.PI) / 180
   const ry = (Number(params.get('ry') ?? 0) * Math.PI) / 180
   const cy = Number(params.get('cy') ?? 0)
   const shadows = params.get('shadows') === '1'
   const controls = params.get('controls') === '1'
-  // Screens are display-only here by default, like the library. `allowInput=1`
-  // flips them to raycast occlusion, which is how this probe compares the two
-  // modes' masking against each other.
-  const allowInput = params.get('allowInput') === '1'
   const screen =
     // `clear` paints nothing at all: it exists to show what the surface
     // background is FOR — with it, content that doesn't cover every pixel
@@ -174,7 +173,6 @@ function HarnessScene() {
     return (
       <Mockup
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={distParam ? { position: [0, cy, Number(distParam)], fov: 40 } : undefined}
         shadows={shadows}
@@ -195,7 +193,6 @@ function HarnessScene() {
       <CustomBoxMockup
         size={{ width: mm('w', 180), height: mm('h', 120), depth: mm('d', 60) }}
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={camera}
         shadows={shadows}
@@ -207,7 +204,6 @@ function HarnessScene() {
       <CustomPanelMockup
         size={{ width: mm('w', 300), height: mm('h', 200), thickness: mm('d', 5) }}
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={camera}
         shadows={shadows}
@@ -223,11 +219,8 @@ function HarnessScene() {
     const sign = params.get('sign')
     return (
       <BusMockup
-        coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
-        wrapOverWindows={params.get('over') !== '0'}
+        coverage={COVERAGE_PARAM(params.get('coverage'))}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -247,10 +240,8 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 10.6)
     return (
       <VanMockup
-        coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
+        coverage={COVERAGE_PARAM(params.get('coverage'))}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -269,8 +260,6 @@ function HarnessScene() {
     const arrivalsBack = params.get('arrivalsBack')
     return (
       <BusShelterMockup
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -298,8 +287,6 @@ function HarnessScene() {
         size={params.get('inches') ? Number(params.get('inches')) : undefined}
         variant={(params.get('tvvariant') ?? undefined) as 'legs' | 'pedestal' | 'frame' | undefined}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -316,8 +303,6 @@ function HarnessScene() {
       <StorefrontMockup
         color={color}
         windowColor={params.get('windowColor') ?? undefined}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -342,8 +327,6 @@ function HarnessScene() {
     return (
       <MagazineMockup
         glossy={params.get('glossy') === '1'}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -360,8 +343,6 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 6)
     return (
       <IDCardMockup
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -393,7 +374,6 @@ function HarnessScene() {
       <FlipMockup
         open={params.get('open') !== '0'}
         openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : undefined}
-        colorway={colorway}
         color={color}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -411,7 +391,6 @@ function HarnessScene() {
       <FoldMockup
         open={params.get('open') !== '0'}
         openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : undefined}
-        colorway={colorway}
         color={color}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -430,12 +409,9 @@ function HarnessScene() {
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
         <Device
           variant={(params.get('pvariant') ?? undefined) as GalaxyVariant & IPhoneVariant}
-          colorway={colorway}
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </Device>
@@ -449,12 +425,9 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 6.4)
     const galaxy = params.get('wvariant') === 'watch8'
     const shared = {
-      colorway,
       color,
       bandColor: params.get('bandColor') ?? undefined,
       rotation: [rx, ry, 0] as [number, number, number],
-      allowInput,
-      dragToRotate: false,
     }
     return (
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
@@ -475,12 +448,9 @@ function HarnessScene() {
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
         <Laptop
           variant={(params.get('lvariant') ?? 'pro14') as LaptopVariant}
-          colorway={colorway}
           color={color}
           openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : undefined}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </Laptop>
@@ -498,24 +468,18 @@ function HarnessScene() {
       {variant.startsWith('tabs') ? (
         <GalaxyTab
           variant={variant as GalaxyTabVariant}
-          colorway={colorway}
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </GalaxyTab>
       ) : (
         <IPad
           variant={variant as IPadVariant}
-          colorway={colorway}
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </IPad>

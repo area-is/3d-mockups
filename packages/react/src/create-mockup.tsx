@@ -17,6 +17,11 @@ type CanvasOnlyProps = Omit<MockupCanvasProps, 'children'>
 
 // The full, finite set of stage props. Everything NOT in this list is an
 // object prop and is forwarded to the scene component wholesale.
+//
+// This is the ROUTING list, deliberately wider than the TYPE below: a prop
+// only `MockupCanvas` advertises still reaches the canvas rather than being
+// spread onto a mesh, so a JavaScript caller who reaches for one gets the
+// behavior instead of a three.js warning.
 const CANVAS_KEYS: ReadonlySet<string> = new Set([
   'controls',
   'autoRotate',
@@ -26,7 +31,6 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
   'fullscreen',
   'shadows',
   'shadowY',
-  'environment',
   'background',
   'camera',
   'dpr',
@@ -34,8 +38,33 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
   'style',
 ] satisfies (keyof CanvasOnlyProps)[])
 
-/** Props of a generated mockup: the stage's, the object's, plus `float`. */
-export type MockupProps<P> = CanvasOnlyProps &
+/**
+ * The stage props a one-liner mockup advertises: the ones that change what the
+ * mockup LOOKS like on the page, or what a visitor can do with it.
+ *
+ * The rest of `MockupCanvasProps` tunes the rendering machinery rather than the
+ * picture — `freeRotation` (a niche orbit constraint), `shadowY` (framing math
+ * the mockup already derives from its core spec) and `dpr` (a GPU-load clamp
+ * that is already right). Leaving those off this type keeps a mockup's
+ * autocomplete to decisions worth making; compose `<MockupCanvas>` directly
+ * when you want the rest.
+ */
+type MockupStageProps = Pick<
+  CanvasOnlyProps,
+  | 'controls'
+  | 'autoRotate'
+  | 'autoRotateSpeed'
+  | 'zoom'
+  | 'fullscreen'
+  | 'shadows'
+  | 'background'
+  | 'camera'
+  | 'className'
+  | 'style'
+>
+
+/** Props of a generated mockup: the staging ones, the object's, plus `float`. */
+export type MockupProps<P> = MockupStageProps &
   P & {
     /** Gentle floating idle animation. */
     float?: boolean

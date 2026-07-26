@@ -23,12 +23,11 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the phone screen: React components, an <iframe>, a
    * <video>… Wrap in `<IPhone.Screen>` to set per-screen surface props.
@@ -42,17 +41,16 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    */
   variant?: IPhoneVariant
   /**
-   * A retail colorway id from `IPHONE_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
-   */
-  colorway?: string
-  /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content — exactly like rotating the real phone.
    */
   orientation?: 'portrait' | 'landscape'
-  /** Back glass colorway. iPhone 17 finishes work well: Black `#1a1c20`
-   * (default), White `#f2f2f4`, Mist Blue `#b7c9dd`, Sage `#aebfae`, Lavender `#cfc4e6`. */
+  /**
+   * Back glass color. Takes a retail colorway id from `IPHONE_COLORWAYS`
+   * (`'black'`, `'mistblue'`, `'cosmicorange'`…), which also presets
+   * `frameColor`, or any CSS color for a custom finish. A colorway id wins
+   * over a CSS color of the same name — pass hex if you meant the CSS one.
+   */
   color?: string
   /** Frame, buttons and camera-ring color. */
   frameColor?: string
@@ -63,8 +61,6 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    * so content lays out just like it would on the real device.
    */
   resolution?: number
-  /** Show the Dynamic Island overlay. */
-  dynamicIsland?: boolean
 }
 
 /**
@@ -80,28 +76,25 @@ function IPhoneImpl({
   children,
   variant = IPHONE_DEFAULT_VARIANT,
   orientation = 'portrait',
-  colorway,
   color: colorProp,
   frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
-  dynamicIsland = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: IPhoneProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = IPHONE_VARIANTS[variant]
-  const retail = findColorway(IPHONE_COLORWAYS[variant], colorway)
-  const color = colorProp ?? retail?.color ?? '#1a1c20'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(IPHONE_COLORWAYS[variant], colorProp)
+  const color = retail?.color ?? colorProp ?? '#1a1c20'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#3f434b'
   const { body, glass, display, island, rearCamera, backWindow, buttons, buttonProfile } = spec
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(spec.resolution * (landscape ? aspect : 1))
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   // Chassis: an extruded rounded-rect with lightly beveled edges — the flat
   // aluminum/titanium frame. The shape is inset by the bevel size so the final
@@ -254,7 +247,7 @@ function IPhoneImpl({
           camera-left pose); the screen plane counter-rotates below */}
       <group rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* chassis */}
-        <mesh ref={bodyRef} geometry={bodyGeometry}>
+        <mesh geometry={bodyGeometry}>
           <meshPhysicalMaterial color={frameColor} metalness={0.8} roughness={0.35} />
         </mesh>
 
@@ -439,60 +432,58 @@ function IPhoneImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occluders={occludeRefs}
           {...resolveSurface(screen, {
-            background: surfaceBackground,
+            surfaceBackground,
             resolution: res,
-            allowInput,
-            dragToRotate,
-            style: surfaceStyle,
+            surfaceStyle,
           })}
+          // The Dynamic Island is part of the hardware, so it is always drawn:
+          // it eats the same strip of your layout here that it eats on the real
+          // panel, which is most of the point of looking at a mockup.
           overlay={
-            dynamicIsland ? (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                // the island hugs the panel's physical top — the left edge in landscape
+                ...(landscape
+                  ? {
+                      left: px(island.offsetY - island.height / 2),
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: px(island.height),
+                      height: px(island.width),
+                      flexDirection: 'column' as const,
+                    }
+                  : {
+                      top: px(island.offsetY - island.height / 2),
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: px(island.width),
+                      height: px(island.height),
+                      flexDirection: 'row' as const,
+                    }),
+                borderRadius: px(island.height / 2),
+                background: '#020308',
+                boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.04)',
+                pointerEvents: 'none',
+                zIndex: 2147483647,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                padding: landscape ? `0 0 ${px(0.05)}px 0` : `0 ${px(0.05)}px 0 0`,
+              }}
+            >
               <div
-                aria-hidden
                 style={{
-                  position: 'absolute',
-                  // the island hugs the panel's physical top — the left edge in landscape
-                  ...(landscape
-                    ? {
-                        left: px(island.offsetY - island.height / 2),
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: px(island.height),
-                        height: px(island.width),
-                        flexDirection: 'column' as const,
-                      }
-                    : {
-                        top: px(island.offsetY - island.height / 2),
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: px(island.width),
-                        height: px(island.height),
-                        flexDirection: 'row' as const,
-                      }),
-                  borderRadius: px(island.height / 2),
-                  background: '#020308',
-                  boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.04)',
-                  pointerEvents: 'none',
-                  zIndex: 2147483647,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  padding: landscape ? `0 0 ${px(0.05)}px 0` : `0 ${px(0.05)}px 0 0`,
+                  width: px(0.09),
+                  height: px(0.09),
+                  borderRadius: '50%',
+                  background:
+                    'radial-gradient(circle at 38% 38%, #1b2436 0%, #05060a 55%, #000 100%)',
                 }}
-              >
-                <div
-                  style={{
-                    width: px(0.09),
-                    height: px(0.09),
-                    borderRadius: '50%',
-                    background:
-                      'radial-gradient(circle at 38% 38%, #1b2436 0%, #05060a 55%, #000 100%)',
-                  }}
-                />
-              </div>
-            ) : undefined
+              />
+            </div>
           }
         >
           {screen?.children}
