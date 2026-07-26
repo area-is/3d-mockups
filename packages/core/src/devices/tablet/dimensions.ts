@@ -193,7 +193,9 @@ const IPAD_PRO_11: TabletSpec = {
 const IPAD_AIR_13: TabletSpec = {
   body: { width: 3.358, height: 4.384, depth: 0.095, radius: 0.16, bevel: 0.012 },
   glass: { width: 3.3, height: 4.327, radius: 0.14 },
-  display: { width: 3.08, height: 4.106, radius: 0.12 },
+  // Width corrected from an exact 4:3: the panel is 2732:2048, very slightly
+  // wider, and modelling it as 4:3 rendered 1365 tall instead of 1366.
+  display: { width: 3.078, height: 4.106, radius: 0.12 },
   resolution: 1024,
   // Apple's drawing: lens center 12.69 mm in from the top and side edges, an
   // Ø11.89 window inside an Ø16.92 body-colored mound, mic 27.62 mm from the top.
@@ -265,7 +267,9 @@ const IPAD_11: TabletSpec = {
   // than the Air/Pro, with the camera ring "nesting" inside the corner arc.
   body: { width: 2.805, height: 3.884, depth: 0.109, radius: 0.235, bevel: 0.008 },
   glass: { width: 2.748, height: 3.828, radius: 0.21 },
-  display: { width: 2.464, height: 3.549, radius: 0.1 },
+  // Height corrected so the modelled aspect matches the panel's 1640:2360;
+  // it rendered 1181 tall against the hardware's 1180.
+  display: { width: 2.464, height: 3.5458, radius: 0.1 },
   resolution: 820,
   // Apple's drawing: the same camera module as the Air (Ø11.89 window inside an
   // Ø16.92 mound), sitting 14.90 mm in from both edges, mic 29.62 from the top.

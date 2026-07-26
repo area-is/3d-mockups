@@ -133,8 +133,12 @@ const MACBOOK_PRO_14: LaptopSpec = {
   footprint: { width: 4.318, depth: 3.055, radius: 0.113 },
   base: { thickness: 0.149, bevel: 0.028 },
   lid: { thickness: 0.054, bevel: 0.008 },
-  // Active area 301.4 x 196.4 mm, top corners rounded, sitting 7.1 mm high.
-  display: { width: 4.163, height: 2.713, radius: [0.063, 0.063, 0, 0], offsetY: 0.098 },
+  // Active area 302.5 x 196.4 mm, top corners rounded, sitting 7.1 mm high.
+  // Width corrected from a scan-derived 301.4 mm: the modelled rect's aspect
+  // must equal the panel's 3024:1964, or a 1512-wide layout renders 985 tall
+  // instead of the hardware's 982. 14.2" at that aspect puts the active area
+  // at 302.48 x 196.45 mm, which the height already matched.
+  display: { width: 4.1772, height: 2.713, radius: [0.063, 0.063, 0, 0], offsetY: 0.098 },
   notch: { width: 0.508, height: 0.088, radius: 0.018 },
   // Black keyboard tray 278.7 x 114.9 mm centered 36.5 mm behind base center.
   keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.504, tray: true },

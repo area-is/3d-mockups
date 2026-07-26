@@ -217,8 +217,17 @@ frames against `apps/docs/visual-baselines/`. The cases use the harness's
 colour — so it is specifically a *geometry* check: a surface that changes size,
 moves, or starts bleeding through the body changes a coloured rect and fails.
 
-Run it before and after any change that touches region geometry, and especially
-when moving math out of a scene component into a spec. WebGL runs on
+`npm run devices:check` guards the other half. The Portrait/Landscape columns
+of `docs/devices.mdx` are the only part of that table the library can derive,
+and they drift silently: a screen's CSS height comes from the *modelled*
+world-unit rect's aspect, so when that aspect disagrees with the panel's pixel
+aspect the rendered grid stops matching the documented one. The visual check
+cannot see this — render and report share the same rect — so the numeric check
+is the one that catches it. `npm run devices:sync` rewrites those two columns;
+every other column is hardware fact and is left alone.
+
+Run the visual check before and after any change that touches region geometry,
+and especially when moving math out of a scene component into a spec. WebGL runs on
 SwiftShader, so frames are reproducible without a GPU; repeat runs of an
 unchanged build come back bit-identical. Requires the docs dev server
 (`npm run dev`), and `npm run visual -- --update` rewrites the baselines once

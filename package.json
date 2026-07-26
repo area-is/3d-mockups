@@ -14,7 +14,9 @@
     "dev": "concurrently -n pkg,docs -c cyan,magenta \"npm run dev -w area-mockups\" \"npm run dev -w docs\"",
     "start:docs": "npm run start -w docs",
     "typecheck": "npm run typecheck -w @area-mockups/core && npm run typecheck -w area-mockups && npm run typecheck -w docs",
-    "visual": "node apps/docs/scripts/visual-check.mjs"
+    "visual": "node apps/docs/scripts/visual-check.mjs",
+    "devices:check": "node packages/react/scripts/sync-device-table.mjs",
+    "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

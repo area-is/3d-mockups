@@ -51,7 +51,9 @@
     "build": "tsup && node scripts/build-catalog.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsup && node scripts/build-catalog.mjs"
+    "prepare": "tsup && node scripts/build-catalog.mjs",
+    "devices:check": "node scripts/sync-device-table.mjs",
+    "devices:sync": "node scripts/sync-device-table.mjs --write"
   },
   "peerDependencies": {
     "@react-three/drei": ">=10",
