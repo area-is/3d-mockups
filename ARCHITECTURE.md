@@ -204,10 +204,15 @@ tables.
 A region that resolves to an **array** of rects means one of two things, and the
 `repeats` flag tells them apart:
 
-- `repeats: true` — one rect per slot child, collected in document order
-  (a brochure's panels).
 - `repeats: false` — a single slot painted onto several surfaces of differing
-  size (the van's front and rear licence plates).
+  size (the van's front and rear licence plates). Every built-in array region
+  is this case.
+- `repeats: true` — one rect per slot child, collected in document order. No
+  built-in object uses it. The brochure did, and moving it to six named panels
+  is the reason: with positional slots, panel identity depended on document
+  order, so a conditionally rendered panel silently shifted every panel after
+  it onto the wrong surface. Prefer named regions unless the count genuinely
+  varies at runtime.
 
 ### Verifying it
 

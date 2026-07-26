@@ -10,13 +10,13 @@ export type BrochureMockupProps = MockupProps<BrochureProps>
  *
  * ```tsx
  * <BrochureMockup>
- *   <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
- *   <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
- *   <BrochureMockup.Panel side="back"><Back /></BrochureMockup.Panel>
+ *   <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
+ *   <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
+ *   <BrochureMockup.BackLeft><Map /></BrochureMockup.BackLeft>
  * </BrochureMockup>
  * ```
  *
- * Bare children are shorthand for the first (left) front panel.
+ * Bare children are shorthand for `FrontLeft`.
  */
 export const BrochureMockup = createMockup({
   kind: 'brochure',

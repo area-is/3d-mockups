@@ -41,17 +41,18 @@ book.primary               // === book.regions.cover — where bare children go
 ```
 
 A region can resolve to an **array**, which means one of two things — `repeats`
-tells them apart:
+tells them apart. Every built-in array region is the `repeats: false` case: one
+slot, painted onto surfaces of differing size.
 
 ```ts
-// repeats: true — one entry per slot child
-mockupInfo('brochure').regions.panel.length          // 3
-
-// repeats: false — one slot, painted onto surfaces of differing size
 const plates = mockupInfo('van').regions.licensePlate
 plates[0].mm   // { width: 525, height: 126 }   front plate
 plates[1].mm   // { width: 273, height: 120.8 } rear plate
 ```
+
+The other case, `repeats: true`, takes one slot child per rect in document
+order. No built-in object uses it — the brochure did until its panels became
+six named regions — but it stays available for objects you build yourself.
 
 ### What's in a region
 

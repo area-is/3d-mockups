@@ -54,6 +54,9 @@ const CASES = [
   ['book', 'device=book&regions=1&ry=28'],
   ['magazine', 'device=magazine&regions=1&ry=28'],
   ['brochure', 'device=brochure&regions=1&ry=22'],
+  // the reverse face, where left/right mirror the front — the one part of the
+  // panel mapping with no other automated cover
+  ['brochure-back', 'device=brochure&regions=1&ry=200'],
   ['productbox', 'device=productbox&regions=1&ry=32&rx=14'],
   ['mailer', 'device=mailer&regions=1&ry=32&rx=18'],
   ['bag', 'device=bag&regions=1&ry=26'],

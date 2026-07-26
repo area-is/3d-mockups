@@ -122,14 +122,14 @@ const _slotsUsage = (
       </CustomBoxMockup.Top>
     </CustomBoxMockup>
 
-    {/* repeating slots collect in document order; back side via `side` */}
+    {/* one named slot per panel — position comes from the name, not the order */}
     <BrochureMockup>
-      <BrochureMockup.Panel>
+      <BrochureMockup.BackRight>
         <div />
-      </BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back">
+      </BrochureMockup.BackRight>
+      <BrochureMockup.FrontLeft>
         <div />
-      </BrochureMockup.Panel>
+      </BrochureMockup.FrontLeft>
     </BrochureMockup>
   </>
 )
@@ -137,8 +137,11 @@ const _slotsUsage = (
 // @ts-expect-error — a mockup must reject a slot region it does not have
 const _wrongSlot = <CustomBoxMockup size={{ width: 1, height: 1, depth: 1 }}>{CustomBoxMockup.Spine}</CustomBoxMockup>
 
-// @ts-expect-error — Panel's `side` only accepts front | back
-const _wrongSide = <BrochureMockup.Panel side="top" />
+// @ts-expect-error — panels are named, so a fourth one cannot be expressed
+const _noFourthPanel = <BrochureMockup.FrontFar />
+
+// @ts-expect-error — it is FrontCenter, not FrontMiddle
+const _wrongPanelName = <BrochureMockup.FrontMiddle />
 
 // ---- the measurement API -------------------------------------------------------------
 type _kindIsUnion = Expect<Has<'galaxy', Record<MockupKind, true>>>

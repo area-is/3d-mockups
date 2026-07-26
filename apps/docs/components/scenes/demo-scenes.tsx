@@ -474,18 +474,18 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BrochureMockup&gt;</code>: three letter-fold panels standing in a
-            zig-zag, each its own live surface via a repeated{' '}
-            <code>&lt;BrochureMockup.Panel&gt;</code> slot.
+            zig-zag, each its own live surface via a named{' '}
+            <code>&lt;BrochureMockup.FrontLeft&gt;</code>-style slot.
           </>
         }
       >
         <BrochureMockup rotation={[0, -0.12, 0]}>
-          <BrochureMockup.Panel><BrochureFrontArt /></BrochureMockup.Panel>
-          <BrochureMockup.Panel><BrochureTrailsArt /></BrochureMockup.Panel>
-          <BrochureMockup.Panel><BrochureVisitArt /></BrochureMockup.Panel>
-          <BrochureMockup.Panel side="back"><BrochureVisitArt /></BrochureMockup.Panel>
-          <BrochureMockup.Panel side="back"><BrochureFrontArt /></BrochureMockup.Panel>
-          <BrochureMockup.Panel side="back"><BrochureTrailsArt /></BrochureMockup.Panel>
+          <BrochureMockup.FrontLeft><BrochureFrontArt /></BrochureMockup.FrontLeft>
+          <BrochureMockup.FrontCenter><BrochureTrailsArt /></BrochureMockup.FrontCenter>
+          <BrochureMockup.FrontRight><BrochureVisitArt /></BrochureMockup.FrontRight>
+          <BrochureMockup.BackLeft><BrochureVisitArt /></BrochureMockup.BackLeft>
+          <BrochureMockup.BackCenter><BrochureFrontArt /></BrochureMockup.BackCenter>
+          <BrochureMockup.BackRight><BrochureTrailsArt /></BrochureMockup.BackRight>
         </BrochureMockup>
       </DemoCard>
 

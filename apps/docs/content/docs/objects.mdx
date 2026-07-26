@@ -74,9 +74,10 @@ pattern the devices use. Slots must be direct children of the mockup.
 </ProductBoxMockup>
 ```
 
-- **`Brochure`** renders three panels in a standing zig-zag. Repeat the
-  `<Brochure.Panel>` slot to fill them left to right, and add `side="back"`
-  to print the reverse faces. `foldAngle={0}` lays the sheet flat.
+- **`Brochure`** renders three panels in a standing zig-zag, each with its own
+  named slot — `<Brochure.FrontLeft>` through `<Brochure.BackRight>`, where
+  left and right are as the viewer of that face sees it. `foldAngle={0}` lays
+  the sheet flat.
 - **`BusinessCard`** and **`IDCard`** take bare children for the front and
   `<BusinessCard.Back>` / `<IDCard.Back>` for the reverse — spin them around
   to see it.

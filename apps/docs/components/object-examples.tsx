@@ -490,16 +490,16 @@ const DEMOS: Record<string, React.ReactNode> = {
   // ---- Brochure ----------------------------------------------------------
   'brochure-panels': (
     <BrochureMockup rotation={[0, -0.12, 0]}>
-      <BrochureMockup.Panel><BrochureFrontArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureTrailsArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureVisitArt /></BrochureMockup.Panel>
+      <BrochureMockup.FrontLeft><BrochureFrontArt /></BrochureMockup.FrontLeft>
+      <BrochureMockup.FrontCenter><BrochureTrailsArt /></BrochureMockup.FrontCenter>
+      <BrochureMockup.FrontRight><BrochureVisitArt /></BrochureMockup.FrontRight>
     </BrochureMockup>
   ),
   'brochure-flat': (
     <BrochureMockup foldAngle={0}>
-      <BrochureMockup.Panel><BrochureFrontArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureTrailsArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureVisitArt /></BrochureMockup.Panel>
+      <BrochureMockup.FrontLeft><BrochureFrontArt /></BrochureMockup.FrontLeft>
+      <BrochureMockup.FrontCenter><BrochureTrailsArt /></BrochureMockup.FrontCenter>
+      <BrochureMockup.FrontRight><BrochureVisitArt /></BrochureMockup.FrontRight>
     </BrochureMockup>
   ),
   'brochure-single': (
@@ -509,12 +509,12 @@ const DEMOS: Record<string, React.ReactNode> = {
   ),
   'brochure-both-sides': (
     <BrochureMockup autoRotate autoRotateSpeed={0.8}>
-      <BrochureMockup.Panel><BrochureFrontArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureTrailsArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><BrochureVisitArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><BrochureTrailsArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><BrochureVisitArt /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><BrochureFrontArt /></BrochureMockup.Panel>
+      <BrochureMockup.FrontLeft><BrochureFrontArt /></BrochureMockup.FrontLeft>
+      <BrochureMockup.FrontCenter><BrochureTrailsArt /></BrochureMockup.FrontCenter>
+      <BrochureMockup.FrontRight><BrochureVisitArt /></BrochureMockup.FrontRight>
+      <BrochureMockup.BackLeft><BrochureTrailsArt /></BrochureMockup.BackLeft>
+      <BrochureMockup.BackCenter><BrochureVisitArt /></BrochureMockup.BackCenter>
+      <BrochureMockup.BackRight><BrochureFrontArt /></BrochureMockup.BackRight>
     </BrochureMockup>
   ),
 
@@ -1024,12 +1024,12 @@ const DEMOS: Record<string, React.ReactNode> = {
   ),
   'chroma-brochure': (
     <BrochureMockup autoRotate autoRotateSpeed={0.8}>
-      <BrochureMockup.Panel><ChromaSurface label=".Panel 1" /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><ChromaSurface label=".Panel 2" /></BrochureMockup.Panel>
-      <BrochureMockup.Panel><ChromaSurface label=".Panel 3" /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><ChromaSurface label='.Panel side="back" 1' /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><ChromaSurface label='.Panel side="back" 2' /></BrochureMockup.Panel>
-      <BrochureMockup.Panel side="back"><ChromaSurface label='.Panel side="back" 3' /></BrochureMockup.Panel>
+      <BrochureMockup.FrontLeft><ChromaSurface label=".FrontLeft" /></BrochureMockup.FrontLeft>
+      <BrochureMockup.FrontCenter><ChromaSurface label=".FrontCenter" /></BrochureMockup.FrontCenter>
+      <BrochureMockup.FrontRight><ChromaSurface label=".FrontRight" /></BrochureMockup.FrontRight>
+      <BrochureMockup.BackLeft><ChromaSurface label=".BackLeft" /></BrochureMockup.BackLeft>
+      <BrochureMockup.BackCenter><ChromaSurface label=".BackCenter" /></BrochureMockup.BackCenter>
+      <BrochureMockup.BackRight><ChromaSurface label=".BackRight" /></BrochureMockup.BackRight>
     </BrochureMockup>
   ),
   'chroma-card': (

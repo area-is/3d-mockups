@@ -73,7 +73,6 @@ export {
   type SurfaceProps,
   type ResolvedSurface,
 } from './slots'
-export { type BrochurePanelProps } from './objects/brochure/brochure'
 
 // Composable pieces: bring your own scene, or drop a device into an existing one.
 export { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'

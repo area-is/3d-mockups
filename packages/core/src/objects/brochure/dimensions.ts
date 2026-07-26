@@ -48,29 +48,47 @@ export type BrochureSpec = ReturnType<typeof brochureSpec>
 /** The default US letter Z-fold. */
 export const BROCHURE: BrochureSpec = brochureSpec()
 
-/** Live regions: one repeating panel slot (front and back faces via `side`). */
+/**
+ * Live regions: one per printed panel, named by where it sits on its own face.
+ *
+ * Left/center/right are always as the viewer of THAT face sees it, so the back
+ * names read the way a designer looks at the reverse after flipping the sheet.
+ * That mirrors the front: `backLeft` prints on the reverse of `frontRight`,
+ * which is exactly how a real tri-fold is imposed.
+ *
+ * Six fixed names rather than one repeating slot: the fold is always three
+ * panels a side, and positional slots made panel identity depend on document
+ * order — so a conditionally rendered panel silently shifted every panel after
+ * it onto the wrong surface.
+ */
 export const BROCHURE_REGIONS = [
-  { name: 'panel', label: 'Panel', repeats: true },
+  { name: 'frontLeft', label: 'Front-left panel' },
+  { name: 'frontCenter', label: 'Front-center panel' },
+  { name: 'frontRight', label: 'Front-right panel' },
+  { name: 'backLeft', label: 'Back-left panel' },
+  { name: 'backCenter', label: 'Back-center panel' },
+  { name: 'backRight', label: 'Back-right panel' },
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing brochure grounds on its bottom paper edge. */
 /** Millimetres per world unit — the brochure scale (`BROCHURE_MM` inverted). */
 export const BROCHURE_MM_PER_UNIT = 1 / BROCHURE_MM
 
-/** Panels per side of a letter-fold brochure. */
+/** Panels per side of a letter-fold brochure — three, printed on both sides. */
 export const BROCHURE_PANELS_PER_SIDE = 3
 
 /**
  * Live geometry of one panel. Every panel — front or back, left to right — is
- * the same rect, so the repeating region resolves to `BROCHURE_PANELS_PER_SIDE`
- * identical entries.
+ * the same rect, so all six regions resolve to the same measurements; they are
+ * separate entries because they are separately addressable, not because they
+ * differ in size.
  */
 export const BROCHURE_METRICS = {
   mmPerUnit: BROCHURE_MM_PER_UNIT,
   regions: ({ size }) => {
     const { panel, resolution } = size ? brochureSpec(size) : BROCHURE
     const one = { width: panel.width, height: panel.height, radius: panel.radius, resolution }
-    return { panel: Array.from({ length: BROCHURE_PANELS_PER_SIDE }, () => one) }
+    return Object.fromEntries(BROCHURE_REGIONS.map(({ name }) => [name, one]))
   },
 } as const satisfies MockupMetrics<{ size?: BrochureSize }>
 
