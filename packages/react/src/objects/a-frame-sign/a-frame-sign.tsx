@@ -3,11 +3,11 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { A_FRAME_SIGN, A_FRAME_SIGN_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Panel content. Bare children fill the front panel; name panels explicitly
    * with `<AFrameSign.Front>` and `<AFrameSign.Back>`.
@@ -82,9 +82,9 @@ function AFrameSignImpl({
   const legDrop = 0.143
   const legLift = legDrop * Math.cos(tilt)
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const screenProps = {
     width: face.width,

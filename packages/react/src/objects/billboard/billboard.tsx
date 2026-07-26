@@ -3,11 +3,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BILLBOARD, BILLBOARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * The creative — any React node. It fills the whole face, full bleed;
    * wrap in `<Billboard.Face>` to set per-surface props.
@@ -195,9 +195,9 @@ function BillboardImpl({
         radius={face.radius}
         position={[0, 0, panel.depth / 2 + 0.006]}
         {...resolveSurface(faceSlot, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {faceSlot?.children}

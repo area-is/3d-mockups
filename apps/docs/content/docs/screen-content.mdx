@@ -49,12 +49,12 @@ Every device accepts the same three screen props:
 | `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content, under whatever you render. See [Surface background](#surface-background). |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
-Each is also a per-region override on any slot, spelled `resolution`,
-`background` and `style`:
+Each is also a per-region override on any slot, spelled exactly the same way —
+one vocabulary, whichever element you hang it off:
 
 ```tsx
 <AFrameSignMockup>
-  <AFrameSignMockup.Front background="#20241f"><MenuBoard /></AFrameSignMockup.Front>
+  <AFrameSignMockup.Front surfaceBackground="#20241f"><MenuBoard /></AFrameSignMockup.Front>
   <AFrameSignMockup.Back resolution={640}><HoursBoard /></AFrameSignMockup.Back>
 </AFrameSignMockup>
 ```

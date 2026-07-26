@@ -3,11 +3,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { STOREFRONT, STOREFRONT_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Region content. Bare children fill the front fascia sign; name regions
    * explicitly with the fascia slots (`<Storefront.Fascia>`,
@@ -108,9 +108,9 @@ function StorefrontImpl({
   const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
 
   // One windows-only elevation, built facing local +Z at `faceDist` — the

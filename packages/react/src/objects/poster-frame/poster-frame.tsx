@@ -9,11 +9,11 @@ import {
   roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Poster art — any React node. It fills the visible opening, full bleed;
    * wrap in `<PosterFrame.Poster>` to set per-surface props.
@@ -183,9 +183,9 @@ function PosterFrameImpl({
         radius={mat ? 0.002 : opening.radius}
         position={[0, 0, sheetZ]}
         {...resolveSurface(posterSlot, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
         overlay={
           glazing ? (

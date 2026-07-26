@@ -23,11 +23,11 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the active display: React components, an <iframe>, a
    * <video>… Wrap in `<Fold.Screen>` to set per-screen surface props.
@@ -35,11 +35,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   children?: React.ReactNode
   /** Which Galaxy Z Fold device to render. */
   variant?: FoldVariant
-  /**
-   * A retail colorway id from `FOLD_COLORWAYS` (e.g. the catalog's first
-   * entry) presetting the device colors. Explicit color props override it.
-   */
-  colorway?: string
   /**
    * `true` (default) renders the unfolded tablet — your content fills the large,
    * nearly square inner display (with a faint center crease). `false` renders the
@@ -65,7 +60,12 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * H×W with upright content — exactly like rotating the real device.
    */
   orientation?: 'portrait' | 'landscape'
-  /** Back panel colorway. */
+  /**
+   * Back panel color. Takes a retail colorway id from `FOLD_COLORWAYS`,
+   * which also presets `frameColor`, or any CSS color for a custom finish.
+   * A colorway id wins over a CSS color of the same name — pass hex if you
+   * meant the CSS one.
+   */
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
@@ -75,8 +75,6 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * whichever screen is showing (inner display when open, cover when closed).
    */
   resolution?: number
-  /** Show the front-camera punch-hole overlay. */
-  punchHole?: boolean
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (a fold half / the open body). */
@@ -110,19 +108,20 @@ function FoldImpl({
   open = true,
   openAngle,
   orientation = 'portrait',
-  colorway,
   color: colorProp,
   frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
-  punchHole = true,
   surfaceStyle,
   ...groupProps
 }: FoldProps) {
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FOLD_VARIANTS[variant]
-  const retail = findColorway(FOLD_COLORWAYS[variant], colorway)
-  const color = colorProp ?? retail?.color ?? '#3a3d42'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(FOLD_COLORWAYS[variant], colorProp)
+  const color = retail?.color ?? colorProp ?? '#3a3d42'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#54585f'
   // Resolve the pose: an explicit fold angle wins over the boolean; the
   // extremes snap to the dedicated flat-open / folded-shut paths so the
@@ -468,14 +467,14 @@ function FoldImpl({
       position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
       {...resolveSurface(screenSlot, {
-        background: surfaceBackground,
+        surfaceBackground,
         resolution: res,
-        style: surfaceStyle,
+        surfaceStyle,
       })}
       overlay={
         <>
           {mode === 'open' && creaseOverlay}
-          {punchHole && punchHoleOverlay}
+          {punchHoleOverlay}
         </>
       }
     >
@@ -544,10 +543,10 @@ function FoldImpl({
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           {...resolveSurface(screenSlot, {
-            background: surfaceBackground,
+            surfaceBackground,
             // each half pane carries half the virtual display's width
             resolution: landscape ? res : res / 2,
-            style: surfaceStyle,
+            surfaceStyle,
           })}
         >
           <div
@@ -561,7 +560,7 @@ function FoldImpl({
           >
             {screenSlot?.children}
             {creaseOverlay}
-            {punchHole && punchHoleOverlay}
+            {punchHoleOverlay}
           </div>
         </DeviceScreen>
       )

@@ -322,7 +322,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadpro13" orientation="landscape" colorway="spaceblack" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro13" orientation="landscape" color="spaceblack" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -336,7 +336,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadpro11" color="silver" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -350,7 +350,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipadair13" color="starlight" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -364,7 +364,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+        <IPadMockup variant="ipad11" color="blue" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </IPadMockup>
       </DemoCard>
@@ -378,7 +378,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11" color="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </GalaxyTabMockup>
       </DemoCard>
@@ -392,7 +392,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" colorway="gray" rotation={[0, -0.3, 0]}>
+        <GalaxyTabMockup variant="tabs11ultra" orientation="landscape" color="gray" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </GalaxyTabMockup>
       </DemoCard>

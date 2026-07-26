@@ -3,11 +3,11 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { VINYL_RECORD, VINYL_RECORD_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Album cover art — full bleed on the jacket front. Bare children fill the
    * cover; name faces explicitly with `<VinylRecord.Cover>`,
@@ -110,9 +110,9 @@ function VinylRecordImpl({
   const labelPxPerUnit = resolution / sleeve.size
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   // Both labels share the cover's dpi unless their slot overrides it, and both
   // carry the spindle bore in their own style so the art can't paint over it.

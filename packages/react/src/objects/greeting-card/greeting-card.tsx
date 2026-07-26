@@ -2,11 +2,11 @@ import * as React from 'react'
 import type { ThreeElements } from '@react-three/fiber'
 import { GREETING_CARD, GREETING_CARD_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face content. Bare children fill the front cover; name faces explicitly
    * with `<GreetingCard.Front>`, `<GreetingCard.InsideLeft>`,
@@ -74,9 +74,9 @@ function GreetingCardImpl({
   )
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const screenProps = {
     width: panel.width,

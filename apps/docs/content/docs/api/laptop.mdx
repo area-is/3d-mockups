@@ -31,9 +31,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'air13' \| 'air15' \| 'pro14' \| 'pro16'` | `'air13'` | MacBook Air 13"/15" or MacBook Pro 14"/16" — true relative sizes, per-model ports, feet, speaker grilles and notch. |
-| `colorway` | `string` | — | A retail colorway id from `LAPTOP_COLORWAYS` (Airs: `silver`, `starlight`, `midnight`, `skyblue`; Pros: `spaceblack`, `silver`). Presets `color`; an explicit `color` prop overrides it. |
-| `color` | `string` | `'#e3e4e6'` | Aluminum finish. Try Sky Blue `#aec6d9`, Starlight `#e8e0d4`, Midnight `#2e3642`, or Space Black `#4a484b` on the Pros. |
-| `notch` | `boolean` | `true` | Camera notch overlay at the top of the display. |
+| `color` | `string` | `'#e3e4e6'` | Aluminum finish. Takes a retail colorway id from `LAPTOP_COLORWAYS` — Airs `silver`, `starlight`, `midnight`, `skyblue`; Pros `spaceblack`, `silver` — or any CSS color. |
 | `openAngle` | `number` | `110` | Lid angle in degrees between deck and screen (90 is upright). |
 | `resolution` | `number` | per variant | Virtual display width — each variant defaults to its real scaled desktop: 1280×832 (air13), 1440×932 (air15), 1512×982 (pro14), 1728×1117 (pro16) — so desktop breakpoints apply. |
 
@@ -70,7 +68,7 @@ grilles beside the keyboard, and the 1512×982 point grid.
 <ObjectDemo demo="laptop-air15" />
 
 ```tsx
-<LaptopMockup variant="air15" colorway="skyblue">
+<LaptopMockup variant="air15" color="skyblue">
   <YourDesktopApp />
 </LaptopMockup>
 ```
@@ -83,7 +81,7 @@ trackpad and the 1728×1117 point grid.
 <ObjectDemo demo="laptop-pro16" />
 
 ```tsx
-<LaptopMockup variant="pro16" colorway="spaceblack">
+<LaptopMockup variant="pro16" color="spaceblack">
   <YourDesktopApp />
 </LaptopMockup>
 ```

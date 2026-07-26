@@ -3,11 +3,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { CUSTOM_BOX, CUSTOM_BOX_REGIONS, customBoxScale, type CustomBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface CustomBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface CustomBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face content. Bare children fill the front face; name faces explicitly
    * with `<CustomBox.Front>`, `<CustomBox.Back>`, `<CustomBox.Left>`,
@@ -86,10 +86,10 @@ function CustomBoxImpl({
               key={i}
               {...shared}
               {...resolveSurface(face.slot, {
-                background: surfaceBackground,
+                surfaceBackground,
                 // every face shares the front face's dpi unless its slot overrides
                 resolution: Math.round(face.width * pxPerUnit),
-                style: surfaceStyle,
+                surfaceStyle,
               })}
               width={face.width}
               height={face.height}

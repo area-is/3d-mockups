@@ -34,8 +34,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- | --- | --- |
 | `color` | `string` | `'#eef0f2'` | Body paint. Wrap fleets are usually white. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
-| `coverage` | `'panel' \| 'full'` | `'panel'` | `'full'` covers the entire side elevations AND the whole rear face — door edge to door edge — carving out the wheel arches and door glass, while the proud hardware (mirrors, handles, door track, cab-door shut lines) draws on top of the livery via per-pixel depth compositing, like hardware remounted over the vinyl. On the rear, every taillight lamp, the third brake light and the hinge knuckles are carved to a slim install margin. Both coverages keep the barn-door shut line visible through the wrap. |
-| `wrapOverWindows` | `boolean \| { curbSide?, streetSide? }` | `false` | Whether a full wrap runs over the cab door glass (perforated-film full-print look) or the glass stays clear and carved out (default — door glass is operational). |
+| `coverage` | `'panel' \| 'full' \| 'perforated'` | `'panel'` | `'full'` covers the entire side elevations AND the whole rear face — door edge to door edge — carving out the wheel arches and door glass, while the proud hardware (mirrors, handles, door track, cab-door shut lines) draws on top of the livery via per-pixel depth compositing, like hardware remounted over the vinyl. On the rear, every taillight lamp, the third brake light and the hinge knuckles are carved to a slim install margin. Both coverages keep the barn-door shut line visible through the wrap. `'perforated'` is the same full wrap running OVER the cab door glass as perforated window film. |
 | `resolution` | `number` | `900` panel · `1360` full | Virtual side-wrap width in CSS px; the rear panel shares its dpi. |
 
 ## Regions
@@ -47,8 +46,8 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<VanMockup.Rear>` | Rear doors: the between-the-taillights panel, or the whole barn-door face with `coverage="full"`. |
 | `<VanMockup.LicensePlate>` | Front and rear plates. A string renders the built-in plate face; a node renders as-is. |
 
-Every slot takes per-surface overrides — `background`, `resolution`,
-`style` — over the mockup-level defaults. The
+Every slot takes per-surface overrides — `surfaceBackground`,
+`resolution`, `surfaceStyle` — over the mockup-level defaults. The
 same slots exist on the bare `<Van>`.
 
 With the default `coverage="panel"` all three wrap panels sit clear of the

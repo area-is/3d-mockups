@@ -38,8 +38,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- | --- | --- |
 | `color` | `string` | `'#eef0f2'` | Body paint. Transit fleets are usually white or silver. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your ad content. |
-| `coverage` | `'panel' \| 'full'` | `'panel'` | `'full'` turns the entire side elevations and the tail into the live surfaces, graphics running over the passenger windows like perforated wrap film. |
-| `wrapOverWindows` | `boolean \| { curbSide?, streetSide?, rear? }` | `true` | Whether a full wrap runs over the passenger glass (perforated film) or the glass is carved out and stays visible — per surface. Doors and the driver's window always stay clear. |
+| `coverage` | `'panel' \| 'full' \| 'perforated'` | `'panel'` | How much of the bus the live surfaces cover. `'full'` turns the entire side elevations and the tail live, carving the passenger glass out so it stays visible; `'perforated'` runs the same wrap OVER that glass as perforated window film. Doors and the driver's window always stay clear. |
 | `resolution` | `number` | `960` panel · `1920` full | Virtual side-surface width in CSS px; the rear surface shares its dpi. |
 
 ## Regions
@@ -51,8 +50,8 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<BusMockup.Rear>` | Rear surface: the 21"×70" tail ad, or the whole tail with `coverage="full"`. |
 | `<BusMockup.DestinationSign>` | Live LED sign above the windshield. A string gets the built-in dot-matrix renderer (marquee when it overflows), an array of strings flips between them like an alternating sign; a node renders as-is. |
 
-Every slot takes per-surface overrides — `background`, `resolution`,
-`style` — over the mockup-level defaults. The
+Every slot takes per-surface overrides — `surfaceBackground`,
+`resolution`, `surfaceStyle` — over the mockup-level defaults. The
 same slots exist on the bare `<Bus>`.
 
 ## Mockup-able areas
@@ -90,17 +89,16 @@ wrap.
 
 ### Full wrap with the glass kept clear
 
-`wrapOverWindows={false}` layers the graphics UNDER the glass instead: the
-passenger window band and the rear window are carved out of the wrap, so the
-3D glass shows through — the classic partial-wrap look. It also accepts a
-per-surface object (`{ rear: false }`) to mix both styles. Each rear lamp is
-carved out individually, so the tail graphic runs right up to the light
-collars either way.
+`coverage="full"` layers the graphics UNDER the glass: the passenger window
+band and the rear window are carved out of the wrap, so the 3D glass shows
+through — the classic partial-wrap look. Each rear lamp is carved out
+individually either way, so the tail graphic runs right up to the light
+collars.
 
 <ObjectDemo demo="bus-full-clear" />
 
 ```tsx
-<BusMockup coverage="full" wrapOverWindows={false}>
+<BusMockup coverage="full">
   <Livery />
   <BusMockup.StreetSide><Livery /></BusMockup.StreetSide>
   <BusMockup.Rear><TailLivery /></BusMockup.Rear>

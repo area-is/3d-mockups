@@ -3,11 +3,11 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { SHOPPING_BAG, SHOPPING_BAG_REGIONS, shoppingBagLayout, type ShoppingBagSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface ShoppingBagProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face designs, full bleed edge to edge. Bare children fill the front
    * face; name faces explicitly with `<ShoppingBag.Front>` and
@@ -147,9 +147,9 @@ function ShoppingBagImpl({
   React.useEffect(() => () => bottomTexture?.dispose(), [bottomTexture])
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const faceProps = {
     width: body.width,

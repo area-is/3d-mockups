@@ -69,15 +69,16 @@ type `AFrameSignMockup.` and your editor lists exactly the regions the object ha
   <AFrameSignMockup.Front>
     <MenuBoard />
   </AFrameSignMockup.Front>
-  <AFrameSignMockup.Back background="#20241f" resolution={640}>
+  <AFrameSignMockup.Back surfaceBackground="#20241f" resolution={640}>
     <HoursBoard />
   </AFrameSignMockup.Back>
 </AFrameSignMockup>
 ```
 
-Every slot takes per-surface overrides — `background`, `resolution`, `style` — over the
-mockup-level defaults (`surfaceBackground`, `resolution`, `surfaceStyle`). Repeating
-regions collect in document order:
+A slot takes the same three surface settings a mockup does — `surfaceBackground`,
+`resolution`, `surfaceStyle` — and overrides the mockup's for that one region. One
+vocabulary, whichever element you hang it off. Repeating regions collect in document
+order:
 
 ```tsx
 <BrochureMockup>
@@ -95,25 +96,27 @@ names come from each object's spec in the core, so every future binding shares t
 
 ### `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>` — all-in-one
 
-Every `<MockupCanvas>` prop + every corresponding device appearance prop, plus `float`
-(idle floating animation). Transforms are first-class: `position`, `rotation` and `scale`
-flow straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
+Every device appearance prop, plus `float` (idle floating animation) and the staging
+props from `<MockupCanvas>`: `controls`, `autoRotate`, `autoRotateSpeed`, `zoom`,
+`fullscreen`, `shadows`, `background`, `camera`, `className`, `style`. The three canvas
+props marked *canvas only* below tune the renderer rather than the picture and stay on
+`<MockupCanvas>`. Transforms are first-class: `position`, `rotation` and `scale` flow
+straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 
 ### `<MockupCanvas>` — the stage
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `controls` | `boolean` | `true` | Drag-to-orbit controls |
-| `freeRotation` | `boolean` | `false` | Allow full 360° vertical rotation (straight over the top); off = classic clamped orbit |
+| `freeRotation` | `boolean` | `false` | Allow full 360° vertical rotation (straight over the top); off = classic clamped orbit. Canvas only |
 | `autoRotate` | `boolean` | `false` | Slowly orbit the camera |
 | `autoRotateSpeed` | `number` | `1` | Orbit speed |
 | `zoom` | `boolean` | `false` | Scroll/pinch zoom (off so pages don't lose scroll) |
 | `shadows` | `boolean` | `true` | Soft contact shadow |
-| `shadowY` | `number` | `-2.05` | Y of the shadow plane (grounds the device) |
-| `environment` | `boolean` | `true` | Procedural studio lighting (no HDR downloads) |
+| `shadowY` | `number` | `-2.05` | Y of the shadow plane (grounds the device). Canvas only — a mockup derives it from the object's framing |
 | `background` | `string` | — | CSS background of the canvas |
 | `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override |
-| `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp |
+| `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp. Canvas only |
 
 ### `<Galaxy>` — the device
 
@@ -122,31 +125,28 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | — | Screen content |
-| `color` | `string` | `'#101216'` | Back-panel colorway |
+| `color` | `string` | `'#101216'` | Back panel. A retail colorway id from `GALAXY_COLORWAYS` (`'icyblue'`…) — which also presets `frameColor` — or any CSS color |
 | `frameColor` | `string` | `'#4a4f59'` | Frame, buttons, camera rings |
 | `surfaceBackground` | `string` | `'#000000'` | CSS background behind your content |
 | `variant` | `'s26' \| 's26ultra'` | `'s26'` | Which Galaxy S26-family device (true relative sizes + per-model cameras) |
-| `colorway` | `string` | — | Retail colorway id (see `GALAXY_COLORWAYS` — every device family ships its catalog); presets `color`/`frameColor`, explicit props override |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |
 | `resolution` | `number` | per variant | Virtual display width in CSS px (see resolution table) |
-| `punchHole` | `boolean` | `true` | Front-camera punch hole overlay |
 | `surfaceStyle` | `CSSProperties` | — | Extra styles for the screen wrapper |
 
 ### `<IPhone>` — iPhone 17 family
 
-Same API as `<Galaxy>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`,
-`dynamicIsland` replaces `punchHole`, and `resolution` defaults to the variant's logical
-point grid (see resolution table). Camera architecture follows the real devices: two-lens
+Same API as `<Galaxy>`, except: `variant` is `'17' | 'air' | 'pro' | 'promax'`, and
+`resolution` defaults to the variant's logical point grid (see resolution table). Camera architecture follows the real devices: two-lens
 pill (17), ultra-thin single-lens bar (Air), full-width triple-lens plateau with flash +
 LiDAR (Pro / Pro Max).
 
 ### `<Laptop>` — MacBook Air 13" / MacBook Pro 14" (M5)-style
 
 Same screen API (`surfaceBackground`, `resolution`, `surfaceStyle`), plus
-`notch` (camera notch overlay), `openAngle` (lid angle, default `110`), and `resolution`
+`openAngle` (lid angle, default `110`), and `resolution`
 defaulting to the variant's scaled desktop (Air 1280×832, Pro 14 1512×982 — desktop breakpoints
-apply). `color` sets the aluminum finish (Sky Blue `#aec6d9`, Starlight `#e8e0d4`,
-Midnight `#2e3642`).
+apply). `color` sets the aluminum finish — a `LAPTOP_COLORWAYS` id (`'skyblue'`,
+`'starlight'`, `'midnight'`) or any CSS color.
 
 ## Screens are display-only
 
@@ -212,7 +212,7 @@ the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
 
 ### `<AppleWatch>` / `<GalaxyWatch>` — smartwatches · `<StudioDisplay>` — Studio Display-style
 
-Both watches add `bandColor` and skip orientation. `<AppleWatch>` is the Series 11:
+Both watches add `bandColor` and skip orientation. Every device draws its front camera unconditionally — a punch hole, Dynamic Island or notch is hardware, and it obstructs your layout here exactly as it would on the real panel. `<AppleWatch>` is the Series 11:
 squircle case, knurled Digital Crown, flush side button, sensor back, worn on the
 seamless Solo Loop — which has no closure, so it takes no `bandOpen`.
 `<GalaxyWatch>` is the Watch 8: cushion case, round display on its dial puck, two

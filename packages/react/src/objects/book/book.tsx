@@ -4,11 +4,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BOOK, BOOK_REGIONS, bookSpec, type BookSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BookProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BookProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Cover art — full bleed on the front board. Bare children fill the front
    * cover; name faces explicitly with `<Book.Cover>`, `<Book.Back>` and
@@ -60,9 +60,9 @@ function BookImpl({
   const { board, thickness, pages, spine, groove, headband, cover } = spec
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   // A cased-in hardback's backbone is NOT a half-round tube: it is flat
   // across the printed area and rolls off into the joints. Modelling it as a

@@ -12,11 +12,11 @@ import {
   type TVVariant,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the TV: React components, an <iframe>, a <video>…
    * Wrap in `<TVSet.Screen>` to set per-screen surface props.
@@ -394,9 +394,9 @@ function TVSetImpl({
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.004]}
         {...resolveSurface(screen, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
         overlay={
           <div

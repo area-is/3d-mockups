@@ -12,22 +12,22 @@ import {
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the monitor: React components, an <iframe>, a
    * <video>… Wrap in `<StudioDisplay.Screen>` to set per-screen surface props.
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from `STUDIO_DISPLAY_COLORWAYS` presetting the enclosure
-   * color. An explicit `color` prop overrides it.
+   * Aluminum color (enclosure + stand). Takes a retail colorway id from
+   * `STUDIO_DISPLAY_COLORWAYS` or any CSS color for a custom finish. A
+   * colorway id wins over a CSS color of the same name — pass hex if you
+   * meant the CSS one.
    */
-  colorway?: string
-  /** Aluminum colorway (enclosure + stand). */
   color?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 16:9 panel.
@@ -59,7 +59,6 @@ export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color
  */
 function StudioDisplayImpl({
   children,
-  colorway,
   color: colorProp,
   surfaceBackground = '#000000',
   resolution = STUDIO_DISPLAY.resolution,
@@ -67,8 +66,11 @@ function StudioDisplayImpl({
   ...groupProps
 }: StudioDisplayProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
-  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorway)
-  const color = colorProp ?? retail?.color ?? '#c8cbd0'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorProp)
+  const color = retail?.color ?? colorProp ?? '#c8cbd0'
   const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
   // The stand pieces occlude too — from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
@@ -430,9 +432,9 @@ function StudioDisplayImpl({
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.006]}
         {...resolveSurface(screen, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {screen?.children}

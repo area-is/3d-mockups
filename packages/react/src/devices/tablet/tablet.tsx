@@ -20,7 +20,7 @@ import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import { createWordmarkTexture } from '../wordmark'
 import { LensRing, UsbC, cutGeometry, stadiumCutter, USB_CUT_DEPTH } from '../details'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
@@ -34,7 +34,7 @@ const USB_HEIGHT = 0.05
  * Everything both tablet families take. Each brand's component adds its own
  * `variant` union on top.
  */
-export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the tablet screen: React components, an <iframe>, a
    * <video>… Wrap in `<IPad.Screen>` / `<GalaxyTab.Screen>` to set per-screen
@@ -42,19 +42,17 @@ export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'
    */
   children?: React.ReactNode
   /**
-   * A retail colorway id from the family's catalog (`IPAD_COLORWAYS` /
-   * `GALAXY_TAB_COLORWAYS`) presetting the device colors. Explicit color props
-   * override it.
-   */
-  colorway?: string
-  /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content — exactly like rotating the real tablet.
    */
   orientation?: 'portrait' | 'landscape'
-  /** Body colorway. iPad Pro: Space Black `#2b292c` (default), Silver.
-   * iPad Air: Space Gray, Starlight, Purple, Blue. iPad: Silver, Blue,
-   * Pink, Yellow. Galaxy Tab: Gray `#55575b`, Silver `#d3d4d8`. */
+  /**
+   * Body color. Takes a retail colorway id from the family's catalog
+   * (`IPAD_COLORWAYS` / `GALAXY_TAB_COLORWAYS` — iPad Pro Space Black and
+   * Silver, iPad Air Space Gray / Starlight / Purple / Blue, Galaxy Tab
+   * Gray and Silver) or any CSS color for a custom finish. A colorway id
+   * wins over a CSS color of the same name — pass hex if you meant the CSS one.
+   */
   color?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
@@ -86,7 +84,6 @@ function TabletBody({
   variant,
   catalog,
   orientation = 'portrait',
-  colorway,
   color: colorProp,
   surfaceBackground = '#000000',
   resolution,
@@ -95,8 +92,11 @@ function TabletBody({
 }: TabletBodyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = TABLET_VARIANTS[variant]
-  const retail = findColorway(catalog, colorway)
-  const color = colorProp ?? retail?.color ?? '#2b292c'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(catalog, colorProp)
+  const color = retail?.color ?? colorProp ?? '#2b292c'
   const { body, glass, display, rearCamera, stylus, notch, pogo, logo, backText, speakers } = spec
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
@@ -522,9 +522,9 @@ function TabletBody({
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           {...resolveSurface(screen, {
-            background: surfaceBackground,
+            surfaceBackground,
             resolution: res,
-            style: surfaceStyle,
+            surfaceStyle,
           })}
           overlay={
             notch ? (

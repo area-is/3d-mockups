@@ -24,9 +24,9 @@ import {
 } from '../details'
 
 type GroupProps = ThreeElements['group']
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
-export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Anything you want on the phone screen: React components, an <iframe>, a
    * <video>… Wrap in `<Galaxy.Screen>` to set per-screen surface props.
@@ -40,16 +40,16 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    */
   variant?: GalaxyVariant
   /**
-   * A retail colorway id from `GALAXY_COLORWAYS` (e.g. `'icyblue'`) presetting
-   * `color` and `frameColor`. Explicit color props override it.
-   */
-  colorway?: string
-  /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content — exactly like rotating the real phone.
    */
   orientation?: 'portrait' | 'landscape'
-  /** Back panel colorway. */
+  /**
+   * Back panel color. Takes a retail colorway id from `GALAXY_COLORWAYS`
+   * (`'icyblue'`, `'mint'`…), which also presets `frameColor`, or any CSS
+   * color for a custom finish. A colorway id wins over a CSS color of the
+   * same name — pass hex if you meant the CSS one.
+   */
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
@@ -60,8 +60,6 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    * content lays out just like it would on the real device.
    */
   resolution?: number
-  /** Show the front camera punch-hole overlay. */
-  punchHole?: boolean
 }
 
 /**
@@ -76,20 +74,21 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
 function GalaxyImpl({
   children,
   variant = GALAXY_DEFAULT_VARIANT,
-  colorway,
   orientation = 'portrait',
   color: colorProp,
   frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
-  punchHole = true,
   surfaceStyle,
   ...groupProps
 }: GalaxyProps) {
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = GALAXY_VARIANTS[variant]
-  const retail = findColorway(GALAXY_COLORWAYS[variant], colorway)
-  const color = colorProp ?? retail?.color ?? '#101216'
+  // `color` doubles as the colorway selector: a catalog id resolves to
+  // that retail finish, anything else is passed through as a raw CSS
+  // color. Ids win over same-named CSS colors — pass hex for those.
+  const retail = findColorway(GALAXY_COLORWAYS[variant], colorProp)
+  const color = retail?.color ?? colorProp ?? '#101216'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#4a4f59'
   const { body, glass, display, punchHole: hole, rearCamera, buttons, buttonProfile } = spec
   const landscape = orientation === 'landscape'
@@ -405,31 +404,32 @@ function GalaxyImpl({
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           {...resolveSurface(screen, {
-            background: surfaceBackground,
+            surfaceBackground,
             resolution: res,
-            style: surfaceStyle,
+            surfaceStyle,
           })}
+          // The front camera is part of the hardware, so it is always drawn:
+          // it eats the same corner of your layout here that it eats on the
+          // real panel, which is most of the point of looking at a mockup.
           overlay={
-            punchHole ? (
-              <div
-                aria-hidden
-                style={{
-                  position: 'absolute',
-                  // the hole sits at the panel's physical top — the left edge in landscape
-                  ...(landscape
-                    ? { left: px(hole.offsetY - hole.radius), top: '50%', transform: 'translateY(-50%)' }
-                    : { top: px(hole.offsetY - hole.radius), left: '50%', transform: 'translateX(-50%)' }),
-                  width: px(hole.radius * 2),
-                  height: px(hole.radius * 2),
-                  borderRadius: '50%',
-                  background:
-                    'radial-gradient(circle at 38% 38%, #1b2436 0%, #05060a 55%, #000 100%)',
-                  boxShadow: '0 0 0 1.5px rgba(255, 255, 255, 0.05)',
-                  pointerEvents: 'none',
-                  zIndex: 2147483647,
-                }}
-              />
-            ) : undefined
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                // the hole sits at the panel's physical top — the left edge in landscape
+                ...(landscape
+                  ? { left: px(hole.offsetY - hole.radius), top: '50%', transform: 'translateY(-50%)' }
+                  : { top: px(hole.offsetY - hole.radius), left: '50%', transform: 'translateX(-50%)' }),
+                width: px(hole.radius * 2),
+                height: px(hole.radius * 2),
+                borderRadius: '50%',
+                background:
+                  'radial-gradient(circle at 38% 38%, #1b2436 0%, #05060a 55%, #000 100%)',
+                boxShadow: '0 0 0 1.5px rgba(255, 255, 255, 0.05)',
+                pointerEvents: 'none',
+                zIndex: 2147483647,
+              }}
+            />
           }
         >
           {screen?.children}

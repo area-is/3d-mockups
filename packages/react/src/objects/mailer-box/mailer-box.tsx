@@ -3,11 +3,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { MAILER_BOX, MAILER_BOX_REGIONS, mailerBoxLayout, type MailerBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Panel content. Bare children fill the top panel — the hero face of a
    * shipper, with the tape overlaying it like real tape over print. Name
@@ -114,9 +114,9 @@ function MailerBoxImpl({
     radius: body.radius,
   }
   const panelDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   // the end panels' virtual width follows the box depth at the top dpi
   const endDefaults = { ...panelDefaults, resolution: Math.round(body.depth * pxPerUnit) }

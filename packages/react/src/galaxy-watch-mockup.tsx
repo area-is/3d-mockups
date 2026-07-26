@@ -27,7 +27,7 @@ const GalaxyWatchMockupBase = createMockup({
  *
  * ```tsx
  * <GalaxyWatchMockup rotation={[0, 0.25, 0]}>
- *   <GalaxyWatchMockup.Screen background="#000" resolution={480}>
+ *   <GalaxyWatchMockup.Screen surfaceBackground="#000" resolution={480}>
  *     <YourWatchFace />
  *   </GalaxyWatchMockup.Screen>
  * </GalaxyWatchMockup>

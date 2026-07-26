@@ -17,7 +17,7 @@ edge in portrait and the top center in landscape, just like the physical panel.
 <ObjectDemo demo="galaxy-tab-s11" checker />
 
 ```tsx
-<GalaxyTabMockup colorway="gray" rotation={[0, -0.3, 0]}>
+<GalaxyTabMockup color="gray" rotation={[0, -0.3, 0]}>
   <YourApp />
 </GalaxyTabMockup>
 ```
@@ -31,8 +31,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | `variant` | `'tabs11' \| 'tabs11ultra'` | `'tabs11'` | Tab S11 (single camera ring) or Tab S11 Ultra (dual rings, 14.6" panel with the U-shaped notch). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display with upright content. |
 | `resolution` | `number` | per variant | Defaults to the variant's logical grid: 800×1280 (tabs11), 924×1480 (tabs11ultra). |
-| `colorway` | `string` | first entry | A retail colorway id from `GALAXY_TAB_COLORWAYS` (`gray`, `silver`). |
-| `color` | `string` | per colorway | Any explicit body color, overriding the colorway. |
+| `color` | `string` | per variant | Body color. Takes a retail colorway id from `GALAXY_TAB_COLORWAYS` (`gray`, `silver`) or any CSS color. |
 
 ## Galaxy Tab S11 Ultra in portrait
 
@@ -42,7 +41,7 @@ hardware; spin it to catch the dual camera rings and the wordmark.
 <ObjectDemo demo="galaxy-tab-ultra" />
 
 ```tsx
-<GalaxyTabMockup variant="tabs11ultra" colorway="gray" float>
+<GalaxyTabMockup variant="tabs11ultra" color="gray" float>
   <YourApp />
 </GalaxyTabMockup>
 ```

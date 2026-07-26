@@ -4,7 +4,7 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 import { RoadWheel, WheelArchFlare } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
@@ -295,7 +295,7 @@ function buildRearClip(pxPerUnit: number, full: boolean): string {
   return (outline + slit + lamps + brake + hinges).trim()
 }
 
-export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Livery content. Bare children fill the curb-side (+Z) wrap panel; name
    * regions explicitly with `<Van.CurbSide>`, `<Van.StreetSide>`, `<Van.Rear>`
@@ -313,23 +313,16 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
    */
   resolution?: number
   /**
-   * How much of the van the live wraps cover. `'panel'` (default) is the
-   * classic rectangular mid-panel, clear of the arches and glass, plus the
-   * between-the-taillights rear panel. `'full'` covers the entire side
-   * elevation — rockers to roofline, tail to nose — with the wheel arches,
-   * door glass, door handle, mirror mount and curb-side door track carved
-   * out of the wrap (CSS `clip-path`), and the entire barn-door rear face
-   * with the taillight clusters carved out — so the 3D wheels, windows,
-   * hardware and lights show through your livery.
+   * How much of the vehicle the live wraps cover.
+   *
+   * - `'panel'` (default) — the classic mid-panel ad rect.
+   * - `'full'` — the whole side elevation and rear face, with the glass and
+   *   hardware carved out of the wrap so they stay visible through it.
+   * - `'perforated'` — the same full wrap, but running OVER the glass as
+   *   perforated window film (the full-print fleet look). Operational glass
+   *   is always carved out regardless.
    */
-  coverage?: 'panel' | 'full'
-  /**
-   * Whether a full-coverage wrap runs OVER the cab door glass (perforated
-   * film, the full-print fleet look) or the glass stays clear (`false`,
-   * default — door glass is operational, so real wraps usually cut around
-   * it). Pass a boolean for both sides or `{ curbSide?, streetSide? }`.
-   */
-  wrapOverWindows?: boolean | { curbSide?: boolean; streetSide?: boolean }
+  coverage?: 'panel' | 'full' | 'perforated'
 }
 
 /**
@@ -360,7 +353,6 @@ function VanImpl({
   surfaceBackground = '#ffffff',
   resolution,
   coverage = 'panel',
-  wrapOverWindows = false,
   surfaceStyle,
   ...groupProps
 }: VanProps) {
@@ -373,7 +365,9 @@ function VanImpl({
 
   // The side rect the DeviceScreens cover: the classic mid-panel, or the
   // whole side elevation with the hardware carved out via clip-path.
-  const fullWrap = coverage === 'full'
+  const fullWrap = coverage !== 'panel'
+  // Perforated film runs the graphic over the glass; a plain full wrap carves it out.
+  const overGlass = coverage === 'perforated'
   const plateSlot = regions.licensePlate
   const plateContent = plateSlot?.children
   // A string becomes the built-in plate face (plate type on the white
@@ -410,16 +404,12 @@ function VanImpl({
     ) : (
       plateContent
     )
-  const over =
-    typeof wrapOverWindows === 'boolean'
-      ? { curbSide: wrapOverWindows, streetSide: wrapOverWindows }
-      : { curbSide: false, streetSide: false, ...wrapOverWindows }
   const side = fullWrap
     ? { width: FULL_WRAP.width, height: FULL_WRAP.height, x: FULL_WRAP.x, y: FULL_WRAP.y, radius: 0 }
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
   const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
-  const surfaceDefaults = { background: surfaceBackground, style: surfaceStyle }
+  const surfaceDefaults = { surfaceBackground, surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear panel shares the side wrap's dpi.
@@ -432,10 +422,10 @@ function VanImpl({
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
     return {
-      curb: `path("${buildFullWrapClip(curbSurface.resolution / FULL_WRAP.width, false, over.curbSide)}")`,
-      street: `path("${buildFullWrapClip(streetSurface.resolution / FULL_WRAP.width, true, over.streetSide)}")`,
+      curb: `path("${buildFullWrapClip(curbSurface.resolution / FULL_WRAP.width, false, overGlass)}")`,
+      street: `path("${buildFullWrapClip(streetSurface.resolution / FULL_WRAP.width, true, overGlass)}")`,
     }
-  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
+  }, [fullWrap, curbSurface.resolution, streetSurface.resolution, overGlass])
   const rearClip = React.useMemo(
     () => `path("${buildRearClip(rearSurface.resolution / rearSpec.width, fullWrap)}")`,
     [fullWrap, rearSurface.resolution, rearSpec.width]
@@ -449,7 +439,7 @@ function VanImpl({
   // per-pixel blending hides only what the livery visually covers.
   const sideOccluderGeometries = React.useMemo(() => {
     if (!fullWrap) return null
-    const build = (overGlass: boolean, mirroredSide: boolean) => {
+    const build = (mirroredSide: boolean) => {
       const s = vanProfileShape()
       if (!overGlass) s.holes.push(doorGlassShape())
       for (const seam of DOOR_SEAMS) s.holes.push(roundedHolePath(seam.minX, seam.minY, seam.maxX, seam.maxY, 0.002))
@@ -467,8 +457,8 @@ function VanImpl({
       if (mirroredSide) geometry.scale(-1, 1, 1)
       return geometry
     }
-    return { curb: build(over.curbSide, false), street: build(over.streetSide, true) }
-  }, [fullWrap, over.curbSide, over.streetSide])
+    return { curb: build(false), street: build(true) }
+  }, [fullWrap, overGlass])
   React.useEffect(
     () => () => {
       sideOccluderGeometries?.curb.dispose()
@@ -628,7 +618,7 @@ function VanImpl({
           beneath the wrap plane when that side's wrap covers the glass. */}
       {[1, -1].map((side) => {
         const covered =
-          fullWrap && (side === 1 ? over.curbSide && regions.curbSide != null : over.streetSide && regions.streetSide != null)
+          fullWrap && (side === 1 ? overGlass && regions.curbSide != null : overGlass && regions.streetSide != null)
         // The 0.02 extrusion always runs +z, so each side's base leaves the
         // outer face ~10mm proud — or tucked under the wrap plane when the
         // wrap covers the glass.
@@ -798,7 +788,7 @@ function VanImpl({
           width={0.5}
           height={0.12}
           radius={0.008}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 200 })}
+          {...resolveSurface(plateSlot, { ...surfaceDefaults, surfaceBackground: '#f4f6f8', resolution: 200 })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
         >
@@ -897,7 +887,7 @@ function VanImpl({
           width={0.26}
           height={0.115}
           radius={0.006}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 160 })}
+          {...resolveSurface(plateSlot, { ...surfaceDefaults, surfaceBackground: '#f4f6f8', resolution: 160 })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
         >

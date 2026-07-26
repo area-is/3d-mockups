@@ -3,11 +3,11 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { BUSINESS_CARD, BUSINESS_CARD_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BusinessCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface BusinessCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face designs, full bleed. Bare children fill the front face; name faces
    * explicitly with `<BusinessCard.Front>` and `<BusinessCard.Back>` (plain
@@ -71,9 +71,9 @@ function BusinessCardImpl({
   React.useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry])
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const faceProps = {
     width: face.width,

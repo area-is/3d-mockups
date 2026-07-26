@@ -3,12 +3,12 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { SEMI_TRAILER, SEMI_TRAILER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 import { RoadWheel } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
-export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface SemiTrailerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Wrap content. Bare children fill the curb-side (+Z) panel; name panels
    * explicitly with `<SemiTrailer.CurbSide>`, `<SemiTrailer.StreetSide>` and
@@ -57,7 +57,7 @@ function SemiTrailerImpl({
   const dualOuterZ = body.width / 2 - 0.03 - wheels.width / 2
   const dualInnerZ = dualOuterZ - wheels.width - wheels.dualGap
 
-  const surfaceDefaults = { background: surfaceBackground, style: surfaceStyle }
+  const surfaceDefaults = { surfaceBackground, surfaceStyle }
 
   return (
     <group {...groupProps}>

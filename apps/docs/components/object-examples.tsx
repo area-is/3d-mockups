@@ -305,7 +305,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FoldMockup>
   ),
   'fold-flex': (
-    <FoldMockup openAngle={110} colorway="blueshadow" rotation={[0, -0.35, 0]}>
+    <FoldMockup openAngle={110} color="blueshadow" rotation={[0, -0.35, 0]}>
       <DesktopScreen />
     </FoldMockup>
   ),
@@ -322,7 +322,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FlipMockup>
   ),
   'flip-flex': (
-    <FlipMockup openAngle={100} colorway="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
+    <FlipMockup openAngle={100} color="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
       <MusicPlayer />
     </FlipMockup>
   ),
@@ -376,12 +376,12 @@ const DEMOS: Record<string, React.ReactNode> = {
     </LaptopMockup>
   ),
   'laptop-air15': (
-    <LaptopMockup variant="air15" colorway="skyblue" rotation={[0, 0.3, 0]}>
+    <LaptopMockup variant="air15" color="skyblue" rotation={[0, 0.3, 0]}>
       <DesktopScreen />
     </LaptopMockup>
   ),
   'laptop-pro16': (
-    <LaptopMockup variant="pro16" colorway="spaceblack" rotation={[0, -0.35, 0]}>
+    <LaptopMockup variant="pro16" color="spaceblack" rotation={[0, -0.35, 0]}>
       <DesktopScreen />
     </LaptopMockup>
   ),
@@ -393,27 +393,27 @@ const DEMOS: Record<string, React.ReactNode> = {
     </IPadMockup>
   ),
   'ipad-pro11': (
-    <IPadMockup variant="ipadpro11" colorway="silver" rotation={[0, -0.3, 0]}>
+    <IPadMockup variant="ipadpro11" color="silver" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
     </IPadMockup>
   ),
   'ipad-air13': (
-    <IPadMockup variant="ipadair13" colorway="starlight" rotation={[0, -0.3, 0]}>
+    <IPadMockup variant="ipadair13" color="starlight" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
     </IPadMockup>
   ),
   'ipad-a16': (
-    <IPadMockup variant="ipad11" colorway="blue" rotation={[0, -0.3, 0]}>
+    <IPadMockup variant="ipad11" color="blue" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
     </IPadMockup>
   ),
   'galaxy-tab-s11': (
-    <GalaxyTabMockup variant="tabs11" colorway="gray" rotation={[0, -0.3, 0]}>
+    <GalaxyTabMockup variant="tabs11" color="gray" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
     </GalaxyTabMockup>
   ),
   'galaxy-tab-ultra': (
-    <GalaxyTabMockup variant="tabs11ultra" colorway="gray" float rotation={[0, 0.3, 0]}>
+    <GalaxyTabMockup variant="tabs11ultra" color="gray" float rotation={[0, 0.3, 0]}>
       <MusicPlayer />
     </GalaxyTabMockup>
   ),
@@ -647,7 +647,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusMockup>
   ),
   'bus-full': (
-    <BusMockup coverage="full" rotation={[0, 0.42, 0]}>
+    <BusMockup coverage="perforated" rotation={[0, 0.42, 0]}>
       <BusFullLivery />
       <BusMockup.StreetSide><BusFullLivery /></BusMockup.StreetSide>
       <BusMockup.Rear><BusTailLivery /></BusMockup.Rear>
@@ -655,7 +655,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusMockup>
   ),
   'bus-full-clear': (
-    <BusMockup coverage="full" wrapOverWindows={false} rotation={[0, 0.42, 0]}>
+    <BusMockup coverage="full" rotation={[0, 0.42, 0]}>
       <BusMockup.CurbSide><BusFullLivery /></BusMockup.CurbSide>
       <BusMockup.StreetSide><BusFullLivery /></BusMockup.StreetSide>
       <BusMockup.Rear><BusTailLivery /></BusMockup.Rear>
@@ -1063,7 +1063,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </IDCardMockup>
   ),
   'chroma-bus': (
-    <BusMockup coverage="full" autoRotate autoRotateSpeed={0.6}>
+    <BusMockup coverage="perforated" autoRotate autoRotateSpeed={0.6}>
       <ChromaSurface label="children (curbSide)" />
       <BusMockup.StreetSide><ChromaSurface label=".StreetSide" /></BusMockup.StreetSide>
       <BusMockup.Rear><ChromaSurface label=".Rear" /></BusMockup.Rear>

@@ -10,11 +10,11 @@ import {
   roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Banner graphic — any React node. It fills the visible graphic, full
    * bleed; wrap in `<RollupBanner.Banner>` to set per-surface props.
@@ -129,9 +129,9 @@ function RollupBannerImpl({
         radius={graphic.radius}
         position={[0, 0, 0.002]}
         {...resolveSurface(bannerSlot, {
-          background: surfaceBackground,
+          surfaceBackground,
           resolution,
-          style: surfaceStyle,
+          surfaceStyle,
         })}
       >
         {bannerSlot?.children}

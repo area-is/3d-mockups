@@ -3,11 +3,11 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { CUSTOM_PANEL, CUSTOM_PANEL_REGIONS, customPanelScale, type CustomSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face designs, full bleed. Bare children fill the front face; name faces
    * explicitly with `<CustomPanel.Front>` and `<CustomPanel.Back>`.
@@ -56,9 +56,9 @@ function CustomPanelImpl({
 
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const faceProps = {
     width: w,

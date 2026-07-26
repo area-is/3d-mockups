@@ -23,26 +23,20 @@ import type { RegionSpec } from '@area-mockups/core'
 // the library on one page (each binding bundles its own core by design).
 const REGION = Symbol.for('area-mockups.region')
 
-/** Per-surface settings, available on every slot element. */
+/**
+ * Settings for a live surface, spelled the same wherever you set them: on a
+ * mockup or device they are the defaults for every region, on a slot element
+ * they override those defaults for that one region.
+ *
+ * One vocabulary on purpose. `background` and `style` on a mockup already mean
+ * the CANVAS's CSS — its page background and its wrapper styles — so a screen's
+ * equivalents have to be named apart from them, and naming them apart at only
+ * one of the two levels is how `style` ends up meaning two different things
+ * depending on which element you hang it off.
+ */
 export interface SurfaceProps {
   /**
-   * CSS background painted behind this region's content — see
-   * `SurfaceDefaults.surfaceBackground` for when it shows.
-   */
-  background?: string
-  /** CSS pixel width of this region's virtual surface. */
-  resolution?: number
-  /** Extra styles merged onto this region's surface wrapper. */
-  style?: React.CSSProperties
-}
-
-/**
- * Mockup-level defaults for every region's surface. A slot's own
- * `SurfaceProps` win over these for that region.
- */
-export interface SurfaceDefaults {
-  /**
-   * CSS background painted behind each region's content, under whatever you
+   * CSS background painted behind the region's content, under whatever you
    * render. Defaults to black on lit screens, white on print surfaces.
    *
    * It only shows where your content does NOT paint: a logo on a transparent
@@ -56,9 +50,13 @@ export interface SurfaceDefaults {
    * to the PAGE, and the mockup reads as a hole.
    */
   surfaceBackground?: string
-  /** CSS pixel width of the (primary) virtual surface; regions share its dpi. */
+  /**
+   * CSS pixel width of the virtual surface; height follows its aspect. Set on
+   * a mockup it sizes the primary surface and every other region shares its
+   * dpi; set on a slot it sizes that region alone.
+   */
   resolution?: number
-  /** Extra styles merged onto each region's surface wrapper. */
+  /** Extra styles merged onto the region's surface wrapper. */
   surfaceStyle?: React.CSSProperties
 }
 
@@ -197,21 +195,19 @@ export interface ResolvedSurface {
 
 /**
  * Merge a slot's per-surface overrides over the mockup-level defaults.
- * `style` merges key-by-key (the slot wins) so a mockup-wide fontFamily
+ * `surfaceStyle` merges key-by-key (the slot wins) so a mockup-wide fontFamily
  * survives a slot-level color tweak.
  */
 export function resolveSurface(
   slot: SlotProps | undefined,
-  defaults: {
-    background: string | undefined
-    resolution: number
-    style: React.CSSProperties | undefined
-  }
+  defaults: SurfaceProps & { resolution: number }
 ): ResolvedSurface {
   const style =
-    slot?.style && defaults.style ? { ...defaults.style, ...slot.style } : (slot?.style ?? defaults.style)
+    slot?.surfaceStyle && defaults.surfaceStyle
+      ? { ...defaults.surfaceStyle, ...slot.surfaceStyle }
+      : (slot?.surfaceStyle ?? defaults.surfaceStyle)
   return {
-    background: slot?.background ?? defaults.background,
+    background: slot?.surfaceBackground ?? defaults.surfaceBackground,
     resolution: slot?.resolution ?? defaults.resolution,
     screenStyle: style,
   }

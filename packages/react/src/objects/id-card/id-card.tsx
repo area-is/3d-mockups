@@ -11,11 +11,11 @@ import {
   roundedRectShapeCorners,
 } from '@area-mockups/core'
 import { DeviceScreen, SCREEN_MASK_INSET } from '../../screen/device-screen'
-import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
+export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Face designs — full bleed over the WHOLE card (punch strip included);
    * the slot punch is carved out of the live area. Bare children fill the
@@ -197,9 +197,9 @@ function IDCardImpl({
   React.useEffect(() => () => faceOccluderGeometry.dispose(), [faceOccluderGeometry])
 
   const surfaceDefaults = {
-    background: surfaceBackground,
+    surfaceBackground,
     resolution,
-    style: surfaceStyle,
+    surfaceStyle,
   }
   const front = resolveSurface(regions.front, surfaceDefaults)
   const back = resolveSurface(regions.back, surfaceDefaults)
