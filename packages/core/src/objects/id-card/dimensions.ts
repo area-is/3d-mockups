@@ -11,7 +11,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const ID_CARD = {
   /** CR80 blank, portrait. `radius` is the die-cut corner rounding. */
@@ -67,6 +67,19 @@ export const ID_CARD_REGIONS = [
 export const ID_CARD_STAGE_OFFSET_Y = -0.35
 
 /** The (stage-offset) badge grounds on the card's bottom edge. */
+/** Millimetres per world unit — the ID-card scale. */
+export const ID_CARD_MM_PER_UNIT = 32
+
+/** Live geometry of the two full-bleed faces (the whole card, edge to edge). */
+export const ID_CARD_METRICS = {
+  mmPerUnit: ID_CARD_MM_PER_UNIT,
+  regions: () => {
+    const { face, resolution } = ID_CARD
+    const one = { width: face.width, height: face.height, radius: face.radius, resolution }
+    return { front: one, back: one }
+  },
+} as const satisfies MockupMetrics
+
 export const ID_CARD_FRAMING = {
   camera: { position: [0, 0.35, 6.2], fov: 40 },
   floatIntensity: 0.6,

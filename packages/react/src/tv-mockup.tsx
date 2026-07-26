@@ -1,4 +1,4 @@
-import { TV_FRAMING, tvCameraFraming } from '@area-mockups/core'
+import { TV_FRAMING, tvCameraFraming, SCREEN_REGIONS, TV_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { TVSet, tvSetSlots, type TVProps } from './objects/tv/tv'
 
@@ -8,6 +8,9 @@ export type TVSetMockupProps = MockupProps<TVProps>
 // pulls back with the diagonal (`tvCameraFraming`), which the static
 // `MockupFraming.camera` cannot express — a thin shell injects it per render.
 const TVSetMockupBase = createMockup({
+  kind: 'tv',
+  regions: SCREEN_REGIONS,
+  metrics: TV_METRICS,
   object: TVSet,
   framing: TV_FRAMING,
   slots: tvSetSlots,

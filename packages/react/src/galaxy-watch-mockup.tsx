@@ -1,4 +1,4 @@
-import { WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT } from '@area-mockups/core'
+import { WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, GALAXY_WATCH_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyWatch, watchSlots, type GalaxyWatchProps } from './devices/watch/watch'
 
@@ -8,6 +8,9 @@ export type GalaxyWatchMockupProps = MockupProps<GalaxyWatchProps>
 // several times the height of the worn loop, which the static
 // `MockupFraming.camera` cannot express — a thin shell injects it per render.
 const GalaxyWatchMockupBase = createMockup({
+  kind: 'galaxyWatch',
+  regions: SCREEN_REGIONS,
+  metrics: GALAXY_WATCH_METRICS,
   object: GalaxyWatch,
   framing: WATCH_FRAMING,
   slots: watchSlots,

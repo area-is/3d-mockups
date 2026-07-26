@@ -18,7 +18,7 @@
  */
 
 import type { Orientation } from '../../orientation'
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 export interface GalaxyPhoneSpec {
   /** Aluminum/titanium frame + chassis. `radius` is the corner radius, `bevel` the edge rounding. */
@@ -190,6 +190,31 @@ export type GalaxyVariant = keyof typeof GALAXY_VARIANTS
 
 /** The variant every binding defaults to. */
 export const GALAXY_DEFAULT_VARIANT: GalaxyVariant = 's26'
+
+/** Millimetres per world unit — the shared Galaxy-family scale. */
+export const GALAXY_MM_PER_UNIT = 36.66
+
+/**
+ * Live geometry of the display, in the current orientation. `landscape` swaps
+ * the panel's W/H and re-derives the logical width from the portrait one, so
+ * the S26 reads 360x780 upright and 780x360 on its side — exactly what
+ * `<Galaxy>` hands its screen bridge.
+ */
+export const GALAXY_METRICS = {
+  mmPerUnit: GALAXY_MM_PER_UNIT,
+  regions: ({ variant, orientation }) => {
+    const { display, resolution } = GALAXY_VARIANTS[variant ?? GALAXY_DEFAULT_VARIANT]
+    const landscape = orientation === 'landscape'
+    return {
+      screen: {
+        width: landscape ? display.height : display.width,
+        height: landscape ? display.width : display.height,
+        radius: display.radius,
+        resolution: Math.round(resolution * (landscape ? display.height / display.width : 1)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: GalaxyVariant; orientation?: Orientation }>
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
 export const GALAXY_FRAMING = {

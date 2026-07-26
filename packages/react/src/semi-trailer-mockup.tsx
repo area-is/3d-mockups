@@ -1,4 +1,4 @@
-import { SEMI_TRAILER_FRAMING } from '@area-mockups/core'
+import { SEMI_TRAILER_FRAMING, SEMI_TRAILER_REGIONS, SEMI_TRAILER_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { SemiTrailer, semiTrailerSlots, type SemiTrailerProps } from './objects/semi-trailer/semi-trailer'
 
@@ -18,6 +18,9 @@ export type SemiTrailerMockupProps = MockupProps<SemiTrailerProps>
  * Bare children are shorthand for the curb-side panel.
  */
 export const SemiTrailerMockup = createMockup({
+  kind: 'semiTrailer',
+  regions: SEMI_TRAILER_REGIONS,
+  metrics: SEMI_TRAILER_METRICS,
   object: SemiTrailer,
   framing: SEMI_TRAILER_FRAMING,
   slots: semiTrailerSlots,

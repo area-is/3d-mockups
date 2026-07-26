@@ -12,7 +12,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the roll-up banner. */
 export const ROLLUP_BANNER_MM = 1 / 540
@@ -66,6 +66,20 @@ export const ROLLUP_BANNER_REGIONS = [
 export const ROLLUP_BANNER_STAGE_OFFSET_Y = 0.14
 
 /** The cassette of the (stage-offset) stand defines the floor. */
+/** Millimetres per world unit — the roll-up scale (`ROLLUP_BANNER_MM` inverted). */
+export const ROLLUP_BANNER_MM_PER_UNIT = 1 / ROLLUP_BANNER_MM
+
+/** Live geometry of the printed banner web. */
+export const ROLLUP_BANNER_METRICS = {
+  mmPerUnit: ROLLUP_BANNER_MM_PER_UNIT,
+  regions: ({ size }) => {
+    const { graphic, resolution } = size ? rollupBannerSpec(size) : ROLLUP_BANNER
+    return {
+      banner: { width: graphic.width, height: graphic.height, radius: graphic.radius, resolution },
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: RollupBannerSize }>
+
 export const ROLLUP_BANNER_FRAMING = {
   camera: { position: [0, 0.4, 8.6], fov: 40 },
   floatIntensity: 0.5,

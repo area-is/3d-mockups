@@ -12,7 +12,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 /** A port opening on a side wall of the base. `z` is distance from base center (+ = front). */
 export interface LaptopPort {
@@ -133,8 +133,12 @@ const MACBOOK_PRO_14: LaptopSpec = {
   footprint: { width: 4.318, depth: 3.055, radius: 0.113 },
   base: { thickness: 0.149, bevel: 0.028 },
   lid: { thickness: 0.054, bevel: 0.008 },
-  // Active area 301.4 x 196.4 mm, top corners rounded, sitting 7.1 mm high.
-  display: { width: 4.163, height: 2.713, radius: [0.063, 0.063, 0, 0], offsetY: 0.098 },
+  // Active area 302.5 x 196.4 mm, top corners rounded, sitting 7.1 mm high.
+  // Width corrected from a scan-derived 301.4 mm: the modelled rect's aspect
+  // must equal the panel's 3024:1964, or a 1512-wide layout renders 985 tall
+  // instead of the hardware's 982. 14.2" at that aspect puts the active area
+  // at 302.48 x 196.45 mm, which the height already matched.
+  display: { width: 4.1772, height: 2.713, radius: [0.063, 0.063, 0, 0], offsetY: 0.098 },
   notch: { width: 0.508, height: 0.088, radius: 0.018 },
   // Black keyboard tray 278.7 x 114.9 mm centered 36.5 mm behind base center.
   keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.504, tray: true },
@@ -278,6 +282,37 @@ export const LAPTOP_STAGE_OFFSET_Y = -1.15
  * reproduces the stage's original 0.22 hover clearance, with the grounded
  * line restored by the 0.08 contact gap.
  */
+/** Millimetres per world unit — the shared laptop scale. */
+export const LAPTOP_MM_PER_UNIT = 72.4
+
+/**
+ * Default CSS px width of each variant's virtual display: the panel's own
+ * point grid at 2x (a 2560x1664 Air 13 renders 1280x832).
+ */
+export const LAPTOP_RESOLUTIONS: Record<LaptopVariant, number> = {
+  air13: 1280,
+  air15: 1440,
+  pro14: 1512,
+  pro16: 1728,
+}
+
+/** Live geometry of the display. Laptops have one pose — always landscape. */
+export const LAPTOP_METRICS = {
+  mmPerUnit: LAPTOP_MM_PER_UNIT,
+  regions: ({ variant }) => {
+    const key = variant ?? LAPTOP_DEFAULT_VARIANT
+    const { display } = LAPTOP_VARIANTS[key]
+    return {
+      screen: {
+        width: display.width,
+        height: display.height,
+        radius: display.radius,
+        resolution: LAPTOP_RESOLUTIONS[key],
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: LaptopVariant }>
+
 export const LAPTOP_FRAMING = {
   camera: { position: [0, 0.9, 9.6], fov: 40 },
   floatIntensity: 0.7,

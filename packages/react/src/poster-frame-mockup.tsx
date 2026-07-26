@@ -1,4 +1,4 @@
-import { POSTER_FRAME_FRAMING } from '@area-mockups/core'
+import { POSTER_FRAME_FRAMING, POSTER_FRAME_REGIONS, POSTER_FRAME_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { PosterFrame, posterFrameSlots, type PosterFrameProps } from './objects/poster-frame/poster-frame'
 
@@ -17,6 +17,9 @@ export type PosterFrameMockupProps = MockupProps<PosterFrameProps>
  * Bare children are shorthand for the poster.
  */
 export const PosterFrameMockup = createMockup({
+  kind: 'posterFrame',
+  regions: POSTER_FRAME_REGIONS,
+  metrics: POSTER_FRAME_METRICS,
   object: PosterFrame,
   framing: POSTER_FRAME_FRAMING,
   slots: posterFrameSlots,

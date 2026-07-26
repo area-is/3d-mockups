@@ -1,7 +1,7 @@
 {
   "name": "area-mockups",
   "version": "0.1.0",
-  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone — it stays fully live. React binding of @area-mockups/core.",
+  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone \u2014 it stays fully live. React binding of @area-mockups/core.",
   "keywords": [
     "react",
     "threejs",
@@ -40,17 +40,20 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/core.js",
       "require": "./dist/core.cjs"
-    }
+    },
+    "./catalog.json": "./dist/catalog.json"
   },
   "files": [
     "dist"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/build-catalog.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsup"
+    "prepare": "tsup && node scripts/build-catalog.mjs",
+    "devices:check": "node scripts/sync-device-table.mjs",
+    "devices:sync": "node scripts/sync-device-table.mjs --write"
   },
   "peerDependencies": {
     "@react-three/drei": ">=10",

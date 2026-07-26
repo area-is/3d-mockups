@@ -15,7 +15,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const SEMI_TRAILER = {
   /** The box: length (x), height (y), width (z). */
@@ -45,6 +45,28 @@ export const SEMI_TRAILER_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The wheels and landing gear define the road; the shadow grounds under them. */
+/** Millimetres per world unit — the semi-trailer scale (~2485 mm per unit). */
+export const SEMI_TRAILER_MM_PER_UNIT = 2485
+
+/** Live geometry of the two side panels and the rear doors. */
+export const SEMI_TRAILER_METRICS = {
+  mmPerUnit: SEMI_TRAILER_MM_PER_UNIT,
+  regions: () => {
+    const { side, rear, resolution } = SEMI_TRAILER
+    const flank = { width: side.width, height: side.height, radius: side.radius, resolution }
+    return {
+      curbSide: flank,
+      streetSide: flank,
+      rear: {
+        width: rear.width,
+        height: rear.height,
+        radius: rear.radius,
+        resolution: Math.round(resolution * (rear.width / side.width)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics
+
 export const SEMI_TRAILER_FRAMING = {
   camera: { position: [0, 0.3, 11.8], fov: 40 },
   floatIntensity: 0.5,

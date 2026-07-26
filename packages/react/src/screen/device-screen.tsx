@@ -12,6 +12,7 @@ import {
   screenSurfaceStyle,
   type ScreenRadius,
 } from '@area-mockups/core'
+import { SurfaceProvider } from './use-surface'
 
 export type { ScreenRadius }
 
@@ -110,6 +111,12 @@ function nextRetryThreshold(): number {
 }
 
 export interface DeviceScreenProps {
+  /**
+   * The region name this surface renders, surfaced to content through
+   * `useSurface()`. Omit and `useSurface().region` is `undefined` rather than
+   * a guess.
+   */
+  region?: string
   /** Active display size in world units. */
   width: number
   height: number
@@ -162,6 +169,7 @@ export interface DeviceScreenProps {
  * `createBackfaceCuller` there); this component is the thin React wiring.
  */
 export function DeviceScreen({
+  region,
   width,
   height,
   radius,
@@ -299,7 +307,16 @@ export function DeviceScreen({
             ...screenStyle,
           }}
         >
-          {children}
+          <SurfaceProvider
+            region={region}
+            width={width}
+            height={height}
+            radius={radius}
+            resolution={resolution}
+            background={background}
+          >
+            {children}
+          </SurfaceProvider>
           {overlay}
         </div>
       </Html>

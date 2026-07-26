@@ -1,4 +1,4 @@
-import { BUS_FRAMING } from '@area-mockups/core'
+import { BUS_FRAMING, BUS_REGIONS, BUS_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Bus, busSlots, type BusProps } from './objects/bus/bus'
 
@@ -19,6 +19,9 @@ export type BusMockupProps = MockupProps<BusProps>
  * Bare children are shorthand for the curb-side ad surface.
  */
 export const BusMockup = createMockup({
+  kind: 'bus',
+  regions: BUS_REGIONS,
+  metrics: BUS_METRICS,
   object: Bus,
   framing: BUS_FRAMING,
   slots: busSlots,

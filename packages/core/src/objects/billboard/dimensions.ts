@@ -10,7 +10,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const BILLBOARD = {
   /** Advertising face (the live area). Content you pass as children maps onto this rect. */
@@ -46,6 +46,22 @@ export const BILLBOARD_REGIONS = [
 export const BILLBOARD_STAGE_OFFSET_Y = 1.1
 
 /** The pole base of the (stage-offset) billboard defines the ground plane. */
+/** Millimetres per world unit — the billboard scale (~2.8 m per unit). */
+export const BILLBOARD_MM_PER_UNIT = 2800
+
+/** Live geometry of the single printed face. */
+export const BILLBOARD_METRICS = {
+  mmPerUnit: BILLBOARD_MM_PER_UNIT,
+  regions: () => ({
+    face: {
+      width: BILLBOARD.face.width,
+      height: BILLBOARD.face.height,
+      radius: BILLBOARD.face.radius,
+      resolution: BILLBOARD.resolution,
+    },
+  }),
+} as const satisfies MockupMetrics
+
 export const BILLBOARD_FRAMING = {
   camera: { position: [0, 0.2, 13.6], fov: 40 },
   floatIntensity: 0.4,

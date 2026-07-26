@@ -13,7 +13,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const VAN = {
   /** Overall body: length (x), height (y), width (z). `bevel` rounds the shell edges. */
@@ -63,6 +63,16 @@ export const VAN = {
    */
   rearFull: { width: 1.9, height: 1.81, y: 0.225, radius: 0.03 },
   /** Default CSS px width of the virtual side wrap panel. */
+  /**
+   * The licence plate: the US standard 6 x 12 in (152.4 x 304.8 mm), which is
+   * 0.1451 x 0.2903 units at this scale.
+   *
+   * ONE rect, used by both the front recess and the rear door — deliberately
+   * not a front/rear pair. A vehicle's plates carry the same registration, so
+   * the `licensePlate` slot paints both, and sharing the rect is what stops
+   * an edit to one from silently reshaping only half of them.
+   */
+  plate: { width: 0.2903, height: 0.1451, radius: 0.008, resolution: 200 },
   resolution: 900,
 } as const
 
@@ -78,6 +88,68 @@ export const VAN_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The wheels define the road plane; the shadow grounds just under them. */
+/** Millimetres per world unit — the cargo-van scale (~1050 mm per unit). */
+export const VAN_MM_PER_UNIT = 1050
+
+/**
+ * Full-coverage side wrap (`coverage="full"`): the whole side elevation,
+ * rocker to roofline, tail to nose. Derived from the profile it is measured
+ * from rather than written out; lived in the React scene component until the
+ * metrics needed it.
+ */
+export const VAN_FULL_WRAP = {
+  width: VAN.profile.noseX - VAN.profile.tailX,
+  height: VAN.profile.roofY - VAN.rockerY,
+  x: (VAN.profile.noseX + VAN.profile.tailX) / 2,
+  y: (VAN.profile.roofY + VAN.rockerY) / 2,
+} as const
+
+/** Default CSS px width of the full-side wrap — same dpi as the panel wrap. */
+export const VAN_FULL_WRAP_RESOLUTION = Math.round(VAN.resolution * (VAN_FULL_WRAP.width / VAN.wrap.width))
+
+/**
+ * How much of the bodywork a wrap covers.
+ *
+ * `perforated` is the full wrap running OVER the operational glass as
+ * perforated film, so it shares `full`'s rects exactly — the two differ only
+ * in what the clip path carves out, which is not a measurement.
+ */
+export type VanCoverage = 'panel' | 'full' | 'perforated'
+
+/**
+ * Live geometry of both flanks, the rear doors and the plates.
+ *
+ * `licensePlate` resolves to TWO rects — the nose and the tail — from one
+ * shared plate size. They are equal, and the array still carries the count:
+ * there are two plate surfaces on this van, and a caller measuring the object
+ * should see both. That is what an array-valued region means (see
+ * ARCHITECTURE.md, "Adding a device or object").
+ */
+export const VAN_METRICS = {
+  mmPerUnit: VAN_MM_PER_UNIT,
+  regions: ({ coverage }) => {
+    const full = coverage !== 'panel'
+    const side = full
+      ? { width: VAN_FULL_WRAP.width, height: VAN_FULL_WRAP.height, radius: 0 }
+      : { width: VAN.wrap.width, height: VAN.wrap.height, radius: VAN.wrap.radius }
+    const rear = full ? VAN.rearFull : VAN.rear
+    const resolution = full ? VAN_FULL_WRAP_RESOLUTION : VAN.resolution
+    const flank = { ...side, resolution }
+    return {
+      curbSide: flank,
+      streetSide: flank,
+      // The tail shares the flank's dpi, so a wrap prints at one density.
+      rear: {
+        width: rear.width,
+        height: rear.height,
+        radius: rear.radius,
+        resolution: Math.round(rear.width * (resolution / side.width)),
+      },
+      licensePlate: [VAN.plate, VAN.plate],
+    }
+  },
+} as const satisfies MockupMetrics<{ coverage?: VanCoverage }>
+
 export const VAN_FRAMING = {
   camera: { position: [0, 0.4, 10.6], fov: 40 },
   floatIntensity: 0.5,

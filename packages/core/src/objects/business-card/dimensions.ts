@@ -9,7 +9,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const BUSINESS_CARD = {
   /**
@@ -32,6 +32,19 @@ export const BUSINESS_CARD_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The card grounds on its long bottom edge. */
+/** Millimetres per world unit — the business-card scale. */
+export const BUSINESS_CARD_MM_PER_UNIT = 26
+
+/** Live geometry of the two full-bleed faces. */
+export const BUSINESS_CARD_METRICS = {
+  mmPerUnit: BUSINESS_CARD_MM_PER_UNIT,
+  regions: () => {
+    const { face, resolution } = BUSINESS_CARD
+    const one = { width: face.width, height: face.height, radius: face.radius, resolution }
+    return { front: one, back: one }
+  },
+} as const satisfies MockupMetrics
+
 export const BUSINESS_CARD_FRAMING = {
   camera: { position: [0, 0.3, 5.6], fov: 40 },
   floatIntensity: 0.6,

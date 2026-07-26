@@ -25,15 +25,61 @@ export interface RegionSpec {
   name: string
   /** Short human label for docs and dev warnings. */
   label: string
-  /**
-   * The region accepts any number of slot elements, collected in document
-   * order (e.g. brochure panels), instead of a single element.
-   */
-  repeats?: boolean
 }
 
 /** The single-screen region list shared by every device (phone, laptop…). */
 export const SCREEN_REGIONS = [{ name: 'screen', label: 'Screen' }] as const satisfies readonly RegionSpec[]
+
+/**
+ * Corner rounding of a region, in world units: one value, or per-corner
+ * (top-left, top-right, bottom-right, bottom-left). Structurally identical to
+ * `ScreenRadius` in `screen/surface`, restated here so the spec layer stays
+ * independent of the screen layer.
+ */
+export type RegionRadius = number | readonly [number, number, number, number]
+
+/**
+ * The measured geometry of one live region: the rect content is mapped onto,
+ * in world units, plus the CSS pixel width its virtual surface defaults to.
+ *
+ * These are exactly the numbers a binding feeds its screen bridge — the React
+ * binding's `<DeviceScreen width height radius resolution>` — so declaring
+ * them next to the dimensions makes the same values available to a developer
+ * (via `mockupInfo`) without rendering anything.
+ */
+export interface RegionMetrics {
+  /** Width of the live rect in world units. */
+  readonly width: number
+  /** Height of the live rect in world units. */
+  readonly height: number
+  /** Corner rounding in world units. Defaults to 0 (a square-cornered rect). */
+  readonly radius?: RegionRadius
+  /** CSS pixel width the region's virtual surface defaults to. */
+  readonly resolution: number
+}
+
+/**
+ * Per-mockup measurements, declared next to the object's dimensions — the
+ * metrics sibling of `MockupFraming`.
+ *
+ * `P` is the (plain-data) subset of the object's props the geometry depends
+ * on: variant, orientation, physical size, open/closed… A region resolves to an
+ * array when its one slot is painted onto several distinct surfaces — the van's
+ * nose and tail licence plates. The array carries the surface COUNT; the entries
+ * may or may not differ in size.
+ */
+export interface MockupMetrics<P = Record<string, never>> {
+  /**
+   * Millimetres per world unit. A plain number for the families that pin one
+   * scale for every variant (all the devices, most objects); a function for
+   * the ones that normalize a caller's millimetre size onto a fixed world
+   * size, where the scale is itself a function of the props (`customBox`,
+   * `customPanel`, `productBox`, `mailerBox`, `shoppingBag`).
+   */
+  readonly mmPerUnit: number | ((props: P) => number)
+  /** Live geometry per region name, resolved against the object's props. */
+  readonly regions: (props: P) => Record<string, RegionMetrics | RegionMetrics[]>
+}
 
 /** Camera pose a mockup wrapper frames its object with. */
 export interface CameraFraming {

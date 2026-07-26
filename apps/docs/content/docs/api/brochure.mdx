@@ -8,16 +8,16 @@ zig-zag (Z-fold) accordion. Each of the three 93×216 mm panels is its own
 live 360×835 DOM surface — and the reverse faces can be printed too. Panels
 shade gently toward the folds, like paper actually bowing.
 
-Repeat the `Panel` slot — panels fill left to right in document order. Each
-panel is independent live DOM.
+Each panel has its own named slot, so content goes where the name says
+regardless of what order you write them in. Each panel is independent live DOM.
 
 <ObjectDemo demo="brochure-panels" checker />
 
 ```tsx
 <BrochureMockup>
-  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Back /></BrochureMockup.Panel>
+  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
+  <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
+  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
 </BrochureMockup>
 ```
 
@@ -38,18 +38,27 @@ orbits about its own visual center at any `foldAngle`.
 
 ## Regions
 
-The brochure has one repeating region:
+Six regions, one per printed panel:
 
 | Slot | Surface |
 | --- | --- |
-| `<BrochureMockup.Panel>` | One panel, left to right in document order — up to three per side. Bare children are shorthand for the first (left) front panel. |
+| `<BrochureMockup.FrontLeft>` | Front face, left panel. Bare children are shorthand for this one. |
+| `<BrochureMockup.FrontCenter>` | Front face, center panel. |
+| `<BrochureMockup.FrontRight>` | Front face, right panel. |
+| `<BrochureMockup.BackLeft>` | Reverse face, left panel. |
+| `<BrochureMockup.BackCenter>` | Reverse face, center panel. |
+| `<BrochureMockup.BackRight>` | Reverse face, right panel. |
 
-Add `side="back"` to a `Panel` slot to print a reverse face; back panels also
-fill left to right in document order, as seen from BEHIND — matching how a
-real tri-fold is imposed. Panels left out show bare `color` stock. Every slot
+**Left and right are always as the viewer of that face sees it.** Walk around
+the brochure and `BackLeft` is the panel on your left — which is the reverse of
+`FrontRight`. That is how a real tri-fold is imposed, and naming each panel for
+its own face is what keeps the mirroring out of your head.
+
+Order does not matter: write the slots in whatever order reads best, and
+leaving one out is not a shift — it just shows bare `color` stock. Every slot
 takes per-surface overrides — `surfaceBackground`, `resolution`,
-`surfaceStyle` — over the mockup-level defaults. The same slot
-exists on the bare `<Brochure>`.
+`surfaceStyle` — over the mockup-level defaults. The same slots exist on the
+bare `<Brochure>`.
 
 ## Mockup-able areas
 
@@ -64,19 +73,18 @@ what stays 3D hardware.
 ### All six surfaces printed
 
 A real tri-fold prints on both sides of the sheet, and every face here is a
-live surface: three front panels, three with `side="back"` (reading left to
-right as seen from the back). Spin the demo to read both sides.
+live surface. Spin the demo to read both sides.
 
 <ObjectDemo demo="brochure-both-sides" />
 
 ```tsx
 <BrochureMockup autoRotate>
-  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Trails /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Visit /></BrochureMockup.Panel>
-  <BrochureMockup.Panel side="back"><Map /></BrochureMockup.Panel>
-  <BrochureMockup.Panel side="back"><Hours /></BrochureMockup.Panel>
-  <BrochureMockup.Panel side="back"><Contact /></BrochureMockup.Panel>
+  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
+  <BrochureMockup.FrontCenter><Trails /></BrochureMockup.FrontCenter>
+  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
+  <BrochureMockup.BackLeft><Map /></BrochureMockup.BackLeft>
+  <BrochureMockup.BackCenter><Hours /></BrochureMockup.BackCenter>
+  <BrochureMockup.BackRight><Contact /></BrochureMockup.BackRight>
 </BrochureMockup>
 ```
 
@@ -89,15 +97,15 @@ the full 11" spread it prints as.
 
 ```tsx
 <BrochureMockup foldAngle={0}>
-  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Back /></BrochureMockup.Panel>
+  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
+  <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
+  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
 </BrochureMockup>
 ```
 
 ### One designed panel on bare stock
 
-`children` is shorthand for the first panel; the rest show bare `color`
+`children` is shorthand for `FrontLeft`; the rest show bare `color`
 stock — a work-in-progress state that reads clearly in reviews.
 
 <ObjectDemo demo="brochure-single" />

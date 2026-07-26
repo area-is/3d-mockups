@@ -1,4 +1,4 @@
-import { LAPTOP_FRAMING } from '@area-mockups/core'
+import { LAPTOP_FRAMING, SCREEN_REGIONS, LAPTOP_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Laptop, laptopSlots, type LaptopProps } from './devices/laptop/laptop'
 
@@ -24,6 +24,9 @@ export type LaptopMockupProps = MockupProps<LaptopProps>
  * ```
  */
 export const LaptopMockup = createMockup({
+  kind: 'laptop',
+  regions: SCREEN_REGIONS,
+  metrics: LAPTOP_METRICS,
   object: Laptop,
   framing: LAPTOP_FRAMING,
   slots: laptopSlots,

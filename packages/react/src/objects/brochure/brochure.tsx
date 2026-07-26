@@ -2,25 +2,16 @@ import * as React from 'react'
 import type { ThreeElements } from '@react-three/fiber'
 import { BROCHURE, BROCHURE_REGIONS, brochureSpec, type BrochureSize } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { collectSlots, createSlot, resolveSurface, type SlotProps, type SurfaceProps } from '../../slots'
+import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
 
-export interface BrochurePanelProps extends SlotProps {
-  /**
-   * Which face of the sheet this panel prints on: `front` (default) or
-   * `back`. Panels fill left to right in document order — back panels left
-   * to right as seen from BEHIND, matching how a real tri-fold is imposed.
-   */
-  side?: 'front' | 'back'
-}
-
 export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Panel content: repeat `<Brochure.Panel>` left to right (up to three per
-   * side; add `side="back"` for the reverse faces). Bare children are
-   * shorthand for the first (left) front panel. Panels left out show bare
-   * `color` stock; front panels default to `surfaceBackground`.
+   * Panel content: one slot per panel — `<Brochure.FrontLeft>`,
+   * `.FrontCenter`, `.FrontRight` and the matching `.Back*` for the reverse
+   * faces. Bare children are shorthand for `FrontLeft`. Panels left out show
+   * bare `color` stock; front panels default to `surfaceBackground`.
    */
   children?: React.ReactNode
   /**
@@ -38,16 +29,16 @@ export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, S
 /**
  * A procedurally built standing tri-fold brochure: three letter-fold panels in
  * a zig-zag accordion, each one a live full-bleed DOM surface. Pass one node
- * as `children` for the front panel, or repeat `<Brochure.Panel>` for more.
+ * as `children` for the front-left panel, or name the panel you want.
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  *
  * ```tsx
  * <Brochure>
- *   <Brochure.Panel><Front /></Brochure.Panel>
- *   <Brochure.Panel><Middle /></Brochure.Panel>
- *   <Brochure.Panel side="back"><Back /></Brochure.Panel>
+ *   <Brochure.FrontLeft><Cover /></Brochure.FrontLeft>
+ *   <Brochure.FrontCenter><Middle /></Brochure.FrontCenter>
+ *   <Brochure.BackLeft><Map /></Brochure.BackLeft>
  * </Brochure>
  * ```
  */
@@ -82,12 +73,14 @@ function BrochureImpl({
     hinge = { x: hinge.x + dir.x * panel.width, z: hinge.z + dir.z * panel.width }
   })
 
-  const panelSlots = (collectSlots(children, BROCHURE_REGIONS).panel ?? []) as BrochurePanelProps[]
-  const fronts = panelSlots.filter((slot) => slot.side !== 'back')
-  const backs = panelSlots.filter((slot) => slot.side === 'back')
-  const content = [fronts[0], fronts[1], fronts[2]]
-  // back faces, indexed so back panels read left-to-right when viewed from behind
-  const backContent = [backs[2], backs[1], backs[0]]
+  const slots = collectSlots(children, BROCHURE_REGIONS)
+  // Panel groups run left to right as seen from the FRONT, so a group's
+  // reverse face sits at the mirrored position when read from behind: the
+  // leftmost front panel backs onto `backRight`. Naming each panel for its own
+  // face is what lets that mirroring live here once, instead of in the head of
+  // everyone placing a back panel.
+  const content = [slots.frontLeft, slots.frontCenter, slots.frontRight]
+  const backContent = [slots.backRight, slots.backCenter, slots.backLeft]
 
   const surfaceDefaults = {
     surfaceBackground,
@@ -170,8 +163,6 @@ function BrochureImpl({
 BrochureImpl.displayName = 'Brochure'
 
 /** The brochure's compound slots, shared by `<Brochure>` and `<BrochureMockup>`. */
-export const brochureSlots = {
-  Panel: createSlot<BrochurePanelProps>('panel', 'Panel'),
-}
+export const brochureSlots = createSlots(BROCHURE_REGIONS)
 
 export const Brochure = Object.assign(BrochureImpl, brochureSlots)

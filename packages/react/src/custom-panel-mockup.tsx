@@ -1,4 +1,4 @@
-import { CUSTOM_PANEL_FRAMING } from '@area-mockups/core'
+import { CUSTOM_PANEL_FRAMING, CUSTOM_PANEL_REGIONS, CUSTOM_PANEL_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { CustomPanel, customPanelSlots, type CustomPanelProps } from './objects/custom-panel/custom-panel'
 
@@ -18,6 +18,9 @@ export type CustomPanelMockupProps = MockupProps<CustomPanelProps>
  * Bare children are shorthand for the front face.
  */
 export const CustomPanelMockup = createMockup({
+  kind: 'customPanel',
+  regions: CUSTOM_PANEL_REGIONS,
+  metrics: CUSTOM_PANEL_METRICS,
   object: CustomPanel,
   framing: CUSTOM_PANEL_FRAMING,
   slots: customPanelSlots,

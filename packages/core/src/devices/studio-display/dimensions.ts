@@ -30,7 +30,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 export const STUDIO_DISPLAY = {
   /** Aluminum enclosure (glass face). `radius` is the corner radius, `bevel` the edge rounding. */
@@ -121,6 +121,22 @@ export const STUDIO_DISPLAY = {
  * tuned for.
  */
 export const STUDIO_DISPLAY_STAGE_OFFSET_Y = 0.95
+
+/** Millimetres per world unit — the Studio Display scale. */
+export const STUDIO_DISPLAY_MM_PER_UNIT = 115
+
+/** Live geometry of the display. One variant, one landscape pose. */
+export const STUDIO_DISPLAY_METRICS = {
+  mmPerUnit: STUDIO_DISPLAY_MM_PER_UNIT,
+  regions: () => ({
+    screen: {
+      width: STUDIO_DISPLAY.display.width,
+      height: STUDIO_DISPLAY.display.height,
+      radius: STUDIO_DISPLAY.display.radius,
+      resolution: STUDIO_DISPLAY.resolution,
+    },
+  }),
+} as const satisfies MockupMetrics
 
 /** The stand base defines the desk plane; the shadow grounds just under it. */
 export const STUDIO_DISPLAY_FRAMING = {

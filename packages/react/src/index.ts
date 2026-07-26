@@ -38,7 +38,29 @@ export { CustomBoxMockup, type CustomBoxMockupProps } from './custom-box-mockup'
 
 // The slot machinery + wrapper factory (advanced: build your own mockup objects
 // with the same compound-slot API and stage framing the built-ins use).
-export { createMockup, type CreateMockupOptions, type MockupProps } from './create-mockup'
+export {
+  createMockup,
+  type CreateMockupOptions,
+  type MockupProps,
+  type MockupStatics,
+} from './create-mockup'
+
+// Measure a mockup without rendering it, and read the surface from inside it.
+export {
+  mockupInfo,
+  MOCKUP_KINDS,
+  type MockupInfo,
+  type MockupKind,
+  type MockupPropsMap,
+  type RegionInfo,
+  type RegionMetrics,
+  type Size,
+} from '@area-mockups/core'
+export {
+  useSurface,
+  useSurfaceOptional,
+  type SurfaceInfo,
+} from './screen/use-surface'
 export {
   createSlot,
   createSlots,
@@ -51,7 +73,6 @@ export {
   type SurfaceProps,
   type ResolvedSurface,
 } from './slots'
-export { type BrochurePanelProps } from './objects/brochure/brochure'
 
 // Composable pieces: bring your own scene, or drop a device into an existing one.
 export { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'

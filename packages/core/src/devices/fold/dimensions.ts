@@ -21,7 +21,7 @@
  */
 
 import type { Orientation } from '../../orientation'
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 /** The rear camera cluster in one pose's own back-face coordinates. */
 interface FoldRearCamera {
@@ -182,6 +182,30 @@ export const FOLD_DEFAULT_VARIANT: FoldVariant = 'fold7'
  * Grounded by default: the shadow plane kisses the bottom edge of the body —
  * the halves' folded extent at partial angles in landscape.
  */
+/** Millimetres per world unit — shared with the Galaxy phones. */
+export const FOLD_MM_PER_UNIT = 36.66
+
+/**
+ * Live geometry of whichever panel is facing the viewer: the big inner
+ * display when open, the tall cover display when closed.
+ */
+export const FOLD_METRICS = {
+  mmPerUnit: FOLD_MM_PER_UNIT,
+  regions: ({ variant, open, orientation }) => {
+    const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
+    const { display, resolution } = open === false ? spec.closed : spec.open
+    const landscape = orientation === 'landscape'
+    return {
+      screen: {
+        width: landscape ? display.height : display.width,
+        height: landscape ? display.width : display.height,
+        radius: display.radius,
+        resolution: Math.round(resolution * (landscape ? display.height / display.width : 1)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: FoldVariant; open?: boolean; orientation?: Orientation }>
+
 export const FOLD_FRAMING = {
   contactGap: 0.05,
   extent: ({ variant, open, openAngle, orientation }) => {

@@ -77,14 +77,14 @@ type `AFrameSignMockup.` and your editor lists exactly the regions the object ha
 
 A slot takes the same three surface settings a mockup does — `surfaceBackground`,
 `resolution`, `surfaceStyle` — and overrides the mockup's for that one region. One
-vocabulary, whichever element you hang it off. Repeating regions collect in document
-order:
+vocabulary, whichever element you hang it off. Every surface has a name, so content
+lands where the name says no matter what order you write the slots in:
 
 ```tsx
 <BrochureMockup>
-  <BrochureMockup.Panel><Front /></BrochureMockup.Panel>
-  <BrochureMockup.Panel><Middle /></BrochureMockup.Panel>
-  <BrochureMockup.Panel side="back"><Back /></BrochureMockup.Panel>
+  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
+  <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
+  <BrochureMockup.BackLeft><Map /></BrochureMockup.BackLeft>
 </BrochureMockup>
 ```
 

@@ -1,4 +1,4 @@
-import { TABLET_FRAMING } from '@area-mockups/core'
+import { TABLET_FRAMING, SCREEN_REGIONS, IPAD_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IPad, tabletSlots, type IPadProps } from './devices/tablet/tablet'
 
@@ -24,6 +24,9 @@ export type IPadMockupProps = MockupProps<IPadProps>
  * ```
  */
 export const IPadMockup = createMockup({
+  kind: 'ipad',
+  regions: SCREEN_REGIONS,
+  metrics: IPAD_METRICS,
   object: IPad,
   framing: TABLET_FRAMING,
   slots: tabletSlots,

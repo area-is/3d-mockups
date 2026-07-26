@@ -10,7 +10,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the magazine. */
 export const MAGAZINE_MM = 1 / 66
@@ -56,6 +56,29 @@ export const MAGAZINE_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing magazine grounds on its bottom trim edge. */
+/** Millimetres per world unit — the magazine scale (`MAGAZINE_MM` inverted). */
+export const MAGAZINE_MM_PER_UNIT = 1 / MAGAZINE_MM
+
+/** Live geometry of the two covers and the perfect-bound spine strip. */
+export const MAGAZINE_METRICS = {
+  mmPerUnit: MAGAZINE_MM_PER_UNIT,
+  regions: ({ size }) => {
+    const { cover, body, resolution } = size ? magazineSpec(size) : MAGAZINE
+    const face = { width: cover.width, height: cover.height, radius: cover.radius, resolution }
+    const spineWidth = body.height - 0.008
+    return {
+      cover: face,
+      back: face,
+      spine: {
+        width: spineWidth,
+        height: body.thickness - 0.004,
+        radius: 0.006,
+        resolution: Math.round(resolution * 3 * (spineWidth / cover.width)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: MagazineSize }>
+
 export const MAGAZINE_FRAMING = {
   camera: { position: [0, 0.5, 8.2], fov: 40 },
   floatIntensity: 0.8,

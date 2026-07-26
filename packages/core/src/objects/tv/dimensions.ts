@@ -37,7 +37,7 @@
  * a future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { CameraFraming, MockupFraming } from '../../regions'
+import type { CameraFraming, MockupFraming, MockupMetrics } from '../../regions'
 
 /** World units per millimeter for the TV. */
 export const TV_MM = 1 / 258
@@ -202,6 +202,20 @@ export function tvCameraFraming(size?: number, variant?: TVVariant): CameraFrami
 }
 
 /** The stand defines the media-stand plane; the shadow grounds under it. */
+/** Millimetres per world unit — the TV scale (`TV_MM` inverted). */
+export const TV_MM_PER_UNIT = 1 / TV_MM
+
+/** Live geometry of the active panel at the requested diagonal. */
+export const TV_METRICS = {
+  mmPerUnit: TV_MM_PER_UNIT,
+  regions: ({ inches }) => {
+    const { display, resolution } = tvSpec(inches)
+    return {
+      screen: { width: display.width, height: display.height, radius: display.radius, resolution },
+    }
+  },
+} as const satisfies MockupMetrics<{ inches?: number }>
+
 export const TV_FRAMING = {
   floatIntensity: 0.5,
   extent: ({ size, variant }) => tvSpec(size, variant).standHeight - TV_STAGE_OFFSET_Y,

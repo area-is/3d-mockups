@@ -1,4 +1,4 @@
-import { GALAXY_FRAMING } from '@area-mockups/core'
+import { GALAXY_FRAMING, SCREEN_REGIONS, GALAXY_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Galaxy, galaxySlots, type GalaxyProps } from './devices/galaxy/galaxy'
 
@@ -24,6 +24,9 @@ export type GalaxyMockupProps = MockupProps<GalaxyProps>
  * ```
  */
 export const GalaxyMockup = createMockup({
+  kind: 'galaxy',
+  regions: SCREEN_REGIONS,
+  metrics: GALAXY_METRICS,
   object: Galaxy,
   framing: GALAXY_FRAMING,
   slots: galaxySlots,

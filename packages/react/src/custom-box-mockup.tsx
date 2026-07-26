@@ -1,4 +1,4 @@
-import { CUSTOM_BOX_FRAMING } from '@area-mockups/core'
+import { CUSTOM_BOX_FRAMING, CUSTOM_BOX_REGIONS, CUSTOM_BOX_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { CustomBox, customBoxSlots, type CustomBoxProps } from './objects/custom-box/custom-box'
 
@@ -18,6 +18,9 @@ export type CustomBoxMockupProps = MockupProps<CustomBoxProps>
  * Bare children are shorthand for the front face.
  */
 export const CustomBoxMockup = createMockup({
+  kind: 'customBox',
+  regions: CUSTOM_BOX_REGIONS,
+  metrics: CUSTOM_BOX_METRICS,
   object: CustomBox,
   framing: CUSTOM_BOX_FRAMING,
   slots: customBoxSlots,

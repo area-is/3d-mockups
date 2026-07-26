@@ -2,28 +2,22 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import {
+  VAN,
+  VAN_REGIONS,
+  clipRoundedRect,
+  clipRoundedRectOutline,
+  VAN_FULL_WRAP,
+  VAN_FULL_WRAP_RESOLUTION,
+  type VanCoverage,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 import { RoadWheel, WheelArchFlare } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
-/**
- * Full-coverage side wrap: the whole flat side elevation, rockers to
- * roofline, tail to nose. The extruded shell makes the entire side face
- * coplanar, so one DOM plane can cover it; the outline and the hardware
- * cutouts below are carved out of that plane with a CSS `clip-path`.
- */
-const FULL_WRAP = {
-  width: VAN.profile.noseX - VAN.profile.tailX,
-  height: VAN.profile.roofY - VAN.rockerY,
-  x: (VAN.profile.noseX + VAN.profile.tailX) / 2,
-  y: (VAN.profile.roofY + VAN.rockerY) / 2,
-} as const
 
-/** Default CSS px width of the full-side wrap — same dpi as the panel wrap. */
-const FULL_WRAP_RESOLUTION = Math.round(VAN.resolution * (FULL_WRAP.width / VAN.wrap.width))
 
 /**
  * Cab door, in world units on the side elevation — proportioned from
@@ -322,7 +316,7 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
    *   perforated window film (the full-print fleet look). Operational glass
    *   is always carved out regardless.
    */
-  coverage?: 'panel' | 'full' | 'perforated'
+  coverage?: VanCoverage
 }
 
 /**
@@ -405,10 +399,10 @@ function VanImpl({
       plateContent
     )
   const side = fullWrap
-    ? { width: FULL_WRAP.width, height: FULL_WRAP.height, x: FULL_WRAP.x, y: FULL_WRAP.y, radius: 0 }
+    ? { width: VAN_FULL_WRAP.width, height: VAN_FULL_WRAP.height, x: VAN_FULL_WRAP.x, y: VAN_FULL_WRAP.y, radius: 0 }
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
-  const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
+  const sideResolution = resolution ?? (fullWrap ? VAN_FULL_WRAP_RESOLUTION : VAN.resolution)
   const surfaceDefaults = { surfaceBackground, surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
@@ -422,8 +416,8 @@ function VanImpl({
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
     return {
-      curb: `path("${buildFullWrapClip(curbSurface.resolution / FULL_WRAP.width, false, overGlass)}")`,
-      street: `path("${buildFullWrapClip(streetSurface.resolution / FULL_WRAP.width, true, overGlass)}")`,
+      curb: `path("${buildFullWrapClip(curbSurface.resolution / VAN_FULL_WRAP.width, false, overGlass)}")`,
+      street: `path("${buildFullWrapClip(streetSurface.resolution / VAN_FULL_WRAP.width, true, overGlass)}")`,
     }
   }, [fullWrap, curbSurface.resolution, streetSurface.resolution, overGlass])
   const rearClip = React.useMemo(
@@ -453,7 +447,7 @@ function VanImpl({
       rakedHole.closePath()
       s.holes.push(rakedHole)
       const geometry = new THREE.ShapeGeometry(s, 16)
-      geometry.translate(-FULL_WRAP.x, -FULL_WRAP.y, 0)
+      geometry.translate(-VAN_FULL_WRAP.x, -VAN_FULL_WRAP.y, 0)
       if (mirroredSide) geometry.scale(-1, 1, 1)
       return geometry
     }
@@ -779,16 +773,21 @@ function VanImpl({
       <RoundedBox args={[0.05, 0.12, 1.2]} radius={0.02} position={[2.86, -0.72, 0]}>
         <meshPhysicalMaterial color="#141619" metalness={0.3} roughness={0.65} />
       </RoundedBox>
-      {/* license-plate recess between grille and bumper */}
-      <RoundedBox args={[0.03, 0.13, 0.52]} radius={0.012} position={[2.82, -0.42, 0]}>
+      {/* license-plate recess between grille and bumper, sized off the plate
+          so the surround stays even if the plate format ever changes */}
+      <RoundedBox args={[0.03, VAN.plate.height + 0.01, VAN.plate.width + 0.02]} radius={0.012} position={[2.82, -0.42, 0]}>
         <meshPhysicalMaterial color="#dfe2e6" metalness={0.1} roughness={0.5} />
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={0.5}
-          height={0.12}
-          radius={0.008}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, surfaceBackground: '#f4f6f8', resolution: 200 })}
+          width={VAN.plate.width}
+          height={VAN.plate.height}
+          radius={VAN.plate.radius}
+          {...resolveSurface(plateSlot, {
+            ...surfaceDefaults,
+            surfaceBackground: '#f4f6f8',
+            resolution: VAN.plate.resolution,
+          })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
         >
@@ -879,15 +878,19 @@ function VanImpl({
       <RoundedBox args={[0.03, 0.17, 0.34]} radius={0.012} position={[-2.822, -0.78, -0.3]}>
         <meshPhysicalMaterial color="#15171a" metalness={0.2} roughness={0.7} />
       </RoundedBox>
-      <RoundedBox args={[0.014, 0.125, 0.27]} radius={0.008} position={[-2.834, -0.78, -0.3]}>
+      <RoundedBox args={[0.014, VAN.plate.height + 0.01, VAN.plate.width + 0.01]} radius={0.008} position={[-2.834, -0.78, -0.3]}>
         <meshPhysicalMaterial color="#e6e9ed" metalness={0.05} roughness={0.5} />
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={0.26}
-          height={0.115}
-          radius={0.006}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, surfaceBackground: '#f4f6f8', resolution: 160 })}
+          width={VAN.plate.width}
+          height={VAN.plate.height}
+          radius={VAN.plate.radius}
+          {...resolveSurface(plateSlot, {
+            ...surfaceDefaults,
+            surfaceBackground: '#f4f6f8',
+            resolution: VAN.plate.resolution,
+          })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
         >

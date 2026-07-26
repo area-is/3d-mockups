@@ -13,7 +13,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const GREETING_CARD = {
   /** One folded panel. */
@@ -33,6 +33,19 @@ export const GREETING_CARD_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The tent-standing card grounds on its bottom panel edges. */
+/** Millimetres per world unit — shared with the book. */
+export const GREETING_CARD_MM_PER_UNIT = 56
+
+/** Live geometry of the four panels — all the same folded-card page. */
+export const GREETING_CARD_METRICS = {
+  mmPerUnit: GREETING_CARD_MM_PER_UNIT,
+  regions: () => {
+    const { panel, resolution } = GREETING_CARD
+    const one = { width: panel.width, height: panel.height, radius: panel.radius, resolution }
+    return { front: one, insideLeft: one, insideRight: one, back: one }
+  },
+} as const satisfies MockupMetrics
+
 export const GREETING_CARD_FRAMING = {
   camera: { position: [0, 0.5, 7.6], fov: 40 },
   floatIntensity: 0.6,

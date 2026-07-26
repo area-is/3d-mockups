@@ -11,7 +11,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the book. */
 export const BOOK_MM = 1 / 56
@@ -71,6 +71,36 @@ export const BOOK_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing hardcover grounds on its bottom board edge. */
+/** Millimetres per world unit — the book scale (`BOOK_MM` inverted). */
+export const BOOK_MM_PER_UNIT = 1 / BOOK_MM
+
+/**
+ * Live geometry of the three printed faces. The spine strip is the flat crown
+ * left between the two joint rolls, which is what `<Book>` prints onto — not
+ * the full closed thickness.
+ */
+export const BOOK_METRICS = {
+  mmPerUnit: BOOK_MM_PER_UNIT,
+  regions: ({ size }) => {
+    const spec = size ? bookSpec(size) : BOOK
+    const { cover, board, thickness, spine, resolution } = spec
+    const spineJoint = Math.min((spine.bulge + 0.012) * 0.95, thickness * 0.18)
+    const spineWidth = thickness - spineJoint * 2
+    const face = { width: cover.width, height: cover.height, radius: cover.radius, resolution }
+    return {
+      cover: face,
+      back: face,
+      spine: {
+        width: spineWidth,
+        height: board.height - 0.03,
+        radius: 0.01,
+        // the spine shares the cover's dpi
+        resolution: Math.max(48, Math.round((resolution / cover.width) * spineWidth)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: BookSize }>
+
 export const BOOK_FRAMING = {
   camera: { position: [0, 0.5, 8], fov: 40 },
   floatIntensity: 0.8,
