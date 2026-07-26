@@ -13,7 +13,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the poster frame. */
 export const POSTER_FRAME_MM = 1 / 140
@@ -65,6 +65,27 @@ export const POSTER_FRAME_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The framed poster grounds on the molding's bottom edge. */
+/** Millimetres per world unit — the poster-frame scale (`POSTER_FRAME_MM` inverted). */
+export const POSTER_FRAME_MM_PER_UNIT = 1 / POSTER_FRAME_MM
+
+/** Live geometry of the visible art. A mat shrinks it to the mat window. */
+export const POSTER_FRAME_METRICS = {
+  mmPerUnit: POSTER_FRAME_MM_PER_UNIT,
+  regions: ({ size, mat }) => {
+    const spec = size ? posterFrameSpec(size) : POSTER_FRAME
+    const { opening, resolution } = spec
+    const inset = mat ? spec.matWidth * 2 : 0
+    return {
+      poster: {
+        width: opening.width - inset,
+        height: opening.height - inset,
+        radius: mat ? 0.002 : opening.radius,
+        resolution,
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: PosterFrameSize; mat?: boolean }>
+
 export const POSTER_FRAME_FRAMING = {
   camera: { position: [0, 0.5, 8.8], fov: 40 },
   floatIntensity: 0.7,

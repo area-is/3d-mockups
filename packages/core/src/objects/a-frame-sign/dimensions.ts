@@ -10,7 +10,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const A_FRAME_SIGN = {
   /** One framed panel: outer size and frame bar width/depth. */
@@ -30,6 +30,19 @@ export const A_FRAME_SIGN_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The splayed legs define the pavement; the sign stands on its leg tips. */
+/** Millimetres per world unit — the sandwich-board scale (~280 mm per unit). */
+export const A_FRAME_SIGN_MM_PER_UNIT = 280
+
+/** Live geometry of the two framed faces. */
+export const A_FRAME_SIGN_METRICS = {
+  mmPerUnit: A_FRAME_SIGN_MM_PER_UNIT,
+  regions: () => {
+    const { face, resolution } = A_FRAME_SIGN
+    const one = { width: face.width, height: face.height, radius: face.radius, resolution }
+    return { front: one, back: one }
+  },
+} as const satisfies MockupMetrics
+
 export const A_FRAME_SIGN_FRAMING = {
   camera: { position: [0, 0.5, 7.8], fov: 40 },
   floatIntensity: 0.5,

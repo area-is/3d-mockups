@@ -22,7 +22,7 @@
  */
 
 import type { Orientation } from '../../orientation'
-import type { CameraFraming, MockupFraming } from '../../regions'
+import type { CameraFraming, MockupFraming, MockupMetrics } from '../../regions'
 
 export interface TabletSpec {
   /** Ultra-thin flat slab. `radius` is the corner radius, `bevel` the edge rounding. */
@@ -391,6 +391,35 @@ export type TabletVariant = IPadVariant | GalaxyTabVariant
 /** The variant each family's binding defaults to. */
 export const IPAD_DEFAULT_VARIANT: IPadVariant = 'ipadpro13'
 export const GALAXY_TAB_DEFAULT_VARIANT: GalaxyTabVariant = 'tabs11'
+
+/** Millimetres per world unit — the shared tablet scale. */
+export const TABLET_MM_PER_UNIT = 64
+
+/** Live geometry of a tablet display, in the current orientation. */
+function tabletRegions(variant: TabletVariant, orientation?: Orientation) {
+  const { display, resolution } = TABLET_VARIANTS[variant]
+  const landscape = orientation === 'landscape'
+  return {
+    screen: {
+      width: landscape ? display.height : display.width,
+      height: landscape ? display.width : display.height,
+      radius: display.radius,
+      resolution: Math.round(resolution * (landscape ? display.height / display.width : 1)),
+    },
+  }
+}
+
+/** Live geometry of the iPad display. */
+export const IPAD_METRICS = {
+  mmPerUnit: TABLET_MM_PER_UNIT,
+  regions: ({ variant, orientation }) => tabletRegions(variant ?? IPAD_DEFAULT_VARIANT, orientation),
+} as const satisfies MockupMetrics<{ variant?: IPadVariant; orientation?: Orientation }>
+
+/** Live geometry of the Galaxy Tab display. */
+export const GALAXY_TAB_METRICS = {
+  mmPerUnit: TABLET_MM_PER_UNIT,
+  regions: ({ variant, orientation }) => tabletRegions(variant ?? GALAXY_TAB_DEFAULT_VARIANT, orientation),
+} as const satisfies MockupMetrics<{ variant?: GalaxyTabVariant; orientation?: Orientation }>
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
 export const TABLET_FRAMING = {

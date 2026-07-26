@@ -1,4 +1,4 @@
-import { PRODUCT_BOX_FRAMING } from '@area-mockups/core'
+import { PRODUCT_BOX_FRAMING, PRODUCT_BOX_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { ProductBox, productBoxSlots, type ProductBoxProps } from './objects/product-box/product-box'
 
@@ -19,6 +19,8 @@ export type ProductBoxMockupProps = MockupProps<ProductBoxProps>
  * Bare children are shorthand for the front panel.
  */
 export const ProductBoxMockup = createMockup({
+  kind: 'productBox',
+  regions: PRODUCT_BOX_REGIONS,
   object: ProductBox,
   framing: PRODUCT_BOX_FRAMING,
   slots: productBoxSlots,

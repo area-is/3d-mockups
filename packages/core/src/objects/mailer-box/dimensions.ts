@@ -13,7 +13,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const MAILER_BOX = {
   /** The shipper: width (x), height (y), depth (z). `radius` softens the corrugated edges. */
@@ -69,6 +69,38 @@ export const MAILER_BOX_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The box sits on the table at half its (normalized) height. */
+/**
+ * Millimetres per world unit. The shipper's longest edge maps to a fixed world
+ * width, so the scale depends on the size you asked for.
+ */
+export function mailerBoxMmPerUnit(size: MailerBoxSizeMm = MAILER_BOX_SIZE_MM): number {
+  return Math.max(size.width, size.height, size.depth) / MAILER_BOX.body.width
+}
+
+/** Live geometry of all six panels. */
+export const MAILER_BOX_METRICS = {
+  mmPerUnit: ({ size }) => mailerBoxMmPerUnit(size),
+  regions: ({ size }) => {
+    const { body } = mailerBoxLayout(size)
+    const { resolution } = MAILER_BOX
+    const pxPerUnit = resolution / body.width
+    const face = (width: number, height: number) => ({
+      width,
+      height,
+      radius: body.radius,
+      resolution: Math.round(width * pxPerUnit),
+    })
+    return {
+      top: face(body.width, body.depth),
+      front: face(body.width, body.height),
+      back: face(body.width, body.height),
+      right: face(body.depth, body.height),
+      left: face(body.depth, body.height),
+      bottom: face(body.width, body.depth),
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: MailerBoxSizeMm }>
+
 export const MAILER_BOX_FRAMING = {
   camera: { position: [0, 0.8, 7.6], fov: 40 },
   floatIntensity: 0.6,

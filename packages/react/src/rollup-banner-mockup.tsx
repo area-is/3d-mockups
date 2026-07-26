@@ -1,4 +1,4 @@
-import { ROLLUP_BANNER_FRAMING, ROLLUP_BANNER_STAGE_OFFSET_Y } from '@area-mockups/core'
+import { ROLLUP_BANNER_FRAMING, ROLLUP_BANNER_STAGE_OFFSET_Y, ROLLUP_BANNER_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { RollupBanner, rollupBannerSlots, type RollupBannerProps } from './objects/rollup-banner/rollup-banner'
 
@@ -31,6 +31,8 @@ StagedRollupBanner.displayName = 'RollupBanner'
  * Bare children are shorthand for the banner graphic.
  */
 export const RollupBannerMockup = createMockup({
+  kind: 'rollupBanner',
+  regions: ROLLUP_BANNER_REGIONS,
   object: StagedRollupBanner,
   framing: ROLLUP_BANNER_FRAMING,
   slots: rollupBannerSlots,

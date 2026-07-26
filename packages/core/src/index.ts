@@ -11,6 +11,9 @@ export type { Orientation } from './orientation'
 // Region registry + per-object stage framing (pure data + pure math).
 export {
   type RegionSpec,
+  type RegionRadius,
+  type RegionMetrics,
+  type MockupMetrics,
   SCREEN_REGIONS,
   type CameraFraming,
   type MockupFraming,
@@ -18,6 +21,17 @@ export {
   CONTACT_SHADOW_GAP,
   framedShadowY,
 } from './regions'
+
+// The measurement API: region geometry in world units, millimetres and CSS px.
+export {
+  type Size,
+  type RegionInfo,
+  type MockupInfo,
+  type MockupPropsMap,
+  type MockupKind,
+  MOCKUP_KINDS,
+  mockupInfo,
+} from './metrics'
 
 // Geometry math.
 export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'

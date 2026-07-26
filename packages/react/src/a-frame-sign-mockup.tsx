@@ -1,4 +1,4 @@
-import { A_FRAME_SIGN_FRAMING } from '@area-mockups/core'
+import { A_FRAME_SIGN_FRAMING, A_FRAME_SIGN_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { AFrameSign, aFrameSignSlots, type AFrameSignProps } from './objects/a-frame-sign/a-frame-sign'
 
@@ -18,6 +18,8 @@ export type AFrameSignMockupProps = MockupProps<AFrameSignProps>
  * Bare children are shorthand for the front panel.
  */
 export const AFrameSignMockup = createMockup({
+  kind: 'aFrameSign',
+  regions: A_FRAME_SIGN_REGIONS,
   object: AFrameSign,
   framing: A_FRAME_SIGN_FRAMING,
   slots: aFrameSignSlots,

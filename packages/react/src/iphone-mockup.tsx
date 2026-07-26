@@ -1,4 +1,4 @@
-import { IPHONE_FRAMING } from '@area-mockups/core'
+import { IPHONE_FRAMING, SCREEN_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IPhone, iPhoneSlots, type IPhoneProps } from './devices/iphone/iphone'
 
@@ -24,6 +24,8 @@ export type IPhoneMockupProps = MockupProps<IPhoneProps>
  * ```
  */
 export const IPhoneMockup = createMockup({
+  kind: 'iphone',
+  regions: SCREEN_REGIONS,
   object: IPhone,
   framing: IPHONE_FRAMING,
   slots: iPhoneSlots,

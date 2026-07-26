@@ -21,7 +21,7 @@
 
 /** World units per millimeter for the iPhone family. */
 import type { Orientation } from '../../orientation'
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 /** A side key. `flush: true` renders it seated in the rail (Camera Control). */
 export interface IPhoneButton {
@@ -347,6 +347,26 @@ export type IPhoneVariant = keyof typeof IPHONE_VARIANTS
 
 /** The variant every binding defaults to. */
 export const IPHONE_DEFAULT_VARIANT: IPhoneVariant = '17'
+
+/** Millimetres per world unit — the shared iPhone-family scale. */
+export const IPHONE_MM_PER_UNIT = 37.15
+
+/** Live geometry of the display, in the current orientation. */
+export const IPHONE_METRICS = {
+  mmPerUnit: IPHONE_MM_PER_UNIT,
+  regions: ({ variant, orientation }) => {
+    const { display, resolution } = IPHONE_VARIANTS[variant ?? IPHONE_DEFAULT_VARIANT]
+    const landscape = orientation === 'landscape'
+    return {
+      screen: {
+        width: landscape ? display.height : display.width,
+        height: landscape ? display.width : display.height,
+        radius: display.radius,
+        resolution: Math.round(resolution * (landscape ? display.height / display.width : 1)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: IPhoneVariant; orientation?: Orientation }>
 
 /** Grounded on the bottom edge of the body (its side edge in landscape). */
 export const IPHONE_FRAMING = {

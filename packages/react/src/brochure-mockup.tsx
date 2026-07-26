@@ -1,4 +1,4 @@
-import { BROCHURE_FRAMING } from '@area-mockups/core'
+import { BROCHURE_FRAMING, BROCHURE_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Brochure, brochureSlots, type BrochureProps } from './objects/brochure/brochure'
 
@@ -19,6 +19,8 @@ export type BrochureMockupProps = MockupProps<BrochureProps>
  * Bare children are shorthand for the first (left) front panel.
  */
 export const BrochureMockup = createMockup({
+  kind: 'brochure',
+  regions: BROCHURE_REGIONS,
   object: Brochure,
   framing: BROCHURE_FRAMING,
   slots: brochureSlots,

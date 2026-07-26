@@ -1,4 +1,4 @@
-import { DOOH_TOTEM_FRAMING } from '@area-mockups/core'
+import { DOOH_TOTEM_FRAMING, DOOH_TOTEM_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { DOOHTotem, doohTotemSlots, type DOOHTotemProps } from './objects/dooh-totem/dooh-totem'
 
@@ -18,6 +18,8 @@ export type DOOHTotemMockupProps = MockupProps<DOOHTotemProps>
  * Bare children are shorthand for the front display.
  */
 export const DOOHTotemMockup = createMockup({
+  kind: 'doohTotem',
+  regions: DOOH_TOTEM_REGIONS,
   object: DOOHTotem,
   framing: DOOH_TOTEM_FRAMING,
   slots: doohTotemSlots,

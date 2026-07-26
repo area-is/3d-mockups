@@ -33,7 +33,7 @@
  */
 
 import { wristLoopArcLength, type WristLoop } from '../../geometry/strap'
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 export interface WatchSpec {
   /** Per-family construction: Apple squircle+crown, or Galaxy cushion+round display. */
@@ -315,6 +315,29 @@ export function watchCameraDistance(variant: WatchVariant, bandOpen: boolean): n
  * clearance, with the grounded line (0.05 under the strap) restored by the
  * 0.1 contact gap.
  */
+/** Millimetres per world unit — the shared watch scale. */
+export const WATCH_MM_PER_UNIT = 17.7
+
+/** Live geometry of a watch display. Watches have a single pose. */
+function watchRegions(variant: WatchVariant) {
+  const { display, resolution } = WATCH_VARIANTS[variant]
+  return {
+    screen: { width: display.width, height: display.height, radius: display.radius, resolution },
+  }
+}
+
+/** Live geometry of the Apple Watch display. */
+export const APPLE_WATCH_METRICS = {
+  mmPerUnit: WATCH_MM_PER_UNIT,
+  regions: ({ variant }) => watchRegions(variant ?? APPLE_WATCH_DEFAULT_VARIANT),
+} as const satisfies MockupMetrics<{ variant?: AppleWatchVariant }>
+
+/** Live geometry of the Galaxy Watch display (round: width === height). */
+export const GALAXY_WATCH_METRICS = {
+  mmPerUnit: WATCH_MM_PER_UNIT,
+  regions: ({ variant }) => watchRegions(variant ?? GALAXY_WATCH_DEFAULT_VARIANT),
+} as const satisfies MockupMetrics<{ variant?: GalaxyWatchVariant }>
+
 export const WATCH_FRAMING = {
   camera: { position: [0, 0.4, WORN_DISTANCE], fov: FOV },
   floatIntensity: 0.6,

@@ -11,7 +11,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const PRODUCT_BOX = {
   /** The carton: width (x), height (y), depth (z). `radius` is the fold-edge rounding. */
@@ -67,6 +67,38 @@ export const PRODUCT_BOX_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The carton stands on the ground plane at half its (normalized) height. */
+/**
+ * Millimetres per world unit. The carton's longest edge maps to a fixed world
+ * height, so the scale depends on the size you asked for.
+ */
+export function productBoxMmPerUnit(size: ProductBoxSizeMm = PRODUCT_BOX_SIZE_MM): number {
+  return Math.max(size.width, size.height, size.depth) / PRODUCT_BOX.body.height
+}
+
+/** Live geometry of all six panels. */
+export const PRODUCT_BOX_METRICS = {
+  mmPerUnit: ({ size }) => productBoxMmPerUnit(size),
+  regions: ({ size }) => {
+    const { body } = productBoxLayout(size)
+    const { resolution } = PRODUCT_BOX
+    const pxPerUnit = resolution / body.width
+    const face = (width: number, height: number) => ({
+      width,
+      height,
+      radius: body.radius,
+      resolution: Math.round(width * pxPerUnit),
+    })
+    return {
+      front: face(body.width, body.height),
+      right: face(body.depth, body.height),
+      left: face(body.depth, body.height),
+      top: face(body.width, body.depth),
+      bottom: face(body.width, body.depth),
+      back: face(body.width, body.height),
+    }
+  },
+} as const satisfies MockupMetrics<{ size?: ProductBoxSizeMm }>
+
 export const PRODUCT_BOX_FRAMING = {
   camera: { position: [0, 0.6, 8.2], fov: 40 },
   floatIntensity: 0.7,

@@ -1,4 +1,4 @@
-import { ID_CARD_FRAMING, ID_CARD_STAGE_OFFSET_Y } from '@area-mockups/core'
+import { ID_CARD_FRAMING, ID_CARD_STAGE_OFFSET_Y, ID_CARD_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IDCard, idCardSlots, type IDCardProps } from './objects/id-card/id-card'
 
@@ -33,6 +33,8 @@ StagedIDCard.displayName = 'IDCard'
  * Bare children are shorthand for the front face.
  */
 export const IDCardMockup = createMockup({
+  kind: 'idCard',
+  regions: ID_CARD_REGIONS,
   object: StagedIDCard,
   framing: ID_CARD_FRAMING,
   slots: idCardSlots,

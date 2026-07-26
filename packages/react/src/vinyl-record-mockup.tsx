@@ -1,4 +1,4 @@
-import { VINYL_RECORD_FRAMING } from '@area-mockups/core'
+import { VINYL_RECORD_FRAMING, VINYL_RECORD_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { VinylRecord, vinylRecordSlots, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
 
@@ -17,6 +17,8 @@ export type VinylRecordMockupProps = MockupProps<VinylRecordProps>
  * Bare children are shorthand for the jacket front cover.
  */
 export const VinylRecordMockup = createMockup({
+  kind: 'vinylRecord',
+  regions: VINYL_RECORD_REGIONS,
   object: VinylRecord,
   framing: VINYL_RECORD_FRAMING,
   slots: vinylRecordSlots,

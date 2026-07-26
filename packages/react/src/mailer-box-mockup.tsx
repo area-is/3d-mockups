@@ -1,4 +1,4 @@
-import { MAILER_BOX_FRAMING } from '@area-mockups/core'
+import { MAILER_BOX_FRAMING, MAILER_BOX_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { MailerBox, mailerBoxSlots, type MailerBoxProps } from './objects/mailer-box/mailer-box'
 
@@ -18,6 +18,8 @@ export type MailerBoxMockupProps = MockupProps<MailerBoxProps>
  * Bare children are shorthand for the top panel.
  */
 export const MailerBoxMockup = createMockup({
+  kind: 'mailerBox',
+  regions: MAILER_BOX_REGIONS,
   object: MailerBox,
   framing: MAILER_BOX_FRAMING,
   slots: mailerBoxSlots,

@@ -19,7 +19,7 @@
  */
 
 import type { Orientation } from '../../orientation'
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 export interface FlipSpec {
   /** Unfolded tall phone. */
@@ -142,6 +142,30 @@ export const FLIP_DEFAULT_VARIANT: FlipVariant = 'flip7'
  * Grounded by default: the shadow plane kisses the bottom of the body — the
  * hinge band when folded, the halves' folded extent at partial angles.
  */
+/** Millimetres per world unit — shared with the Galaxy phones. */
+export const FLIP_MM_PER_UNIT = 36.66
+
+/**
+ * Live geometry of whichever panel is facing the viewer: the tall main
+ * display when open, the near-square cover display when closed.
+ */
+export const FLIP_METRICS = {
+  mmPerUnit: FLIP_MM_PER_UNIT,
+  regions: ({ variant, open, orientation }) => {
+    const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
+    const { display, resolution } = open === false ? spec.closed : spec.open
+    const landscape = orientation === 'landscape'
+    return {
+      screen: {
+        width: landscape ? display.height : display.width,
+        height: landscape ? display.width : display.height,
+        radius: display.radius,
+        resolution: Math.round(resolution * (landscape ? display.height / display.width : 1)),
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: FlipVariant; open?: boolean; orientation?: Orientation }>
+
 export const FLIP_FRAMING = {
   contactGap: 0.05,
   extent: ({ variant, open, openAngle, orientation }) => {

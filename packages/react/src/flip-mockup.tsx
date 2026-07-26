@@ -1,4 +1,4 @@
-import { FLIP_FRAMING } from '@area-mockups/core'
+import { FLIP_FRAMING, SCREEN_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Flip, flipSlots, type FlipProps } from './devices/flip/flip'
 
@@ -29,6 +29,8 @@ export type FlipMockupProps = MockupProps<FlipProps>
  * ```
  */
 export const FlipMockup = createMockup({
+  kind: 'flip',
+  regions: SCREEN_REGIONS,
   object: Flip,
   framing: FLIP_FRAMING,
   slots: flipSlots,

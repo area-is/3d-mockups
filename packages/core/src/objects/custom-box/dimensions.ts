@@ -10,7 +10,7 @@
  * Live faces: front (`children`), back, left, right, top and bottom.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export interface CustomBoxSizeMm {
   /** Box width in millimeters (x). */
@@ -44,6 +44,41 @@ export const CUSTOM_BOX_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The box sits on the ground plane at half its (normalized) height. */
+/**
+ * Millimetres per world unit. The box's longest edge always maps to
+ * `CUSTOM_BOX.target`, so the scale depends on the size you asked for.
+ */
+export function customBoxMmPerUnit(size: CustomBoxSizeMm): number {
+  return 1 / customBoxScale(size)
+}
+
+/** Live geometry of all six faces at the requested millimetre size. */
+export const CUSTOM_BOX_METRICS = {
+  mmPerUnit: ({ size }) => customBoxMmPerUnit(size),
+  regions: ({ size }) => {
+    const scale = customBoxScale(size)
+    const w = size.width * scale
+    const h = size.height * scale
+    const d = size.depth * scale
+    // every face shares the front face's dpi, so print density is uniform
+    const pxPerUnit = CUSTOM_BOX.resolution / w
+    const face = (width: number, height: number) => ({
+      width,
+      height,
+      radius: 0,
+      resolution: Math.round(width * pxPerUnit),
+    })
+    return {
+      front: face(w, h),
+      back: face(w, h),
+      left: face(d, h),
+      right: face(d, h),
+      top: face(w, d),
+      bottom: face(w, d),
+    }
+  },
+} as const satisfies MockupMetrics<{ size: CustomBoxSizeMm }>
+
 export const CUSTOM_BOX_FRAMING = {
   camera: { position: [0, 1.0, 7.8], fov: 40 },
   floatIntensity: 0.5,

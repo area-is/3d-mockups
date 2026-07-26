@@ -18,7 +18,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const SHOPPING_BAG = {
   /** The bag: width (x), height (y), gusset depth (z). */
@@ -89,6 +89,29 @@ export const SHOPPING_BAG_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The bag stands on the floor at half its (normalized) height. */
+/**
+ * Millimetres per world unit. The bag's longest edge maps to a fixed world
+ * height, so the scale depends on the size you asked for.
+ */
+export function shoppingBagMmPerUnit(size: ShoppingBagSizeMm = SHOPPING_BAG_SIZE_MM): number {
+  return Math.max(size.width, size.height, size.depth) / SHOPPING_BAG.body.height
+}
+
+/** Live geometry of the two printed faces. */
+export const SHOPPING_BAG_METRICS = {
+  mmPerUnit: ({ size }) => shoppingBagMmPerUnit(size),
+  regions: ({ size }) => {
+    const { body } = shoppingBagLayout(size)
+    const one = {
+      width: body.width,
+      height: body.height,
+      radius: body.radius,
+      resolution: SHOPPING_BAG.resolution,
+    }
+    return { front: one, back: one }
+  },
+} as const satisfies MockupMetrics<{ size?: ShoppingBagSizeMm }>
+
 export const SHOPPING_BAG_FRAMING = {
   camera: { position: [0, 0.5, 8.6], fov: 40 },
   floatIntensity: 0.5,

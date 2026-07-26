@@ -1,5 +1,13 @@
 import * as React from 'react'
-import { framedShadowY, type MockupFraming } from '@area-mockups/core'
+import {
+  framedShadowY,
+  mockupInfo,
+  type MockupFraming,
+  type MockupInfo,
+  type MockupKind,
+  type MockupPropsMap,
+  type RegionSpec,
+} from '@area-mockups/core'
 import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
 import { FloatGroup } from './float-group'
 import type { Slot, SlotProps } from './slots'
@@ -41,9 +49,16 @@ export type MockupProps<P> = CanvasOnlyProps &
     float?: boolean
   }
 
-export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>>> {
+export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>>, K extends MockupKind> {
   /** The scene component (device or object) the mockup stages. */
   object: React.ComponentType<P>
+  /**
+   * The core registry key this mockup measures under. Supplying it attaches
+   * `.info()` and `.regions` to the component — see `MockupStatics`.
+   */
+  kind?: K
+  /** The object's region list from core, surfaced as `Mockup.regions`. */
+  regions?: readonly RegionSpec[]
   /** Stage framing from the object's core spec (camera, shadow ground line, float). */
   framing?: MockupFraming<P>
   /** The object's compound slots, re-attached to the mockup (`Mockup.Front`…). */
@@ -52,12 +67,35 @@ export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>
   displayName?: string
 }
 
-export function createMockup<P extends object, S extends Record<string, Slot<SlotProps>> = Record<never, never>>({
+/**
+ * The measurement statics a mockup carries when `createMockup` is given a
+ * `kind` — the same answers `mockupInfo` gives, reachable from the component
+ * you already imported.
+ *
+ * ```tsx
+ * GalaxyMockup.info({ variant: 's26ultra' }).regions.screen.px  // { width: 384, height: 833 }
+ * BookMockup.regions // [{ name: 'cover', label: 'Front cover' }, …]
+ * ```
+ */
+export interface MockupStatics<K extends MockupKind> {
+  /** Measure this mockup at the given props, without rendering it. */
+  info: (props?: MockupPropsMap[K]) => MockupInfo
+  /** The live regions this mockup exposes, in declaration order. */
+  regions: readonly RegionSpec[]
+}
+
+export function createMockup<
+  P extends object,
+  S extends Record<string, Slot<SlotProps>> = Record<never, never>,
+  K extends MockupKind = MockupKind,
+>({
   object: ObjectComponent,
+  kind,
+  regions,
   framing,
   slots,
   displayName,
-}: CreateMockupOptions<P, S>): React.FC<MockupProps<P>> & S {
+}: CreateMockupOptions<P, S, K>): React.FC<MockupProps<P>> & S & Partial<MockupStatics<K>> {
   function Mockup(props: MockupProps<P>) {
     const { float = false, ...rest } = props
     const canvasProps: Record<string, unknown> = {}
@@ -82,5 +120,12 @@ export function createMockup<P extends object, S extends Record<string, Slot<Slo
     )
   }
   Mockup.displayName = displayName ?? `${ObjectComponent.displayName ?? ObjectComponent.name}Mockup`
-  return Object.assign(Mockup as React.FC<MockupProps<P>>, slots ?? ({} as S))
+  const statics =
+    kind === undefined
+      ? {}
+      : {
+          info: (infoProps?: MockupPropsMap[K]) => mockupInfo(kind, infoProps),
+          regions: regions ?? [],
+        }
+  return Object.assign(Mockup as React.FC<MockupProps<P>>, slots ?? ({} as S), statics)
 }

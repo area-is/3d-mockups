@@ -11,7 +11,7 @@
  * Live faces: front (bare children) and back.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export interface CustomSizeMm {
   /** Panel width in millimeters. */
@@ -43,6 +43,30 @@ export const CUSTOM_PANEL_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The panel stands on its bottom edge at half its (normalized) height. */
+/**
+ * Millimetres per world unit. The panel's longest edge always maps to
+ * `CUSTOM_PANEL.target`, so the scale — and therefore this ratio — depends on
+ * the size you asked for.
+ */
+export function customPanelMmPerUnit(size: CustomSizeMm): number {
+  return 1 / customPanelScale(size)
+}
+
+/** Live geometry of the two printed faces at the requested millimetre size. */
+export const CUSTOM_PANEL_METRICS = {
+  mmPerUnit: ({ size }) => customPanelMmPerUnit(size),
+  regions: ({ size }) => {
+    const scale = customPanelScale(size)
+    const one = {
+      width: size.width * scale,
+      height: size.height * scale,
+      radius: 0,
+      resolution: CUSTOM_PANEL.resolution,
+    }
+    return { front: one, back: one }
+  },
+} as const satisfies MockupMetrics<{ size: CustomSizeMm }>
+
 export const CUSTOM_PANEL_FRAMING = {
   camera: { position: [0, 0.5, 7.4], fov: 40 },
   floatIntensity: 0.5,

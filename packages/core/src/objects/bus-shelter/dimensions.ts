@@ -13,7 +13,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const BUS_SHELTER = {
   /** Overall envelope: width (x), height (y), depth (z). */
@@ -49,6 +49,25 @@ export const BUS_SHELTER_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The posts define the pavement; the shelter stands on it. */
+/** Millimetres per world unit — the shelter scale (~700 mm per unit). */
+export const BUS_SHELTER_MM_PER_UNIT = 700
+
+/** Live geometry of the two 6-sheet poster faces and the arrivals board. */
+export const BUS_SHELTER_METRICS = {
+  mmPerUnit: BUS_SHELTER_MM_PER_UNIT,
+  regions: () => {
+    const { poster, display, resolution } = BUS_SHELTER
+    const sheet = { width: poster.width, height: poster.height, radius: poster.radius, resolution }
+    const board = {
+      width: display.width,
+      height: display.height,
+      radius: 0.01,
+      resolution: display.resolution,
+    }
+    return { poster: sheet, inner: sheet, arrivals: board, arrivalsBack: board }
+  },
+} as const satisfies MockupMetrics
+
 export const BUS_SHELTER_FRAMING = {
   camera: { position: [0, 0.4, 11.4], fov: 40 },
   floatIntensity: 0.35,

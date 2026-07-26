@@ -1,4 +1,4 @@
-import { BUSINESS_CARD_FRAMING } from '@area-mockups/core'
+import { BUSINESS_CARD_FRAMING, BUSINESS_CARD_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { BusinessCard, businessCardSlots, type BusinessCardProps } from './objects/business-card/business-card'
 
@@ -18,6 +18,8 @@ export type BusinessCardMockupProps = MockupProps<BusinessCardProps>
  * Bare children are shorthand for the front face.
  */
 export const BusinessCardMockup = createMockup({
+  kind: 'businessCard',
+  regions: BUSINESS_CARD_REGIONS,
   object: BusinessCard,
   framing: BUSINESS_CARD_FRAMING,
   slots: businessCardSlots,

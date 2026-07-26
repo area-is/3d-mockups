@@ -12,7 +12,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 /** World units per millimeter for the brochure. */
 export const BROCHURE_MM = 1 / 60
@@ -54,6 +54,26 @@ export const BROCHURE_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing brochure grounds on its bottom paper edge. */
+/** Millimetres per world unit — the brochure scale (`BROCHURE_MM` inverted). */
+export const BROCHURE_MM_PER_UNIT = 1 / BROCHURE_MM
+
+/** Panels per side of a letter-fold brochure. */
+export const BROCHURE_PANELS_PER_SIDE = 3
+
+/**
+ * Live geometry of one panel. Every panel — front or back, left to right — is
+ * the same rect, so the repeating region resolves to `BROCHURE_PANELS_PER_SIDE`
+ * identical entries.
+ */
+export const BROCHURE_METRICS = {
+  mmPerUnit: BROCHURE_MM_PER_UNIT,
+  regions: ({ size }) => {
+    const { panel, resolution } = size ? brochureSpec(size) : BROCHURE
+    const one = { width: panel.width, height: panel.height, radius: panel.radius, resolution }
+    return { panel: Array.from({ length: BROCHURE_PANELS_PER_SIDE }, () => one) }
+  },
+} as const satisfies MockupMetrics<{ size?: BrochureSize }>
+
 export const BROCHURE_FRAMING = {
   camera: { position: [0, 0.5, 8.4], fov: 40 },
   floatIntensity: 0.7,

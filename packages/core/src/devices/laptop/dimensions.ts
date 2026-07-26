@@ -12,7 +12,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming } from '../../regions'
+import type { MockupFraming, MockupMetrics } from '../../regions'
 
 /** A port opening on a side wall of the base. `z` is distance from base center (+ = front). */
 export interface LaptopPort {
@@ -278,6 +278,37 @@ export const LAPTOP_STAGE_OFFSET_Y = -1.15
  * reproduces the stage's original 0.22 hover clearance, with the grounded
  * line restored by the 0.08 contact gap.
  */
+/** Millimetres per world unit — the shared laptop scale. */
+export const LAPTOP_MM_PER_UNIT = 72.4
+
+/**
+ * Default CSS px width of each variant's virtual display: the panel's own
+ * point grid at 2x (a 2560x1664 Air 13 renders 1280x832).
+ */
+export const LAPTOP_RESOLUTIONS: Record<LaptopVariant, number> = {
+  air13: 1280,
+  air15: 1440,
+  pro14: 1512,
+  pro16: 1728,
+}
+
+/** Live geometry of the display. Laptops have one pose — always landscape. */
+export const LAPTOP_METRICS = {
+  mmPerUnit: LAPTOP_MM_PER_UNIT,
+  regions: ({ variant }) => {
+    const key = variant ?? LAPTOP_DEFAULT_VARIANT
+    const { display } = LAPTOP_VARIANTS[key]
+    return {
+      screen: {
+        width: display.width,
+        height: display.height,
+        radius: display.radius,
+        resolution: LAPTOP_RESOLUTIONS[key],
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ variant?: LaptopVariant }>
+
 export const LAPTOP_FRAMING = {
   camera: { position: [0, 0.9, 9.6], fov: 40 },
   floatIntensity: 0.7,

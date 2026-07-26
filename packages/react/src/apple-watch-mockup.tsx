@@ -1,10 +1,12 @@
-import { WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT } from '@area-mockups/core'
+import { WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { AppleWatch, watchSlots, type AppleWatchProps } from './devices/watch/watch'
 
 export type AppleWatchMockupProps = MockupProps<AppleWatchProps>
 
 const AppleWatchMockupBase = createMockup({
+  kind: 'appleWatch',
+  regions: SCREEN_REGIONS,
   object: AppleWatch,
   framing: WATCH_FRAMING,
   slots: watchSlots,

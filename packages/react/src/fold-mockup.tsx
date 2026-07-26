@@ -1,4 +1,4 @@
-import { FOLD_FRAMING } from '@area-mockups/core'
+import { FOLD_FRAMING, SCREEN_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Fold, foldSlots, type FoldProps } from './devices/fold/fold'
 
@@ -29,6 +29,8 @@ export type FoldMockupProps = MockupProps<FoldProps>
  * ```
  */
 export const FoldMockup = createMockup({
+  kind: 'fold',
+  regions: SCREEN_REGIONS,
   object: Fold,
   framing: FOLD_FRAMING,
   slots: foldSlots,

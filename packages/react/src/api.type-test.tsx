@@ -6,6 +6,14 @@
  */
 import * as React from 'react'
 import {
+  mockupInfo,
+  useSurface,
+  useSurfaceOptional,
+  type MockupInfo,
+  type MockupKind,
+  type RegionInfo,
+  type SurfaceInfo,
+  BookMockup,
   AFrameSignMockup,
   type AFrameSignMockupProps,
   AFrameSign,
@@ -98,3 +106,36 @@ const _wrongSlot = <CustomBoxMockup size={{ width: 1, height: 1, depth: 1 }}>{Cu
 
 // @ts-expect-error — Panel's `side` only accepts front | back
 const _wrongSide = <BrochureMockup.Panel side="top" />
+
+// ---- the measurement API -------------------------------------------------------------
+type _kindIsUnion = Expect<Has<'galaxy', Record<MockupKind, true>>>
+type _infoShape = Expect<Equal<ReturnType<typeof mockupInfo>, MockupInfo>>
+type _primaryIsRegion = Expect<Equal<MockupInfo['primary'], RegionInfo>>
+
+// Geometry props are typed per kind; unrelated props are rejected.
+const _galaxyInfo = mockupInfo('galaxy', { variant: 's26ultra', orientation: 'landscape' })
+const _bookInfo = mockupInfo('book', { size: { width: 216, height: 279 } })
+const _defaults = mockupInfo('galaxy')
+// @ts-expect-error — 's27' is not a Galaxy variant
+mockupInfo('galaxy', { variant: 's27' })
+// @ts-expect-error — colors cannot change a measurement, so they are not accepted
+mockupInfo('galaxy', { color: '#fff' })
+// @ts-expect-error — van's geometry still lives in its scene component
+mockupInfo('van')
+
+// Every region carries all three unit systems.
+type _units = Expect<Equal<RegionInfo['units'], { width: number; height: number }>>
+type _mm = Expect<Equal<RegionInfo['mm'], { width: number; height: number }>>
+type _px = Expect<Equal<RegionInfo['px'], { width: number; height: number }>>
+
+// ---- statics on the component --------------------------------------------------------
+const _viaComponent = GalaxyMockup.info?.({ variant: 's26' })
+const _componentRegions = BookMockup.regions
+type _statics = Expect<Has<'info', typeof GalaxyMockup>>
+
+// ---- the surface hook ----------------------------------------------------------------
+function _ScreenContent() {
+  const surface: SurfaceInfo = useSurface()
+  const maybe: SurfaceInfo | null = useSurfaceOptional()
+  return <div style={{ width: surface.width, height: surface.height }}>{maybe?.resolution}</div>
+}

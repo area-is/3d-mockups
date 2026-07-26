@@ -1,4 +1,4 @@
-import { SHOPPING_BAG_FRAMING } from '@area-mockups/core'
+import { SHOPPING_BAG_FRAMING, SHOPPING_BAG_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { ShoppingBag, shoppingBagSlots, type ShoppingBagProps } from './objects/shopping-bag/shopping-bag'
 
@@ -18,6 +18,8 @@ export type ShoppingBagMockupProps = MockupProps<ShoppingBagProps>
  * Bare children are shorthand for the front face.
  */
 export const ShoppingBagMockup = createMockup({
+  kind: 'shoppingBag',
+  regions: SHOPPING_BAG_REGIONS,
   object: ShoppingBag,
   framing: SHOPPING_BAG_FRAMING,
   slots: shoppingBagSlots,

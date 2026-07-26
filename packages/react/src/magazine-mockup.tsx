@@ -1,4 +1,4 @@
-import { MAGAZINE_FRAMING } from '@area-mockups/core'
+import { MAGAZINE_FRAMING, MAGAZINE_REGIONS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Magazine, magazineSlots, type MagazineProps } from './objects/magazine/magazine'
 
@@ -18,6 +18,8 @@ export type MagazineMockupProps = MockupProps<MagazineProps>
  * Bare children are shorthand for the front cover.
  */
 export const MagazineMockup = createMockup({
+  kind: 'magazine',
+  regions: MAGAZINE_REGIONS,
   object: Magazine,
   framing: MAGAZINE_FRAMING,
   slots: magazineSlots,
