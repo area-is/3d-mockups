@@ -4,7 +4,6 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { MAGAZINE, MAGAZINE_REGIONS, magazineSpec, type MagazineSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -59,8 +58,6 @@ function MagazineImpl({
   glossy = false,
   surfaceBackground = '#ffffff',
   resolution = MAGAZINE.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: MagazineProps) {
@@ -69,13 +66,10 @@ function MagazineImpl({
     () => (size ? magazineSpec(size) : MAGAZINE),
     [size?.width, size?.height, size?.thickness]
   )
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
   // Screens occlude against OTHER registered bodies only — the page block
   // is convex, so the backface culler already covers every view it could
   // block itself, and own-body ray grazes would false-hide the thin spine
   // strip at the shallow angles a spine is naturally viewed from.
-  const otherOccludeRefs = React.useMemo(() => occludeRefs.filter((ref) => ref !== bodyRef), [occludeRefs])
 
   // The spine and back share one cover-stock finish: matte by default
   // (rough, no clearcoat — flat under any light, like uncoated paper),
@@ -114,15 +108,13 @@ function MagazineImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
 
   return (
     <group {...groupProps}>
       {/* trimmed page block — the paper edges you see on the three open sides */}
-      <RoundedBox ref={bodyRef} args={[body.width, body.height, body.thickness]} radius={body.radius}>
+      <RoundedBox args={[body.width, body.height, body.thickness]} radius={body.radius}>
         <meshPhysicalMaterial color={pageColor} metalness={0} roughness={0.9} />
       </RoundedBox>
 
@@ -149,7 +141,6 @@ function MagazineImpl({
         height={cover.height}
         radius={cover.radius}
         position={[0, 0, body.thickness / 2 + 0.004]}
-        occluders={otherOccludeRefs}
         overlay={glossOverlay}
       >
         {regions.cover?.children}
@@ -164,7 +155,6 @@ function MagazineImpl({
           radius={cover.radius}
           position={[0, 0, -body.thickness / 2 - 0.004]}
           rotation={[0, Math.PI, 0]}
-          occluders={otherOccludeRefs}
           overlay={glossOverlay}
         >
           {regions.back.children}
@@ -187,7 +177,6 @@ function MagazineImpl({
           radius={0.006}
           position={[-body.width / 2 - 0.01, 0, 0]}
           rotation={[0, -Math.PI / 2, -Math.PI / 2]}
-          occluders={otherOccludeRefs}
           overlay={glossOverlay}
         >
           {regions.spine.children}

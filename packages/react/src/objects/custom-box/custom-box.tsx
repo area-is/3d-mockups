@@ -1,10 +1,8 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { CUSTOM_BOX, CUSTOM_BOX_REGIONS, customBoxScale, type CustomBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -43,8 +41,6 @@ function CustomBoxImpl({
   color = '#e8e5df',
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_BOX.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: CustomBoxProps) {
@@ -55,13 +51,10 @@ function CustomBoxImpl({
   const d = size.depth * scale
   const radius = Math.min(0.02, w / 2 - 0.001, h / 2 - 0.001, d / 2 - 0.001)
 
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
   const pxPerUnit = resolution / w
 
   const shared = {
     radius,
-    occluders: occludeRefs,
   }
 
   const lift = 0.004
@@ -82,7 +75,7 @@ function CustomBoxImpl({
 
   return (
     <group {...groupProps}>
-      <RoundedBox ref={bodyRef} args={[w, h, d]} radius={Math.max(radius, 0.004)}>
+      <RoundedBox args={[w, h, d]} radius={Math.max(radius, 0.004)}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.7} />
       </RoundedBox>
 
@@ -96,8 +89,6 @@ function CustomBoxImpl({
                 background: surfaceBackground,
                 // every face shares the front face's dpi unless its slot overrides
                 resolution: Math.round(face.width * pxPerUnit),
-                allowInput,
-                dragToRotate,
                 style: surfaceStyle,
               })}
               width={face.width}

@@ -1,10 +1,8 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { SEMI_TRAILER, SEMI_TRAILER_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 import { RoadWheel } from '../road-wheel'
 
@@ -47,15 +45,11 @@ function SemiTrailerImpl({
   skirtColor,
   surfaceBackground = '#ffffff',
   resolution = SEMI_TRAILER.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: SemiTrailerProps) {
   const regions = collectSlots(children, SEMI_TRAILER_REGIONS)
   const { body, groundY, wheels, landingGear, side, rear: rearSpec } = SEMI_TRAILER
-  const boxRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(boxRef)
 
   const steel = { color: '#1d2025', metalness: 0.4, roughness: 0.6 }
   const floorY = -body.height / 2
@@ -63,15 +57,12 @@ function SemiTrailerImpl({
   const dualOuterZ = body.width / 2 - 0.03 - wheels.width / 2
   const dualInnerZ = dualOuterZ - wheels.width - wheels.dualGap
 
-  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
-  const wrapProps = {
-    occluders: occludeRefs,
-  }
+  const surfaceDefaults = { background: surfaceBackground, style: surfaceStyle }
 
   return (
     <group {...groupProps}>
       {/* the box — smooth-sided, wrap-ready */}
-      <RoundedBox ref={boxRef} args={[body.length, body.height, body.width]} radius={body.radius}>
+      <RoundedBox args={[body.length, body.height, body.width]} radius={body.radius}>
         <meshPhysicalMaterial color={color} metalness={0.3} roughness={0.4} clearcoat={0.6} clearcoatRoughness={0.3} />
       </RoundedBox>
 
@@ -295,7 +286,6 @@ function SemiTrailerImpl({
 
       {/* the live wraps: both smooth sides and the rear doors */}
       <DeviceScreen
-        {...wrapProps}
         {...resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution })}
         width={side.width}
         height={side.height}
@@ -306,7 +296,6 @@ function SemiTrailerImpl({
       </DeviceScreen>
       {regions.streetSide != null && (
         <DeviceScreen
-          {...wrapProps}
           {...resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution })}
           width={side.width}
           height={side.height}
@@ -319,7 +308,6 @@ function SemiTrailerImpl({
       )}
       {regions.rear != null && (
         <DeviceScreen
-          {...wrapProps}
           {...resolveSurface(regions.rear, {
             ...surfaceDefaults,
             // the rear panel shares the side panel's dpi

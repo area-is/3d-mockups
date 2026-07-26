@@ -9,7 +9,6 @@ import {
   roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -60,8 +59,6 @@ function PosterFrameImpl({
   glazing = true,
   surfaceBackground = '#ffffff',
   resolution = POSTER_FRAME.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: PosterFrameProps) {
@@ -70,9 +67,6 @@ function PosterFrameImpl({
     () => (size ? posterFrameSpec(size) : POSTER_FRAME),
     [size?.width, size?.height]
   )
-  const frameRef = React.useRef<THREE.Mesh>(null!)
-  const backingRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(frameRef, backingRef)
 
   const outerWidth = poster.width + frame.width * 2
   const outerHeight = poster.height + frame.width * 2
@@ -147,12 +141,12 @@ function PosterFrameImpl({
   return (
     <group {...groupProps}>
       {/* molding with a true through-hole and overlapping rabbet lip */}
-      <mesh ref={frameRef} geometry={frameGeometry}>
+      <mesh geometry={frameGeometry}>
         <meshPhysicalMaterial color={color} metalness={0.15} roughness={0.45} clearcoat={0.4} />
       </mesh>
 
       {/* the sheet/backing continuing behind the lip */}
-      <mesh ref={backingRef} geometry={backingGeometry} position-z={sheetZ - 0.008}>
+      <mesh geometry={backingGeometry} position-z={sheetZ - 0.008}>
         <meshPhysicalMaterial color="#f4f2ec" metalness={0} roughness={0.9} />
       </mesh>
 
@@ -188,12 +182,9 @@ function PosterFrameImpl({
         height={art.height}
         radius={mat ? 0.002 : opening.radius}
         position={[0, 0, sheetZ]}
-        occluders={occludeRefs}
         {...resolveSurface(posterSlot, {
           background: surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
           style: surfaceStyle,
         })}
         overlay={

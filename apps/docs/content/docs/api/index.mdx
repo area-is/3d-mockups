@@ -41,13 +41,13 @@ book's front cover. Objects with more printable surfaces expose each extra
 region as a compound slot on the component (`<AFrameSignMockup.Back>`,
 `<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
 section. Every slot takes per-surface overrides — `background`, `resolution`,
-`allowInput`, `dragToRotate`, `style` — over the mockup-level defaults.
+`style` — over the mockup-level defaults.
 
 ## Shared screen props
 
-Every device (and therefore every mockup) accepts the screen behavior props
-documented in [Screen content](/docs/screen-content): `allowInput`,
-`dragToRotate`, `surfaceBackground`, `surfaceStyle`, and `resolution`.
+Every device (and therefore every mockup) accepts the screen props documented
+in [Screen content](/docs/screen-content): `surfaceBackground`, `surfaceStyle`,
+and `resolution`.
 
 Devices also accept all react-three-fiber group props (`position`, `rotation`,
 `scale`) when rendered inside a canvas.

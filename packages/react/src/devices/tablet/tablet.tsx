@@ -20,7 +20,6 @@ import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import { createWordmarkTexture } from '../wordmark'
 import { LensRing, UsbC, cutGeometry, stadiumCutter, USB_CUT_DEPTH } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -91,8 +90,6 @@ function TabletBody({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: TabletBodyProps) {
@@ -104,8 +101,6 @@ function TabletBody({
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(spec.resolution * (landscape ? aspect : 1))
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
   const isPad = rearCamera.style !== 'rings'
 
   const bodyGeometry = React.useMemo(() => {
@@ -223,7 +218,7 @@ function TabletBody({
       <group rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* chassis — bead-blasted aluminum: mostly dielectric response so the
             anodized albedo reads true under the studio rig */}
-        <mesh ref={bodyRef} geometry={bodyGeometry}>
+        <mesh geometry={bodyGeometry}>
           <meshPhysicalMaterial color={color} metalness={0.6} roughness={0.4} envMapIntensity={0.9} />
         </mesh>
 
@@ -526,12 +521,9 @@ function TabletBody({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            allowInput,
-            dragToRotate,
             style: surfaceStyle,
           })}
           overlay={

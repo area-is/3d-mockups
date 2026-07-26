@@ -1,10 +1,8 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { CUSTOM_PANEL, CUSTOM_PANEL_REGIONS, customPanelScale, type CustomSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -46,8 +44,6 @@ function CustomPanelImpl({
   cornerRadius = 2,
   surfaceBackground = '#ffffff',
   resolution = CUSTOM_PANEL.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: CustomPanelProps) {
@@ -58,26 +54,21 @@ function CustomPanelImpl({
   const t = Math.max(0.012, (size.thickness ?? CUSTOM_PANEL.thickness) * scale)
   const radius = Math.min(cornerRadius * scale, t / 2 - 0.001, 0.2)
 
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const faceProps = {
     width: w,
     height: h,
     radius: Math.max(radius, 0),
-    occluders: occludeRefs,
   }
 
   return (
     <group {...groupProps}>
-      <RoundedBox ref={bodyRef} args={[w, h, t]} radius={Math.max(radius, 0.004)}>
+      <RoundedBox args={[w, h, t]} radius={Math.max(radius, 0.004)}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.65} />
       </RoundedBox>
 

@@ -32,14 +32,6 @@ export interface SurfaceProps {
   background?: string
   /** CSS pixel width of this region's virtual surface. */
   resolution?: number
-  /**
-   * Let pointer events (clicks, scrolling, typing) reach this region's
-   * content. Off by default, and worth leaving off — see `SurfaceDefaults`
-   * for what turning it on costs.
-   */
-  allowInput?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /** Extra styles merged onto this region's surface wrapper. */
   style?: React.CSSProperties
 }
@@ -60,39 +52,12 @@ export interface SurfaceDefaults {
    * nothing.
    *
    * Do not set it to `transparent` expecting the hardware to show through.
-   * A screen's DOM sits UNDER the canvas (see `allowInput`), so transparent
-   * pixels fall through to the PAGE, and the mockup reads as a hole.
+   * A screen's DOM sits UNDER the canvas, so transparent pixels fall through
+   * to the PAGE, and the mockup reads as a hole.
    */
   surfaceBackground?: string
   /** CSS pixel width of the (primary) virtual surface; regions share its dpi. */
   resolution?: number
-  /**
-   * Let pointer events (clicks, scrolling, typing) reach region content.
-   * Defaults to `false`.
-   *
-   * **This also changes how the mockup looks, and not for the better.** A
-   * screen is real DOM composited into a 3D scene, and there are only two
-   * ways to hide it behind hardware:
-   *
-   * - Off (default) — per-pixel depth blending. The DOM stacks UNDER the
-   *   canvas and is masked by the depth buffer, so hardware in front of the
-   *   screen covers it exactly, pixel for pixel: a laptop's keyboard hides
-   *   the reflection, a phone's proud camera ring stands over the wrap.
-   *   Being under the canvas is also why the content can't be clicked.
-   * - On — raycasting. The DOM stacks ON TOP of the canvas so pointers can
-   *   reach it, which means nothing in the scene can visually cover it. The
-   *   whole screen is instead hidden all-or-nothing when sample rays say
-   *   it's behind the body, so partial coverage is wrong in both
-   *   directions: content shows through hardware that should hide it, and
-   *   a screen that's mostly visible can blank out entirely.
-   *
-   * Turn it on only when the content genuinely has to be used — a live
-   * embedded app, a scrollable prototype. For screenshots, hero shots and
-   * marketing pages, leave it off.
-   */
-  allowInput?: boolean
-  /** Hand >10px drags off to the orbit controls; taps still reach the content. */
-  dragToRotate?: boolean
   /** Extra styles merged onto each region's surface wrapper. */
   surfaceStyle?: React.CSSProperties
 }
@@ -227,8 +192,6 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
 export interface ResolvedSurface {
   background?: string
   resolution: number
-  allowInput: boolean
-  dragToRotate: boolean
   screenStyle?: React.CSSProperties
 }
 
@@ -242,8 +205,6 @@ export function resolveSurface(
   defaults: {
     background: string | undefined
     resolution: number
-    allowInput: boolean
-    dragToRotate: boolean
     style: React.CSSProperties | undefined
   }
 ): ResolvedSurface {
@@ -252,8 +213,6 @@ export function resolveSurface(
   return {
     background: slot?.background ?? defaults.background,
     resolution: slot?.resolution ?? defaults.resolution,
-    allowInput: slot?.allowInput ?? defaults.allowInput,
-    dragToRotate: slot?.dragToRotate ?? defaults.dragToRotate,
     screenStyle: style,
   }
 }

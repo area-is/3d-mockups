@@ -2,8 +2,9 @@
 
 GPU-accelerated **3D device mockups for React**. Put any content on the screen of a 3D
 device — real DOM, projected onto WebGL glass, so it stays live: text is vector crisp at
-any angle, videos play, iframes load, React state and effects keep running. Opt into
-`allowInput` when it also has to be clicked.
+any angle, videos play, iframes load, React state and effects keep running. Mockups are
+decorative: you rotate and zoom them, and the hardware masks the screen pixel for pixel
+([why](#screens-are-display-only)).
 
 - **Seventeen devices** — the Galaxy S26 line (S26, S26 Ultra), the Galaxy Z Fold 7 and
   Z Flip 7 foldables, the full iPhone 17 family (17, 17 Air, 17 Pro, 17 Pro Max), MacBook
@@ -20,8 +21,8 @@ any angle, videos play, iframes load, React state and effects keep running. Opt 
 - **Real GPU rendering** — three.js + react-three-fiber, physically-based materials, studio
   lighting, soft shadows, clamped DPR.
 - **Any content on screen** — pass React components, an `<iframe>` or a `<video>` as
-  children. State, effects and media playback keep running; add `allowInput` to let
-  pointer events through ([what that trades away](#screen-interaction)).
+  children. State, effects and media playback keep running, and every surface is masked
+  per-pixel by the hardware in front of it.
 - **Composable** — use the one-liners `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>`
   / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>`, or
   drop `<Galaxy>` / `<IPhone>` / `<Laptop>` / `<IPad>` / `<GalaxyTab>` / `<AppleWatch>` / `<GalaxyWatch>` /
@@ -68,16 +69,15 @@ type `AFrameSignMockup.` and your editor lists exactly the regions the object ha
   <AFrameSignMockup.Front>
     <MenuBoard />
   </AFrameSignMockup.Front>
-  <AFrameSignMockup.Back background="#20241f" allowInput>
+  <AFrameSignMockup.Back background="#20241f" resolution={640}>
     <HoursBoard />
   </AFrameSignMockup.Back>
 </AFrameSignMockup>
 ```
 
-Every slot takes per-surface overrides — `background`, `resolution`, `allowInput`,
-`dragToRotate`, `style` — over the mockup-level defaults (`surfaceBackground`,
-`resolution`, `allowInput`, `dragToRotate`, `surfaceStyle`). Repeating regions
-collect in document order:
+Every slot takes per-surface overrides — `background`, `resolution`, `style` — over the
+mockup-level defaults (`surfaceBackground`, `resolution`, `surfaceStyle`). Repeating
+regions collect in document order:
 
 ```tsx
 <BrochureMockup>
@@ -130,8 +130,6 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |
 | `resolution` | `number` | per variant | Virtual display width in CSS px (see resolution table) |
 | `punchHole` | `boolean` | `true` | Front-camera punch hole overlay |
-| `allowInput` | `boolean` | `false` | Let pointer events reach the screen. Also switches occlusion from per-pixel blending to all-or-nothing raycasting, which costs visual accuracy — see [Screen interaction](#screen-interaction) |
-| `dragToRotate` | `boolean` | `true` | Drags starting on the screen spin the device (with `allowInput`, taps still click) |
 | `surfaceStyle` | `CSSProperties` | — | Extra styles for the screen wrapper |
 
 ### `<IPhone>` — iPhone 17 family
@@ -144,41 +142,35 @@ LiDAR (Pro / Pro Max).
 
 ### `<Laptop>` — MacBook Air 13" / MacBook Pro 14" (M5)-style
 
-Same screen/interaction API (`allowInput`, `dragToRotate`, `surfaceStyle`), plus
+Same screen API (`surfaceBackground`, `resolution`, `surfaceStyle`), plus
 `notch` (camera notch overlay), `openAngle` (lid angle, default `110`), and `resolution`
 defaulting to the variant's scaled desktop (Air 1280×832, Pro 14 1512×982 — desktop breakpoints
 apply). `color` sets the aluminum finish (Sky Blue `#aec6d9`, Starlight `#e8e0d4`,
 Midnight `#2e3642`).
 
-## Screen interaction
+## Screens are display-only
 
-> [!WARNING]
-> `allowInput` is not just a pointer-events switch — it also changes how the
-> mockup looks, and not for the better. Leave it off unless the content
-> genuinely has to be used.
+Content on the glass renders live, but pointer events never reach it: clicks,
+scrolling and typing all belong to the orbit controls, so a drag anywhere —
+body, background, or screen — rotates the model.
 
-A screen is real DOM composited into a WebGL scene, and where that DOM sits in
-the stacking order decides how hardware can hide it. There are exactly two
-options, and interactivity picks between them:
+That is deliberate, and it is what buys the mockup its looks. A screen is real
+DOM composited into a WebGL scene, and where that DOM sits in the stacking
+order decides how hardware can hide it. area-mockups always stacks it *under*
+the canvas and masks it with the depth buffer, so anything in front of the
+screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
+screen's reflection, a proud camera ring stands over a wrap, a bus's mirrors
+draw over the livery.
 
-- **`allowInput={false}` (default) — per-pixel blending.** The DOM stacks
-  *under* the canvas and is masked by the depth buffer, so anything in front of
-  the screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
-  screen's reflection, a proud camera ring stands over a wrap. Being under the
-  canvas is also why the content can't be clicked.
-- **`allowInput={true}` — raycast occlusion.** The DOM stacks *on top of* the
-  canvas so pointers reach it, which means nothing in the scene can visually
-  cover it. Hiding becomes all-or-nothing, decided by sample rays against the
-  body — so content shows through hardware that should hide it (you can see a
-  laptop's screen through its own keyboard), and a mostly-visible screen can
-  blank out entirely.
+Lifting the DOM above the canvas is the only way to make it clickable, and it
+costs exactly that masking — nothing in the scene can visually cover DOM that
+sits on top of it. Hiding degrades to an all-or-nothing guess from sample rays,
+which is wrong in both directions: content shows through hardware that should
+hide it, and a mostly-visible screen can blank out entirely. Mockups exist to
+look right, so that trade is not offered.
 
-`allowInput` is a per-region prop as well as a mockup-level default, so a
-multi-surface mockup can turn it on for one slot and leave the rest
-display-only. A few surfaces are per-pixel no matter what you pass, because
-raycasting can't describe what covers them — the full-coverage wrap sides on
-`<Van>` / `<Bus>`, the glass on `<BusShelter>`, and the outer cover of
-`<Fold>` / `<Flip>`.
+If you need a genuinely usable embedded app, render it in the page next to the
+mockup rather than on it.
 
 ## Virtual screen resolutions
 

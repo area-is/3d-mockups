@@ -93,7 +93,7 @@ import {
   VinylLabelArt,
 } from './screens/print-art'
 import { GalaxyWatchFace, WatchFace } from './screens/watch-face'
-import { TapCounter } from './screens/tap-counter'
+import { LiveCounter } from './screens/live-counter'
 import { LockScreen } from './screens/lock-screen'
 import { DesktopScreen } from './screens/desktop-screen'
 import { MusicPlayer } from './screens/music-player'
@@ -269,7 +269,7 @@ const DEMOS: Record<string, React.ReactNode> = {
   // ---- Galaxy (Galaxy) -----------------------------------------------------
   'galaxy-basic': (
     <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
-      <TapCounter />
+      <LiveCounter />
     </GalaxyMockup>
   ),
   'galaxy-lock': (
@@ -351,7 +351,7 @@ const DEMOS: Record<string, React.ReactNode> = {
   'phone-duo': (
     <MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
       <Galaxy variant="s26ultra" color="#2e3238" frameColor="#565b64" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
-        <TapCounter />
+        <LiveCounter />
       </Galaxy>
       <IPhone variant="promax" color="#2b3a55" frameColor="#3d4d6b" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
         <MusicPlayer />

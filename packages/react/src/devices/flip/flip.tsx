@@ -24,7 +24,6 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -131,8 +130,6 @@ function FlipImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: FlipProps) {
@@ -155,9 +152,6 @@ function FlipImpl({
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(state.resolution * (landscape ? aspect : 1))
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const lowerBodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef, lowerBodyRef)
   // Screens occlude against EVERY registered body, this device's own halves
   // included — see the fold's matching note. Self-occlusion is what keeps a
   // half's display from painting through its own back in the flex pose, and
@@ -481,12 +475,9 @@ function FlipImpl({
       radius={display.radius}
       position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-      occluders={occludeRefs}
       {...resolveSurface(screenSlot, {
         background: surfaceBackground,
         resolution: res,
-        allowInput,
-        dragToRotate,
         style: surfaceStyle,
       })}
       overlay={
@@ -563,15 +554,9 @@ function FlipImpl({
           ? [r, r, 0, 0]
           : [0, 0, r, r]
       const localY = (upper ? 1 : -1) * (display.height / 4 - halfH / 2)
-      // Per-pixel depth, not raycasting. A raycast occluder is all-or-nothing
-      // for the whole plane, and at every intermediate angle a half-screen is
-      // PARTIALLY covered by the other panel — so no sample threshold can be
-      // right: strict hides a display that is half in view, lenient lets the
-      // covered part paint straight over the chassis. Blending hands the job
-      // to the depth buffer, which resolves it pixel by pixel at any angle.
-      // The trade is that a blending screen is display-only (the canvas keeps
-      // pointer input, so drag-to-rotate still works everywhere) — acceptable
-      // here, where the display is already composited from two planes.
+      // The half panes lean on the depth buffer harder than most screens: at
+      // every intermediate hinge angle one half is PARTIALLY covered by the
+      // other panel, which only per-pixel compositing can resolve.
       return (
         <DeviceScreen
           width={landscape ? display.height / 2 : display.width}
@@ -579,13 +564,10 @@ function FlipImpl({
           radius={radius}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          blending
           {...resolveSurface(screenSlot, {
             background: surfaceBackground,
             // each half pane carries half the virtual display's height
             resolution: landscape ? res / 2 : res,
-            allowInput,
-            dragToRotate,
             style: surfaceStyle,
           })}
           overlay={
@@ -639,7 +621,7 @@ function FlipImpl({
           {/* upper (cover) half folds toward the viewer around the hinge */}
           <group position={[0, 0, pz]} rotation-x={alpha}>
             <group position={[0, halfH / 2, -pz]}>
-              <mesh ref={bodyRef} geometry={shell.upper}>
+              <mesh geometry={shell.upper}>
                 <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
               </mesh>
               <mesh geometry={coverGlassGeometry} rotation-y={Math.PI} position-z={-half.depth / 2 - 0.002}>
@@ -655,7 +637,7 @@ function FlipImpl({
           {/* lower half folds the opposite way */}
           <group position={[0, 0, pz]} rotation-x={-alpha}>
             <group position={[0, -halfH / 2, -pz]}>
-              <mesh ref={lowerBodyRef} geometry={shell.lower}>
+              <mesh geometry={shell.lower}>
                 <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
               </mesh>
               <mesh geometry={coverGlassGeometry} rotation-y={Math.PI} position-z={-half.depth / 2 - 0.002}>
@@ -714,7 +696,7 @@ function FlipImpl({
       <group {...groupProps}>
         <group key="open" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* chassis */}
-          <mesh ref={bodyRef} geometry={shell.body}>
+          <mesh geometry={shell.body}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
 
@@ -780,14 +762,14 @@ function FlipImpl({
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* front half (cover screen + cameras) and rear half, with the air gap */}
         <group position-z={halfZ}>
-          <mesh ref={bodyRef} geometry={shell.upper}>
+          <mesh geometry={shell.upper}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
           {rails}
           {screen}
         </group>
         <group position-z={-halfZ}>
-          <mesh ref={lowerBodyRef} geometry={shell.lower}>
+          <mesh geometry={shell.lower}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
           {/* back glass colorway on the rear half */}

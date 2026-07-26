@@ -1,10 +1,8 @@
 import * as React from 'react'
-import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { STOREFRONT, STOREFRONT_REGIONS } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -68,16 +66,11 @@ function StorefrontImpl({
   windowColor = '#5a6d75',
   surfaceBackground = '#ffffff',
   resolution = STOREFRONT.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: StorefrontProps) {
   const regions = collectSlots(children, STOREFRONT_REGIONS)
   const { body, fascia, sign, sideSign, rearSign: rearSignSpec, riser, window: win, roof, standHeight } = STOREFRONT
-  const wallRef = React.useRef<THREE.Mesh>(null!)
-  const roofRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(wallRef, roofRef)
 
   // Shop glass reflects the street: a lighter blue-gray with strong env
   // reflections, instead of a pitch-black hole in the façade.
@@ -114,14 +107,9 @@ function StorefrontImpl({
   const bayL = { x0: glazeX - glazeW / 2, x1: win.mullionX - 0.06 }
   const bayR = { x0: win.mullionX + 0.06, x1: glazeX + glazeW / 2 }
 
-  const screenCommon = {
-    occluders: occludeRefs,
-  }
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
 
@@ -180,7 +168,6 @@ function StorefrontImpl({
         ))}
         {signSlot != null && (
           <DeviceScreen
-            {...screenCommon}
             {...resolveSurface(signSlot, surfaceDefaults)}
             width={signWidth}
             height={sign.height}
@@ -193,7 +180,6 @@ function StorefrontImpl({
         {/* live center pane between the two mullions */}
         {windowSlot != null && (
           <DeviceScreen
-            {...screenCommon}
             {...resolveSurface(windowSlot, { ...surfaceDefaults, resolution: 420 })}
             width={(glazeL * 2) / 3 - 0.12}
             height={paneH}
@@ -211,14 +197,13 @@ function StorefrontImpl({
     <group {...groupProps}>
       {/* the building volume, painted like the joinery so slivers between
           the applied elements read as the same shopfront timber */}
-      <mesh ref={wallRef}>
+      <mesh>
         <boxGeometry args={[body.width, body.height, body.depth]} />
         <meshPhysicalMaterial {...paint} roughness={0.7} />
       </mesh>
 
       {/* capped flat roof, overhanging the parapet line all round */}
       <RoundedBox
-        ref={roofRef}
         args={[body.width + roof.overhang * 2, roof.thickness, body.depth + roof.overhang * 2]}
         radius={0.02}
         position={[0, body.height / 2 + roof.thickness / 2, 0]}
@@ -327,7 +312,6 @@ function StorefrontImpl({
 
       {/* front fascia sign */}
       <DeviceScreen
-        {...screenCommon}
         {...resolveSurface(regions.fascia, surfaceDefaults)}
         width={sign.width}
         height={sign.height}
@@ -340,7 +324,6 @@ function StorefrontImpl({
       {/* the two front display bays, live either side of the mullion */}
       {regions.frontLeft != null && (
         <DeviceScreen
-          {...screenCommon}
           {...resolveSurface(regions.frontLeft, { ...surfaceDefaults, resolution: 480 })}
           width={bayL.x1 - bayL.x0}
           height={paneH}
@@ -352,7 +335,6 @@ function StorefrontImpl({
       )}
       {regions.frontRight != null && (
         <DeviceScreen
-          {...screenCommon}
           {...resolveSurface(regions.frontRight, { ...surfaceDefaults, resolution: 460 })}
           width={bayR.x1 - bayR.x0}
           height={paneH}
@@ -365,7 +347,6 @@ function StorefrontImpl({
       {/* the glazed door leaf, live above its kick rail */}
       {regions.door != null && (
         <DeviceScreen
-          {...screenCommon}
           {...resolveSurface(regions.door, { ...surfaceDefaults, resolution: 260 })}
           width={win.doorWidth - 0.24}
           height={windowH + riser.height - 0.36}

@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { SHOPPING_BAG, SHOPPING_BAG_REGIONS, shoppingBagLayout, type ShoppingBagSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -53,8 +52,6 @@ function ShoppingBagImpl({
   handleColor = '#7d6142',
   surfaceBackground = '#ffffff',
   resolution = SHOPPING_BAG.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: ShoppingBagProps) {
@@ -64,9 +61,6 @@ function ShoppingBagImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [size?.width, size?.height, size?.depth]
   )
-  const frontRef = React.useRef<THREE.Mesh>(null!)
-  const backRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(frontRef, backRef)
 
   const paper = { color, metalness: 0, roughness: 0.82 }
   const paperInside = { color: '#b08a5e', metalness: 0, roughness: 0.9 }
@@ -155,15 +149,12 @@ function ShoppingBagImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const faceProps = {
     width: body.width,
     height: body.height,
     radius: body.radius,
-    occluders: occludeRefs,
   }
 
   // handle hardware hangs from the rim in proportion to the handle itself
@@ -173,11 +164,11 @@ function ShoppingBagImpl({
   return (
     <group {...groupProps}>
       {/* front and back walls */}
-      <mesh ref={frontRef} position={[0, 0, body.depth / 2 - wall / 2]}>
+      <mesh position={[0, 0, body.depth / 2 - wall / 2]}>
         <boxGeometry args={[body.width, body.height, wall]} />
         <meshPhysicalMaterial {...paper} />
       </mesh>
-      <mesh ref={backRef} position={[0, 0, -body.depth / 2 + wall / 2]}>
+      <mesh position={[0, 0, -body.depth / 2 + wall / 2]}>
         <boxGeometry args={[body.width, body.height, wall]} />
         <meshPhysicalMaterial {...paper} />
       </mesh>

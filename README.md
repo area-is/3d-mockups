@@ -1,7 +1,9 @@
 # area-mockups
 
-Interactive, GPU-accelerated **3D device mockups for React** — drop any content onto the
-screen of a 3D phone and it stays fully live: buttons click, videos play, iframes scroll.
+GPU-accelerated **3D device mockups for React** — drop any content onto the screen of a
+3D phone and it renders live: real DOM on the glass, vector crisp at any angle, videos
+playing, iframes loading. The mockups are decorative — you rotate and zoom them, and the
+hardware masks the screen pixel for pixel.
 
 Built on [three.js](https://threejs.org) and
 [react-three-fiber](https://github.com/pmndrs/react-three-fiber). The starter device is a

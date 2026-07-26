@@ -7,11 +7,11 @@ Anything the browser can render can live on a device screen. The screen is a
 real DOM layer composited in 3D by CSS transforms, not a texture, so text stays
 vector crisp at every angle — React components keep their state and effects,
 `<video>` keeps playing, and an `<iframe>` keeps loading. Screens are
-display-only by default; see [Interaction](#interaction) to make one clickable
-and what that costs.
+decorative: they render live but do not take pointer input — see
+[Why screens are display-only](#why-screens-are-display-only).
 
 ```tsx
-// React components: state, effects, and events all keep working
+// React components: state and effects keep running on the glass
 <GalaxyMockup>
   <SignupForm />
 </GalaxyMockup>
@@ -39,62 +39,50 @@ so the graphic stays true to the panel.
 The full table of defaults per device is in
 [Devices and resolutions](/docs/devices).
 
-## Interaction
+## Screen props
 
-Every device accepts the same screen behavior props:
+Every device accepts the same three screen props:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `allowInput` | `boolean` | `false` | Let pointer events (clicks, scrolling, typing) reach the screen content. **Also changes how the mockup looks — read the warning below.** |
-| `dragToRotate` | `boolean` | `true` | Drags that start on the screen spin the device after about 10 px of travel; taps still click. Disable when your content needs its own drag gestures (sliders, drawing, horizontal swipes). |
+| `resolution` | `number` | per device | CSS pixel width of the virtual display; height follows the panel aspect. See [The virtual display](#the-virtual-display). |
 | `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content, under whatever you render. See [Surface background](#surface-background). |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
-<Callout type="warn" title="allowInput costs you visual accuracy">
-
-Turning `allowInput` on is not free, and it is not just a pointer-events
-switch. A screen is real DOM composited into a WebGL scene, and where that DOM
-has to sit in the stacking order decides how it can be hidden behind hardware.
-There are exactly two options and you get one or the other:
-
-**`allowInput={false}` (default) — per-pixel blending.** The DOM stacks
-*under* the canvas and is masked by the depth buffer, so anything in front of
-the screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
-screen's reflection, a phone's proud camera ring stands over a wrap, a bus's
-mirrors draw over the livery. Being under the canvas is also precisely why the
-content cannot be clicked.
-
-**`allowInput={true}` — raycast occlusion.** The DOM stacks *on top of* the
-canvas so pointers can reach it — which means nothing in the scene can visually
-cover it. Hiding is therefore all-or-nothing: five sample rays measure how much
-of the screen is behind the body, and the screen fades out across the middle of
-that range rather than blinking, but it is still the whole screen going at once.
-Partial coverage goes wrong in both directions — content shows through hardware
-that should hide it (you can see a laptop's screen through its own keyboard),
-and a screen that is mostly covered dissolves away even where it is still
-visible.
-
-Turn it on only when the content genuinely has to be *used* — a live embedded
-app, a scrollable prototype, a form someone will type into. For screenshots,
-hero images, landing pages and anything you'll export as a still, leave it off.
-
-</Callout>
-
-Both modes are per-region, so a mockup with several surfaces can mix them —
-set `allowInput` on the one slot that needs it and leave the rest display-only:
+Each is also a per-region override on any slot, spelled `resolution`,
+`background` and `style`:
 
 ```tsx
-<LaptopMockup>
-  <LaptopMockup.Screen allowInput>
-    <YourLiveApp />
-  </LaptopMockup.Screen>
-</LaptopMockup>
+<AFrameSignMockup>
+  <AFrameSignMockup.Front background="#20241f"><MenuBoard /></AFrameSignMockup.Front>
+  <AFrameSignMockup.Back resolution={640}><HoursBoard /></AFrameSignMockup.Back>
+</AFrameSignMockup>
 ```
 
-A few surfaces are per-pixel no matter what you pass, because raycasting simply
-cannot describe what covers them: the full-coverage wrap sides on `<VanMockup>`
-and `<BusMockup>`, the glass on `<BusShelterMockup>`, and the outer cover of
-`<FoldMockup>` / `<FlipMockup>`. Those never become clickable.
+## Why screens are display-only
+
+A mockup is a picture of a device, not a device. Content on the glass renders
+live — state, effects, video, iframes — but pointer events never reach it:
+clicks, scrolling and typing all belong to the mockup's orbit controls, so a
+drag anywhere (body, background, or screen) rotates the model.
+
+That is a deliberate architectural choice, and it is what buys the mockup its
+looks. A screen is real DOM composited into a WebGL scene, and where that DOM
+sits in the stacking order decides how hardware can hide it. area-mockups
+always stacks it *under* the canvas and masks it with the depth buffer, so
+anything in front of the screen covers it exactly, pixel for pixel: a laptop's
+keyboard hides the screen's reflection, a phone's proud camera ring stands over
+a wrap, a bus's mirrors draw over the livery.
+
+The alternative — lifting the DOM above the canvas so pointers can reach it —
+means nothing in the scene can visually cover it any more. Hiding becomes
+all-or-nothing, guessed from sample rays, and it goes wrong in both directions:
+content shows through hardware that should hide it (you can see a laptop's
+screen through its own keyboard), and a screen that is mostly visible can blank
+out entirely. Mockups exist to look right, so that trade is not offered.
+
+If you need a genuinely usable embedded app, render it in the page next to the
+mockup rather than on it.
 
 ## Surface background
 
@@ -108,9 +96,10 @@ it in these demos looks like it does nothing — every demo here ships art that
 covers the whole surface.
 
 Do **not** set it to `transparent` hoping the hardware shows through. A
-screen's DOM sits under the canvas (see the warning above), so transparent
-pixels fall through to the page behind the mockup, and the screen reads as a
-hole cut in the device. If you want the glass to look off, use a dark color.
+screen's DOM sits under the canvas (see [above](#why-screens-are-display-only)),
+so transparent pixels fall through to the page behind the mockup, and the screen
+reads as a hole cut in the device. If you want the glass to look off, use a dark
+color.
 
 ```tsx
 {/* a logo centered on brand color, not stretched to the corners */}
@@ -122,5 +111,6 @@ hole cut in the device. If you want the glass to look off, use a dark color.
 ## Touch behavior
 
 On touch devices the mockup never traps page scrolling: vertical swipes over
-the canvas or the screen scroll the page natively, horizontal drags rotate the
-device, and taps click your content.
+the canvas or the screen scroll the page natively, and horizontal drags rotate
+the device. Turning `zoom` on hands two-finger gestures to the canvas instead,
+so page scrolling then starts outside the mockup.

@@ -141,10 +141,6 @@ function HarnessScene() {
   const cy = Number(params.get('cy') ?? 0)
   const shadows = params.get('shadows') === '1'
   const controls = params.get('controls') === '1'
-  // Screens are display-only here by default, like the library. `allowInput=1`
-  // flips them to raycast occlusion, which is how this probe compares the two
-  // modes' masking against each other.
-  const allowInput = params.get('allowInput') === '1'
   const screen =
     // `clear` paints nothing at all: it exists to show what the surface
     // background is FOR — with it, content that doesn't cover every pixel
@@ -174,7 +170,6 @@ function HarnessScene() {
     return (
       <Mockup
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={distParam ? { position: [0, cy, Number(distParam)], fov: 40 } : undefined}
         shadows={shadows}
@@ -195,7 +190,6 @@ function HarnessScene() {
       <CustomBoxMockup
         size={{ width: mm('w', 180), height: mm('h', 120), depth: mm('d', 60) }}
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={camera}
         shadows={shadows}
@@ -207,7 +201,6 @@ function HarnessScene() {
       <CustomPanelMockup
         size={{ width: mm('w', 300), height: mm('h', 200), thickness: mm('d', 5) }}
         color={color}
-        allowInput={allowInput}
         controls={controls}
         camera={camera}
         shadows={shadows}
@@ -226,8 +219,6 @@ function HarnessScene() {
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         wrapOverWindows={params.get('over') !== '0'}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -249,8 +240,6 @@ function HarnessScene() {
       <VanMockup
         coverage={params.get('coverage') === 'full' ? 'full' : 'panel'}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -269,8 +258,6 @@ function HarnessScene() {
     const arrivalsBack = params.get('arrivalsBack')
     return (
       <BusShelterMockup
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -298,8 +285,6 @@ function HarnessScene() {
         size={params.get('inches') ? Number(params.get('inches')) : undefined}
         variant={(params.get('tvvariant') ?? undefined) as 'legs' | 'pedestal' | 'frame' | undefined}
         color={color}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -316,8 +301,6 @@ function HarnessScene() {
       <StorefrontMockup
         color={color}
         windowColor={params.get('windowColor') ?? undefined}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -342,8 +325,6 @@ function HarnessScene() {
     return (
       <MagazineMockup
         glossy={params.get('glossy') === '1'}
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -360,8 +341,6 @@ function HarnessScene() {
     const dist = Number(params.get('dist') ?? 6)
     return (
       <IDCardMockup
-        allowInput={allowInput}
-        dragToRotate={false}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
         shadows={shadows}
@@ -434,8 +413,6 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </Device>
@@ -453,8 +430,6 @@ function HarnessScene() {
       color,
       bandColor: params.get('bandColor') ?? undefined,
       rotation: [rx, ry, 0] as [number, number, number],
-      allowInput,
-      dragToRotate: false,
     }
     return (
       <MockupCanvas controls={controls} camera={{ position: [0, cy, dist], fov: 40 }} shadows={shadows}>
@@ -479,8 +454,6 @@ function HarnessScene() {
           color={color}
           openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : undefined}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </Laptop>
@@ -502,8 +475,6 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </GalaxyTab>
@@ -514,8 +485,6 @@ function HarnessScene() {
           color={color}
           orientation={orientation}
           rotation={[rx, ry, 0]}
-          allowInput={allowInput}
-          dragToRotate={false}
         >
           {screen}
         </IPad>

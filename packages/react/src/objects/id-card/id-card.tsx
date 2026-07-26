@@ -11,7 +11,6 @@ import {
   roundedRectShapeCorners,
 } from '@area-mockups/core'
 import { DeviceScreen, SCREEN_MASK_INSET } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -54,15 +53,11 @@ function IDCardImpl({
   lanyardColor = '#b3223a',
   surfaceBackground = '#ffffff',
   resolution = ID_CARD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: IDCardProps) {
   const regions = collectSlots(children, ID_CARD_REGIONS)
   const { body, slot, face, hook, strap } = ID_CARD
-  const cardRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(cardRef)
 
   const cardGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -204,8 +199,6 @@ function IDCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const front = resolveSurface(regions.front, surfaceDefaults)
@@ -214,14 +207,13 @@ function IDCardImpl({
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occluders: occludeRefs,
     occluderGeometry: faceOccluderGeometry,
   }
 
   return (
     <group {...groupProps}>
       {/* PVC card with the punched slot */}
-      <mesh ref={cardRef} geometry={cardGeometry}>
+      <mesh geometry={cardGeometry}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.55} clearcoat={0.4} clearcoatRoughness={0.4} />
       </mesh>
 

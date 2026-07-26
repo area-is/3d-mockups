@@ -4,7 +4,6 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BUS, BUS_REGIONS, clipCircle, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 import { RoadWheel } from '../road-wheel'
@@ -269,8 +268,6 @@ function BusImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BusProps) {
@@ -290,15 +287,12 @@ function BusImpl({
     rearWindow,
     destination,
   } = BUS
-  const shellRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(shellRef)
   // Screens occlude against OTHER registered bodies only. The shell is a
   // convex hull, so the backface culler already hides every surface the
   // body itself could cover — own-shell ray hits at oblique angles were
   // false positives that blanked a plainly visible surface (the rear wrap
   // vanishing at rear-quarter views). The shell stays registered so it
   // still occludes every other mockup in the scene.
-  const otherOccludeRefs = React.useMemo(() => occludeRefs.filter((ref) => ref !== shellRef), [occludeRefs])
 
   // The ad rect the DeviceScreens cover: the classic king-size panel, or the
   // whole side elevation with the operational glass carved out via clip-path.
@@ -312,7 +306,7 @@ function BusImpl({
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
-  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
@@ -389,14 +383,13 @@ function BusImpl({
     },
     [sideOccluderGeometries]
   )
-  // Full-coverage sides composite per-pixel so proud hardware (the door
-  // mirrors and their arms) draws over the livery; so they stay per-pixel even when
-  // `allowInput` (and are therefore never clickable). Everything else
-  // follows `allowInput` like any other surface.
+  // Only the full-coverage sides need a custom depth mask: their DOM is
+  // clipped to the wrap outline, so the mask must carve the same glass out of
+  // the silhouette — otherwise the livery's rectangle would hide the door
+  // mirrors and their arms, which stand proud of it. A panel ad is a plain
+  // rect, and its own silhouette already is its mask.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
-    fullWrap
-      ? { blending: true, occluderGeometry: blendGeometry }
-      : { occluders: otherOccludeRefs }
+    fullWrap ? { occluderGeometry: blendGeometry } : {}
 
   // Plain strings become the built-in LED destination sign; custom nodes
   // pass straight through.
@@ -454,7 +447,7 @@ function BusImpl({
   return (
     <group {...groupProps}>
       {/* painted shell */}
-      <mesh ref={shellRef} geometry={shellGeometry}>
+      <mesh geometry={shellGeometry}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.4}
@@ -485,7 +478,6 @@ function BusImpl({
             {...resolveSurface(signSlot, { ...surfaceDefaults, background: '#0a0a08', resolution: 480 })}
             position={[0.016, destination.y - frontBand.mid[1], 0]}
             rotation={[0, Math.PI / 2, 0]}
-            occluders={otherOccludeRefs}
           >
             {sign}
           </DeviceScreen>
@@ -760,7 +752,6 @@ function BusImpl({
           {...rearSurface}
           position={[-body.length / 2 - (fullWrap ? 0.029 : 0.028), rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          occluders={otherOccludeRefs}
           screenStyle={rearStyle}
         >
           {regions.rear.children}

@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { A_FRAME_SIGN, A_FRAME_SIGN_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -41,16 +40,11 @@ function AFrameSignImpl({
   color = '#4a3826',
   surfaceBackground = '#20241f',
   resolution = A_FRAME_SIGN.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: AFrameSignProps) {
   const regions = collectSlots(children, A_FRAME_SIGN_REGIONS)
   const { panel, face, splayAngle } = A_FRAME_SIGN
-  const frontRef = React.useRef<THREE.Mesh>(null!)
-  const backRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(frontRef, backRef)
 
   const frameGeometry = React.useMemo(() => {
     const shape = roundedRectShape(panel.width, panel.height, 0.03)
@@ -90,15 +84,12 @@ function AFrameSignImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const screenProps = {
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occluders: occludeRefs,
   }
 
   return (
@@ -115,7 +106,7 @@ function AFrameSignImpl({
             rotation-x={dir * tilt}
           >
             {/* wood frame with a true opening */}
-            <mesh ref={isFront ? frontRef : backRef} geometry={frameGeometry} rotation-y={isFront ? 0 : Math.PI}>
+            <mesh geometry={frameGeometry} rotation-y={isFront ? 0 : Math.PI}>
               <meshPhysicalMaterial color={color} metalness={0} roughness={0.75} />
             </mesh>
             {/* board behind the opening */}

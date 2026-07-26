@@ -422,13 +422,6 @@ const SCREEN_CONTROLS: Control[] = [
     step: 8,
     title: 'CSS pixel width of the virtual display (unset = the model’s own default)',
   },
-  toggle(
-    'allowInput',
-    'allowInput',
-    false,
-    'Let clicks, scrolling and typing reach the content — at the cost of per-pixel occlusion (see /docs/screen-content)'
-  ),
-  toggle('dragToRotate', 'drag→rotate', true, 'Hand drags off the screen to the orbit controls'),
   {
     prop: 'surfaceBackground',
     label: 'surface bg',

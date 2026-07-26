@@ -4,7 +4,6 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { DOOH_TOTEM, DOOH_TOTEM_REGIONS, doohTotemSpec, type DoohTotemSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -51,8 +50,6 @@ function DOOHTotemImpl({
   color = '#2f333a',
   surfaceBackground = '#000000',
   resolution = DOOH_TOTEM.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: DOOHTotemProps) {
@@ -61,8 +58,6 @@ function DOOHTotemImpl({
     () => (size ? doohTotemSpec(size) : DOOH_TOTEM),
     [size?.width, size?.height]
   )
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -98,21 +93,18 @@ function DOOHTotemImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const screenProps = {
     width: display.width,
     height: display.height,
     radius: display.radius,
-    occluders: occludeRefs,
   }
 
   return (
     <group {...groupProps}>
       {/* enclosure */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial color={color} metalness={0.65} roughness={0.4} />
       </mesh>
 

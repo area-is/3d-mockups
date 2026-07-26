@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg'
-import { MeshBVH } from 'three-mesh-bvh'
 import { roundedRectShape } from '@area-mockups/core'
 
 /**
@@ -325,11 +324,6 @@ export function cutGeometry(
     const result = evaluator.evaluate(bodyBrush, cutterBrush, SUBTRACTION).geometry
     cutterBrush.geometry.dispose()
     base.dispose()
-    // A BVH on the machined chassis makes the screens' occlusion rays cost
-    // microseconds (the BVH library is already here for the boolean op).
-    // Untyped assignment: two hoisted copies of three-mesh-bvh's typings
-    // otherwise collide on the BufferGeometry `boundsTree` augmentation.
-    ;(result as unknown as { boundsTree: unknown }).boundsTree = new MeshBVH(result)
     return result
   } catch {
     return base

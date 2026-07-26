@@ -10,7 +10,6 @@ import {
   roundedRectShape,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -54,8 +53,6 @@ function RollupBannerImpl({
   color = '#b9bdc4',
   surfaceBackground = '#ffffff',
   resolution = ROLLUP_BANNER.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: RollupBannerProps) {
@@ -64,8 +61,6 @@ function RollupBannerImpl({
     () => (size ? rollupBannerSpec(size) : ROLLUP_BANNER),
     [size?.width, size?.height]
   )
-  const backingRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(backingRef)
 
   const backingGeometry = React.useMemo(
     () =>
@@ -84,7 +79,7 @@ function RollupBannerImpl({
   return (
     <group {...groupProps}>
       {/* vinyl backing the graphic prints on (its gray reverse side) */}
-      <mesh ref={backingRef} geometry={backingGeometry} position-z={-0.004}>
+      <mesh geometry={backingGeometry} position-z={-0.004}>
         <meshPhysicalMaterial color="#c9c9c6" metalness={0} roughness={0.85} side={THREE.DoubleSide} />
       </mesh>
 
@@ -133,12 +128,9 @@ function RollupBannerImpl({
         height={graphic.height}
         radius={graphic.radius}
         position={[0, 0, 0.002]}
-        occluders={occludeRefs}
         {...resolveSurface(bannerSlot, {
           background: surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
           style: surfaceStyle,
         })}
       >

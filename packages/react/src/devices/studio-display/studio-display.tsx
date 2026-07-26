@@ -12,7 +12,6 @@ import {
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -64,8 +63,6 @@ function StudioDisplayImpl({
   color: colorProp,
   surfaceBackground = '#000000',
   resolution = STUDIO_DISPLAY.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: StudioDisplayProps) {
@@ -73,13 +70,9 @@ function StudioDisplayImpl({
   const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorway)
   const color = colorProp ?? retail?.color ?? '#c8cbd0'
   const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
   // The stand pieces occlude too — from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
   // screen paint right through them.
-  const footRef = React.useRef<THREE.Mesh>(null!)
-  const armRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef, footRef, armRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -283,7 +276,7 @@ function StudioDisplayImpl({
     <group position-y={STUDIO_DISPLAY_STAGE_OFFSET_Y}>
     <group {...groupProps}>
       {/* enclosure */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
 
@@ -389,10 +382,10 @@ function StudioDisplayImpl({
 
       {/* tilt stand: knee-and-foot profile + the arm slab with its
           cable-routing hole, all in the enclosure finish */}
-      <mesh ref={footRef} geometry={standParts.footKnee}>
+      <mesh geometry={standParts.footKnee}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
-      <mesh ref={armRef} geometry={standParts.armSlab} position={standParts.armPos}>
+      <mesh geometry={standParts.armSlab} position={standParts.armPos}>
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
 
@@ -436,12 +429,9 @@ function StudioDisplayImpl({
         height={display.height}
         radius={display.radius}
         position={[0, 0, body.depth / 2 + 0.006]}
-        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution,
-          allowInput,
-          dragToRotate,
           style: surfaceStyle,
         })}
       >

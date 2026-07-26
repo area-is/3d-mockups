@@ -25,7 +25,6 @@ import {
   type StrapPath,
 } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
@@ -102,8 +101,6 @@ function WatchBody({
   bandOpen = false,
   surfaceBackground = '#000000',
   resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: WatchBodyProps) {
@@ -113,8 +110,6 @@ function WatchBody({
   const color = colorProp ?? retail?.color ?? '#1c1d21'
   const { body, glass, display, crown, buttons, mic, speaker, bandSlot, band } = spec
   const res = resolution ?? spec.resolution
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   // Squircle / cushion case: extruded rounded-rect with a deep bevel for the
   // curved sides (the Galaxy cushion is the same construction, wider and
@@ -432,7 +427,7 @@ function WatchBody({
     <group {...groupProps}>
       {/* case — no sharp clearcoat: mirror-reflected light panels turn into
           hard-edged patches on the tight case curvature */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.85}
@@ -759,12 +754,9 @@ function WatchBody({
         height={display.height}
         radius={display.radius}
         position={[0, 0, faceZ + 0.006]}
-        occluders={occludeRefs}
         {...resolveSurface(screen, {
           background: surfaceBackground,
           resolution: res,
-          allowInput,
-          dragToRotate,
           style: surfaceStyle,
         })}
       >

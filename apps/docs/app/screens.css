@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------ */
 /*  Demo screen content (music player, lock screen, desktop, watch     */
-/*  face, tap counter, embedded page). Shared by the site pages AND    */
+/*  face, live counter, embedded page). Shared by the site pages AND   */
 /*  the docs example embeds, so this file must be self-sufficient:     */
 /*  the design tokens it uses are declared here, not in globals.css.   */
 /* ------------------------------------------------------------------ */
 
 .screen,
 .mp,
-.tap,
+.live,
 .lock,
 .mac,
 .wf,
@@ -302,10 +302,10 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  Screen: tap counter                                                */
+/*  Screen: live counter                                               */
 /* ------------------------------------------------------------------ */
 
-.tap {
+.live {
   background:
     radial-gradient(80% 45% at 50% 0%, rgba(139, 124, 248, 0.16) 0%, transparent 65%),
     radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px) 0 0 / 22px 22px,
@@ -313,14 +313,14 @@
   justify-content: center;
 }
 
-.tap-body {
+.live-body {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
 
-.tap-label {
+.live-label {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 12px;
@@ -329,7 +329,7 @@
   margin: 0;
 }
 
-.tap-count {
+.live-count {
   font-size: 88px;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -343,40 +343,40 @@
   font-variant-numeric: tabular-nums;
 }
 
-.tap-button {
-  border: 0;
-  border-radius: 999px;
-  padding: 16px 52px;
-  font-family: inherit;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+.live-pulse {
+  display: flex;
+  gap: 8px;
+}
+
+.live-pulse span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
   background: var(--grad);
-  color: #0b0c12;
-  cursor: pointer;
-  box-shadow: 0 14px 30px -12px rgba(34, 211, 238, 0.55);
-  transition: transform 0.1s ease;
+  animation: live-pulse 1.2s ease-in-out infinite;
 }
 
-.tap-button:active {
-  transform: scale(0.94);
+.live-pulse span:nth-child(2) {
+  animation-delay: 0.15s;
 }
 
-.tap-reset {
-  margin-top: 10px;
-  background: none;
-  border: 0;
-  color: rgba(238, 240, 246, 0.45);
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
+.live-pulse span:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
-.tap-reset:hover {
-  color: rgba(238, 240, 246, 0.8);
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.tap-footnote {
+.live-footnote {
   position: absolute;
   bottom: 34px;
   font-size: 12.5px;

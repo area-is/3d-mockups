@@ -24,7 +24,6 @@ import {
 } from '../details'
 
 type GroupProps = ThreeElements['group']
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceDefaults {
@@ -84,8 +83,6 @@ function GalaxyImpl({
   surfaceBackground = '#000000',
   resolution,
   punchHole = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: GalaxyProps) {
@@ -98,8 +95,6 @@ function GalaxyImpl({
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(spec.resolution * (landscape ? aspect : 1))
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   // Chassis: an extruded rounded-rect with beveled edges. The shape is inset by
   // the bevel size so the final silhouette lands exactly on the spec body. The
@@ -240,7 +235,7 @@ function GalaxyImpl({
           camera-left pose); the screen plane counter-rotates below */}
       <group rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* chassis */}
-        <mesh ref={bodyRef} geometry={bodyGeometry}>
+        <mesh geometry={bodyGeometry}>
           <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
         </mesh>
 
@@ -409,12 +404,9 @@ function GalaxyImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            allowInput,
-            dragToRotate,
             style: surfaceStyle,
           })}
           overlay={

@@ -4,7 +4,6 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { BOOK, BOOK_REGIONS, bookSpec, type BookSize, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -50,8 +49,6 @@ function BookImpl({
   pageColor = '#f4eede',
   surfaceBackground = '#ffffff',
   resolution = BOOK.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BookProps) {
@@ -61,19 +58,11 @@ function BookImpl({
     [size?.width, size?.height, size?.thickness]
   )
   const { board, thickness, pages, spine, groove, headband, cover } = spec
-  const frontRef = React.useRef<THREE.Mesh>(null!)
-  const backRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(frontRef, backRef)
 
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
-  }
-  const screenProps = {
-    occluders: occludeRefs,
   }
   // A cased-in hardback's backbone is NOT a half-round tube: it is flat
   // across the printed area and rolls off into the joints. Modelling it as a
@@ -137,10 +126,10 @@ function BookImpl({
   return (
     <group {...groupProps}>
       {/* front and back binder's boards, shifted clear of the french groove */}
-      <mesh ref={frontRef} geometry={boardGeometry} position={[groove.width / 2, 0, boardZ]}>
+      <mesh geometry={boardGeometry} position={[groove.width / 2, 0, boardZ]}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.72} />
       </mesh>
-      <mesh ref={backRef} geometry={boardGeometry} position={[groove.width / 2, 0, -boardZ]}>
+      <mesh geometry={boardGeometry} position={[groove.width / 2, 0, -boardZ]}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.72} />
       </mesh>
 
@@ -187,7 +176,6 @@ function BookImpl({
 
       {/* the live cover: real DOM, CSS3D-transformed onto the front board */}
       <DeviceScreen
-        {...screenProps}
         {...resolveSurface(regions.cover, surfaceDefaults)}
         width={cover.width}
         height={cover.height}
@@ -200,7 +188,6 @@ function BookImpl({
       {/* live back cover */}
       {regions.back != null && (
         <DeviceScreen
-          {...screenProps}
           {...resolveSurface(regions.back, surfaceDefaults)}
           width={cover.width}
           height={cover.height}
@@ -215,7 +202,6 @@ function BookImpl({
       {/* live spine strip on the backbone crown */}
       {regions.spine != null && (
         <DeviceScreen
-          {...screenProps}
           {...resolveSurface(regions.spine, {
             ...surfaceDefaults,
             // the spine shares the cover's dpi unless its slot overrides

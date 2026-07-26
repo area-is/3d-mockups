@@ -15,7 +15,6 @@ import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'
 import { UsbC, EdgeSocket, cutGeometry, stadiumCutter, holeCutter } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -673,8 +672,6 @@ function LaptopImpl({
   resolution,
   notch = true,
   openAngle,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: LaptopProps) {
@@ -687,9 +684,6 @@ function LaptopImpl({
   // 1512x982 / 1728x1117 on the Pros.
   const res = resolution ?? { air13: 1280, air15: 1440, pro14: 1512, pro16: 1728 }[variant]
   const lidAngle = openAngle ?? spec.openAngle
-  const baseRef = React.useRef<THREE.Mesh>(null!)
-  const lidRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(lidRef, baseRef)
 
   // Base chassis: the slab is baked into its resting orientation (footprint in
   // XZ) so every side-wall port opening can be machined out of it in place —
@@ -856,7 +850,7 @@ function LaptopImpl({
       <group position={[0, LAPTOP_STAGE_OFFSET_Y, 0]}>
         {/* ---------------- base: unibody chassis with the keyboard deck ---------------- */}
         <group>
-          <mesh ref={baseRef} geometry={baseGeometry}>
+          <mesh geometry={baseGeometry}>
             {aluminum}
           </mesh>
 
@@ -990,7 +984,7 @@ function LaptopImpl({
           </mesh>
 
           {/* lid slab — local +y is "up the screen", inner face toward +z */}
-          <mesh ref={lidRef} geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
+          <mesh geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
             {aluminum}
           </mesh>
 
@@ -1022,12 +1016,9 @@ function LaptopImpl({
             height={display.height}
             radius={[display.radius[0], display.radius[1], display.radius[2], display.radius[3]]}
             position={[0, footprint.depth / 2 + display.offsetY, lid.thickness / 2 + 0.006]}
-            occluders={occludeRefs}
             {...resolveSurface(screen, {
               background: surfaceBackground,
               resolution: res,
-              allowInput,
-              dragToRotate,
               style: surfaceStyle,
             })}
             overlay={

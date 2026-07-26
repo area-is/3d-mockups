@@ -4,7 +4,6 @@ import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 import { RoadWheel, WheelArchFlare } from '../road-wheel'
 
@@ -362,20 +361,15 @@ function VanImpl({
   resolution,
   coverage = 'panel',
   wrapOverWindows = false,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: VanProps) {
   const regions = collectSlots(children, VAN_REGIONS)
   const { body, rockerY, wheels, profile, wrap, rear: rearPanel, rearFull } = VAN
-  const shellRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(shellRef)
   // Screens occlude against OTHER registered bodies only — see the bus's
   // matching note: the convex shell's own ray hits at oblique angles were
   // false positives, and the backface culler covers every view the body
   // itself could block.
-  const otherOccludeRefs = React.useMemo(() => occludeRefs.filter((ref) => ref !== shellRef), [occludeRefs])
 
   // The side rect the DeviceScreens cover: the classic mid-panel, or the
   // whole side elevation with the hardware carved out via clip-path.
@@ -425,7 +419,7 @@ function VanImpl({
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
   const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
-  const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
+  const surfaceDefaults = { background: surfaceBackground, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear panel shares the side wrap's dpi.
@@ -482,14 +476,13 @@ function VanImpl({
     },
     [sideOccluderGeometries]
   )
-  // Full-coverage sides composite per-pixel so proud hardware (mirrors,
-  // handles, track, hinges) draws over the livery; so they stay per-pixel even when
-  // `allowInput` (and are therefore never clickable). Everything else
-  // follows `allowInput` like any other surface.
+  // Only the full-coverage sides need a custom depth mask: their DOM is
+  // clipped to the wrap outline, so the mask must carve the same glass out of
+  // the silhouette — otherwise the livery's rectangle would hide the mirrors,
+  // handles, track and hinges that stand proud of it. A panel ad is a plain
+  // rect, and its own silhouette already is its mask.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
-    fullWrap
-      ? { blending: true, occluderGeometry: blendGeometry }
-      : { occluders: otherOccludeRefs }
+    fullWrap ? { occluderGeometry: blendGeometry } : {}
 
   const shellGeometry = React.useMemo(() => {
     const s = vanProfileShape()
@@ -558,7 +551,7 @@ function VanImpl({
           lacquer — modelling it as half-metal (the old `metalness: 0.4`)
           desaturates the body into dull sheet and kills the wet highlight the
           clearcoat is there to provide. */}
-      <mesh ref={shellRef} geometry={shellGeometry}>
+      <mesh geometry={shellGeometry}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.08}
@@ -808,7 +801,6 @@ function VanImpl({
           {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 200 })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
-          occluders={otherOccludeRefs}
         >
           {plateFace}
         </DeviceScreen>
@@ -908,7 +900,6 @@ function VanImpl({
           {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 160 })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
-          occluders={otherOccludeRefs}
         >
           {plateFace}
         </DeviceScreen>
@@ -966,7 +957,6 @@ function VanImpl({
           {...rearSurface}
           position={[-body.length / 2 - 0.026, rearSpec.y, 0]}
           rotation={[0, -Math.PI / 2, 0]}
-          occluders={otherOccludeRefs}
           screenStyle={rearStyle}
         >
           {regions.rear.children}

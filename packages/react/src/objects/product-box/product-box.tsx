@@ -1,10 +1,8 @@
 import * as React from 'react'
-import type * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
 import { PRODUCT_BOX, PRODUCT_BOX_REGIONS, productBoxLayout, type ProductBoxSizeMm } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -51,8 +49,6 @@ function ProductBoxImpl({
   color = '#f4f1ea',
   surfaceBackground = '#ffffff',
   resolution = PRODUCT_BOX.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: ProductBoxProps) {
@@ -62,8 +58,6 @@ function ProductBoxImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [size?.width, size?.height, size?.depth]
   )
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
   const flapDepth = body.depth - flap.backGap
 
   // the glue-seam lap joint scales down with shallow cartons
@@ -74,13 +68,10 @@ function ProductBoxImpl({
 
   const shared = {
     radius: body.radius,
-    occluders: occludeRefs,
   }
   const panelDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   // the side panels' virtual width follows the carton depth at the front dpi
@@ -89,7 +80,7 @@ function ProductBoxImpl({
   return (
     <group {...groupProps}>
       {/* the carton — satin coated stock, crisp but not razor-sharp folds */}
-      <RoundedBox ref={bodyRef} args={[body.width, body.height, body.depth]} radius={body.radius}>
+      <RoundedBox args={[body.width, body.height, body.depth]} radius={body.radius}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.55} clearcoat={0.2} clearcoatRoughness={0.7} />
       </RoundedBox>
 

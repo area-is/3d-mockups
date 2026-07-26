@@ -23,7 +23,6 @@ import {
   holeCutter,
   USB_CUT_DEPTH,
 } from '../details'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -86,8 +85,6 @@ function IPhoneImpl({
   surfaceBackground = '#000000',
   resolution,
   dynamicIsland = true,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: IPhoneProps) {
@@ -100,8 +97,6 @@ function IPhoneImpl({
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(spec.resolution * (landscape ? aspect : 1))
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   // Chassis: an extruded rounded-rect with lightly beveled edges — the flat
   // aluminum/titanium frame. The shape is inset by the bevel size so the final
@@ -254,7 +249,7 @@ function IPhoneImpl({
           camera-left pose); the screen plane counter-rotates below */}
       <group rotation-z={landscape ? Math.PI / 2 : 0}>
         {/* chassis */}
-        <mesh ref={bodyRef} geometry={bodyGeometry}>
+        <mesh geometry={bodyGeometry}>
           <meshPhysicalMaterial color={frameColor} metalness={0.8} roughness={0.35} />
         </mesh>
 
@@ -439,12 +434,9 @@ function IPhoneImpl({
           radius={display.radius}
           position={[0, 0, body.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
-          occluders={occludeRefs}
           {...resolveSurface(screen, {
             background: surfaceBackground,
             resolution: res,
-            allowInput,
-            dragToRotate,
             style: surfaceStyle,
           })}
           overlay={

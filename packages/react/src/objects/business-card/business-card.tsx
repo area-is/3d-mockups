@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { BUSINESS_CARD, BUSINESS_CARD_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -44,15 +43,11 @@ function BusinessCardImpl({
   edgeColor,
   surfaceBackground = '#ffffff',
   resolution = BUSINESS_CARD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: BusinessCardProps) {
   const regions = collectSlots(children, BUSINESS_CARD_REGIONS)
   const { body, face } = BUSINESS_CARD
-  const bodyRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(bodyRef)
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -78,22 +73,19 @@ function BusinessCardImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
   }
   const faceProps = {
     width: face.width,
     height: face.height,
     radius: face.radius,
-    occluders: occludeRefs,
   }
 
   return (
     <group {...groupProps}>
       {/* the stock — faces in the stock color, die-cut edge optionally painted
           (ExtrudeGeometry material group 0 is the caps, group 1 the sides) */}
-      <mesh ref={bodyRef} geometry={bodyGeometry}>
+      <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial attach="material-0" color={color} metalness={0} roughness={0.82} />
         <meshPhysicalMaterial
           attach="material-1"

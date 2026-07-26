@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import type { ThreeElements } from '@react-three/fiber'
 import { VINYL_RECORD, VINYL_RECORD_REGIONS, roundedRectShape } from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
-import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -45,17 +44,11 @@ function VinylRecordImpl({
   color = '#f2efe8',
   surfaceBackground = '#ffffff',
   resolution = VINYL_RECORD.resolution,
-  allowInput = false,
-  dragToRotate = true,
   surfaceStyle,
   ...groupProps
 }: VinylRecordProps) {
   const regions = collectSlots(children, VINYL_RECORD_REGIONS)
   const { sleeve, disc, innerSleeve, discPeek } = VINYL_RECORD
-  const frontBoardRef = React.useRef<THREE.Mesh>(null!)
-  const backBoardRef = React.useRef<THREE.Mesh>(null!)
-  const discRef = React.useRef<THREE.Mesh>(null!)
-  const occludeRefs = useScreenOccluders(frontBoardRef, backBoardRef, discRef)
 
   // The jacket is HOLLOW: two thin boards with a slot between them that the
   // disc and inner sleeve actually occupy, like a real record coming out of
@@ -119,12 +112,7 @@ function VinylRecordImpl({
   const surfaceDefaults = {
     background: surfaceBackground,
     resolution,
-    allowInput,
-    dragToRotate,
     style: surfaceStyle,
-  }
-  const faceProps = {
-    occluders: occludeRefs,
   }
   // Both labels share the cover's dpi unless their slot overrides it, and both
   // carry the spindle bore in their own style so the art can't paint over it.
@@ -135,13 +123,6 @@ function VinylRecordImpl({
     })
     return { ...surface, screenStyle: { ...surface.screenStyle, ...spindleMask } }
   }
-  // KNOWN LIMITATION — with `allowInput` on, a record carrying live art on
-  // BOTH labels can show side B faintly through side A at some angles. The
-  // disc is 0.022 units thick, the same order as the occlusion tester's
-  // self-hit margins (the ones that stop a screen hiding behind its own cover
-  // glass), so the two labels sit too close together for the raycast test to
-  // separate them. The default blending mode sorts them correctly by depth.
-
   const stock = { color, metalness: 0, roughness: 0.75 }
 
   // The spindle hole is a real hole: bored through the disc, out of the paper
@@ -206,10 +187,10 @@ function VinylRecordImpl({
           the jacket shifts left */}
       <group position={[-disc.radius * discPeek, 0, 0]}>
         {/* jacket boards, front and back, with the slot between them */}
-        <mesh ref={frontBoardRef} geometry={boardGeometry} position-z={slotHalf + board / 2}>
+        <mesh geometry={boardGeometry} position-z={slotHalf + board / 2}>
           <meshPhysicalMaterial {...stock} />
         </mesh>
-        <mesh ref={backBoardRef} geometry={boardGeometry} position-z={-slotHalf - board / 2}>
+        <mesh geometry={boardGeometry} position-z={-slotHalf - board / 2}>
           <meshPhysicalMaterial {...stock} />
         </mesh>
 
@@ -228,7 +209,6 @@ function VinylRecordImpl({
 
         {/* live cover art */}
         <DeviceScreen
-          {...faceProps}
           {...resolveSurface(regions.cover, surfaceDefaults)}
           width={sleeve.size}
           height={sleeve.size}
@@ -241,7 +221,6 @@ function VinylRecordImpl({
         {/* live back cover */}
         {regions.back != null && (
           <DeviceScreen
-            {...faceProps}
             {...resolveSurface(regions.back, surfaceDefaults)}
             width={sleeve.size}
             height={sleeve.size}
@@ -262,7 +241,7 @@ function VinylRecordImpl({
 
         {/* the disc, sliding out of the slot */}
         <group position={[discX, 0, discZ]}>
-          <mesh ref={discRef} geometry={discGeometry}>
+          <mesh geometry={discGeometry}>
             <meshPhysicalMaterial color={vinylColor} metalness={0.1} roughness={0.32} clearcoat={1} clearcoatRoughness={0.25} />
           </mesh>
 
@@ -272,7 +251,6 @@ function VinylRecordImpl({
           {/* live circular label, bored through at the spindle */}
           {regions.label != null && (
             <DeviceScreen
-              {...faceProps}
               {...labelSurface(regions.label)}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}
@@ -287,7 +265,6 @@ function VinylRecordImpl({
           {/* live side-B label */}
           {regions.backLabel != null && (
             <DeviceScreen
-              {...faceProps}
               {...labelSurface(regions.backLabel)}
               width={disc.labelRadius * 2}
               height={disc.labelRadius * 2}

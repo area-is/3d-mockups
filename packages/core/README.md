@@ -21,7 +21,7 @@ Most users should install a framework binding instead:
   renderer including the planned 2D (CSS/SVG) ones.
 - **Geometry math** — `roundedRectShape` and friends, producing plain three.js values.
 - **Screen behaviors** — the CSS-pixel math that maps a world-unit display onto a live
-  DOM element, the wrapper styles, the tap-vs-drag orbit handoff, and backface culling.
+  DOM element, the wrapper styles, and backface culling.
 - **Stage** — camera/orbit/shadow defaults, the procedural studio light rig, the idle
   float animation, and the overlay-button chrome (zoom, fullscreen).
 

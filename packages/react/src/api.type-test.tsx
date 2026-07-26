@@ -33,10 +33,14 @@ type _noPanelsProp = Expect<Not<Has<'panels', React.ComponentProps<typeof Brochu
 
 // ---- surface vocabulary is unified ---------------------------------------------------
 type _surfaceBackground = Expect<Has<'surfaceBackground', AFrameSignProps>>
-type _slotShape = Expect<
-  Equal<keyof SurfaceProps, 'background' | 'resolution' | 'allowInput' | 'dragToRotate' | 'style'>
->
+type _slotShape = Expect<Equal<keyof SurfaceProps, 'background' | 'resolution' | 'style'>>
 type _slotChildren = Expect<Has<'children', SlotProps>>
+
+// ---- mockups are decorative: there is no input/occlusion vocabulary ------------------
+type _noAllowInput = Expect<Not<Has<'allowInput', AFrameSignProps>>>
+type _noDragToRotate = Expect<Not<Has<'dragToRotate', AFrameSignProps>>>
+type _noSlotAllowInput = Expect<Not<Has<'allowInput', SlotProps>>>
+type _noMockupAllowInput = Expect<Not<Has<'allowInput', AFrameSignMockupProps>>>
 
 // ---- wrappers merge stage + object props, and transforms are first-class -------------
 type _stageProps = Expect<Has<'autoRotate', AFrameSignMockupProps>>
@@ -52,7 +56,7 @@ const _slotsUsage = (
       <AFrameSignMockup.Front background="#20241f">
         <div />
       </AFrameSignMockup.Front>
-      <AFrameSignMockup.Back resolution={640} allowInput={false}>
+      <AFrameSignMockup.Back resolution={640}>
         <div />
       </AFrameSignMockup.Back>
     </AFrameSignMockup>
