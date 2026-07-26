@@ -161,12 +161,20 @@ const written = []
 
 for (const [name, query] of CASES) {
   const url = `${BASE}/harness?${query}`
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 180_000 })
-  // r3f mounts the canvas, then drei's <Html> portals each screen through a
-  // nested root that can need a few frames to land (see device-screen.tsx).
-  await page.waitForSelector('canvas', { timeout: 60_000 })
-  await page.waitForTimeout(4000)
-  const shot = await page.screenshot()
+  let shot
+  try {
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 180_000 })
+    // r3f mounts the canvas, then drei's <Html> portals each screen through a
+    // nested root that can need a few frames to land (see device-screen.tsx).
+    await page.waitForSelector('canvas', { timeout: 60_000 })
+    await page.waitForTimeout(4000)
+    shot = await page.screenshot({ timeout: 60_000 })
+  } catch (err) {
+    // One flaky case must not throw away the other thirty-two results.
+    failures.push(`${name}: could not capture — ${String(err).split('\n')[0]}`)
+    console.log(`  ERROR  ${name} — ${String(err).split('\n')[0]}`)
+    continue
+  }
 
   const baselinePath = join(BASELINES, `${name}.png`)
   if (UPDATE || !existsSync(baselinePath)) {

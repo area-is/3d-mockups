@@ -2,7 +2,14 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { VAN, VAN_REGIONS, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import {
+  VAN,
+  VAN_REGIONS,
+  clipRoundedRect,
+  clipRoundedRectOutline,
+  VAN_FULL_WRAP,
+  VAN_FULL_WRAP_RESOLUTION,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { collectSlots, createSlots, resolveSurface, type SurfaceDefaults } from '../../slots'
@@ -10,21 +17,7 @@ import { RoadWheel, WheelArchFlare } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
-/**
- * Full-coverage side wrap: the whole flat side elevation, rockers to
- * roofline, tail to nose. The extruded shell makes the entire side face
- * coplanar, so one DOM plane can cover it; the outline and the hardware
- * cutouts below are carved out of that plane with a CSS `clip-path`.
- */
-const FULL_WRAP = {
-  width: VAN.profile.noseX - VAN.profile.tailX,
-  height: VAN.profile.roofY - VAN.rockerY,
-  x: (VAN.profile.noseX + VAN.profile.tailX) / 2,
-  y: (VAN.profile.roofY + VAN.rockerY) / 2,
-} as const
 
-/** Default CSS px width of the full-side wrap — same dpi as the panel wrap. */
-const FULL_WRAP_RESOLUTION = Math.round(VAN.resolution * (FULL_WRAP.width / VAN.wrap.width))
 
 /**
  * Cab door, in world units on the side elevation — proportioned from
@@ -421,10 +414,10 @@ function VanImpl({
       ? { curbSide: wrapOverWindows, streetSide: wrapOverWindows }
       : { curbSide: false, streetSide: false, ...wrapOverWindows }
   const side = fullWrap
-    ? { width: FULL_WRAP.width, height: FULL_WRAP.height, x: FULL_WRAP.x, y: FULL_WRAP.y, radius: 0 }
+    ? { width: VAN_FULL_WRAP.width, height: VAN_FULL_WRAP.height, x: VAN_FULL_WRAP.x, y: VAN_FULL_WRAP.y, radius: 0 }
     : { width: wrap.width, height: wrap.height, x: wrap.x, y: wrap.y, radius: wrap.radius }
   const rearSpec = fullWrap ? rearFull : rearPanel
-  const sideResolution = resolution ?? (fullWrap ? FULL_WRAP_RESOLUTION : VAN.resolution)
+  const sideResolution = resolution ?? (fullWrap ? VAN_FULL_WRAP_RESOLUTION : VAN.resolution)
   const surfaceDefaults = { background: surfaceBackground, allowInput, dragToRotate, style: surfaceStyle }
   const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
@@ -438,8 +431,8 @@ function VanImpl({
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
     return {
-      curb: `path("${buildFullWrapClip(curbSurface.resolution / FULL_WRAP.width, false, over.curbSide)}")`,
-      street: `path("${buildFullWrapClip(streetSurface.resolution / FULL_WRAP.width, true, over.streetSide)}")`,
+      curb: `path("${buildFullWrapClip(curbSurface.resolution / VAN_FULL_WRAP.width, false, over.curbSide)}")`,
+      street: `path("${buildFullWrapClip(streetSurface.resolution / VAN_FULL_WRAP.width, true, over.streetSide)}")`,
     }
   }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
   const rearClip = React.useMemo(
@@ -469,7 +462,7 @@ function VanImpl({
       rakedHole.closePath()
       s.holes.push(rakedHole)
       const geometry = new THREE.ShapeGeometry(s, 16)
-      geometry.translate(-FULL_WRAP.x, -FULL_WRAP.y, 0)
+      geometry.translate(-VAN_FULL_WRAP.x, -VAN_FULL_WRAP.y, 0)
       if (mirroredSide) geometry.scale(-1, 1, 1)
       return geometry
     }
@@ -802,10 +795,14 @@ function VanImpl({
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={0.5}
-          height={0.12}
-          radius={0.008}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 200 })}
+          width={VAN.plates.front.width}
+          height={VAN.plates.front.height}
+          radius={VAN.plates.front.radius}
+          {...resolveSurface(plateSlot, {
+            ...surfaceDefaults,
+            background: '#f4f6f8',
+            resolution: VAN.plates.front.resolution,
+          })}
           position={[2.839, -0.42, 0]}
           rotation={[0, Math.PI / 2, 0]}
           occluders={otherOccludeRefs}
@@ -902,10 +899,14 @@ function VanImpl({
       </RoundedBox>
       {plateSlot != null && (
         <DeviceScreen
-          width={0.26}
-          height={0.115}
-          radius={0.006}
-          {...resolveSurface(plateSlot, { ...surfaceDefaults, background: '#f4f6f8', resolution: 160 })}
+          width={VAN.plates.rear.width}
+          height={VAN.plates.rear.height}
+          radius={VAN.plates.rear.radius}
+          {...resolveSurface(plateSlot, {
+            ...surfaceDefaults,
+            background: '#f4f6f8',
+            resolution: VAN.plates.rear.resolution,
+          })}
           position={[-2.843, -0.78, -0.3]}
           rotation={[0, -Math.PI / 2, 0]}
           occluders={otherOccludeRefs}

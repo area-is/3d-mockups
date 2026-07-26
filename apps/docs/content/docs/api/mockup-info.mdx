@@ -40,10 +40,17 @@ book.regions.spine.mm      // { width: 20.9, height: 232.3 }
 book.primary               // === book.regions.cover — where bare children go
 ```
 
-A repeating region (a brochure's panels) resolves to an array:
+A region can resolve to an **array**, which means one of two things — `repeats`
+tells them apart:
 
 ```ts
-mockupInfo('brochure').regions.panel.length   // 3
+// repeats: true — one entry per slot child
+mockupInfo('brochure').regions.panel.length          // 3
+
+// repeats: false — one slot, painted onto surfaces of differing size
+const plates = mockupInfo('van').regions.licensePlate
+plates[0].mm   // { width: 525, height: 126 }   front plate
+plates[1].mm   // { width: 273, height: 120.8 } rear plate
 ```
 
 ### What's in a region
@@ -110,11 +117,18 @@ catalog.entries.find((e) => e.kind === 'galaxy' && e.props.variant === 's26')
 
 ## Coverage
 
-`MOCKUP_KINDS` is the authoritative list of what can be measured — 30 kinds
+`MOCKUP_KINDS` is the authoritative list of what can be measured — 32 kinds
 today.
 
-`van`, `bus` and `storefront` are **not** measurable yet. Their surfaces are
-still sized inside the React scene components (wrap-coverage variants, ten
-hand-placed window panes) rather than declared in their core specs, and
-publishing numbers copied out of a component is exactly the drift this API
-exists to prevent. They join the registry when that geometry moves into core.
+`storefront` is the one exception. Its ten window panes are still sized inside
+the React scene component rather than declared in its core spec, and publishing
+numbers copied out of a component is exactly the drift this API exists to
+prevent. It joins the registry when that geometry moves into core.
+
+Vehicles take a `coverage` prop, since a full wrap and a panel ad are different
+surfaces:
+
+```ts
+mockupInfo('bus', { coverage: 'panel' }).regions.curbSide.mm  // 3657.5 x 761.9 — king-size board
+mockupInfo('bus', { coverage: 'full' }).regions.curbSide.mm   // 12160 x 2884.2 — whole elevation
+```

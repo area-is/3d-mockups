@@ -120,8 +120,11 @@ const _defaults = mockupInfo('galaxy')
 mockupInfo('galaxy', { variant: 's27' })
 // @ts-expect-error — colors cannot change a measurement, so they are not accepted
 mockupInfo('galaxy', { color: '#fff' })
-// @ts-expect-error — van's geometry still lives in its scene component
-mockupInfo('van')
+// @ts-expect-error — storefront's pane geometry still lives in its scene component
+mockupInfo('storefront')
+// bus and van joined the registry once their wrap geometry moved into core
+const _busInfo = mockupInfo('bus', { coverage: 'full' })
+const _vanInfo = mockupInfo('van', { coverage: 'panel' })
 
 // Every region carries all three unit systems.
 type _units = Expect<Equal<RegionInfo['units'], { width: number; height: number }>>

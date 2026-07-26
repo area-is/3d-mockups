@@ -2,7 +2,14 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { BUS, BUS_REGIONS, clipCircle, clipRoundedRect, clipRoundedRectOutline } from '@area-mockups/core'
+import {
+  BUS,
+  BUS_FULL_SIDE,
+  BUS_REGIONS,
+  clipCircle,
+  clipRoundedRect,
+  clipRoundedRectOutline,
+} from '@area-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { useScreenOccluders } from '../../screen/occluders'
 import { LEDText, isLedText } from '../../led-text'
@@ -11,18 +18,6 @@ import { RoadWheel } from '../road-wheel'
 
 type GroupProps = ThreeElements['group']
 
-/**
- * Full-coverage side wrap: the whole side elevation, skirts to roofline,
- * tail to nose. The extruded shell makes the entire side face coplanar, so
- * one DOM plane can cover it; the body outline and the operational-glass
- * cutouts below are carved out of that plane with a CSS `clip-path`.
- */
-const FULL_SIDE = {
-  width: BUS.profile.noseX - BUS.profile.tailX,
-  height: BUS.profile.roofY - BUS.skirtY,
-  x: (BUS.profile.noseX + BUS.profile.tailX) / 2,
-  y: (BUS.profile.roofY + BUS.skirtY) / 2,
-} as const
 
 /**
  * The shell's side profile as a THREE shape — shared by the extruded body
@@ -308,7 +303,7 @@ function BusImpl({
       ? { curbSide: wrapOverWindows, streetSide: wrapOverWindows, rear: wrapOverWindows }
       : { curbSide: true, streetSide: true, rear: true, ...wrapOverWindows }
   const side = fullWrap
-    ? { width: FULL_SIDE.width, height: FULL_SIDE.height, x: FULL_SIDE.x, y: FULL_SIDE.y, radius: 0 }
+    ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, x: BUS_FULL_SIDE.x, y: BUS_FULL_SIDE.y, radius: 0 }
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
@@ -325,8 +320,8 @@ function BusImpl({
   const sideClip = React.useMemo(() => {
     if (!fullWrap) return null
     return {
-      curb: `path("${buildFullSideClip(curbSurface.resolution / FULL_SIDE.width, false, over.curbSide)}")`,
-      street: `path("${buildFullSideClip(streetSurface.resolution / FULL_SIDE.width, true, over.streetSide)}")`,
+      curb: `path("${buildFullSideClip(curbSurface.resolution / BUS_FULL_SIDE.width, false, over.curbSide)}")`,
+      street: `path("${buildFullSideClip(streetSurface.resolution / BUS_FULL_SIDE.width, true, over.streetSide)}")`,
     }
   }, [fullWrap, curbSurface.resolution, streetSurface.resolution, over.curbSide, over.streetSide])
   const rearClip = React.useMemo(() => {
@@ -376,7 +371,7 @@ function BusImpl({
         )
       }
       const geometry = new THREE.ShapeGeometry(s, 16)
-      geometry.translate(-FULL_SIDE.x, -FULL_SIDE.y, 0)
+      geometry.translate(-BUS_FULL_SIDE.x, -BUS_FULL_SIDE.y, 0)
       if (mirroredSide) geometry.scale(-1, 1, 1)
       return geometry
     }
@@ -481,8 +476,12 @@ function BusImpl({
           <DeviceScreen
             width={destination.width}
             height={destination.height}
-            radius={0.01}
-            {...resolveSurface(signSlot, { ...surfaceDefaults, background: '#0a0a08', resolution: 480 })}
+            radius={destination.radius}
+            {...resolveSurface(signSlot, {
+              ...surfaceDefaults,
+              background: '#0a0a08',
+              resolution: destination.resolution,
+            })}
             position={[0.016, destination.y - frontBand.mid[1], 0]}
             rotation={[0, Math.PI / 2, 0]}
             occluders={otherOccludeRefs}

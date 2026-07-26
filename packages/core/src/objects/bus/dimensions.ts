@@ -16,7 +16,7 @@
  * future 2D (CSS/SVG) renderer can consume the same numbers.
  */
 
-import type { MockupFraming, RegionSpec } from '../../regions'
+import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const BUS = {
   /** Overall body: length (x), height (y), width (z). `bevel` rounds the shell edges. */
@@ -91,7 +91,7 @@ export const BUS = {
   /** Rear window above the engine bay. */
   rearWindow: { width: 0.95, height: 0.44, y: 0.5 },
   /** Live LED destination sign inside the dark upper fascia band. */
-  destination: { width: 1.105, height: 0.174, y: 0.56 },
+  destination: { width: 1.105, height: 0.174, y: 0.56, radius: 0.01, resolution: 480 },
   /** Default CSS px width of the virtual ad panel. */
   resolution: 960,
   /** Default CSS px width of the full-coverage side wrap (`coverage="full"`). */
@@ -105,6 +105,64 @@ export const BUS_REGIONS = [
   { name: 'rear', label: 'Rear ad' },
   { name: 'destinationSign', label: 'Destination sign' },
 ] as const satisfies readonly RegionSpec[]
+
+/** Millimetres per world unit — the transit-bus scale (~1900 mm per unit). */
+export const BUS_MM_PER_UNIT = 1900
+
+/**
+ * Full-coverage side wrap (`coverage="full"`): the whole side elevation,
+ * skirts to roofline, tail to nose. The extruded shell makes that face
+ * coplanar, so one DOM plane covers it and the body outline plus the
+ * operational-glass cutouts are carved out with a CSS `clip-path`.
+ *
+ * Derived rather than written out, so it tracks the profile it is measured
+ * from. Lived in the React scene component until the metrics needed it.
+ */
+export const BUS_FULL_SIDE = {
+  width: BUS.profile.noseX - BUS.profile.tailX,
+  height: BUS.profile.roofY - BUS.skirtY,
+  x: (BUS.profile.noseX + BUS.profile.tailX) / 2,
+  y: (BUS.profile.roofY + BUS.skirtY) / 2,
+} as const
+
+/** How much of the bodywork a wrap covers. */
+export type BusCoverage = 'panel' | 'full'
+
+/**
+ * Live geometry of both flanks, the tail and the destination sign.
+ *
+ * `coverage` decides the flank and tail rects: `panel` is the king-size ad
+ * board, `full` is the whole elevation. The tail always shares the flank's
+ * dpi, so a wrap prints at one density all the way round.
+ */
+export const BUS_METRICS = {
+  mmPerUnit: BUS_MM_PER_UNIT,
+  regions: ({ coverage }) => {
+    const full = coverage === 'full'
+    const side = full
+      ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, radius: 0 }
+      : { width: BUS.ad.width, height: BUS.ad.height, radius: BUS.ad.radius }
+    const rear = full ? BUS.rearFull : BUS.rearAd
+    const resolution = full ? BUS.fullResolution : BUS.resolution
+    const flank = { ...side, resolution }
+    return {
+      curbSide: flank,
+      streetSide: flank,
+      rear: {
+        width: rear.width,
+        height: rear.height,
+        radius: rear.radius,
+        resolution: Math.round(rear.width * (resolution / side.width)),
+      },
+      destinationSign: {
+        width: BUS.destination.width,
+        height: BUS.destination.height,
+        radius: BUS.destination.radius,
+        resolution: BUS.destination.resolution,
+      },
+    }
+  },
+} as const satisfies MockupMetrics<{ coverage?: BusCoverage }>
 
 /** The wheels define the road plane; the shadow grounds just under them. */
 export const BUS_FRAMING = {

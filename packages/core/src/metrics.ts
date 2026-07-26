@@ -65,6 +65,8 @@ import {
 } from './objects/poster-frame/dimensions'
 import { BILLBOARD_METRICS, BILLBOARD_REGIONS } from './objects/billboard/dimensions'
 import { ID_CARD_METRICS, ID_CARD_REGIONS } from './objects/id-card/dimensions'
+import { BUS_METRICS, BUS_REGIONS, type BusCoverage } from './objects/bus/dimensions'
+import { VAN_METRICS, VAN_REGIONS, type VanCoverage } from './objects/van/dimensions'
 import {
   PRODUCT_BOX_METRICS,
   PRODUCT_BOX_REGIONS,
@@ -110,6 +112,8 @@ export interface MockupPropsMap {
   posterFrame: { size?: PosterFrameSize; mat?: boolean }
   billboard: Record<string, never>
   idCard: Record<string, never>
+  bus: { coverage?: BusCoverage }
+  van: { coverage?: VanCoverage }
   productBox: { size?: ProductBoxSizeMm }
   rollupBanner: { size?: RollupBannerSize }
   busShelter: Record<string, never>
@@ -128,9 +132,9 @@ export interface MockupPropsMap {
 /**
  * Every mockup the library can measure.
  *
- * `van`, `bus` and `storefront` are deliberately absent: their surfaces are
- * still sized inside the React scene components (wrap-coverage variants, ten
- * hand-placed window panes), so there is nothing in core to measure yet.
+ * `storefront` is the last one absent: its ten window panes are still sized
+ * inside the React scene component, so there is nothing in core to measure
+ * yet.
  * Declaring them here with numbers copied out of a component is exactly the
  * drift this API exists to prevent — they join the registry when their
  * geometry moves down into their specs.
@@ -172,6 +176,8 @@ const REGISTRY: Record<MockupKind, Entry> = {
   posterFrame: { regions: POSTER_FRAME_REGIONS, metrics: POSTER_FRAME_METRICS },
   billboard: { regions: BILLBOARD_REGIONS, metrics: BILLBOARD_METRICS },
   idCard: { regions: ID_CARD_REGIONS, metrics: ID_CARD_METRICS },
+  bus: { regions: BUS_REGIONS, metrics: BUS_METRICS },
+  van: { regions: VAN_REGIONS, metrics: VAN_METRICS },
   productBox: { regions: PRODUCT_BOX_REGIONS, metrics: PRODUCT_BOX_METRICS },
   rollupBanner: { regions: ROLLUP_BANNER_REGIONS, metrics: ROLLUP_BANNER_METRICS },
   busShelter: { regions: BUS_SHELTER_REGIONS, metrics: BUS_SHELTER_METRICS },

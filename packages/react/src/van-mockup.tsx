@@ -1,4 +1,4 @@
-import { VAN_FRAMING } from '@area-mockups/core'
+import { VAN_FRAMING, VAN_REGIONS, VAN_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Van, vanSlots, type VanProps } from './objects/van/van'
 
@@ -19,6 +19,9 @@ export type VanMockupProps = MockupProps<VanProps>
  * Bare children are shorthand for the curb-side wrap panel.
  */
 export const VanMockup = createMockup({
+  kind: 'van',
+  regions: VAN_REGIONS,
+  metrics: VAN_METRICS,
   object: Van,
   framing: VAN_FRAMING,
   slots: vanSlots,
