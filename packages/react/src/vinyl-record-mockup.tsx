@@ -1,4 +1,4 @@
-import { VINYL_RECORD_FRAMING, VINYL_RECORD_REGIONS } from '@area-mockups/core'
+import { VINYL_RECORD_FRAMING, VINYL_RECORD_REGIONS, VINYL_RECORD_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { VinylRecord, vinylRecordSlots, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
 
@@ -19,6 +19,7 @@ export type VinylRecordMockupProps = MockupProps<VinylRecordProps>
 export const VinylRecordMockup = createMockup({
   kind: 'vinylRecord',
   regions: VINYL_RECORD_REGIONS,
+  metrics: VINYL_RECORD_METRICS,
   object: VinylRecord,
   framing: VINYL_RECORD_FRAMING,
   slots: vinylRecordSlots,

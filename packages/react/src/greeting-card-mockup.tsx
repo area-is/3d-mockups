@@ -1,4 +1,4 @@
-import { GREETING_CARD_FRAMING, GREETING_CARD_REGIONS } from '@area-mockups/core'
+import { GREETING_CARD_FRAMING, GREETING_CARD_REGIONS, GREETING_CARD_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GreetingCard, greetingCardSlots, type GreetingCardProps } from './objects/greeting-card/greeting-card'
 
@@ -20,6 +20,7 @@ export type GreetingCardMockupProps = MockupProps<GreetingCardProps>
 export const GreetingCardMockup = createMockup({
   kind: 'greetingCard',
   regions: GREETING_CARD_REGIONS,
+  metrics: GREETING_CARD_METRICS,
   object: GreetingCard,
   framing: GREETING_CARD_FRAMING,
   slots: greetingCardSlots,

@@ -1,4 +1,4 @@
-import { BROCHURE_FRAMING, BROCHURE_REGIONS } from '@area-mockups/core'
+import { BROCHURE_FRAMING, BROCHURE_REGIONS, BROCHURE_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Brochure, brochureSlots, type BrochureProps } from './objects/brochure/brochure'
 
@@ -21,6 +21,7 @@ export type BrochureMockupProps = MockupProps<BrochureProps>
 export const BrochureMockup = createMockup({
   kind: 'brochure',
   regions: BROCHURE_REGIONS,
+  metrics: BROCHURE_METRICS,
   object: Brochure,
   framing: BROCHURE_FRAMING,
   slots: brochureSlots,

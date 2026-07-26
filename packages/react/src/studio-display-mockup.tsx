@@ -1,4 +1,4 @@
-import { STUDIO_DISPLAY_FRAMING, SCREEN_REGIONS } from '@area-mockups/core'
+import { STUDIO_DISPLAY_FRAMING, SCREEN_REGIONS, STUDIO_DISPLAY_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { StudioDisplay, studioDisplaySlots, type StudioDisplayProps } from './devices/studio-display/studio-display'
 
@@ -26,6 +26,7 @@ export type StudioDisplayMockupProps = MockupProps<StudioDisplayProps>
 export const StudioDisplayMockup = createMockup({
   kind: 'studioDisplay',
   regions: SCREEN_REGIONS,
+  metrics: STUDIO_DISPLAY_METRICS,
   object: StudioDisplay,
   framing: STUDIO_DISPLAY_FRAMING,
   slots: studioDisplaySlots,

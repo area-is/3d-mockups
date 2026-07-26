@@ -1,4 +1,4 @@
-import { BUS_SHELTER_FRAMING, BUS_SHELTER_REGIONS } from '@area-mockups/core'
+import { BUS_SHELTER_FRAMING, BUS_SHELTER_REGIONS, BUS_SHELTER_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { BusShelter, busShelterSlots, type BusShelterProps } from './objects/bus-shelter/bus-shelter'
 
@@ -20,6 +20,7 @@ export type BusShelterMockupProps = MockupProps<BusShelterProps>
 export const BusShelterMockup = createMockup({
   kind: 'busShelter',
   regions: BUS_SHELTER_REGIONS,
+  metrics: BUS_SHELTER_METRICS,
   object: BusShelter,
   framing: BUS_SHELTER_FRAMING,
   slots: busShelterSlots,

@@ -1,4 +1,4 @@
-import { MAGAZINE_FRAMING, MAGAZINE_REGIONS } from '@area-mockups/core'
+import { MAGAZINE_FRAMING, MAGAZINE_REGIONS, MAGAZINE_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Magazine, magazineSlots, type MagazineProps } from './objects/magazine/magazine'
 
@@ -20,6 +20,7 @@ export type MagazineMockupProps = MockupProps<MagazineProps>
 export const MagazineMockup = createMockup({
   kind: 'magazine',
   regions: MAGAZINE_REGIONS,
+  metrics: MAGAZINE_METRICS,
   object: Magazine,
   framing: MAGAZINE_FRAMING,
   slots: magazineSlots,

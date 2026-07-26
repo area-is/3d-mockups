@@ -1,4 +1,4 @@
-import { MAILER_BOX_FRAMING, MAILER_BOX_REGIONS } from '@area-mockups/core'
+import { MAILER_BOX_FRAMING, MAILER_BOX_REGIONS, MAILER_BOX_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { MailerBox, mailerBoxSlots, type MailerBoxProps } from './objects/mailer-box/mailer-box'
 
@@ -20,6 +20,7 @@ export type MailerBoxMockupProps = MockupProps<MailerBoxProps>
 export const MailerBoxMockup = createMockup({
   kind: 'mailerBox',
   regions: MAILER_BOX_REGIONS,
+  metrics: MAILER_BOX_METRICS,
   object: MailerBox,
   framing: MAILER_BOX_FRAMING,
   slots: mailerBoxSlots,

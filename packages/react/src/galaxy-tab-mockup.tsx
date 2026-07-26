@@ -1,4 +1,4 @@
-import { TABLET_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS } from '@area-mockups/core'
+import { TABLET_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS, GALAXY_TAB_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyTab, tabletSlots, type GalaxyTabProps } from './devices/tablet/tablet'
 
@@ -7,6 +7,7 @@ export type GalaxyTabMockupProps = MockupProps<GalaxyTabProps>
 const GalaxyTabMockupBase = createMockup({
   kind: 'galaxyTab',
   regions: SCREEN_REGIONS,
+  metrics: GALAXY_TAB_METRICS,
   object: GalaxyTab,
   framing: TABLET_FRAMING,
   slots: tabletSlots,

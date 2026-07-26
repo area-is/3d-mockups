@@ -14,6 +14,11 @@
  * helpers the renderer feeds its screen bridge, so what this reports and what
  * actually renders cannot drift apart.
  *
+ * Building the registry means referencing every spec module, so importing
+ * `mockupInfo` pulls the whole catalog in. That is the right trade for a
+ * runtime-string lookup, and the wrong one for a component that already knows
+ * its own spec — those call `describeMockup` from `./measure` instead.
+ *
  * ```ts
  * const info = mockupInfo('galaxy', { variant: 's26', orientation: 'landscape' })
  * info.regions.screen.px    // { width: 780, height: 360 }
@@ -26,9 +31,9 @@
  */
 
 import type { Orientation } from './orientation'
-import type { RegionMetrics, RegionRadius, RegionSpec } from './regions'
+import type { RegionMetrics, RegionSpec } from './regions'
 import { SCREEN_REGIONS } from './regions'
-import { screenCssHeight, screenPxPerUnit } from './screen/surface'
+import { describeMockup, type MockupInfo, type RegionInfo, type Size } from './measure'
 
 import { GALAXY_METRICS, type GalaxyVariant } from './devices/galaxy/dimensions'
 import { IPHONE_METRICS, type IPhoneVariant } from './devices/iphone/dimensions'
@@ -78,60 +83,9 @@ import { SHOPPING_BAG_METRICS, SHOPPING_BAG_REGIONS, type ShoppingBagSizeMm } fr
 import { CUSTOM_PANEL_METRICS, CUSTOM_PANEL_REGIONS, type CustomSizeMm } from './objects/custom-panel/dimensions'
 import { CUSTOM_BOX_METRICS, CUSTOM_BOX_REGIONS, type CustomBoxSizeMm } from './objects/custom-box/dimensions'
 
-/** A width/height pair in whichever unit the containing field names. */
-export interface Size {
-  width: number
-  height: number
-}
 
-/** Everything known about one live region of a configured mockup. */
-export interface RegionInfo {
-  /** Region id — the slot name (`front` → `<Mockup.Front>`). */
-  name: string
-  /** Short human label, e.g. `'Front cover'`. */
-  label: string
-  /** Whether the region takes any number of slot elements. */
-  repeats: boolean
-  /** Position within a repeating region; `0` for single regions. */
-  index: number
-  /** The live rect in three.js world units. */
-  units: Size
-  /** The live rect in millimetres — the physical size of the printed surface. */
-  mm: Size
-  /**
-   * The live rect in CSS pixels: the viewport your content lays out in at this
-   * region's default `resolution`. Pass a `resolution` prop to change it.
-   */
-  px: Size
-  /** CSS pixels per world unit at the default resolution. */
-  pxPerUnit: number
-  /** Default CSS pixel width of the region's virtual surface. */
-  resolution: number
-  /** Corner rounding, in world units and in CSS pixels. */
-  radius: { units: RegionRadius; px: RegionRadius }
-  /** Aspect ratio of the live rect (width ÷ height). */
-  aspect: number
-}
-
-/** Everything known about a configured mockup. */
-export interface MockupInfo {
-  /** The mockup kind this describes. */
-  kind: MockupKind
-  /** Millimetres per world unit for this family. */
-  mmPerUnit: number
-  /**
-   * The primary region — the first one declared, and where bare (non-slot)
-   * children render.
-   */
-  primary: RegionInfo
-  /**
-   * Every region by name. A repeating region (brochure panels) holds an array,
-   * one entry per surface.
-   */
-  regions: Record<string, RegionInfo | RegionInfo[]>
-  /** Every region in declaration order, repeats flattened. */
-  list: RegionInfo[]
-}
+export { describeMockup, type MeasurableMockup } from './measure'
+export type { MockupInfo, RegionInfo, Size } from './measure'
 
 /**
  * The props each mockup kind's geometry depends on. Only the plain-data props
@@ -236,44 +190,6 @@ const REGISTRY: Record<MockupKind, Entry> = {
 /** Every measurable mockup kind, in a stable order (devices first). */
 export const MOCKUP_KINDS = Object.keys(REGISTRY) as MockupKind[]
 
-/** Round to `places` decimals without dragging float noise into the output. */
-function round(value: number, places: number): number {
-  const f = 10 ** places
-  return Math.round(value * f) / f
-}
-
-function scaleRadius(radius: RegionRadius, factor: number): RegionRadius {
-  return typeof radius === 'number'
-    ? round(radius * factor, 2)
-    : [
-        round(radius[0] * factor, 2),
-        round(radius[1] * factor, 2),
-        round(radius[2] * factor, 2),
-        round(radius[3] * factor, 2),
-      ]
-}
-
-function describe(spec: RegionSpec, metrics: RegionMetrics, mmPerUnit: number, index: number): RegionInfo {
-  const { width, height, resolution } = metrics
-  const radius = metrics.radius ?? 0
-  const pxPerUnit = screenPxPerUnit(resolution, width)
-  return {
-    name: spec.name,
-    label: spec.label,
-    repeats: spec.repeats === true,
-    index,
-    units: { width, height },
-    mm: { width: round(width * mmPerUnit, 1), height: round(height * mmPerUnit, 1) },
-    // Derived with the renderer's own helper, so the reported height is the
-    // height the surface is actually given — rounding included.
-    px: { width: resolution, height: screenCssHeight(resolution, width, height) },
-    pxPerUnit: round(pxPerUnit, 2),
-    resolution,
-    radius: { units: radius, px: scaleRadius(radius, pxPerUnit) },
-    aspect: round(width / height, 4),
-  }
-}
-
 /**
  * Measure a mockup without rendering it.
  *
@@ -290,30 +206,5 @@ export function mockupInfo<K extends MockupKind>(kind: K, props?: MockupPropsMap
       `[area-mockups] mockupInfo: unknown mockup kind "${String(kind)}". Known kinds: ${MOCKUP_KINDS.join(', ')}.`
     )
   }
-  const args = props ?? {}
-  const mmPerUnit =
-    typeof entry.metrics.mmPerUnit === 'function' ? entry.metrics.mmPerUnit(args) : entry.metrics.mmPerUnit
-  const resolved = entry.metrics.regions(args)
-
-  const regions: Record<string, RegionInfo | RegionInfo[]> = {}
-  const list: RegionInfo[] = []
-  for (const spec of entry.regions) {
-    const value = resolved[spec.name]
-    if (value === undefined) continue
-    if (Array.isArray(value)) {
-      const many = value.map((m, i) => describe(spec, m, mmPerUnit, i))
-      regions[spec.name] = many
-      list.push(...many)
-    } else {
-      const one = describe(spec, value, mmPerUnit, 0)
-      regions[spec.name] = one
-      list.push(one)
-    }
-  }
-
-  const primary = list[0]
-  if (!primary) {
-    throw new Error(`[area-mockups] mockupInfo: "${String(kind)}" resolved no regions.`)
-  }
-  return { kind, mmPerUnit, primary, regions, list }
+  return describeMockup({ kind, regions: entry.regions, metrics: entry.metrics }, props)
 }

@@ -1,7 +1,8 @@
 import * as React from 'react'
 import {
+  describeMockup,
   framedShadowY,
-  mockupInfo,
+  type MeasurableMockup,
   type MockupFraming,
   type MockupInfo,
   type MockupKind,
@@ -53,12 +54,19 @@ export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>
   /** The scene component (device or object) the mockup stages. */
   object: React.ComponentType<P>
   /**
-   * The core registry key this mockup measures under. Supplying it attaches
-   * `.info()` and `.regions` to the component — see `MockupStatics`.
+   * The core registry key this mockup measures under. Supplied together with
+   * `regions` and `metrics`, it attaches `.info()` and `.regions` to the
+   * component — see `MockupStatics`.
    */
   kind?: K
   /** The object's region list from core, surfaced as `Mockup.regions`. */
   regions?: readonly RegionSpec[]
+  /**
+   * The object's own `*_METRICS` from core. Passed in rather than looked up by
+   * `kind` on purpose: a registry lookup would make every mockup reference
+   * every spec module, so importing one component would pull in all of them.
+   */
+  metrics?: MeasurableMockup<MockupPropsMap[K]>['metrics']
   /** Stage framing from the object's core spec (camera, shadow ground line, float). */
   framing?: MockupFraming<P>
   /** The object's compound slots, re-attached to the mockup (`Mockup.Front`…). */
@@ -92,6 +100,7 @@ export function createMockup<
   object: ObjectComponent,
   kind,
   regions,
+  metrics,
   framing,
   slots,
   displayName,
@@ -121,10 +130,11 @@ export function createMockup<
   }
   Mockup.displayName = displayName ?? `${ObjectComponent.displayName ?? ObjectComponent.name}Mockup`
   const statics =
-    kind === undefined
+    kind === undefined || metrics === undefined
       ? {}
       : {
-          info: (infoProps?: MockupPropsMap[K]) => mockupInfo(kind, infoProps),
+          info: (infoProps?: MockupPropsMap[K]) =>
+            describeMockup({ kind, regions: regions ?? [], metrics }, infoProps),
           regions: regions ?? [],
         }
   return Object.assign(Mockup as React.FC<MockupProps<P>>, slots ?? ({} as S), statics)

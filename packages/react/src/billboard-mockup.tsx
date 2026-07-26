@@ -1,4 +1,4 @@
-import { BILLBOARD_FRAMING, BILLBOARD_STAGE_OFFSET_Y, BILLBOARD_REGIONS } from '@area-mockups/core'
+import { BILLBOARD_FRAMING, BILLBOARD_STAGE_OFFSET_Y, BILLBOARD_REGIONS, BILLBOARD_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Billboard, billboardSlots, type BillboardProps } from './objects/billboard/billboard'
 
@@ -34,6 +34,7 @@ StagedBillboard.displayName = 'Billboard'
 export const BillboardMockup = createMockup({
   kind: 'billboard',
   regions: BILLBOARD_REGIONS,
+  metrics: BILLBOARD_METRICS,
   object: StagedBillboard,
   framing: BILLBOARD_FRAMING,
   slots: billboardSlots,

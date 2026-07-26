@@ -1,4 +1,4 @@
-import { BOOK_FRAMING, BOOK_REGIONS } from '@area-mockups/core'
+import { BOOK_FRAMING, BOOK_REGIONS, BOOK_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Book, bookSlots, type BookProps } from './objects/book/book'
 
@@ -20,6 +20,7 @@ export type BookMockupProps = MockupProps<BookProps>
 export const BookMockup = createMockup({
   kind: 'book',
   regions: BOOK_REGIONS,
+  metrics: BOOK_METRICS,
   object: Book,
   framing: BOOK_FRAMING,
   slots: bookSlots,

@@ -1,4 +1,4 @@
-import { PRODUCT_BOX_FRAMING, PRODUCT_BOX_REGIONS } from '@area-mockups/core'
+import { PRODUCT_BOX_FRAMING, PRODUCT_BOX_REGIONS, PRODUCT_BOX_METRICS } from '@area-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { ProductBox, productBoxSlots, type ProductBoxProps } from './objects/product-box/product-box'
 
@@ -21,6 +21,7 @@ export type ProductBoxMockupProps = MockupProps<ProductBoxProps>
 export const ProductBoxMockup = createMockup({
   kind: 'productBox',
   regions: PRODUCT_BOX_REGIONS,
+  metrics: PRODUCT_BOX_METRICS,
   object: ProductBox,
   framing: PRODUCT_BOX_FRAMING,
   slots: productBoxSlots,
