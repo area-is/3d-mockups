@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Logo } from '@/components/logo'
 import { inter, jetbrainsMono } from '@/lib/fonts'
 import '../globals.css'
 import '../screens.css'
@@ -21,7 +22,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <header className="site-header">
             <div className="container header-inner">
               <Link href="/" className="brand">
-                <span className="brand-dot" aria-hidden />
+                <Logo size={26} className="brand-logo" />
                 area-mockups
               </Link>
               <nav className="site-nav">

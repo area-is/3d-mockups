@@ -143,12 +143,12 @@ code {
   letter-spacing: -0.015em;
 }
 
-.brand-dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--grad);
-  box-shadow: 0 0 12px rgba(139, 124, 248, 0.8);
+.brand-logo {
+  display: block;
+  flex-shrink: 0;
+  /* The mark's own artwork carries padding inside its square viewBox, so a
+     nudge up optically centers it against the wordmark's cap height. */
+  margin-block-start: -1px;
 }
 
 .site-nav {
