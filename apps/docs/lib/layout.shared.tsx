@@ -7,7 +7,7 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: (
         <>
-          <Logo size={24} style={{ flexShrink: 0 }} />
+          <Logo size={28} style={{ flexShrink: 0 }} />
           area-mockups
         </>
       ),

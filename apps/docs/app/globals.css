@@ -146,9 +146,6 @@ code {
 .brand-logo {
   display: block;
   flex-shrink: 0;
-  /* The mark's own artwork carries padding inside its square viewBox, so a
-     nudge up optically centers it against the wordmark's cap height. */
-  margin-block-start: -1px;
 }
 
 .site-nav {
