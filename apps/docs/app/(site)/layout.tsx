@@ -22,7 +22,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <header className="site-header">
             <div className="container header-inner">
               <Link href="/" className="brand">
-                <Logo size={30} className="brand-logo" />
+                <Logo size={28} className="brand-logo" />
                 area-mockups
               </Link>
               <nav className="site-nav">
