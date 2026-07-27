@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 444 444">
+<g transform="translate(222.00,213.20)" stroke-linejoin="round">
+<polygon points="-45.73,-29.33 0.00,-2.93 0.00,52.80 -45.73,26.40" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="0.6"/>
+<polygon points="45.73,-29.33 0.00,-2.93 0.00,52.80 45.73,26.40" fill="#262626" stroke="#262626" stroke-width="0.6"/>
+<polygon points="0.00,-55.73 45.73,-29.33 0.00,-2.93 -45.73,-29.33" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-149.88,30.80 -104.15,57.20 -114.32,118.80 -160.04,92.40" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="-58.43,30.80 -104.15,57.20 -114.32,118.80 -68.59,92.40" fill="#262626" stroke="#262626" stroke-width="0.6"/>
+<polygon points="-104.15,4.40 -58.43,30.80 -104.15,57.20 -149.88,30.80" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="58.43,30.80 104.15,57.20 114.32,118.80 68.59,92.40" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="0.6"/>
+<polygon points="149.88,30.80 104.15,57.20 114.32,118.80 160.04,92.40" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="104.15,4.40 149.88,30.80 104.15,57.20 58.43,30.80" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-45.73,90.93 0.00,117.33 0.00,184.80 -45.73,158.40" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="45.73,90.93 0.00,117.33 0.00,184.80 45.73,158.40" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="0.00,64.53 45.73,90.93 0.00,117.33 -45.73,90.93" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-143.71,-6.60 0.00,76.37 0.00,117.33 -149.88,30.80" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="143.71,-6.60 0.00,76.37 0.00,117.33 149.88,30.80" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="0.00,-89.57 143.71,-6.60 0.00,76.37 -143.71,-6.60" fill="#1C1C1C" stroke="#1C1C1C" stroke-width="0.6"/>
+<polygon points="-45.73,-99.00 0.00,-72.60 0.00,-36.77 -45.73,-63.17" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="0.6"/>
+<polygon points="45.73,-99.00 0.00,-72.60 0.00,-36.77 45.73,-63.17" fill="#262626" stroke="#262626" stroke-width="0.6"/>
+<polygon points="0.00,-125.40 45.73,-99.00 0.00,-72.60 -45.73,-99.00" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-137.18,-46.20 -91.45,-19.80 -97.98,19.80 -143.71,-6.60" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="-45.73,-46.20 -91.45,-19.80 -97.98,19.80 -52.26,-6.60" fill="#262626" stroke="#262626" stroke-width="0.6"/>
+<polygon points="-91.45,-72.60 -45.73,-46.20 -91.45,-19.80 -137.18,-46.20" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="45.73,-46.20 91.45,-19.80 97.98,19.80 52.26,-6.60" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="0.6"/>
+<polygon points="137.18,-46.20 91.45,-19.80 97.98,19.80 143.71,-6.60" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="91.45,-72.60 137.18,-46.20 91.45,-19.80 45.73,-46.20" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-45.73,6.60 0.00,33.00 0.00,76.37 -45.73,49.97" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="45.73,6.60 0.00,33.00 0.00,76.37 45.73,49.97" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="0.00,-19.80 45.73,6.60 0.00,33.00 -45.73,6.60" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<polygon points="-129.56,-92.40 0.00,-17.60 0.00,33.00 -137.18,-46.20" fill="#333333" stroke="#333333" stroke-width="0.6"/>
+<polygon points="129.56,-92.40 0.00,-17.60 0.00,33.00 137.18,-46.20" fill="#525252" stroke="#525252" stroke-width="0.6"/>
+<polygon points="0.00,-167.20 129.56,-92.40 0.00,-17.60 -129.56,-92.40" fill="#3B3B3B" stroke="#3B3B3B" stroke-width="0.6"/>
+<path d="M 129.56 -92.40 L 0.00 -17.60 L 0.00 184.80 L 45.73 158.40 L 45.73 90.93 L 104.15 57.20 L 114.32 118.80 L 160.04 92.40 Z M 97.98 19.80 L 45.73 49.97 L 45.73 6.60 L 91.45 -19.80 Z" fill="#525252" fill-rule="evenodd" stroke="#525252" stroke-width="0.6"/>
+<path d="M -129.56 -92.40 L 0.00 -17.60 L 0.00 184.80 L -45.73 158.40 L -45.73 90.93 L -104.15 57.20 L -114.32 118.80 L -160.04 92.40 Z M -97.98 19.80 L -45.73 49.97 L -45.73 6.60 L -91.45 -19.80 Z" fill="#333333" fill-rule="evenodd" stroke="#333333" stroke-width="0.6"/>
+</g></svg>
