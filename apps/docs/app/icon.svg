@@ -1,11 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8b7cf8"/>
-      <stop offset="1" stop-color="#22d3ee"/>
-    </linearGradient>
-  </defs>
+  <!-- The dual-slant "A" mark (assets/area-a-dual-slant-green.svg) on the
+       brand plate. The plate is not decoration: the mark is multi-tone green,
+       so its lightest facets wash out on a light browser tab and its darkest
+       wash out on a dark one. A fixed dark backdrop gives every facet the same
+       contrast wherever the icon is rendered.
+
+       The artwork occupies only x[61.96,382.04] y[46,398] of its native 444
+       box, so it is reframed on that content square (46..398) and mapped onto
+       a 26px area — at 16px every wasted pixel of padding costs legibility. -->
   <rect width="32" height="32" rx="7" fill="#0b0c12"/>
-  <rect x="10.5" y="6" width="11" height="20" rx="3.2" fill="none" stroke="url(#g)" stroke-width="2"/>
-  <circle cx="16" cy="9.6" r="1.1" fill="url(#g)"/>
+  <g transform="translate(-0.3977 -0.3977) scale(0.073864)">
+    <g transform="translate(222.00,213.20)" stroke-linejoin="round">
+      <polygon points="-45.73,-29.33 0.00,-2.93 0.00,52.80 -45.73,26.40" fill="#276D3E" stroke="#276D3E" stroke-width="0.6"/>
+      <polygon points="45.73,-29.33 0.00,-2.93 0.00,52.80 45.73,26.40" fill="#2D9F4F" stroke="#2D9F4F" stroke-width="0.6"/>
+      <polygon points="0.00,-55.73 45.73,-29.33 0.00,-2.93 -45.73,-29.33" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-149.88,30.80 -104.15,57.20 -114.32,118.80 -160.04,92.40" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="-58.43,30.80 -104.15,57.20 -114.32,118.80 -68.59,92.40" fill="#2D9F4F" stroke="#2D9F4F" stroke-width="0.6"/>
+      <polygon points="-104.15,4.40 -58.43,30.80 -104.15,57.20 -149.88,30.80" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="58.43,30.80 104.15,57.20 114.32,118.80 68.59,92.40" fill="#276D3E" stroke="#276D3E" stroke-width="0.6"/>
+      <polygon points="149.88,30.80 104.15,57.20 114.32,118.80 160.04,92.40" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="104.15,4.40 149.88,30.80 104.15,57.20 58.43,30.80" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-45.73,90.93 0.00,117.33 0.00,184.80 -45.73,158.40" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="45.73,90.93 0.00,117.33 0.00,184.80 45.73,158.40" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="0.00,64.53 45.73,90.93 0.00,117.33 -45.73,90.93" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-143.71,-6.60 0.00,76.37 0.00,117.33 -149.88,30.80" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="143.71,-6.60 0.00,76.37 0.00,117.33 149.88,30.80" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="0.00,-89.57 143.71,-6.60 0.00,76.37 -143.71,-6.60" fill="#2C8B4A" stroke="#2C8B4A" stroke-width="0.6"/>
+      <polygon points="-45.73,-99.00 0.00,-72.60 0.00,-36.77 -45.73,-63.17" fill="#276D3E" stroke="#276D3E" stroke-width="0.6"/>
+      <polygon points="45.73,-99.00 0.00,-72.60 0.00,-36.77 45.73,-63.17" fill="#2D9F4F" stroke="#2D9F4F" stroke-width="0.6"/>
+      <polygon points="0.00,-125.40 45.73,-99.00 0.00,-72.60 -45.73,-99.00" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-137.18,-46.20 -91.45,-19.80 -97.98,19.80 -143.71,-6.60" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="-45.73,-46.20 -91.45,-19.80 -97.98,19.80 -52.26,-6.60" fill="#2D9F4F" stroke="#2D9F4F" stroke-width="0.6"/>
+      <polygon points="-91.45,-72.60 -45.73,-46.20 -91.45,-19.80 -137.18,-46.20" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="45.73,-46.20 91.45,-19.80 97.98,19.80 52.26,-6.60" fill="#276D3E" stroke="#276D3E" stroke-width="0.6"/>
+      <polygon points="137.18,-46.20 91.45,-19.80 97.98,19.80 143.71,-6.60" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="91.45,-72.60 137.18,-46.20 91.45,-19.80 45.73,-46.20" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-45.73,6.60 0.00,33.00 0.00,76.37 -45.73,49.97" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="45.73,6.60 0.00,33.00 0.00,76.37 45.73,49.97" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="0.00,-19.80 45.73,6.60 0.00,33.00 -45.73,6.60" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <polygon points="-129.56,-92.40 0.00,-17.60 0.00,33.00 -137.18,-46.20" fill="#20C531" stroke="#20C531" stroke-width="0.6"/>
+      <polygon points="129.56,-92.40 0.00,-17.60 0.00,33.00 137.18,-46.20" fill="#50E042" stroke="#50E042" stroke-width="0.6"/>
+      <polygon points="0.00,-167.20 129.56,-92.40 0.00,-17.60 -129.56,-92.40" fill="#31D322" stroke="#31D322" stroke-width="0.6"/>
+      <path d="M 129.56 -92.40 L 0.00 -17.60 L 0.00 184.80 L 45.73 158.40 L 45.73 90.93 L 104.15 57.20 L 114.32 118.80 L 160.04 92.40 Z M 97.98 19.80 L 45.73 49.97 L 45.73 6.60 L 91.45 -19.80 Z" fill="#50E042" fill-rule="evenodd" stroke="#50E042" stroke-width="0.6"/>
+      <path d="M -129.56 -92.40 L 0.00 -17.60 L 0.00 184.80 L -45.73 158.40 L -45.73 90.93 L -104.15 57.20 L -114.32 118.80 L -160.04 92.40 Z M -97.98 19.80 L -45.73 49.97 L -45.73 6.60 L -91.45 -19.80 Z" fill="#20C531" fill-rule="evenodd" stroke="#20C531" stroke-width="0.6"/>
+    </g>
+  </g>
 </svg>
