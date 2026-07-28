@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  /examples/hero-phone — an isolated product-hero example page.      */
+/*  /examples/hero-phone - an isolated product-hero example page.      */
 /*                                                                     */
 /*  The layout trick this page exists to demonstrate: `.xh-phone` is   */
 /*  a huge absolutely positioned box (taller than the viewport), and   */
@@ -28,7 +28,7 @@
 
 /* The top bar and copy column are full-width boxes stacked ABOVE the phone
    canvas (z-index 2 vs 1), so the containers themselves must be transparent
-   to pointers — otherwise they swallow drags over the phone. Interactivity
+   to pointers - otherwise they swallow drags over the phone. Interactivity
    comes back on their actual content below. */
 .xh-top,
 .xh-copy,
@@ -203,7 +203,7 @@
 
 /* The canvas itself bleeds symmetrically past the layout box on every side,
    so however the phone is dragged, floated or zoomed it can never be cut off
-   by the canvas edge — any visible cropping comes from the page (`overflow:
+   by the canvas edge - any visible cropping comes from the page (`overflow:
    clip` on the section), never from the WebGL viewport. The camera in
    hero-phone-scene.tsx compensates for the taller canvas, keeping the
    device's on-screen size unchanged. */
@@ -214,7 +214,7 @@
 
 /* Stacked layout: copy on top, then the phone rising past the page bottom.
    In-flow (so it can never collide with the copy) with a negative bottom
-   margin, which pulls the page end up into the canvas — `overflow: clip`
+   margin, which pulls the page end up into the canvas - `overflow: clip`
    on the section then crops the phone exactly like the desktop layout. */
 @media (max-width: 1060px) {
   .xh-copy {

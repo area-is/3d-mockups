@@ -16,12 +16,12 @@
   "author": "subwaymatch",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/subwaymatch/area-mockups.git",
+    "url": "git+https://github.com/area-is/3d-mockups.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/subwaymatch/area-mockups#readme",
+  "homepage": "https://github.com/area-is/3d-mockups#readme",
   "bugs": {
-    "url": "https://github.com/subwaymatch/area-mockups/issues"
+    "url": "https://github.com/area-is/3d-mockups/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

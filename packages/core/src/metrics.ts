@@ -1,14 +1,14 @@
 /**
- * `mockupInfo` — the measurement API.
+ * `mockupInfo` - the measurement API.
  *
  * Every device and object already declares its live regions (`*_REGIONS`) and
  * their geometry (`*_METRICS`) next to its dimensions. This module joins the
  * two into one answer to the question "how big is this surface?", in all three
  * unit systems a developer actually works in:
  *
- * - **world units** — what a three.js scene is built from;
- * - **millimetres** — what a print shop or a spec sheet wants;
- * - **CSS pixels** — what the content you drop onto the surface lays out in.
+ * - **world units** - what a three.js scene is built from;
+ * - **millimetres** - what a print shop or a spec sheet wants;
+ * - **CSS pixels** - what the content you drop onto the surface lays out in.
  *
  * The CSS-pixel numbers come from the same `screenPxPerUnit` / `screenCssHeight`
  * helpers the renderer feeds its screen bridge, so what this reports and what
@@ -17,7 +17,7 @@
  * Building the registry means referencing every spec module, so importing
  * `mockupInfo` pulls the whole catalog in. That is the right trade for a
  * runtime-string lookup, and the wrong one for a component that already knows
- * its own spec — those call `describeMockup` from `./measure` instead.
+ * its own spec - those call `describeMockup` from `./measure` instead.
  *
  * ```ts
  * const info = mockupInfo('galaxy', { variant: 's26', orientation: 'landscape' })
@@ -92,7 +92,7 @@ export type { MockupInfo, RegionInfo, Size } from './measure'
 
 /**
  * The props each mockup kind's geometry depends on. Only the plain-data props
- * that move a surface appear here — colors, `float`, transforms and the rest
+ * that move a surface appear here - colors, `float`, transforms and the rest
  * cannot change a measurement, so they are omitted.
  */
 export interface MockupPropsMap {
@@ -131,7 +131,7 @@ export interface MockupPropsMap {
   customBox: { size: CustomBoxSizeMm }
 }
 
-/** Every mockup the library can measure — the whole catalog. */
+/** Every mockup the library can measure - the whole catalog. */
 export type MockupKind = keyof MockupPropsMap
 
 interface Entry {
@@ -148,7 +148,7 @@ interface Entry {
 
 /**
  * The registry every measurement is read from. Adding a device or object means
- * adding one row here — and a binding, a docs page or the generated catalog
+ * adding one row here - and a binding, a docs page or the generated catalog
  * picks it up without further edits.
  */
 const REGISTRY: Record<MockupKind, Entry> = {
@@ -193,7 +193,7 @@ export const MOCKUP_KINDS = Object.keys(REGISTRY) as MockupKind[]
 /**
  * Measure a mockup without rendering it.
  *
- * @param kind  Which mockup — `'galaxy'`, `'book'`, `'customBox'`…
+ * @param kind  Which mockup - `'galaxy'`, `'book'`, `'customBox'`…
  * @param props The geometry-affecting props you would pass the component
  *              (`variant`, `orientation`, `size`, `open`…). Defaults match the
  *              component's own defaults, so `mockupInfo('galaxy')` describes

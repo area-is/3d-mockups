@@ -3,7 +3,7 @@ title: Custom box
 description: A rectangular box at any size you specify in millimeters, printable on all six faces.
 ---
 
-`<CustomBox>` and `<CustomBoxMockup>` render a rectangular box at ANY size —
+`<CustomBox>` and `<CustomBoxMockup>` render a rectangular box at ANY size -
 shipper, carton, counter display, crate. Pass real millimeters via `size`;
 the longest edge auto-normalizes to the stage while the mm dimensions keep
 the true proportions. All six faces are printable live DOM at one shared
@@ -48,14 +48,14 @@ factor.
 | `<CustomBoxMockup.Top>` | Top face. |
 | `<CustomBoxMockup.Bottom>` | Bottom face. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<CustomBox>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-custom-box" />

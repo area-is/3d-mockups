@@ -6,7 +6,7 @@ description: A 12-inch LP half-out of its sleeve, with live cover, back and disc
 `<VinylRecord>` and `<VinylRecordMockup>` render a 12" LP: a 313 mm square
 hollow jacket with live front (and optional back) cover art, and a glossy
 302 mm disc, grooved on both sides, sliding out of the sleeve far enough to
-clear the whole label — concentric track-gap sheen rings, dead-wax annulus,
+clear the whole label - concentric track-gap sheen rings, dead-wax annulus,
 spindle hole, and the 100 mm center label as a live **circular** DOM area.
 
 <ObjectDemo demo="vinyl-basic" checker />
@@ -36,18 +36,18 @@ Beyond the [shared screen props](/docs/screen-content):
 | Slot | Surface |
 | --- | --- |
 | `<VinylRecordMockup.Cover>` | Front cover art (bare children). |
-| `<VinylRecordMockup.Back>` | Back cover — the tracklist side of the jacket. |
-| `<VinylRecordMockup.Label>` | Side-A center label — a live circular DOM area. |
+| `<VinylRecordMockup.Back>` | Back cover - the tracklist side of the jacket. |
+| `<VinylRecordMockup.Label>` | Side-A center label - a live circular DOM area. |
 | `<VinylRecordMockup.BackLabel>` | Side-B center label on the disc's other face. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<VinylRecord>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-vinyl" />

@@ -12,7 +12,7 @@ import {
 } from '@area-3d-mockups/core'
 
 // The screens only exist client-side (inside the WebGL canvas), but the docs
-// site renders through Next — keep the server pass warning-free.
+// site renders through Next - keep the server pass warning-free.
 const useIsoLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
 export interface LEDTextProps {
@@ -27,7 +27,7 @@ export interface LEDTextProps {
    * array cycles page by page. `'marquee'` always scrolls, `'static'` never
    * does, `'cycle'` flips through the strings like an alternating
    * destination sign, `'rows'` stacks them as board rows (each row still
-   * scrolls if it overflows — an arrivals board).
+   * scrolls if it overflows - an arrivals board).
    */
   mode?: 'auto' | 'marquee' | 'static' | 'cycle' | 'rows'
   /** Lit-LED color. Amber by default; try `#ff9d1e`, `#ffd23c` or LED green. */
@@ -114,7 +114,7 @@ function LedLine({
             style={{
               display: 'inline-flex',
               // `pre` keeps run-of-spaces column alignment (arrivals rows)
-              // and never wraps — LED boards are single-line.
+              // and never wraps - LED boards are single-line.
               whiteSpace: 'pre',
               animation: `${name} ${duration}s linear infinite`,
             }}
@@ -138,7 +138,7 @@ function LedLine({
 
 /**
  * The built-in LED sign renderer behind the string form of `destinationSign`
- * (bus) and `arrivals` (bus shelter) — exported so you can compose it
+ * (bus) and `arrivals` (bus shelter) - exported so you can compose it
  * directly or restyle it anywhere else (a custom panel, a DOOH loop…).
  *
  * Pure CSS at runtime: glowing monospaced text behind a dot-matrix mask,

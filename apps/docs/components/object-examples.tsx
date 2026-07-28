@@ -116,7 +116,7 @@ function FullSideLivery() {
         fontFamily: 'inherit',
       }}
     >
-      {/* ridgeline sweep crossing the arches and door — carving cuts through it */}
+      {/* ridgeline sweep crossing the arches and door - carving cuts through it */}
       <svg
         viewBox="0 0 1360 501"
         preserveAspectRatio="none"
@@ -138,7 +138,7 @@ function FullSideLivery() {
 }
 
 /**
- * Full-bleed transit-wrap livery for the bus's `coverage="full"` demo — a
+ * Full-bleed transit-wrap livery for the bus's `coverage="full"` demo - a
  * long 4.2:1 canvas. The color field and type deliberately run across the
  * passenger-window band (real wraps use perforated film there), while the
  * carved doors and driver's window punch through it.
@@ -236,7 +236,7 @@ function ChromaSurface({ label }: { label: string }) {
   )
 }
 
-/** Minimal typographic cover for composition demos — one prop, one accent. */
+/** Minimal typographic cover for composition demos - one prop, one accent. */
 function MiniCover({ title, from, to }: { title: string; from: string; to: string }) {
   return (
     <div
@@ -713,7 +713,7 @@ const DEMOS: Record<string, React.ReactNode> = {
         <RollupBanner position={[-1.75, 0, -0.4]} rotation={[0, 0.3, 0]}>
           <BannerArt />
         </RollupBanner>
-        {/* the wide 1000×2000 stand via `size` — the cassette resizes with it */}
+        {/* the wide 1000×2000 stand via `size` - the cassette resizes with it */}
         <RollupBanner size={{ width: 1000 }} color="#31343a" position={[1.55, 0, 0]} rotation={[0, -0.15, 0]}>
           <BannerArt />
         </RollupBanner>
@@ -1179,7 +1179,7 @@ const DEMOS: Record<string, React.ReactNode> = {
 /**
  * A live, draggable mockup embedded in a docs page. `demo` picks a scene from
  * the registry above; the code block next to it in the MDX shows the source.
- * `checker` puts the classic transparency checkerboard behind the scene —
+ * `checker` puts the classic transparency checkerboard behind the scene -
  * used on each page's hero example to show that the canvas is transparent
  * and the mockup composites onto whatever the page puts behind it.
  */

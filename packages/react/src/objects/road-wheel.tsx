@@ -6,7 +6,7 @@ import * as THREE from 'three'
  *
  * A tire is not a cylinder. Its sidewalls bulge out past the tread, the
  * shoulders round over, the tread band carries circumferential grooves and it
- * seats on a rim that dishes inboard — and it is exactly those cues, missing
+ * seats on a rim that dishes inboard - and it is exactly those cues, missing
  * from a plain extruded disc, that make a vehicle read as a toy. The whole
  * carcass is one lathed profile, so the cost is a single draw call per wheel.
  */
@@ -67,7 +67,7 @@ export interface RoadWheelProps {
   face?: 1 | -1
   /** Wheel nuts on the bolt circle (6 on a van, 10 on a truck axle). */
   lugs?: number
-  /** Rim face colour — bright for a hub cap, dark for a painted steel wheel. */
+  /** Rim face colour - bright for a hub cap, dark for a painted steel wheel. */
   rimColor?: string
   /** Tire rubber colour. */
   tireColor?: string

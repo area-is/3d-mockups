@@ -42,22 +42,22 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   variant?: IPhoneVariant
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
-   * H×W with upright content — exactly like rotating the real phone.
+   * H×W with upright content - exactly like rotating the real phone.
    */
   orientation?: 'portrait' | 'landscape'
   /**
    * Back glass color. Takes a retail colorway id from `IPHONE_COLORWAYS`
    * (`'black'`, `'mistblue'`, `'cosmicorange'`…), which also presets
    * `frameColor`, or any CSS color for a custom finish. A colorway id wins
-   * over a CSS color of the same name — pass hex if you meant the CSS one.
+   * over a CSS color of the same name - pass hex if you meant the CSS one.
    */
   color?: string
   /** Frame, buttons and camera-ring color. */
   frameColor?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
-   * follows the panel aspect. Defaults to the device's logical point grid —
-   * e.g. the iPhone 17 gives 402×874 in portrait and 874×402 in landscape —
+   * follows the panel aspect. Defaults to the device's logical point grid -
+   * e.g. the iPhone 17 gives 402×874 in portrait and 874×402 in landscape -
    * so content lays out just like it would on the real device.
    */
   resolution?: number
@@ -67,7 +67,7 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
  * A procedurally built Apple iPhone 17-family phone: flat frame, Dynamic
  * Island, and the per-model rear camera architecture (vertical pill on the 17,
  * single-lens bar on the Air, full-width triple-lens plateau on the Pros). No
- * 3D asset files are loaded — the whole device is generated from geometry at
+ * 3D asset files are loaded - the whole device is generated from geometry at
  * runtime.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
@@ -87,7 +87,7 @@ function IPhoneImpl({
   const spec = IPHONE_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(IPHONE_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#1a1c20'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#3f434b'
@@ -96,7 +96,7 @@ function IPhoneImpl({
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(spec.resolution * (landscape ? aspect : 1))
 
-  // Chassis: an extruded rounded-rect with lightly beveled edges — the flat
+  // Chassis: an extruded rounded-rect with lightly beveled edges - the flat
   // aluminum/titanium frame. The shape is inset by the bevel size so the final
   // silhouette lands exactly on the spec body. The bottom edge's USB-C, the
   // drilled speaker/mic holes and the two screw recesses are then machined out
@@ -146,7 +146,7 @@ function IPhoneImpl({
     [body]
   )
 
-  // The Ceramic Shield glass window — a thin raised rounded-rect panel so its
+  // The Ceramic Shield glass window - a thin raised rounded-rect panel so its
   // edge reads as a real seam against the aluminum unibody, not just a color
   // change. Covers most of the lower back below the plateau.
   const backWindowGeometry = React.useMemo(() => {
@@ -169,10 +169,10 @@ function IPhoneImpl({
   React.useEffect(() => () => backWindowGeometry?.dispose(), [backWindowGeometry])
 
   // The camera pedestal: a vertical pill (17) or a full-width plateau bar
-  // (Air / Pro / Pro Max) — extruded so face corners are truly semicircular.
+  // (Air / Pro / Pro Max) - extruded so face corners are truly semicircular.
   const pedestalGeometry = React.useMemo(() => {
     const { frame } = rearCamera
-    // `wall` is the sloped skirt between the footprint and the top face — wide
+    // `wall` is the sloped skirt between the footprint and the top face - wide
     // on the retail pedestals (2.6 mm on the 17's pill, 4.7 mm on the Air's
     // bar), so it is authored per variant instead of following the raise.
     const wall = frame.wall ?? 0.018
@@ -202,7 +202,7 @@ function IPhoneImpl({
   // Every lens ring mounts on the pedestal face and stands `h` proud of it.
   const pedestalTop = body.depth / 2 + (rearCamera.frame.raise ?? 0.048)
   // A flash or sensor mounts on the pedestal face when it falls inside the
-  // pedestal's footprint and on the flat back when it doesn't — on the 17 the
+  // pedestal's footprint and on the flat back when it doesn't - on the 17 the
   // mic sits on the pill while the flash is out on the glass beside it.
   const onPedestal = (x: number, y: number) => {
     const { frame } = rearCamera
@@ -212,7 +212,7 @@ function IPhoneImpl({
   }
   const mountZ = (x: number, y: number) =>
     onPedestal(x, y) ? -pedestalTop - 0.005 : -body.depth / 2 - 0.008
-  // Apple badge — real vector geometry from the SVG. The retail logo is
+  // Apple badge - real vector geometry from the SVG. The retail logo is
   // tone-on-tone in the back glass ("practically invisible in some light"):
   // a slight tone shift plus a glossier finish, no printed color.
   const logoGeometry = React.useMemo(
@@ -221,7 +221,7 @@ function IPhoneImpl({
   )
   // Always a touch darker than the glass with a mirror-gloss finish: on dark
   // bodies the retail inlay reads darker still, only GLINTING lighter as it
-  // catches light — never a flat lighter gray.
+  // catches light - never a flat lighter gray.
   const logoColor = React.useMemo(
     () => `#${new THREE.Color(color).lerp(new THREE.Color('#000000'), 0.15).getHexString()}`,
     [color]
@@ -335,7 +335,7 @@ function IPhoneImpl({
           </mesh>
         ))}
 
-        {/* Apple badge — on the Pros it sits ON the raised Ceramic Shield
+        {/* Apple badge - on the Pros it sits ON the raised Ceramic Shield
             window, so it must clear that panel's outer face, not the bare glass */}
         {spec.logo && logoGeometry && (
           <mesh
@@ -357,7 +357,7 @@ function IPhoneImpl({
         )}
 
         {/* side keys, spec-accurate: Action + volume on the left rail, side button
-            + the flush Camera Control on the right — pills protruding a scan-true
+            + the flush Camera Control on the right - pills protruding a scan-true
             ~0.3-0.45 mm (Camera Control sits flush, seated in the rail) */}
         {buttons.map(({ edge, y, length, flush }, i) => (
           <SideKey
@@ -397,7 +397,7 @@ function IPhoneImpl({
         )}
 
         {/* bottom edge: the USB-C, drilled speaker holes and screw recesses are
-            real cavities cut from the chassis above — these are their interiors */}
+            real cavities cut from the chassis above - these are their interiors */}
         {spec.bottomEdge && (
           <>
             <UsbC
@@ -445,7 +445,7 @@ function IPhoneImpl({
               aria-hidden
               style={{
                 position: 'absolute',
-                // the island hugs the panel's physical top — the left edge in landscape
+                // the island hugs the panel's physical top - the left edge in landscape
                 ...(landscape
                   ? {
                       left: px(island.offsetY - island.height / 2),

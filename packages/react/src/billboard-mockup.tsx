@@ -7,7 +7,7 @@ export type BillboardMockupProps = MockupProps<BillboardProps>
 /**
  * The billboard lifted by the core's stage offset so it (face + pole) stays
  * visually centered on the stage origin the camera and shadow are tuned
- * for — the one wrapper concern the factory can't express. The framing's
+ * for - the one wrapper concern the factory can't express. The framing's
  * extent accounts for the same offset.
  */
 function StagedBillboard(props: BillboardProps) {

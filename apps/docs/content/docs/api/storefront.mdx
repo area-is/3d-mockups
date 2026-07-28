@@ -6,13 +6,13 @@ description: A free-standing corner shop with live surfaces on all four elevatio
 `<Storefront>` and `<StorefrontMockup>` render a free-standing single-story
 corner shop: four glazed shopfront elevations under a capped flat roof,
 the parapet sitting just above the cornice so the painted composition IS
-the whole building. The front is the classic high-street shopfront —
+the whole building. The front is the classic high-street shopfront -
 painted timber surround with cornice and pilasters, a 600 mm stall riser,
 big display glazing with a mullion, a glazed door on the right. The other
-three elevations repeat the same composition without the door — windows
-only — and each carries its own live fascia sign. Every big pane is a
+three elevations repeat the same composition without the door - windows
+only - and each carries its own live fascia sign. Every big pane is a
 mockup surface too: both front display bays, the glazed door leaf and the
-wide center pane of each other elevation — each its own slot. Ten live
+wide center pane of each other elevation - each its own slot. Ten live
 surfaces in all (the roof stays hardware).
 
 <ObjectDemo demo="storefront-basic" checker />
@@ -32,7 +32,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `color` | `string` | `'#2e4638'` | Shopfront paint: fascia surrounds, frames, door, stall risers. |
-| `windowColor` | `string` | `'#5a6d75'` | Glazing color — every display pane, the transom lights and the door leaf. Tints the reflection rather than painting the pane flat, so the glass keeps its mirror finish. Try `'#6b5a44'` bronze, `'#4d6b60'` green, or something darker for a shop that reads as closed. |
+| `windowColor` | `string` | `'#5a6d75'` | Glazing color - every display pane, the transom lights and the door leaf. Tints the reflection rather than painting the pane flat, so the glass keeps its mirror finish. Try `'#6b5a44'` bronze, `'#4d6b60'` green, or something darker for a shop that reads as closed. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind sign and poster content. |
 | `resolution` | `number` | `800` | Virtual fascia sign width in CSS px. Window panes use fixed widths (~420–480 px); override per pane with each slot's `resolution`. |
 
@@ -51,17 +51,17 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<StorefrontMockup.RightSign>` | Fascia sign on the right elevation. |
 | `<StorefrontMockup.RearSign>` | Fascia sign on the rear elevation. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<Storefront>`.
 
-The pavement sits `STOREFRONT.standHeight` below the origin — the mockup
+The pavement sits `STOREFRONT.standHeight` below the origin - the mockup
 grounds the shadow there automatically.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-storefront" />
@@ -70,7 +70,7 @@ what stays 3D hardware.
 
 ### All four elevations, orbiting
 
-A fascia sign on every side and every pane dressed — spin the block to
+A fascia sign on every side and every pane dressed - spin the block to
 walk around it.
 
 <ObjectDemo demo="storefront-around" />

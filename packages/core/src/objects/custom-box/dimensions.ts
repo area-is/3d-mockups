@@ -1,5 +1,5 @@
 /**
- * Custom box object dimensions — a rectangular box at ANY size you specify
+ * Custom box object dimensions - a rectangular box at ANY size you specify
  * in millimeters: shipper, carton, counter display, crate… whatever
  * rectangular volume your project needs.
  *

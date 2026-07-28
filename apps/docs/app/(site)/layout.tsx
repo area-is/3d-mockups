@@ -8,7 +8,7 @@ import '../screens.css'
 export const metadata: Metadata = {
   title: 'area-3d-mockups: 3D device mockups for React',
   description:
-    'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live — real DOM, not a texture.',
+    'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live - real DOM, not a texture.',
 }
 
 // Root layout for the marketing site (home, demos). The docs and embedded
@@ -30,7 +30,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/demos">Demos</Link>
                 <Link href="/examples/hero-phone">Hero phone</Link>
                 <a
-                  href="https://github.com/subwaymatch/area-mockups"
+                  href="https://github.com/area-is/3d-mockups"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -48,8 +48,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                 MIT © {new Date().getFullYear()} subwaymatch · built with three.js &
                 react-three-fiber
               </span>
-              <a href="https://github.com/subwaymatch/area-mockups" target="_blank" rel="noreferrer">
-                github.com/subwaymatch/area-mockups
+              <a href="https://github.com/area-is/3d-mockups" target="_blank" rel="noreferrer">
+                github.com/area-is/3d-mockups
               </a>
             </div>
           </footer>

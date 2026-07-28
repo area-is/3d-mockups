@@ -8,7 +8,7 @@ type GroupProps = ThreeElements['group']
 
 export interface BrochureProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Panel content: one slot per panel — `<Brochure.FrontLeft>`,
+   * Panel content: one slot per panel - `<Brochure.FrontLeft>`,
    * `.FrontCenter`, `.FrontRight` and the matching `.Back*` for the reverse
    * faces. Bare children are shorthand for `FrontLeft`. Panels left out show
    * bare `color` stock; front panels default to `surfaceBackground`.
@@ -127,7 +127,7 @@ function BrochureImpl({
 
       {layout.map(({ x, z, yaw }, i) => (
         <group key={i} position={[x, 0, z]} rotation-y={yaw}>
-          {/* heavy paper stock — bare stock shows wherever a face is unprinted */}
+          {/* heavy paper stock - bare stock shows wherever a face is unprinted */}
           <mesh>
             <boxGeometry args={[panel.width, panel.height, panel.thickness]} />
             <meshPhysicalMaterial color={paperColor} metalness={0} roughness={0.85} />
@@ -143,7 +143,7 @@ function BrochureImpl({
             {content[i]?.children}
           </DeviceScreen>
 
-          {/* reverse side — only mounted when there's a design for it */}
+          {/* reverse side - only mounted when there's a design for it */}
           {backContent[i] != null && (
             <DeviceScreen
               {...screenProps}

@@ -20,7 +20,7 @@ type GroupProps = ThreeElements['group']
 
 
 /**
- * Cab door, in world units on the side elevation — proportioned from
+ * Cab door, in world units on the side elevation - proportioned from
  * ProMaster/Sprinter-class references: the shut line runs up the vertical
  * B-pillar edge, across a flat top just under the roof rail, down a front
  * edge raked parallel to the A-pillar to the beltline, then near-vertical
@@ -36,7 +36,7 @@ const rakedSeamX = (y: number) => RAKED_SEAM.bottomX - SEAM_RAKE * (y - RAKED_SE
 const DOOR_GLASS = { rearX: 1.09, frontX: 2.03, bottomY: 0.26, topY: 0.8 } as const
 
 /**
- * The shell's side profile as a THREE shape — shared by the extruded body
+ * The shell's side profile as a THREE shape - shared by the extruded body
  * and the full wrap's depth occluder, so per-pixel blending hides exactly
  * what the wrap's clip covers and nothing more (wheels in the arches and
  * carved glass stay visible; proud hardware draws over the livery).
@@ -71,8 +71,8 @@ function vanProfileShape(): THREE.Shape {
 
 /**
  * Axis-aligned shut-line slits (the raked front segment above the beltline
- * is `RAKED_SEAM`). Every full wrap carves these — a real crevice is a GAP
- * the film tucks into, never a ridge over it — and the blending occluder
+ * is `RAKED_SEAM`). Every full wrap carves these - a real crevice is a GAP
+ * the film tucks into, never a ridge over it - and the blending occluder
  * opens matching holes so the recessed seam meshes show through. Edges
  * meet exactly but never cross each other or the glass carve: overlapping
  * holes cancel back to filled under the nonzero rule.
@@ -107,7 +107,7 @@ function roundedHolePath(minX: number, minY: number, maxX: number, maxY: number,
 /**
  * The cab door glass as a THREE shape (world coords, counterclockwise):
  * raked front edge parallel to the A-pillar, flat top under the roof rail,
- * vertical rear edge — rounded corners. Shared by the glass mesh, the
+ * vertical rear edge - rounded corners. Shared by the glass mesh, the
  * blending occluder's hole and (reverse-traced) the wrap clip.
  */
 function doorGlassShape(): THREE.Shape {
@@ -134,7 +134,7 @@ function doorGlassShape(): THREE.Shape {
 
 /**
  * SVG path (CSS px, y-down) clipping the full-coverage wrap: the shell's own
- * side profile — including the wheel-arch arcs — as the outer boundary, with
+ * side profile - including the wheel-arch arcs - as the outer boundary, with
  * the hardware cutouts as opposite-winding holes. `mirrored` builds the
  * street-side (−Z) variant, whose CSS x axis runs nose→tail; mirroring also
  * flips every arc's sweep flag so the geometry stays identical.
@@ -188,12 +188,12 @@ function buildFullWrapClip(pxPerUnit: number, mirrored: boolean, overWindows: bo
     `L ${P(ftX - rT2, gT)} Q ${P(ftX, gT)} ${P(ftX - gUx * rT2, gT - gUy * rT2)} ` +
     `L ${P(frontX + gUx * rB2, gB + gUy * rB2)} Q ${P(frontX, gB)} ${P(frontX - rB2, gB)} Z `
 
-  // The cab-door shut lines are carved as slits — the crevice is a gap the
+  // The cab-door shut lines are carved as slits - the crevice is a gap the
   // film tucks into on a real wrap. No other hardware carves: the sides
   // composite per-pixel ('blending'), so the proud mirror, handle and door
-  // track draw over the livery on their own — hardware remounted over vinyl.
+  // track draw over the livery on their own - hardware remounted over vinyl.
   const seams = DOOR_SEAMS.map((s) => clipRoundedRect(P, R, sweep, { ...s, r: 0.002 })).join('')
-  // The raked front seam: a fixed-order parallelogram — the CSS x mirror
+  // The raked front seam: a fixed-order parallelogram - the CSS x mirror
   // flips outline and hole winding together, so one point order serves
   // both sides.
   const rh = RAKED_SEAM.half
@@ -208,7 +208,7 @@ function buildFullWrapClip(pxPerUnit: number, mirrored: boolean, overWindows: bo
  * SVG path clipping the rear wrap. Both coverages carve the barn-door shut
  * line (a real van's center crevice stays visible through any wrap); the
  * full-coverage wrap additionally carves every taillight lamp, the third
- * brake light and the hinge knuckles — each to a slim install margin, so
+ * brake light and the hinge knuckles - each to a slim install margin, so
  * the livery runs right up to the hardware and the lamps (which stand
  * slightly proud of the wrap plane) read mounted ON the wrap, not sunken.
  */
@@ -238,7 +238,7 @@ function buildRearClip(pxPerUnit: number, full: boolean): string {
   })
   if (!full) return (outline + slit).trim()
 
-  // Each lamp carved individually — brake, turn, reverse — so the livery
+  // Each lamp carved individually - brake, turn, reverse - so the livery
   // runs right up to every lens (bus-parity precision).
   const lamps = ([1, -1] as const)
     .flatMap((side) =>
@@ -309,10 +309,10 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
   /**
    * How much of the vehicle the live wraps cover.
    *
-   * - `'panel'` (default) — the classic mid-panel ad rect.
-   * - `'full'` — the whole side elevation and rear face, with the glass and
+   * - `'panel'` (default) - the classic mid-panel ad rect.
+   * - `'full'` - the whole side elevation and rear face, with the glass and
    *   hardware carved out of the wrap so they stay visible through it.
-   * - `'perforated'` — the same full wrap, but running OVER the glass as
+   * - `'perforated'` - the same full wrap, but running OVER the glass as
    *   perforated window film (the full-print fleet look). Operational glass
    *   is always carved out regardless.
    */
@@ -321,12 +321,12 @@ export interface VanProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
 
 /**
  * A procedurally built cargo van (generic Transit/Sprinter-style silhouette,
- * no brand): the shell is the side profile — clamshell hood, cowl break,
- * raked windshield, high roof, wheel-arch cutouts — extruded across the
+ * no brand): the shell is the side profile - clamshell hood, cowl break,
+ * raked windshield, high roof, wheel-arch cutouts - extruded across the
  * width, with wheels (six-lug steel rims), glass, wipers, door shut lines,
  * a sliding-door step, roof ribs, antenna, lights, rear hinges and license
  * plate, mirrors and bumpers added on. The flat cargo side carries a live
- * vinyl-wrap panel for your livery — or, with `coverage="full"`, the whole
+ * vinyl-wrap panel for your livery - or, with `coverage="full"`, the whole
  * side elevation and the whole rear face. No 3D asset files are loaded.
  *
  * The origin is the body center; the road sits `VAN.groundY` below it. The
@@ -352,7 +352,7 @@ function VanImpl({
 }: VanProps) {
   const regions = collectSlots(children, VAN_REGIONS)
   const { body, rockerY, wheels, profile, wrap, rear: rearPanel, rearFull } = VAN
-  // Screens occlude against OTHER registered bodies only — see the bus's
+  // Screens occlude against OTHER registered bodies only - see the bus's
   // matching note: the convex shell's own ray hits at oblique angles were
   // false positives, and the backface culler covers every view the body
   // itself could block.
@@ -462,7 +462,7 @@ function VanImpl({
   )
   // Only the full-coverage sides need a custom depth mask: their DOM is
   // clipped to the wrap outline, so the mask must carve the same glass out of
-  // the silhouette — otherwise the livery's rectangle would hide the mirrors,
+  // the silhouette - otherwise the livery's rectangle would hide the mirrors,
   // handles, track and hinges that stand proud of it. A panel ad is a plain
   // rect, and its own silhouette already is its mask.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
@@ -532,7 +532,7 @@ function VanImpl({
   return (
     <group {...groupProps}>
       {/* painted shell. Automotive paint is a dielectric base under a clear
-          lacquer — modelling it as half-metal (the old `metalness: 0.4`)
+          lacquer - modelling it as half-metal (the old `metalness: 0.4`)
           desaturates the body into dull sheet and kills the wet highlight the
           clearcoat is there to provide. */}
       <mesh geometry={shellGeometry}>
@@ -546,8 +546,8 @@ function VanImpl({
         />
       </mesh>
 
-      {/* pressed body form. A panel van's sides ARE flat — that is what makes
-          them wrap surfaces — but they are not featureless: a lower feature
+      {/* pressed body form. A panel van's sides ARE flat - that is what makes
+          them wrap surfaces - but they are not featureless: a lower feature
           line runs the cargo length and the rocker steps in below it. Both sit
           a hair BEHIND the wrap plane, so a livery covers them exactly like
           vinyl following the body contour, and they show on bare paint (and
@@ -555,7 +555,7 @@ function VanImpl({
       {([1, -1] as const).map((side) => (
         <group key={side} position-z={side * (body.width / 2 - 0.004)}>
           {/* both lines break at the wheel arches, like the pressings they
-              stand in for — a stripe running straight over an arch opening
+              stand in for - a stripe running straight over an arch opening
               is the giveaway of a decal */}
           {(
             [
@@ -588,7 +588,7 @@ function VanImpl({
       ))}
 
       {/* windshield on the cowl-to-header segment, with the two wipers
-          parked across its base — the give-away cue of a working cab */}
+          parked across its base - the give-away cue of a working cab */}
       <group position={[windshield.mid[0], windshield.mid[1], 0]} rotation-z={windshield.tilt}>
         <mesh rotation-y={Math.PI / 2}>
           <planeGeometry args={[body.width - 0.28, windshield.length - 0.1]} />
@@ -606,15 +606,15 @@ function VanImpl({
         ))}
       </group>
 
-      {/* cab door glass, both sides — trapezoid following the A-pillar. The
+      {/* cab door glass, both sides - trapezoid following the A-pillar. The
           0.02 extrusion runs +z from its base, so each side gets its own base
-          z that leaves the outer face ~10mm proud of the shell — or recessed
+          z that leaves the outer face ~10mm proud of the shell - or recessed
           beneath the wrap plane when that side's wrap covers the glass. */}
       {[1, -1].map((side) => {
         const covered =
           fullWrap && (side === 1 ? overGlass && regions.curbSide != null : overGlass && regions.streetSide != null)
         // The 0.02 extrusion always runs +z, so each side's base leaves the
-        // outer face ~10mm proud — or tucked under the wrap plane when the
+        // outer face ~10mm proud - or tucked under the wrap plane when the
         // wrap covers the glass.
         const base =
           side === 1 ? body.width / 2 - (covered ? 0.018 : 0.01) : -body.width / 2 + (covered ? 0.002 : -0.01)
@@ -625,7 +625,7 @@ function VanImpl({
         )
       })}
 
-      {/* cab door handles, just under the window sill near the rear edge —
+      {/* cab door handles, just under the window sill near the rear edge -
           where the references mount them */}
       {[1, -1].map((side) => (
         <RoundedBox key={side} args={[0.162, 0.029, 0.022]} radius={0.01} position={[1.26, 0.12, side * 0.982]}>
@@ -634,7 +634,7 @@ function VanImpl({
       ))}
 
       {/* cab-door shut lines, both sides: the A-pillar seam, the B-pillar
-          seam and the sill seam joining them (`DOOR_SEAMS`) — recessed dark
+          seam and the sill seam joining them (`DOOR_SEAMS`) - recessed dark
           strips sunk to the body surface, a GAP like the rear barn-door
           crevice, never a ridge. The full wrap carves matching slits (and
           the blending occluder matching holes), so the crevice reads
@@ -668,7 +668,7 @@ function VanImpl({
       })}
 
       {/* curb-side sliding-door track groove, from behind the door to the
-          rear quarter — above the panel wrap's top edge (y 1.10), and held
+          rear quarter - above the panel wrap's top edge (y 1.10), and held
           proud of the full wrap's DOM plane so blending draws it over any
           livery like remounted hardware */}
       <mesh position={[-0.8, 1.14, body.width / 2 + 0.012]}>
@@ -677,7 +677,7 @@ function VanImpl({
       </mesh>
 
       {/* black entry step under the curb-side sliding door, hung below the
-          rocker line — outside every wrap region, so it stays visible */}
+          rocker line - outside every wrap region, so it stays visible */}
       <RoundedBox args={[1.55, 0.09, 0.06]} radius={0.02} position={[0.05, -0.93, body.width / 2 - 0.02]}>
         {trimMaterial}
       </RoundedBox>
@@ -711,7 +711,7 @@ function VanImpl({
 
       {/* running gear: dark wheel-well liners fill the arch openings, axles
           tie each wheel pair together, and an underbody pan closes the gap
-          between the rockers — so the wheels read as attached, not floating */}
+          between the rockers - so the wheels read as attached, not floating */}
       {([wheels.frontX, wheels.rearX] as const).map((x) => (
         <group key={x}>
           <mesh position={[x, rockerY + (wheels.archRadius + 0.02) / 2, 0]}>
@@ -730,7 +730,7 @@ function VanImpl({
       </mesh>
 
       {/* wheels: lathed tires with bulging sidewalls, rounded shoulders and
-          grooved tread, on dished six-lug steel rims — plus the rolled lip
+          grooved tread, on dished six-lug steel rims - plus the rolled lip
           around each arch, without which the openings read as holes printed
           on a flat slab */}
       {([wheels.frontX, wheels.rearX] as const).map((x) =>
@@ -744,7 +744,7 @@ function VanImpl({
               rimColor="#b7bcc4"
               position={[x, wheels.centerY, side * (body.width / 2 - 0.145)]}
             />
-            {/* dark moulded arch trim, as on work-spec vans — it stands
+            {/* dark moulded arch trim, as on work-spec vans - it stands
                 proud of the wrap plane, so it reads as trim the installer cut
                 around rather than a stripe of the wrong body colour on top of
                 the livery */}
@@ -820,7 +820,7 @@ function VanImpl({
         </group>
       ))}
 
-      {/* black plastic bumper band low on the nose, wrapping the corners —
+      {/* black plastic bumper band low on the nose, wrapping the corners -
           a slim skid band, not a half-height mass */}
       <RoundedBox args={[0.14, 0.3, body.width + 0.02]} radius={0.05} position={[2.8, -0.73, 0]}>
         {trimMaterial}
@@ -829,7 +829,7 @@ function VanImpl({
         {trimMaterial}
       </RoundedBox>
       {/* taillight clusters: brake (red) / turn (amber) / reverse (white),
-          stacked at hand height on the rear corners like real van lamps —
+          stacked at hand height on the rear corners like real van lamps -
           standing ~20 mm proud of the wrap plane, so a full livery reads as
           cut around lamps mounted ON the doors, not sunken behind them */}
       {[1, -1].map((side) => (
@@ -846,7 +846,7 @@ function VanImpl({
         </group>
       ))}
 
-      {/* rear barn-door center shut line, running the full door height —
+      {/* rear barn-door center shut line, running the full door height -
           every rear wrap carves a slit over it, so the crevice stays
           visible through any livery like on a real wrapped van */}
       <mesh position={[-2.822, 0.12, 0]}>
@@ -863,7 +863,7 @@ function VanImpl({
       <RoundedBox args={[0.024, 0.162, 0.03]} radius={0.008} position={[-2.82, -0.26, -0.12]}>
         {trimMaterial}
       </RoundedBox>
-      {/* barn-door hinge knuckles at the outer door edges, two per side —
+      {/* barn-door hinge knuckles at the outer door edges, two per side -
           the full rear wrap carves a tight hole around each, so they show
           through any livery like install-cut hardware */}
       {[1, -1].map((side) =>

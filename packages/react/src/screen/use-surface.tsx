@@ -6,7 +6,7 @@ import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '@area-3d-mo
  *
  * This is the runtime companion to `mockupInfo`. `mockupInfo` answers "how big
  * is an S26 screen?" from pure data; `useSurface` answers "how big am I, right
- * now?" from inside the surface — which is a different question the moment a
+ * now?" from inside the surface - which is a different question the moment a
  * slot overrides anything:
  *
  * ```tsx
@@ -18,10 +18,10 @@ import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '@area-3d-mo
 export interface SurfaceInfo {
   /**
    * Which region this content is rendering into (`'screen'`, `'cover'`…).
-   * `undefined` when the surface did not name itself — never a guessed value.
+   * `undefined` when the surface did not name itself - never a guessed value.
    */
   region?: string
-  /** The surface in CSS pixels — the viewport your layout sees. */
+  /** The surface in CSS pixels - the viewport your layout sees. */
   width: number
   height: number
   /** The same surface in three.js world units. */
@@ -50,7 +50,7 @@ export interface SurfaceProviderProps {
 
 /**
  * Publishes the resolved surface to its content. Rendered by `DeviceScreen`
- * around the children it portals onto the glass — never used directly.
+ * around the children it portals onto the glass - never used directly.
  */
 export function SurfaceProvider({
   region,
@@ -80,7 +80,7 @@ export function SurfaceProvider({
 /**
  * Read the surface the calling component is rendering into.
  *
- * Only valid inside a mockup's screen content — the values come from the
+ * Only valid inside a mockup's screen content - the values come from the
  * surface that is actually being rendered, slot overrides included, so they
  * are correct by construction rather than re-derived.
  *

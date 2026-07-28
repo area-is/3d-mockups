@@ -10,7 +10,7 @@ type GroupProps = ThreeElements['group']
 
 export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Cover art — full bleed on the front cover. Bare children fill the front
+   * Cover art - full bleed on the front cover. Bare children fill the front
    * cover; name faces explicitly with `<Magazine.Cover>`, `<Magazine.Back>`
    * and `<Magazine.Spine>`. Spine content is rotated to read top-to-bottom
    * like a real shelf spine: your DOM's left edge lands at the spine's top
@@ -29,7 +29,7 @@ export interface MagazineProps extends Omit<GroupProps, 'children' | 'color'>, S
   backColor?: string
   /**
    * Glossy cover stock: a soft diagonal sheen over the cover art and a
-   * clearcoat on the spine and back. Off by default — the default stock
+   * clearcoat on the spine and back. Off by default - the default stock
    * is matte paper, flat under any light.
    */
   glossy?: boolean
@@ -66,13 +66,13 @@ function MagazineImpl({
     () => (size ? magazineSpec(size) : MAGAZINE),
     [size?.width, size?.height, size?.thickness]
   )
-  // Screens occlude against OTHER registered bodies only — the page block
+  // Screens occlude against OTHER registered bodies only - the page block
   // is convex, so the backface culler already covers every view it could
   // block itself, and own-body ray grazes would false-hide the thin spine
   // strip at the shallow angles a spine is naturally viewed from.
 
   // The spine and back share one cover-stock finish: matte by default
-  // (rough, no clearcoat — flat under any light, like uncoated paper),
+  // (rough, no clearcoat - flat under any light, like uncoated paper),
   // or the coated gloss look when `glossy` is on.
   const coverStockMaterial = glossy ? (
     <meshPhysicalMaterial color={backColor} metalness={0} roughness={0.35} clearcoat={0.5} />
@@ -113,7 +113,7 @@ function MagazineImpl({
 
   return (
     <group {...groupProps}>
-      {/* trimmed page block — the paper edges you see on the three open sides */}
+      {/* trimmed page block - the paper edges you see on the three open sides */}
       <RoundedBox args={[body.width, body.height, body.thickness]} radius={body.radius}>
         <meshPhysicalMaterial color={pageColor} metalness={0} roughness={0.9} />
       </RoundedBox>
@@ -146,7 +146,7 @@ function MagazineImpl({
         {regions.cover?.children}
       </DeviceScreen>
 
-      {/* live back cover — same stock, same sheen */}
+      {/* live back cover - same stock, same sheen */}
       {regions.back != null && (
         <DeviceScreen
           {...resolveSurface(regions.back, surfaceDefaults)}
@@ -162,7 +162,7 @@ function MagazineImpl({
       )}
 
       {/* live spine: the bound edge's narrow strip, rotated so content
-          reads top-to-bottom like a real shelf spine — DOM left lands at
+          reads top-to-bottom like a real shelf spine - DOM left lands at
           the spine's top, DOM top faces the front cover. Rendered at 3x
           the cover dpi: at print scale the strip is only a few mm tall,
           and small type needs the extra pixels to stay crisp. */}

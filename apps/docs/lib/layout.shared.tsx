@@ -12,7 +12,7 @@ export function baseOptions(): BaseLayoutProps {
         </>
       ),
     },
-    githubUrl: 'https://github.com/subwaymatch/area-mockups',
+    githubUrl: 'https://github.com/area-is/3d-mockups',
     links: [
       { text: 'Home', url: '/' },
       { text: 'Demos', url: '/demos' },

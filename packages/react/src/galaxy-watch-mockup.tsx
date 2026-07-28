@@ -6,7 +6,7 @@ export type GalaxyWatchMockupProps = MockupProps<GalaxyWatchProps>
 
 // The factory handles everything but the camera: laid out flat, a band is
 // several times the height of the worn loop, which the static
-// `MockupFraming.camera` cannot express — a thin shell injects it per render.
+// `MockupFraming.camera` cannot express - a thin shell injects it per render.
 const GalaxyWatchMockupBase = createMockup({
   kind: 'galaxyWatch',
   regions: SCREEN_REGIONS,
@@ -18,7 +18,7 @@ const GalaxyWatchMockupBase = createMockup({
 
 /**
  * The one-liner: a complete, interactive 3D Galaxy Watch 8 mockup, wearing its
- * buckled band — worn on the wrist, or laid open with `bandOpen`.
+ * buckled band - worn on the wrist, or laid open with `bandOpen`.
  *
  * ```tsx
  * <GalaxyWatchMockup float>

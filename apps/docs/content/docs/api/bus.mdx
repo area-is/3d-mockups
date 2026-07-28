@@ -11,13 +11,13 @@ window behind the street-side A-pillar, two full-glass curb-side doors, flat
 roof with HVAC pod, stacked round taillights and rear louvers. Live
 surfaces:
 
-- the classic **king-size ad panel** (30"×144") between the wheels — or the
+- the classic **king-size ad panel** (30"×144") between the wheels - or the
   **entire sides and tail** with `coverage="full"`, transit-wrap style, and
 - optionally the **LED destination sign** above the windshield via
   `<Bus.DestinationSign>`.
 
 Give `<Bus.DestinationSign>` a plain string and the built-in dot-matrix LED
-renderer takes over — it scrolls as a marquee when the text overflows. Pass
+renderer takes over - it scrolls as a marquee when the text overflows. Pass
 an array of strings and the sign flips between them like a real alternating
 destination sign. Any React node still works for full custom control.
 
@@ -45,19 +45,19 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Slot | Surface |
 | --- | --- |
-| `<BusMockup.CurbSide>` | Curb-side (+Z) ad surface — the king-size panel, or the whole side with `coverage="full"` (bare children). |
+| `<BusMockup.CurbSide>` | Curb-side (+Z) ad surface - the king-size panel, or the whole side with `coverage="full"` (bare children). |
 | `<BusMockup.StreetSide>` | Street-side (−Z) ad surface. |
 | `<BusMockup.Rear>` | Rear surface: the 21"×70" tail ad, or the whole tail with `coverage="full"`. |
 | `<BusMockup.DestinationSign>` | Live LED sign above the windshield. A string gets the built-in dot-matrix renderer (marquee when it overflows), an array of strings flips between them like an alternating sign; a node renders as-is. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<Bus>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-bus" />
@@ -66,11 +66,11 @@ what stays 3D hardware.
 
 ### The full transit wrap
 
-`coverage="full"` stretches the live panels across the whole side elevation
-— skirts to roofline, tail to nose — and the whole tail. A CSS `clip-path`
+`coverage="full"` stretches the live panels across the whole side
+elevation (skirts to roofline, tail to nose) and the whole tail. A CSS `clip-path`
 (computed from the same dimension spec the geometry is built from) carves
-out the body outline, wheel arches, door leaves, taillights — and the
-driver's window, which vinyl never covers — and the sides composite
+out the body outline, wheel arches, door leaves, taillights - and the
+driver's window, which vinyl never covers - and the sides composite
 per-pixel against a depth occluder shaped like that clip, so the proud
 door mirrors draw over the livery instead of being covered by it. Graphics
 DO run over the passenger windows, exactly like a real perforated-film
@@ -91,7 +91,7 @@ wrap.
 
 `coverage="full"` layers the graphics UNDER the glass: the passenger window
 band and the rear window are carved out of the wrap, so the 3D glass shows
-through — the classic partial-wrap look. Each rear lamp is carved out
+through - the classic partial-wrap look. Each rear lamp is carved out
 individually either way, so the tail graphic runs right up to the light
 collars.
 
@@ -107,7 +107,7 @@ collars.
 
 ### Rear three-quarter with the tail ad
 
-Rear window, stacked brake/turn lamps, engine louvers — and the 21"×70"
+Rear window, stacked brake/turn lamps, engine louvers - and the 21"×70"
 tail ad between them. A custom node as the destination sign, for when the
 built-in LED look isn't enough.
 

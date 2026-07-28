@@ -1,10 +1,9 @@
-// @area-3d-mockups/core — the framework-agnostic heart of area-3d-mockups.
+// @area-3d-mockups/core - the framework-agnostic heart of area-3d-mockups.
 //
-// Everything here depends on `three` at most (never on React, Svelte or Vue):
+// Everything here depends on `three` at most, never on a UI framework:
 // device/object specs, geometry math, the live-screen behaviors and the shared
-// stage configuration. Framework bindings (`area-3d-mockups` for React today;
-// `@area-3d-mockups/svelte`, `@area-3d-mockups/vue` later) are thin layers that feed
-// this data into their renderer. See ARCHITECTURE.md at the repo root.
+// stage configuration. The React binding (`area-3d-mockups`) is a thin layer that
+// feeds this data into its renderer. See ARCHITECTURE.md at the repo root.
 
 export type { Orientation } from './orientation'
 
@@ -128,7 +127,7 @@ export {
   findColorway,
 } from './colorways'
 
-// Device specs (physical dimensions, cameras, displays — pure data).
+// Device specs (physical dimensions, cameras, displays - pure data).
 export * from './devices/galaxy/dimensions'
 export * from './devices/iphone/dimensions'
 export * from './devices/laptop/dimensions'
@@ -138,7 +137,7 @@ export * from './devices/studio-display/dimensions'
 export * from './devices/fold/dimensions'
 export * from './devices/flip/dimensions'
 
-// Object specs (print, packaging, out-of-home, vehicles — pure data).
+// Object specs (print, packaging, out-of-home, vehicles - pure data).
 export * from './objects/book/dimensions'
 export * from './objects/magazine/dimensions'
 export * from './objects/brochure/dimensions'

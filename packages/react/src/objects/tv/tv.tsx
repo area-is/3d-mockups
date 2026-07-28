@@ -25,7 +25,7 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
   /**
    * Diagonal size in inches, clamped to `TV_MIN_INCHES`..`TV_MAX_INCHES`
    * (32–98). The panel scales with the diagonal while the bezels, cabinet
-   * depth, ports and feet follow real product ratios — the feet keep a
+   * depth, ports and feet follow real product ratios - the feet keep a
    * near-constant inset from the panel ends and grow only mildly, like the
    * shared plastic stands on retail ranges. Default 65.
    */
@@ -33,7 +33,7 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
   /**
    * Which design: `'legs'` the wide 4K set on splayed A-frame feet (default),
    * `'pedestal'` the Neo QLED class on a center plate, `'frame'` the
-   * picture-frame class — a uniform thick bezel on an even-thickness slab (its
+   * picture-frame class - a uniform thick bezel on an even-thickness slab (its
    * electronics live in an external connect box), wall-hung on nothing.
    */
   variant?: TVVariant
@@ -47,7 +47,7 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
  * A procedurally built flat-screen TV (65" by default, sized via `size` in
  * inches): near-bezel-less 16:9 panel, thin edges with a shallow
  * electronics bulge low on the back, a recessed rear input bay (HDMI, USB,
- * LAN, optical audio, antenna) and two slim feet near the ends — each a
+ * LAN, optical audio, antenna) and two slim feet near the ends - each a
  * pair of wide-splayed struts, the shallow Λ stance of current retail
  * stands. The screen is a live 1920×1080 DOM surface. No 3D asset files
  * are loaded.
@@ -97,11 +97,11 @@ function TVSetImpl({
 
   // One splayed foot: ankle + two raked struts whose tips land INSIDE the flat
   // floor pads (the pads sit level on the stand plane outside the leaned
-  // strut frame, and the struts terminate buried in them — no overshoot).
+  // strut frame, and the struts terminate buried in them - no overshoot).
   const foot = React.useMemo(() => {
     if (stand.kind !== 'splayed') return null
     const lean = 0.045
-    // Slim, flat shoes — barely taller than the strut is wide, so the
+    // Slim, flat shoes - barely taller than the strut is wide, so the
     // junction reads as the strut ending in a low runner, not a bulb.
     const padH = 0.022
     const padLen = 0.19
@@ -122,7 +122,7 @@ function TVSetImpl({
 
   const plastic = <meshPhysicalMaterial color={color} metalness={0.55} roughness={0.42} />
   // The pedestal's plate is a big flat face aimed straight up, and the camera
-  // sees it at a grazing angle — where Fresnel drives the enclosure finish's
+  // sees it at a grazing angle - where Fresnel drives the enclosure finish's
   // reflectance to ~1 and the overhead softbox blows the whole plate white.
   // Real center stands are dark graphite, so damp the specular right down.
   const graphite = (
@@ -193,7 +193,7 @@ function TVSetImpl({
   ]
   // The bay floor with every port punched THROUGH it: the openings get real
   // side walls from the extrusion, and the connector liners sit behind them
-  // — sockets sunk INTO the panel, like the rear of a retail set.
+  // - sockets sunk INTO the panel, like the rear of a retail set.
   const bayFloorGeometry = React.useMemo(() => {
     if (!portBay) return null
     const shape = roundedRectShape(portBay.width - 0.008, portBay.height - 0.008, 0.028)
@@ -235,7 +235,7 @@ function TVSetImpl({
         <meshPhysicalMaterial color={color} metalness={0.6} roughness={0.4} />
       </mesh>
 
-      {/* logo/IR bar projecting just below the chin at bottom center — the
+      {/* logo/IR bar projecting just below the chin at bottom center - the
           picture-frame set has none, its face is nothing but frame */}
       {spec.logoBar && (
         <RoundedBox
@@ -255,7 +255,7 @@ function TVSetImpl({
         </mesh>
       )}
 
-      {/* the input bay's interior — right side viewed from the back (-x),
+      {/* the input bay's interior - right side viewed from the back (-x),
           the entry-class loadout: HDMI x3, USB x2, LAN, optical, antenna
           coax. A floor plate closes the punched opening `cavityDepth` in;
           every connector mounts on it and stays BELOW the bulge surface,
@@ -308,7 +308,7 @@ function TVSetImpl({
       </group>
 
       {/* splayed feet: a slim ankle block under the cabinet with two
-          wide-splayed struts running fore and aft — the shallow Λ stance of
+          wide-splayed struts running fore and aft - the shallow Λ stance of
           the reference stands. The struts terminate buried inside flat floor
           pads that sit level on the stand plane. */}
       {stand.kind === 'splayed' &&

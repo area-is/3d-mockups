@@ -1,5 +1,5 @@
 /**
- * Gentle idle float shared by the device mockups. Pure math — each binding
+ * Gentle idle float shared by the device mockups. Pure math - each binding
  * samples `floatPose` once per frame and applies it to the device's group.
  *
  * Apply it *before* the orbit controls and the HTML screen bridge update
@@ -29,7 +29,7 @@ export function floatPose(elapsed: number, intensity = 1, phase = 0): FloatPose 
   }
 }
 
-/** A random phase for `floatPose` — call once when the mockup mounts. */
+/** A random phase for `floatPose` - call once when the mockup mounts. */
 export function randomFloatPhase(): number {
   return Math.random() * Math.PI * 2
 }

@@ -3,7 +3,7 @@
  *
  * The harness renders any mockup from URL params on a chrome-less stage with
  * float, controls, shadows and drag switched off, so a frame is deterministic.
- * `regions=1` fills every live region with its own flat, labelled hue — which
+ * `regions=1` fills every live region with its own flat, labelled hue - which
  * makes this a *geometry* test: if a surface changes size, moves, or starts
  * bleeding through the body, the coloured rect changes shape and the diff
  * catches it. That is the safety net for moving layout math out of the scene
@@ -15,7 +15,7 @@
  *
  * Expects the docs dev server on PORT (default 3311); pass --base to override.
  * WebGL runs on SwiftShader, so results are reproducible across machines
- * without a GPU — at the cost of being slow, hence the generous timeouts.
+ * without a GPU - at the cost of being slow, hence the generous timeouts.
  */
 import { chromium } from 'playwright'
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -33,8 +33,8 @@ const BASE = args.find((a) => a.startsWith('--base='))?.slice(7) ?? `http://loca
 
 /**
  * One case per pose worth defending. Weighted toward the models whose geometry
- * still lives in their scene components (bus, van, storefront) — those are the
- * ones a refactor can silently break — plus a spread of the rest so a change to
+ * still lives in their scene components (bus, van, storefront) - those are the
+ * ones a refactor can silently break - plus a spread of the rest so a change to
  * shared machinery (DeviceScreen, createMockup, the slot plumbing) shows up.
  */
 const CASES = [
@@ -60,7 +60,7 @@ const CASES = [
   ['book', 'device=book&regions=1&ry=28'],
   ['magazine', 'device=magazine&regions=1&ry=28'],
   ['brochure', 'device=brochure&regions=1&ry=22'],
-  // the reverse face, where left/right mirror the front — the one part of the
+  // the reverse face, where left/right mirror the front - the one part of the
   // panel mapping with no other automated cover
   ['brochure-back', 'device=brochure&regions=1&ry=200'],
   ['productbox', 'device=productbox&regions=1&ry=32&rx=14'],
@@ -94,7 +94,7 @@ const VIEWPORT = { width: 900, height: 675 }
  *
  * Measured, not guessed: repeat runs of an unchanged build come back at
  * exactly 0.0000% on SwiftShader, so this is pure headroom for a future
- * driver build nudging antialiased edges. It has to stay small — an 8%
+ * driver build nudging antialiased edges. It has to stay small - an 8%
  * change to the van's rear panel width only moves 0.10% of the frame when
  * the panel is off-axis, so a percent-scale tolerance would wave real
  * geometry changes through.
@@ -181,8 +181,8 @@ for (const [name, query] of CASES) {
     shot = await page.screenshot({ timeout: 60_000 })
   } catch (err) {
     // One flaky case must not throw away the other thirty-two results.
-    failures.push(`${name}: could not capture — ${String(err).split('\n')[0]}`)
-    console.log(`  ERROR  ${name} — ${String(err).split('\n')[0]}`)
+    failures.push(`${name}: could not capture - ${String(err).split('\n')[0]}`)
+    console.log(`  ERROR  ${name} - ${String(err).split('\n')[0]}`)
     continue
   }
 
@@ -199,14 +199,14 @@ for (const [name, query] of CASES) {
 
   if (result.sizeMismatch) {
     failures.push(`${name}: size changed (${result.sizeMismatch})`)
-    console.log(`  FAIL   ${name} — ${result.sizeMismatch}`)
+    console.log(`  FAIL   ${name} - ${result.sizeMismatch}`)
     continue
   }
   if (result.fraction > TOLERANCE) {
     writeFileSync(join(DIFFS, `${name}.actual.png`), shot)
     writeFileSync(join(DIFFS, `${name}.diff.png`), Buffer.from(result.diff.split(',')[1], 'base64'))
     failures.push(`${name}: ${(result.fraction * 100).toFixed(3)}% of pixels differ`)
-    console.log(`  FAIL   ${name} — ${(result.fraction * 100).toFixed(3)}% differ`)
+    console.log(`  FAIL   ${name} - ${(result.fraction * 100).toFixed(3)}% differ`)
   } else {
     console.log(`  ok     ${name}${result.fraction ? ` (${(result.fraction * 100).toFixed(4)}%)` : ''}`)
   }

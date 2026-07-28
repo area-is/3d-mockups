@@ -1,7 +1,7 @@
 import type { SVGProps } from 'react'
 
 /**
- * The area-3d-mockups brand mark — the dual-slant "A" from
+ * The area-3d-mockups brand mark - the dual-slant "A" from
  * `assets/area-a-dual-slant-green.svg`, inlined rather than loaded from
  * `public/` so it paints with the first HTML byte (the site header is sticky,
  * so a late logo is a visible pop) and so its size follows whatever slot it
@@ -9,7 +9,7 @@ import type { SVGProps } from 'react'
  *
  * The viewBox is cropped to the artwork's own bounds. In the source file the
  * mark fills only x[61.96,382.04] y[46,398] of a 444 box, so `size` would
- * otherwise buy ~20% more box than mark — which is what made it read small
+ * otherwise buy ~20% more box than mark - which is what made it read small
  * next to the wordmark. Cropped, `size` IS the height you get.
  *
  * The solid mark is used everywhere, including the favicon. The outline
@@ -21,7 +21,7 @@ import type { SVGProps } from 'react'
  * wordmark, so announcing it again would just double up for screen readers.
  * Pass `aria-hidden={false}` with a label if it is ever used on its own.
  *
- * Regenerate from the SVG if the artwork changes — the shapes below are a
+ * Regenerate from the SVG if the artwork changes - the shapes below are a
  * mechanical transcription (attribute names camelCased for JSX), nothing else.
  */
 export function Logo({ size = 28, ...props }: Omit<SVGProps<SVGSVGElement>, 'children'> & { size?: number }) {

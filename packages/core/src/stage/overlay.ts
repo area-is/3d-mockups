@@ -1,5 +1,5 @@
 /**
- * Shared look for the overlay control buttons (zoom, fullscreen) — self-
+ * Shared look for the overlay control buttons (zoom, fullscreen) - self-
  * contained, no page CSS. Style objects are camelCased (React `style`
  * compatible); other bindings convert as needed.
  */

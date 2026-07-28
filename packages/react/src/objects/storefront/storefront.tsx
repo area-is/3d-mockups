@@ -16,7 +16,7 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
    * Region content. Bare children fill the front fascia sign; name regions
    * explicitly with the fascia slots (`<Storefront.Fascia>`,
    * `<Storefront.LeftSign>`, `<Storefront.RightSign>`, `<Storefront.RearSign>`)
-   * and the pane slots — `<Storefront.FrontLeft>` and `<Storefront.FrontRight>`
+   * and the pane slots - `<Storefront.FrontLeft>` and `<Storefront.FrontRight>`
    * are the two display bays either side of the front mullion,
    * `<Storefront.Door>` is the glazed door leaf, and `<Storefront.Left>` /
    * `<Storefront.Right>` / `<Storefront.Rear>` are the wide center panes of
@@ -26,7 +26,7 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
   /** Shopfront paint (fascia surrounds, frames, door, stall risers). */
   color?: string
   /**
-   * Glazing color — every display pane, the transom lights and the door leaf.
+   * Glazing color - every display pane, the transom lights and the door leaf.
    * The default is the blue-gray of glass reflecting a street. Warm it toward
    * bronze (`'#6b5a44'`) or green (`'#4d6b60'`) for tinted glass, or darken it
    * for a shop that reads as closed. It tints the reflection rather than
@@ -43,12 +43,12 @@ export interface StorefrontProps extends Omit<GroupProps, 'children' | 'color'>,
 /**
  * A procedurally built free-standing corner shop: four glazed shopfront
  * elevations under a capped flat roof, the parapet sitting just above the
- * cornice so the painted composition IS the whole building — no masonry.
- * The front (+Z) is the classic high-street shopfront — painted timber
+ * cornice so the painted composition IS the whole building - no masonry.
+ * The front (+Z) is the classic high-street shopfront - painted timber
  * surround, stall riser, big display window with a mullion and transom
  * lights, glazed door with a vertical pull, corniced fascia on console
  * brackets. The other three elevations repeat the same composition without
- * the door — windows only — and each carries its own live fascia sign.
+ * the door - windows only - and each carries its own live fascia sign.
  * Every big pane is a mockup surface too: both front display bays, the
  * glazed door leaf and the center pane of each other elevation.
  * The roof is plain hardware. No 3D asset files are loaded.
@@ -92,12 +92,12 @@ function StorefrontImpl({
 
   const corniceY = fascia.y + fascia.height / 2 + 0.05
   const riserTop = -standHeight + riser.height
-  // Corner pilasters end AT the pavement — no leg stubs lifting the shop.
+  // Corner pilasters end AT the pavement - no leg stubs lifting the shop.
   const postTop = fascia.y + fascia.height / 4 + 0.35
   const cornerPost = { height: postTop + standHeight, y: (postTop - standHeight) / 2 }
   const frontZ = body.depth / 2
-  // The façade layout — riser, glazing extent, transom, pane band and the two
-  // front bays — is declared in the spec so it can be measured (see
+  // The façade layout - riser, glazing extent, transom, pane band and the two
+  // front bays - is declared in the spec so it can be measured (see
   // storefrontLayout in core).
   const { windowH, glazeX, glazeW, transomY, paneTop, paneBottom, paneH, paneCY, bayL, bayR, elevationPaneWidth, door } =
     storefrontLayout()
@@ -108,8 +108,8 @@ function StorefrontImpl({
     surfaceStyle,
   }
 
-  // One windows-only elevation, built facing local +Z at `faceDist` — the
-  // same composition as the front minus the door — with its fascia sign
+  // One windows-only elevation, built facing local +Z at `faceDist` - the
+  // same composition as the front minus the door - with its fascia sign
   // and a live center pane between the two mullions.
   const windowedElevation = (
     faceDist: number,
@@ -135,7 +135,7 @@ function StorefrontImpl({
         <RoundedBox args={[faceLen, riser.height, 0.1]} radius={0.012} position={[0, -standHeight + riser.height / 2, faceDist + 0.015]}>
           <meshPhysicalMaterial {...paint} />
         </RoundedBox>
-        {/* pilaster-to-pilaster glazing — windows only, no door */}
+        {/* pilaster-to-pilaster glazing - windows only, no door */}
         <mesh position={[0, riserTop + windowH / 2, faceDist + 0.005]}>
           <planeGeometry args={[glazeL, windowH]} />
           {glassMaterial}
@@ -218,7 +218,7 @@ function StorefrontImpl({
           <meshPhysicalMaterial {...paint} />
         </RoundedBox>
       ))}
-      {/* stall riser under the windows — it stops at the door bay, so the
+      {/* stall riser under the windows - it stops at the door bay, so the
           glazed door runs all the way to the pavement instead of being
           cut off at knee height */}
       <RoundedBox

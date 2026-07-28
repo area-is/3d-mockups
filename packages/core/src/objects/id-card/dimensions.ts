@@ -1,5 +1,5 @@
 /**
- * ID card object dimensions — a portrait CR80 badge on a lanyard.
+ * ID card object dimensions - a portrait CR80 badge on a lanyard.
  *
  * The card is the standard CR80 badge blank: 54 x 85.6 mm held portrait on
  * 30 mil (0.76 mm) PVC with a 14 x 3 mm slot punch centered 6 mm below the
@@ -19,7 +19,7 @@ export const ID_CARD = {
   /** Slot punch (a real 14x3 mm stadium hole), centerline ~5.5 mm below the top edge. */
   slot: { width: 0.44, height: 0.095, centerY: 2.675 / 2 - 0.172 },
   /**
-   * Printable face: the WHOLE card, edge to edge — like a real full-bleed
+   * Printable face: the WHOLE card, edge to edge - like a real full-bleed
    * badge print, the design runs under the punch strip too. The renderer
    * carves the slot punch out of the live area (same stadium hole as the
    * 3D card), so content maps onto this rect on both sides minus the slot.
@@ -28,12 +28,12 @@ export const ID_CARD = {
   /**
    * Hardware chain, bottom to top exactly as on real lanyards: the classic
    * FLAT stamped-steel swivel J-hook (an open ring segment closed by a thin
-   * spring gate) hanging pierced THROUGH the slot — its plane perpendicular
+   * spring gate) hanging pierced THROUGH the slot - its plane perpendicular
    * to the card, the lower band crossing inside the punched opening and the
-   * ring window swallowing the punch strip — then the stem and swivel
+   * ring window swallowing the punch strip - then the stem and swivel
    * barrel above it, and the sheet-metal crimp that captures the folded
    * strap ends. Reference: the standard "metal swivel J hook clip" used on
-   * nearly every retail lanyard — flat polished steel, not wire.
+   * nearly every retail lanyard - flat polished steel, not wire.
    */
   hook: {
     /** Ring segment of the J: outer/inner radii of the flat stamped hook. */
@@ -67,7 +67,7 @@ export const ID_CARD_REGIONS = [
 export const ID_CARD_STAGE_OFFSET_Y = -0.35
 
 /** The (stage-offset) badge grounds on the card's bottom edge. */
-/** Millimetres per world unit — the ID-card scale. */
+/** Millimetres per world unit - the ID-card scale. */
 export const ID_CARD_MM_PER_UNIT = 32
 
 /** Live geometry of the two full-bleed faces (the whole card, edge to edge). */

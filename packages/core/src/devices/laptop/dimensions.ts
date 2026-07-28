@@ -1,5 +1,5 @@
 /**
- * Laptop device dimensions — MacBook Air 13" (M5) and MacBook Pro 14" (M5).
+ * Laptop device dimensions - MacBook Air 13" (M5) and MacBook Pro 14" (M5).
  *
  * Both variants share one world scale (~72.4 mm per unit, set so the Air's
  * closed footprint is exactly 4.2 x 2.97 units), so they keep their true
@@ -32,7 +32,7 @@ export interface LaptopSpec {
   lid: { thickness: number; bevel: number }
   /**
    * Active display area within the open lid. `offsetY` is the distance from
-   * the lid's vertical center to the display center — the chin below the panel
+   * the lid's vertical center to the display center - the chin below the panel
    * is deeper than the top bezel, so the panel sits slightly high.
    */
   display: {
@@ -47,7 +47,7 @@ export interface LaptopSpec {
    * The Magic Keyboard on the deck, hinge side: `width`/`depth` bound the key
    * grid (14.5 key units across, six rows deep, so they also set the 19 x
    * 18.5 mm key pitch every Mac laptop shares). `tray` is the black anodized
-   * recess the Pro sets its keys in; the Air has none — its caps sit straight
+   * recess the Pro sets its keys in; the Air has none - its caps sit straight
    * in the body-colored aluminum deck.
    */
   keyboard: { width: number; depth: number; offsetZ: number; tray: boolean }
@@ -72,8 +72,8 @@ export interface LaptopSpec {
    * of ~0.63 mm drilled holes.
    *
    * Photo-measured on Apple's own product shots: the drilling fills the whole
-   * band between the keyboard tray and the chassis edge — 96% of it on the
-   * 16", where the gap is 38.5 mm — leaving only a hairline of bare aluminum
+   * band between the keyboard tray and the chassis edge - 96% of it on the
+   * 16", where the gap is 38.5 mm - leaving only a hairline of bare aluminum
    * either side, and it sits slightly toward the back of the tray (3 mm below
    * its top edge, 7 mm above its bottom).
    */
@@ -93,7 +93,7 @@ export interface LaptopSpec {
 }
 
 /**
- * MacBook Air 13" (M5, 2026) — 30.41 x 21.5 x 1.13 cm closed, 13.6" 2560x1664
+ * MacBook Air 13" (M5, 2026) - 30.41 x 21.5 x 1.13 cm closed, 13.6" 2560x1664
  * Liquid Retina display with a notch, uniform side bezels and a deeper chin.
  * The M5 generation reuses the M4 chassis unchanged.
  */
@@ -104,7 +104,7 @@ const MACBOOK_AIR_13: LaptopSpec = {
   display: { width: 4.0, height: 2.6, radius: [0.09, 0.09, 0, 0], offsetY: 0.05 },
   notch: { width: 0.48, height: 0.095, radius: 0.045 },
   // The same Magic Keyboard module as the Pro (identical 272.8 x 108.6 mm key
-  // grid), but set flush in the aluminum deck — the Air has no black tray.
+  // grid), but set flush in the aluminum deck - the Air has no black tray.
   keyboard: { width: 3.85, depth: 1.587, offsetZ: -0.6, tray: false },
   scoop: { width: 0.75, radius: 0.059, bite: 0.032 },
   trackpad: { width: 1.78, depth: 1.12, offsetZ: 0.78 },
@@ -123,7 +123,7 @@ const MACBOOK_AIR_13: LaptopSpec = {
 }
 
 /**
- * MacBook Pro 14" (M5) — 312.6 x 221.2 x 15.5 mm closed, 14.2" 3024x1964
+ * MacBook Pro 14" (M5) - 312.6 x 221.2 x 15.5 mm closed, 14.2" 3024x1964
  * Liquid Retina XDR display. Detail geometry from a retail-unit scan: MagSafe,
  * 2x Thunderbolt and headphone jack on the left; HDMI, Thunderbolt and SDXC on
  * the right; perforated speaker strips flanking the keyboard; 19.1 mm feet;
@@ -162,7 +162,7 @@ const MACBOOK_PRO_14: LaptopSpec = {
   },
   feet: { x: 1.774, z: 1.146, radius: 0.132 },
   // The strip runs from 0.4 mm off the tray out to where the deck's edge
-  // bevel starts — 14.5 mm of drilling in a 16.9 mm gap.
+  // bevel starts - 14.5 mm of drilling in a 16.9 mm gap.
   speakers: {
     x: 2.0308,
     width: 0.2005,
@@ -177,7 +177,7 @@ const MACBOOK_PRO_14: LaptopSpec = {
 }
 
 /**
- * MacBook Air 15" (M5, 2026) — 340.4 x 237.6 x 11.5 mm closed, 15.3"
+ * MacBook Air 15" (M5, 2026) - 340.4 x 237.6 x 11.5 mm closed, 15.3"
  * 2880x1864 Liquid Retina at 224 ppi. Same slab language, keyboard, scoop
  * and port kit as the 13" in a wider chassis; the four-speaker system vents
  * through the hinge, so the deck stays clean. Default scaled 1440x932.
@@ -209,7 +209,7 @@ const MACBOOK_AIR_15: LaptopSpec = {
 }
 
 /**
- * MacBook Pro 16" (M5 Pro / M5 Max, 2026) — 355.7 x 248.1 x 16.8 mm closed,
+ * MacBook Pro 16" (M5 Pro / M5 Max, 2026) - 355.7 x 248.1 x 16.8 mm closed,
  * 16.2" 3456x2234 Liquid Retina XDR at 254 ppi. Same port set and measured
  * keyboard/scoop/grille details as the 14" in the larger chassis, with wider
  * speaker strips and a deeper palm rest. Default scaled 1728x1117.
@@ -282,7 +282,7 @@ export const LAPTOP_STAGE_OFFSET_Y = -1.15
  * reproduces the stage's original 0.22 hover clearance, with the grounded
  * line restored by the 0.08 contact gap.
  */
-/** Millimetres per world unit — the shared laptop scale. */
+/** Millimetres per world unit - the shared laptop scale. */
 export const LAPTOP_MM_PER_UNIT = 72.4
 
 /**
@@ -296,7 +296,7 @@ export const LAPTOP_RESOLUTIONS: Record<LaptopVariant, number> = {
   pro16: 1728,
 }
 
-/** Live geometry of the display. Laptops have one pose — always landscape. */
+/** Live geometry of the display. Laptops have one pose - always landscape. */
 export const LAPTOP_METRICS = {
   mmPerUnit: LAPTOP_MM_PER_UNIT,
   regions: ({ variant }) => {

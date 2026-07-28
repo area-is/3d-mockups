@@ -1,0 +1,69 @@
+name: Deploy docs to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ github.event_name == 'pull_request' && 'Preview' || 'Deploy' }}
+    runs-on: ubuntu-latest
+    # Pull requests from forks cannot read repository secrets, so the publish
+    # step would fail after a full build. Skip them here; they are still built
+    # and typechecked by the `build` job below.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The workspace `prepare` hooks build packages/core into packages/react's
+      # dist, which the docs app imports. `npm ci` runs them.
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      # Compiles the Next build into .open-next/worker.js + .open-next/assets.
+      - run: npm run cf:build -w docs
+
+      # `npx wrangler` resolves the version pinned in apps/docs/package.json, so
+      # CI and local `npm run deploy:docs` always run the same wrangler.
+      - name: Publish
+        working-directory: apps/docs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # On main this becomes the live deployment. On a pull request it uploads
+        # a version and prints a preview URL without touching production.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npx wrangler versions upload
+          else
+            npx wrangler deploy
+          fi
+
+  build:
+    name: Build (fork PRs)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run cf:build -w docs

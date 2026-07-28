@@ -904,7 +904,7 @@
 
 /* Single-series week bars: one hue, thin marks with rounded data ends;
    today is an emphasis step of the same hue, selection is an outline
-   (identity never rides on color alone — weekday letters label each bar). */
+   (identity never rides on color alone - weekday letters label each bar). */
 .std-chart {
   display: flex;
   align-items: stretch;

@@ -16,14 +16,14 @@ export interface GreetingCardProps extends Omit<GroupProps, 'children' | 'color'
   children?: React.ReactNode
   /** Opening angle in degrees between the panels. `180` lays the card flat. */
   openAngle?: number
-  /** Card stock color — edges and unprinted faces. */
+  /** Card stock color - edges and unprinted faces. */
   color?: string
 }
 
 /**
  * A procedurally built A7 greeting card standing like a tent, fold toward
  * the viewer: the front and back covers face outward, and the inside spread
- * lives on the reverse — all four faces are live DOM. No 3D asset files are
+ * lives on the reverse - all four faces are live DOM. No 3D asset files are
  * loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).

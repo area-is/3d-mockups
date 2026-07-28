@@ -37,8 +37,8 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   /** Which Galaxy Z Flip device to render. */
   variant?: FlipVariant
   /**
-   * `true` (default) renders the unfolded tall phone — your content fills the
-   * 6.85" main display. `false` renders the folded compact — your content
+   * `true` (default) renders the unfolded tall phone - your content fills the
+   * 6.85" main display. `false` renders the folded compact - your content
    * fills the nearly-square cover display, with the two lens rings and
    * flash sitting on the glass beside it.
    */
@@ -48,7 +48,7 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * open), overriding `open` when set. Intermediate angles render the real
    * Flex Mode pose: the halves pivot around the hinge line while the spine's
    * curved housing rolls into the gap between them, and your content bends
-   * across the fold — e.g. `openAngle={100}` for the classic half-open
+   * across the fold - e.g. `openAngle={100}` for the classic half-open
    * standing pose. The pose is continuous from nearly shut to nearly flat;
    * only ~0° snaps to the dedicated folded pose and ~177°+ to the
    * flat-open one. At intermediate angles the display is composited from two
@@ -58,13 +58,13 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   openAngle?: number
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
-   * H×W with upright content — exactly like rotating the real device.
+   * H×W with upright content - exactly like rotating the real device.
    */
   orientation?: 'portrait' | 'landscape'
   /**
    * Back panel color. Takes a retail colorway id from `FLIP_COLORWAYS`,
    * which also presets `frameColor`, or any CSS color for a custom finish.
-   * A colorway id wins over a CSS color of the same name — pass hex if you
+   * A colorway id wins over a CSS color of the same name - pass hex if you
    * meant the CSS one.
    */
   color?: string
@@ -112,7 +112,7 @@ function freeEdgeCutters(
  * front is nearly all cover screen, switched with the `open` prop. Detail
  * geometry (separate protruding lens rings, hinge band with its engraved wordmark, button
  * pills, ports) follows a reference scan of the retail device. No 3D asset
- * files are loaded — everything is generated from geometry at runtime.
+ * files are loaded - everything is generated from geometry at runtime.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
@@ -133,14 +133,14 @@ function FlipImpl({
   const spec = FLIP_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(FLIP_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#22252b'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#4a4f59'
   // Resolve the pose: an explicit fold angle wins over the boolean; the
   // extremes snap to the dedicated flat-open / folded-shut paths so the
   // default renders are pixel-identical to before. The flex rig pivots on
-  // the display surface, so the pose is continuous all the way down —
+  // the display surface, so the pose is continuous all the way down -
   // only ~0° itself snaps to the dedicated folded pose.
   const angle = openAngle === undefined ? (open ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
   const mode: 'open' | 'closed' | 'flex' = angle >= 177 ? 'open' : angle < 0.5 ? 'closed' : 'flex'
@@ -152,7 +152,7 @@ function FlipImpl({
   const aspect = display.height / display.width
   const res = resolution ?? Math.round(state.resolution * (landscape ? aspect : 1))
   // Screens occlude against EVERY registered body, this device's own halves
-  // included — see the fold's matching note. Self-occlusion is what keeps a
+  // included - see the fold's matching note. Self-occlusion is what keeps a
   // half's display from painting through its own back in the flex pose, and
   // the occlusion test's majority rule keeps a grazing corner ray from
   // blacking out a display that is plainly in view.
@@ -163,8 +163,8 @@ function FlipImpl({
   const halfOffsetY = openBody.height / 2 - half.height / 2
 
   // Machined chassis geometry, built ONLY for the pose being rendered. Every
-  // `cutGeometry` is a CSG boolean over a tessellated slab — the most
-  // expensive work this component does — and no two poses share a shell, so
+  // `cutGeometry` is a CSG boolean over a tessellated slab - the most
+  // expensive work this component does - and no two poses share a shell, so
   // building all of them up front paid for shells that never reached the
   // scene graph. Keying one memo on `mode` also hands the render branches a
   // discriminated union to narrow on.
@@ -250,7 +250,7 @@ function FlipImpl({
   // SAME height as the panes. Without it the panes float proud of the chassis
   // back face, and past ~12° of tilt they project beyond the rounded-corner
   // silhouette (the dark panel visibly "grows outside" the body). With the
-  // frame on the panes' own plane, the border occludes them at every angle —
+  // frame on the panes' own plane, the border occludes them at every angle -
   // exactly how the real glass sits in its surrounding lip.
   const backFrameGeometry = React.useMemo(() => {
     const outer = roundedRectShape(
@@ -311,7 +311,7 @@ function FlipImpl({
     ...extra,
   })
 
-  // The two separate lens rings + flash, in cover-half local coordinates —
+  // The two separate lens rings + flash, in cover-half local coordinates -
   // each module rises straight from the cover glass with no plate joining
   // them, like the retail device. `sign` is +1 when the cluster faces the
   // viewer (closed front) and -1 on the open back.
@@ -390,9 +390,9 @@ function FlipImpl({
 
   // The hinge spine capping the folded bottom: a horizontal capsule whose
   // radius spans the WHOLE folded stack, so its crown is tangent to both
-  // the cover-screen face and the back face — the smooth rolled bottom of
+  // the cover-screen face and the back face - the smooth rolled bottom of
   // the retail teardrop hinge, sealing the stack's underside instead of
-  // reading as a thin separate rod — with the SAMSUNG engraving on its
+  // reading as a thin separate rod - with the SAMSUNG engraving on its
   // crown.
   // A hair inside the stack's outer faces so the near-tangent surfaces
   // never coincide (which would shimmer along the touch line).
@@ -403,7 +403,7 @@ function FlipImpl({
         <capsuleGeometry args={[stackR, openBody.width - 0.03 - stackR * 2, 12, 32]} />
         <meshPhysicalMaterial color={frameColor} metalness={0.75} roughness={0.36} />
       </mesh>
-      {/* hairline seams where the roll meets the two faces — without them
+      {/* hairline seams where the roll meets the two faces - without them
           the hinge bottom reads as one featureless pill */}
       {([1, -1] as const).map((s) => (
         <mesh key={s} position={[0, 0, s * (stackR + 0.0028)]}>
@@ -437,7 +437,7 @@ function FlipImpl({
       </React.Fragment>
     ))
 
-  // The main display's punch-hole camera — shared by the flat-open screen and
+  // The main display's punch-hole camera - shared by the flat-open screen and
   // the flex pose's upper half (the hole rides the display's top edge, which
   // is that half's top edge too).
   const punchHoleOverlay = (
@@ -483,7 +483,7 @@ function FlipImpl({
         mode === 'open' ? (
           punchHoleOverlay
         ) : mode === 'closed' ? (
-          // The two lens rings + flash live ON the cover screen — rendered as
+          // The two lens rings + flash live ON the cover screen - rendered as
           // a DOM overlay so they sit above your live content, like a cutout.
           // No pill behind them: the retail modules protrude individually.
           <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2147483647 }}>
@@ -513,27 +513,27 @@ function FlipImpl({
 
   if (shell.mode === 'flex') {
     // Each half pivots around a shared virtual axis at the fold line, sitting
-    // just inside the main display surface (the panel's neutral axis) — so
+    // just inside the main display surface (the panel's neutral axis) - so
     // the screens meet flush when shut and lie coplanar when flat. The
     // Armor FlexHinge spine is a separate rigid body: a cylinder segment the
     // halves' back shells progressively cover as the device opens.
     const alpha = ((180 - angle) / 2) * (Math.PI / 180)
     // Pivot ON the display surface: the two half-screens then meet exactly
-    // at the crease at every angle — nearly shut included — instead of
+    // at the crease at every angle - nearly shut included - instead of
     // interpenetrating (crossed DOM planes glitch near 0°).
     const pz = openBody.depth / 2 + 0.006
     const halfH = half.height
     // Below ~26° the whole rig glides into the folded pose's canonical
-    // placement — fold the assembly forward around the hinge, half-turn it
-    // upright in-plane, re-center — converging exactly where the dedicated
+    // placement - fold the assembly forward around the hinge, half-turn it
+    // upright in-plane, re-center - converging exactly where the dedicated
     // closed pose renders, so the ~0° swap never jumps. Identity above 26°.
     const w = THREE.MathUtils.smoothstep(26 - angle, 0, 26)
     // Spine housing: a cylinder segment tangent to both halves' back shells.
     // The halves pivot on the display's neutral plane, so their back faces
-    // stay a constant `spineR` from the axis at every angle — the exposed
+    // stay a constant `spineR` from the axis at every angle - the exposed
     // wedge spans exactly ±alpha and meets each back edge seamlessly, from
     // nearly-shut to nearly-flat, like the real teardrop hinge.
-    // Run the spine and its caps essentially edge to edge — the halves'
+    // Run the spine and its caps essentially edge to edge - the halves'
     // fold-side corners are square now, so a shorter spine would show the
     // V's interior past its ends at shallow angles (the detached-pill read).
     const spineR = pz + half.depth / 2
@@ -611,7 +611,7 @@ function FlipImpl({
         <group key="flex" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* convergence chain: re-center → half-turn upright in-plane
               around the folding compact's center → fold the assembly
-              forward around the hinge line — all weighted by `w` */}
+              forward around the hinge line - all weighted by `w` */}
           <group position={[0, (halfH / 2) * w, -pz * w]}>
           <group position={[0, -halfH / 2, pz]} rotation-z={Math.PI * w}>
           <group position={[0, halfH / 2, -pz]}>
@@ -648,7 +648,7 @@ function FlipImpl({
             </group>
           </group>
 
-          {/* the spine housing rolling into the wedge between the halves —
+          {/* the spine housing rolling into the wedge between the halves -
               frame-colored but glossier than the satin rails, with the
               tone-on-tone SAMSUNG engraving centered on the band face while
               the exposed wedge is wide enough to carry it */}
@@ -674,7 +674,7 @@ function FlipImpl({
             {([1, -1] as const).map((s) => (
               <mesh key={s} rotation-y={s * (Math.PI / 2)} position={[s * (spineLen / 2 + 0.004), 0, 0]}>
                 {/* local theta 0 lands on world -z (the wedge center) for the
-                    +x cap and on +z for the -x cap — start each accordingly */}
+                    +x cap and on +z for the -x cap - start each accordingly */}
                 <circleGeometry args={[spineR * 0.995, 32, s === 1 ? -wedge / 2 : Math.PI - wedge / 2, wedge]} />
                 <meshPhysicalMaterial color={frameColor} metalness={0.7} roughness={0.38} side={THREE.DoubleSide} />
               </mesh>
@@ -714,7 +714,7 @@ function FlipImpl({
             {rails}
           </group>
 
-          {/* the frame lip around both panes, on their plane — keeps the dark
+          {/* the frame lip around both panes, on their plane - keeps the dark
               panels inside the silhouette at every viewing angle */}
           <mesh geometry={backFrameGeometry} rotation-y={Math.PI} position-z={-openBody.depth / 2 - 0.0022}>
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
@@ -728,7 +728,7 @@ function FlipImpl({
             </mesh>
           ))}
 
-          {/* hinge crevice: fully open, the two back panels don't meet — a
+          {/* hinge crevice: fully open, the two back panels don't meet - a
               dark groove runs across the vertical middle (see the retail
               product photos), rail to rail: near-black core seam with soft
               shadowed shoulders where each half's glass edge falls away */}
@@ -780,7 +780,7 @@ function FlipImpl({
         {/* the lower half's edge kit lands on the TOP edge when folded */}
         <group position-z={-halfZ}>{freeEdgeKit(half.height / 2)}</group>
 
-        {/* hinge spine capping the bottom — crown reaching the scan's
+        {/* hinge spine capping the bottom - crown reaching the scan's
             overhang below the stack */}
         {hingeBand(stackBottom - spec.hinge.overhang + stackR)}
 

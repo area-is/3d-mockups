@@ -1,5 +1,5 @@
 /**
- * DOOH totem object dimensions — a digital street kiosk / totem.
+ * DOOH totem object dimensions - a digital street kiosk / totem.
  *
  * Proportions follow the JCDecaux/Clear Channel digital 6-sheet class: a
  * ~1.3 m wide, ~2.8 m tall, ~0.35 m deep rounded enclosure on a low plinth,
@@ -29,7 +29,7 @@ export interface DoohTotemSize {
  * is the JCDecaux/Clear Channel digital 6-sheet class (1300 x 2800 mm). The
  * bezels, louvres and plinth keep their real-world dimensions; the glass and
  * active display scale with the enclosure (so the display aspect follows the
- * cabinet — a 9:16 portrait at the default size).
+ * cabinet - a 9:16 portrait at the default size).
  */
 export function doohTotemSpec({ width = 1300, height = 2800 }: DoohTotemSize = {}) {
   const w = width * DOOH_TOTEM_MM
@@ -43,7 +43,7 @@ export function doohTotemSpec({ width = 1300, height = 2800 }: DoohTotemSize = {
     glass: { width: glassW, height: glassH, radius: 0.14 },
     /** Active display area. Content maps onto this rect. */
     display: { width: glassW - 0.317, height: glassH - 0.713, radius: 0.02 },
-    /** Full-width kick plinth at the pavement — the enclosure runs straight into it. */
+    /** Full-width kick plinth at the pavement - the enclosure runs straight into it. */
     plinth: { width: w + 0.043, height: 0.24, depth: 0.56 },
     /** Ventilation louvre bands above and below the glass (~120 mm tall). */
     louvre: { width: w - 0.357, height: 0.171, y: h / 2 - 0.22 },
@@ -59,14 +59,14 @@ export type DoohTotemSpec = ReturnType<typeof doohTotemSpec>
 /** The default 1300 x 2800 mm digital 6-sheet totem. */
 export const DOOH_TOTEM: DoohTotemSpec = doohTotemSpec()
 
-/** Live regions: the two displays — real totems are double-sided. */
+/** Live regions: the two displays - real totems are double-sided. */
 export const DOOH_TOTEM_REGIONS = [
   { name: 'front', label: 'Front display' },
   { name: 'back', label: 'Back display' },
 ] as const satisfies readonly RegionSpec[]
 
 /** The plinth defines the pavement, `standHeight` below the enclosure center. */
-/** Millimetres per world unit — the totem scale (`DOOH_TOTEM_MM` inverted). */
+/** Millimetres per world unit - the totem scale (`DOOH_TOTEM_MM` inverted). */
 export const DOOH_TOTEM_MM_PER_UNIT = 1 / DOOH_TOTEM_MM
 
 /** Live geometry of the two display faces. */

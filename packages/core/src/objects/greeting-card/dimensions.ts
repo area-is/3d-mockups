@@ -1,5 +1,5 @@
 /**
- * Greeting card object dimensions — a folded A7 card standing like a tent.
+ * Greeting card object dimensions - a folded A7 card standing like a tent.
  *
  * Proportions follow the US A7 standard: a 10" x 7" sheet folded once into
  * two 127 x 178 mm portrait panels on heavy card stock, standing partially
@@ -33,10 +33,10 @@ export const GREETING_CARD_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The tent-standing card grounds on its bottom panel edges. */
-/** Millimetres per world unit — shared with the book. */
+/** Millimetres per world unit - shared with the book. */
 export const GREETING_CARD_MM_PER_UNIT = 56
 
-/** Live geometry of the four panels — all the same folded-card page. */
+/** Live geometry of the four panels - all the same folded-card page. */
 export const GREETING_CARD_METRICS = {
   mmPerUnit: GREETING_CARD_MM_PER_UNIT,
   regions: () => {

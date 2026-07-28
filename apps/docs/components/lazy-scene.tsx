@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
  * unmounts them once it scrolls well away.
  *
  * Browsers cap the number of live WebGL contexts (as few as 8 on mobile
- * Chrome) and silently kill the oldest context when the cap is exceeded —
+ * Chrome) and silently kill the oldest context when the cap is exceeded -
  * on a gallery page full of canvases that leaves earlier cards showing the
  * "sad canvas" icon with the CSS3D screen floating detached. Keeping only
  * the nearby scenes mounted stays far under the cap and also skips the GPU

@@ -1,10 +1,10 @@
 /**
- * The measurement engine — pure, and deliberately free of any spec imports.
+ * The measurement engine - pure, and deliberately free of any spec imports.
  *
  * `mockupInfo` in `metrics.ts` is a *registry* over this: convenient when the
  * kind is a runtime string (the generated catalog, docs tooling), but it has
  * to reference every spec module to build its table. A component already knows
- * its own spec, so `createMockup` calls `describeMockup` directly instead —
+ * its own spec, so `createMockup` calls `describeMockup` directly instead -
  * which is what keeps importing one mockup from pulling in all thirty.
  */
 
@@ -22,7 +22,7 @@ export interface Size {
 
 /** Everything known about one live region of a configured mockup. */
 export interface RegionInfo {
-  /** Region id — the slot name (`front` → `<Mockup.Front>`). */
+  /** Region id - the slot name (`front` → `<Mockup.Front>`). */
   name: string
   /** Short human label, e.g. `'Front cover'`. */
   label: string
@@ -33,7 +33,7 @@ export interface RegionInfo {
   index: number
   /** The live rect in three.js world units. */
   units: Size
-  /** The live rect in millimetres — the physical size of the printed surface. */
+  /** The live rect in millimetres - the physical size of the printed surface. */
   mm: Size
   /**
    * The live rect in CSS pixels: the viewport your content lays out in at this
@@ -57,14 +57,14 @@ export interface MockupInfo {
   /** Millimetres per world unit for this family. */
   mmPerUnit: number
   /**
-   * The primary region — the first one declared, and where bare (non-slot)
+   * The primary region - the first one declared, and where bare (non-slot)
    * children render.
    */
   primary: RegionInfo
   /**
    * Every region by name. A region whose one slot is painted onto several
    * distinct surfaces (the van's two licence plates) holds an array, one entry
-   * per surface — whether or not those surfaces are the same size.
+   * per surface - whether or not those surfaces are the same size.
    */
   regions: Record<string, RegionInfo | RegionInfo[]>
   /** Every region in declaration order, multi-surface regions flattened. */
@@ -100,7 +100,7 @@ function describe(spec: RegionSpec, metrics: RegionMetrics, mmPerUnit: number, i
     units: { width, height },
     mm: { width: round(width * mmPerUnit, 1), height: round(height * mmPerUnit, 1) },
     // Derived with the renderer's own helper, so the reported height is the
-    // height the surface is actually given — rounding included.
+    // height the surface is actually given - rounding included.
     px: { width: resolution, height: screenCssHeight(resolution, width, height) },
     pxPerUnit: round(pxPerUnit, 2),
     resolution,
@@ -120,7 +120,7 @@ export interface MeasurableMockup<P> {
 }
 
 /**
- * Measure one mockup from its own spec — no registry, so a caller only pays
+ * Measure one mockup from its own spec - no registry, so a caller only pays
  * for the spec it names.
  */
 export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P>, props?: P): MockupInfo {

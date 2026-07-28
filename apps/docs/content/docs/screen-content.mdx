@@ -5,9 +5,9 @@ description: Put components, whole pages, or video on the glass, and control how
 
 Anything the browser can render can live on a device screen. The screen is a
 real DOM layer composited in 3D by CSS transforms, not a texture, so text stays
-vector crisp at every angle — React components keep their state and effects,
+vector crisp at every angle - React components keep their state and effects,
 `<video>` keeps playing, and an `<iframe>` keeps loading. Screens are
-decorative: they render live but do not take pointer input — see
+decorative: they render live but do not take pointer input - see
 [Why screens are display-only](#why-screens-are-display-only).
 
 ```tsx
@@ -49,7 +49,7 @@ Every device accepts the same three screen props:
 | `surfaceBackground` | `string` | `'#000000'` | CSS background painted behind your content, under whatever you render. See [Surface background](#surface-background). |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
-Each is also a per-region override on any slot, spelled exactly the same way —
+Each is also a per-region override on any slot, spelled exactly the same way -
 one vocabulary, whichever element you hang it off:
 
 ```tsx
@@ -62,7 +62,7 @@ one vocabulary, whichever element you hang it off:
 ## Why screens are display-only
 
 A mockup is a picture of a device, not a device. Content on the glass renders
-live — state, effects, video, iframes — but pointer events never reach it:
+live - state, effects, video, iframes - but pointer events never reach it:
 clicks, scrolling and typing all belong to the mockup's orbit controls, so a
 drag anywhere (body, background, or screen) rotates the model.
 
@@ -74,7 +74,7 @@ anything in front of the screen covers it exactly, pixel for pixel: a laptop's
 keyboard hides the screen's reflection, a phone's proud camera ring stands over
 a wrap, a bus's mirrors draw over the livery.
 
-The alternative — lifting the DOM above the canvas so pointers can reach it —
+The alternative - lifting the DOM above the canvas so pointers can reach it -
 means nothing in the scene can visually cover it any more. Hiding becomes
 all-or-nothing, guessed from sample rays, and it goes wrong in both directions:
 content shows through hardware that should hide it (you can see a laptop's
@@ -86,13 +86,13 @@ mockup rather than on it.
 
 ## Surface background
 
-`surfaceBackground` paints *underneath* your content — black on lit screens,
+`surfaceBackground` paints *underneath* your content - black on lit screens,
 white on print surfaces. It only shows where your content does **not** paint:
 a logo on a transparent PNG, a layout shorter than the surface, rounded corners
 on a card, the moment before an `<iframe>` finishes loading.
 
 Pass full-bleed opaque artwork and you will never see it. That is why nudging
-it in these demos looks like it does nothing — every demo here ships art that
+it in these demos looks like it does nothing - every demo here ships art that
 covers the whole surface.
 
 Do **not** set it to `transparent` hoping the hardware shows through. A

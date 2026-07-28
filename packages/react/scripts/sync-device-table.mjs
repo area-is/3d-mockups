@@ -1,7 +1,7 @@
 /**
  * Keeps the Portrait/Landscape columns of `docs/devices.mdx` honest.
  *
- * Those two columns are the only part of that table the library can derive —
+ * Those two columns are the only part of that table the library can derive -
  * everything else (body dimensions, panel diagonal, panel pixels) is hardware
  * fact, hand-maintained. So this doesn't regenerate the table wholesale; it
  * regenerates the drift-prone half from the catalog and leaves the rest alone.
@@ -13,7 +13,7 @@
  * world-unit rect's* aspect (`screenCssHeight` = round(resolution x height /
  * width)), while the table lists the panel's own point grid. They agree only
  * when the modelled aspect matches the panel's pixel aspect. Where it doesn't,
- * the rendered height is off by a pixel or three — and the visual check is
+ * the rendered height is off by a pixel or three - and the visual check is
  * blind to it, because render and report share the same slightly-wrong rect.
  *
  * On a mismatch it also prints the spec edit that would close the gap, using
@@ -98,7 +98,7 @@ console.log('-'.repeat(70))
 for (const row of rows) {
   const entry = ROWS[row.key]
   if (!entry) {
-    console.log(`  (skipped: no registry mapping for "${row.key}" — ${row.label})`)
+    console.log(`  (skipped: no registry mapping for "${row.key}" - ${row.label})`)
     continue
   }
   const [kind, baseProps] = entry
@@ -172,7 +172,7 @@ for (const m of mismatches) {
   const { width, height } = m.info.units
   const mm = m.info.mm
   // `info.units` is already expressed in the requested orientation, so the
-  // documented aspect is directly comparable — no transposition.
+  // documented aspect is directly comparable - no transposition.
   const target = m.documented
   // Two ways to close the gap: hold the width and adjust the height, or the reverse.
   const wantH = width / target
@@ -193,7 +193,7 @@ for (const m of mismatches) {
   const closer = (current, proposed, truth) =>
     truth === null ? null : Math.abs(proposed - truth) < Math.abs(current - truth)
 
-  console.log(`${m.row.label} (${m.row.key}) — modelled aspect off by ${round(m.offPct, 3)}%`)
+  console.log(`${m.row.label} (${m.row.key}) - modelled aspect off by ${round(m.offPct, 3)}%`)
   console.log(`   panel        ${m.row.panel ? m.row.panel.join(' x ') : '?'} px @ ${m.row.inches}"`)
   console.log(`   modelled     ${mm.width} x ${mm.height} mm`)
   if (ref) console.log(`   diagonal     ${round(ref.width, 2)} x ${round(ref.height, 2)} mm  <- independent reference`)

@@ -6,7 +6,7 @@ export type FoldMockupProps = MockupProps<FoldProps>
 
 /**
  * The one-liner: a complete, interactive 3D Galaxy Z Fold mockup. Open by
- * default — your content fills the big inner display.
+ * default - your content fills the big inner display.
  *
  * ```tsx
  * <FoldMockup autoRotate float>

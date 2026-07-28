@@ -1,5 +1,5 @@
 /**
- * Shopping bag object dimensions — a kraft paper carrier with rope handles.
+ * Shopping bag object dimensions - a kraft paper carrier with rope handles.
  *
  * Proportions follow a large fashion-carrier blank: 320 mm wide x 420 mm tall
  * x 140 mm gusset, with twisted-rope handles arcing over the top edge.
@@ -8,11 +8,11 @@
  * The bag is HOLLOW: four walls and a floor, an open rectangular mouth, a
  * machine-cut top edge, and side gussets that crease inward down their
  * vertical centerline. The crease is deepest at the mouth and dies to
- * nothing at the base — a standing carrier has a flat, square ("block")
+ * nothing at the base - a standing carrier has a flat, square ("block")
  * bottom, so the footprint is a clean rectangle that the floor panel fills
  * edge to edge, with the envelope fold visible on the underside.
  *
- * Live faces: front (bare children) and back — full bleed, edge to edge.
+ * Live faces: front (bare children) and back - full bleed, edge to edge.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
  * future 2D (CSS/SVG) renderer can consume the same numbers.

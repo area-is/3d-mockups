@@ -1,11 +1,11 @@
 /**
- * Galaxy Z Flip-style device dimensions — the Galaxy Z Flip 7.
+ * Galaxy Z Flip-style device dimensions - the Galaxy Z Flip 7.
  *
  * A clamshell foldable has two form factors, and this spec carries both:
  *
- * - `open`: the unfolded tall phone — a very slim 2.32:1 slab whose upper back
+ * - `open`: the unfolded tall phone - a very slim 2.32:1 slab whose upper back
  *   half is entirely cover-screen glass carrying the two separate lens rings.
- * - `closed`: the folded compact — two stacked halves with a small air gap,
+ * - `closed`: the folded compact - two stacked halves with a small air gap,
  *   the hinge capping the bottom edge, and the nearly-square cover display
  *   filling the front (with the lens rings and flash sitting on it).
  *
@@ -48,7 +48,7 @@ export interface FlipSpec {
   /**
    * Dual rear cameras on the cover-screen glass, in cover-HALF local
    * coordinates (origin at that half's center, +y toward the free end).
-   * The two lens modules protrude individually from the glass — the retail
+   * The two lens modules protrude individually from the glass - the retail
    * device has no plate or island grouping them (confirmed against official
    * product photography). Open pose: they show on the back of the upper
    * half. Closed pose: they face the viewer on the cover screen.
@@ -99,7 +99,7 @@ const FLIP7: FlipSpec = {
     resolution: 316,
   },
   rearCamera: {
-    // Each 13.4 mm module stands ~2 mm proud of the cover glass on its own —
+    // Each 13.4 mm module stands ~2 mm proud of the cover glass on its own -
     // no shared plate (the pill in the reference scan was the screen-protector
     // cutout, not raised hardware; product photos show bare glass between the
     // flash and the lenses).
@@ -139,10 +139,10 @@ export type FlipVariant = keyof typeof FLIP_VARIANTS
 export const FLIP_DEFAULT_VARIANT: FlipVariant = 'flip7'
 
 /**
- * Grounded by default: the shadow plane kisses the bottom of the body — the
+ * Grounded by default: the shadow plane kisses the bottom of the body - the
  * hinge band when folded, the halves' folded extent at partial angles.
  */
-/** Millimetres per world unit — shared with the Galaxy phones. */
+/** Millimetres per world unit - shared with the Galaxy phones. */
 export const FLIP_MM_PER_UNIT = 36.66
 
 /**

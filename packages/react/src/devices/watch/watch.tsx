@@ -40,7 +40,7 @@ const BAND_SINK = 0.012
 
 /**
  * Everything both watch families take. Each brand's component adds its own
- * `variant` union on top — and the Galaxy adds `bandOpen`, which an Apple Watch
+ * `variant` union on top - and the Galaxy adds `bandOpen`, which an Apple Watch
  * has no closure to honor.
  */
 export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
@@ -52,10 +52,10 @@ export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>
   children?: React.ReactNode
   /**
    * Case color. Takes a retail colorway id from the family's catalog
-   * (`APPLE_WATCH_COLORWAYS` / `GALAXY_WATCH_COLORWAYS` — Apple aluminum Jet
+   * (`APPLE_WATCH_COLORWAYS` / `GALAXY_WATCH_COLORWAYS` - Apple aluminum Jet
    * Black / Silver / Rose Gold, Galaxy Graphite and Silver) or any CSS color
    * for a custom finish. A colorway id wins over a CSS color of the same
-   * name — pass hex if you meant the CSS one.
+   * name - pass hex if you meant the CSS one.
    */
   color?: string
   /** Strap colorway (fluoroelastomer sport band). Defaults to a dark band. */
@@ -63,7 +63,7 @@ export interface WatchCommonProps extends Omit<GroupProps, 'children' | 'color'>
   /**
    * CSS pixel width of the virtual display. The default matches the device's
    * logical grid: 208 gives 208×248 on the Apple Watch; 240 gives a round
-   * 240×240 on the Galaxy Watch — so content lays out like on the real device.
+   * 240×240 on the Galaxy Watch - so content lays out like on the real device.
    */
   resolution?: number
 }
@@ -77,7 +77,7 @@ interface WatchBodyProps extends WatchCommonProps {
 }
 
 /**
- * The smartwatch both families are built from — a case machined out of its
+ * The smartwatch both families are built from - a case machined out of its
  * spec, wearing that spec's real band. `style: 'apple'` gives the squircle case
  * with the knurled Digital Crown and an edge-to-edge crystal; `style: 'galaxy'`
  * the cushion case with the round display raised on its dial puck and two flat
@@ -85,10 +85,10 @@ interface WatchBodyProps extends WatchCommonProps {
  * stretchy loop with no closure, no holes and no hardware, flaring into the lug
  * slots at both ends, while the Galaxy's two-strap band closes with a stainless
  * pin buckle, a keeper and punched adjustment holes sized from the retail fit
- * range — and only that one can be laid open with `bandOpen`. Both carry their
+ * range - and only that one can be laid open with `bandOpen`. Both carry their
  * real sensor back: an optical cluster behind a round crystal, sunk flush into
  * Apple's body-colour plate, raised on Samsung's BioActive puck. No 3D asset
- * files are loaded — the whole device is generated from geometry at runtime.
+ * files are loaded - the whole device is generated from geometry at runtime.
  */
 function WatchBody({
   children,
@@ -106,7 +106,7 @@ function WatchBody({
   const spec = WATCH_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(catalog, colorProp)
   const color = retail?.color ?? colorProp ?? '#1c1d21'
   const { body, glass, display, crown, buttons, mic, speaker, bandSlot, band } = spec
@@ -116,7 +116,7 @@ function WatchBody({
   // curved sides (the Galaxy cushion is the same construction, wider and
   // flatter with a bigger bevel). The mic hole, speaker slots, key recesses
   // and band-slot channels are then machined into the chassis with CSG, so
-  // every opening is a true cavity with a lip — matching the phone models.
+  // every opening is a true cavity with a lip - matching the phone models.
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
       body.width - body.bevel * 2,
@@ -197,8 +197,8 @@ function WatchBody({
   // The wristband. Two constructions, chosen by the band's own closure:
   //
   // `seamless` (the Apple Watch's Solo Loop) is ONE continuous stretchy band.
-  // It has no closure, no holes and no hardware at all — it just flares into
-  // the lug slots at both ends — so it is a single sweep all the way round the
+  // It has no closure, no holes and no hardware at all - it just flares into
+  // the lug slots at both ends - so it is a single sweep all the way round the
   // wrist, and `bandOpen` has nothing to undo.
   //
   // The fastened bands are two straps. The twelve-o'clock one lies against the
@@ -211,8 +211,8 @@ function WatchBody({
   //
   // Either way each run is a domed strap section swept along a path (core's
   // `sweptStrapGeometry`), widening at the lug shoulder to fill the case's
-  // band slot. The worn and unbuckled poses are SEPARATE paths — a wrist oval
-  // and a straight line — rather than one path stretched to serve both, and
+  // band slot. The worn and unbuckled poses are SEPARATE paths - a wrist oval
+  // and a straight line - rather than one path stretched to serve both, and
   // because a path is parameterized 0→1 along its own strap, every hole and
   // fitting keeps the same position in either.
   const ride = band.thickness * 1.02
@@ -246,7 +246,7 @@ function WatchBody({
       // loop (core's `watchStrapLengths`), so laying the band out neither
       // stretches nor shortens it.
       const length = watchStrapLengths(band)
-      // Laid down flat on the same plane the case back rests on — but sunk a
+      // Laid down flat on the same plane the case back rests on - but sunk a
       // hair INTO the case rather than dead flush with it. Flush, the strap's
       // flat inner face and the case's back face are coplanar exactly where
       // each strap runs under the case into its lug slot, and the two z-fight
@@ -295,7 +295,7 @@ function WatchBody({
     // Lug shoulder → strap: the wide section is just the connector filling the
     // case slot. A seamless loop has TWO lug ends, so its taper is symmetric.
     // The connector is a fixed piece of hardware, so its flare runs a set
-    // DISTANCE out from where the strap leaves the case — not a fraction of
+    // DISTANCE out from where the strap leaves the case - not a fraction of
     // whichever strap it is on, which comes out stubby on the short one, and
     // not measured from the strap's start either, since how much of that start
     // is buried inside the case differs from pose to pose.
@@ -333,11 +333,11 @@ function WatchBody({
     if (band.closure === 'seamless' || pose.kind === 'seamless') return runs
 
     // Punch the adjustment holes clean through the long strap, at their
-    // positions along it — the same fractions whichever pose the band is in.
+    // positions along it - the same fractions whichever pose the band is in.
     const cutters = band.holes.map((t) => {
       const frame = pose.tail(t)
       // The Galaxy band's holes are elongated SLOTS running along the strap,
-      // not drillings — so the cutter is an extruded stadium, not a cylinder.
+      // not drillings - so the cutter is an extruded stadium, not a cylinder.
       const depth = band.thickness * 8
       const cutter = new THREE.ExtrudeGeometry(
         roundedRectShape(band.holeRadius * 2, band.holeLength, band.holeRadius),
@@ -346,10 +346,10 @@ function WatchBody({
       cutter.translate(0, 0, -depth / 2)
       // Extrusion runs along +Z, so aim THAT down the strap's outward normal:
       // rotateX(t) sends +Z to (0, -sin t, cos t) and the normal is (0, ny, nz).
-      // The shape's +Y then lands on the tangent — along the strap, which is
-      // exactly where the slot's length belongs — and +X stays across it.
+      // The shape's +Y then lands on the tangent - along the strap, which is
+      // exactly where the slot's length belongs - and +X stays across it.
       cutter.rotateX(Math.atan2(-frame.ny, frame.nz))
-      // Centre it on the strap's MID-surface — that is where `lift` puts the
+      // Centre it on the strap's MID-surface - that is where `lift` puts the
       // section's origin.
       const seat = pose.tailLift(t)
       cutter.translate(0, frame.y + frame.ny * seat, frame.z + frame.nz * seat)
@@ -379,13 +379,13 @@ function WatchBody({
     return {
       position: [0, frame.y + frame.ny * stand, frame.z + frame.nz * stand] as [number, number, number],
       // Rotation that sends the fitting's local +Y onto the strap's outward
-      // normal, +Z along the strap and +X across it — so hardware is
+      // normal, +Z along the strap and +X across it - so hardware is
       // authored in strap-local terms and lands flat on the band.
       rotX: Math.atan2(frame.nz, frame.ny),
     }
   }, [])
 
-  // Closure hardware — nothing at all on a seamless loop. Worn, both closures
+  // Closure hardware - nothing at all on a seamless loop. Worn, both closures
   // engage through a hole in the lapping strap, so the hardware sits at that
   // hole: the tail rides one thickness proud and the pin (or buckle tongue)
   // comes up from the strap below into the opening. Unbuckled, the hardware
@@ -405,7 +405,7 @@ function WatchBody({
           const keeperT = band.keeperT ?? 0.78
           return {
             pinStud: fittingAt(strap, at, stand + band.thickness * 0.42),
-            // The frame STRADDLES the strap — the tail threads through it — so
+            // The frame STRADDLES the strap - the tail threads through it - so
             // it centres on the strap's mid-surface, not inside it.
             buckleFrame: fittingAt(strap, at, stand),
             // Worn, the keeper encircles the tail where it lies over the other
@@ -415,7 +415,7 @@ function WatchBody({
               : fittingAt(pose.tail, keeperT, pose.tailLift(keeperT) + band.thickness * 0.5),
             // Proportioned off the retail accessory: a frame a little wider
             // than the strap that threads it, nearly as long as it is wide,
-            // and bent from CHUNKY square stock — the Galaxy band's tang
+            // and bent from CHUNKY square stock - the Galaxy band's tang
             // buckle is a solid block, not a wire hoop.
             width: band.width + 0.11,
             length: (band.width + 0.11) * 0.78,
@@ -426,7 +426,7 @@ function WatchBody({
 
   return (
     <group {...groupProps}>
-      {/* case — no sharp clearcoat: mirror-reflected light panels turn into
+      {/* case - no sharp clearcoat: mirror-reflected light panels turn into
           hard-edged patches on the tight case curvature */}
       <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial
@@ -477,7 +477,7 @@ function WatchBody({
       </mesh>
 
       {/* The case back. Both families read the heart optically through a round
-          crystal in the middle, ringed by the metal ECG electrode — but Apple
+          crystal in the middle, ringed by the metal ECG electrode - but Apple
           sinks it flush into a back plate the colour of the case (the watch
           looks milled from one billet), while Samsung raises the whole
           BioActive puck proud of the aluminium cushion. Either way the back is
@@ -490,14 +490,14 @@ function WatchBody({
         const at = (out: number) => face - out
         return (
           <group>
-            {/* raised puck (Galaxy) — a body-colour collar carrying the crystal */}
+            {/* raised puck (Galaxy) - a body-colour collar carrying the crystal */}
             {raise > 0 && (
               <mesh rotation-x={Math.PI / 2} position-z={at(raise / 2)}>
                 <cylinderGeometry args={[radius, radius * 1.03, raise, 48]} />
                 <meshPhysicalMaterial color={color} metalness={0.8} roughness={0.34} envMapIntensity={0.9} />
               </mesh>
             )}
-            {/* machined chamfer the crystal sits in — without it the near-black
+            {/* machined chamfer the crystal sits in - without it the near-black
                 sapphire vanishes into a near-black case */}
             <mesh position-z={at(Math.max(raise, 0) + 0.006)} rotation-y={Math.PI}>
               <ringGeometry args={[radius * 0.9, radius * 1.02, 48]} />
@@ -526,7 +526,7 @@ function WatchBody({
               />
             </mesh>
             {/* optical stack: the central photodiode, ringed by the LED
-                windows — the green pair reads as the heart-rate emitters */}
+                windows - the green pair reads as the heart-rate emitters */}
             <mesh position-z={at(Math.max(raise, 0) + 0.027)} rotation-y={Math.PI}>
               <circleGeometry args={[hubRadius, 28]} />
               <meshPhysicalMaterial color="#1b2230" metalness={0.35} roughness={0.13} clearcoat={1} envMapIntensity={1.4} />
@@ -563,7 +563,7 @@ function WatchBody({
         )
       })()}
 
-      {/* Digital Crown, Apple only — a knurled gear-toothed barrel protruding
+      {/* Digital Crown, Apple only - a knurled gear-toothed barrel protruding
           ~2 mm past the case, with a flat end cap and a dark seam ring where
           the cap meets the teeth (per Apple's product macros) */}
       {crown && crownGeometry && (
@@ -631,7 +631,7 @@ function WatchBody({
       ))}
 
       {/* dark liner inside the band-slot channels machined into the flat
-          top/bottom edges (Apple) — kept below the case's corner roll so only
+          top/bottom edges (Apple) - kept below the case's corner roll so only
           the cavity mouth and the darkness inside it show */}
       {bandSlot && (
         <>
@@ -649,7 +649,7 @@ function WatchBody({
       )}
 
       {/* the two worn straps. Fluoroelastomer is a soft-touch matte with a
-          velvety edge falloff — `sheen` gives that without the blown-out
+          velvety edge falloff - `sheen` gives that without the blown-out
           white a clearcoat produces at grazing angles */}
       {bandGeometries.map((geometry, i) => (
         <mesh key={i} geometry={geometry}>
@@ -671,7 +671,7 @@ function WatchBody({
       {closure === null ? null : band.closure === 'tuck' ? (
         // Sport Band pin-and-tuck: the twelve-o'clock strap's pin stud comes
         // up through one of the punched holes, its polished head sitting
-        // flush in the opening — the only hardware the band shows.
+        // flush in the opening - the only hardware the band shows.
         <group position={closure.pinStud.position} rotation-x={closure.pinStud.rotX}>
           {/* the post, rooted in the strap below */}
           <mesh>
@@ -687,8 +687,8 @@ function WatchBody({
       ) : (
         <>
           {/* The Galaxy band's tang buckle, per the retail accessory: a
-              CHUNKY rounded-rectangle frame — nearly as long as it is wide,
-              bent from square stock, not thin wire — with a hinge bar across
+              CHUNKY rounded-rectangle frame - nearly as long as it is wide,
+              bent from square stock, not thin wire - with a hinge bar across
               its inner end and a flat tapered tongue lying in the opening,
               dropping into one of the strap's slots. */}
           <group position={closure.buckleFrame.position} rotation-x={closure.buckleFrame.rotX}>
@@ -773,7 +773,7 @@ export const watchSlots = createSlots(SCREEN_REGIONS)
 
 export interface AppleWatchProps extends WatchCommonProps {
   /**
-   * Which Apple Watch to render: `series11` (Series 11, 46 mm — the default and
+   * Which Apple Watch to render: `series11` (Series 11, 46 mm - the default and
    * only model today).
    */
   variant?: AppleWatchVariant
@@ -785,7 +785,7 @@ export interface AppleWatchProps extends WatchCommonProps {
  * the 416x496 display, and the optical sensor back sunk flush into a
  * body-colour plate.
  *
- * It wears the Solo Loop — ONE seamless stretchy band with no closure, no
+ * It wears the Solo Loop - ONE seamless stretchy band with no closure, no
  * adjustment holes and no hardware, flaring into the lug slots at both ends.
  * There is nothing to unfasten, so unlike `<GalaxyWatch>` it takes no
  * `bandOpen`.
@@ -802,13 +802,13 @@ export const AppleWatch = Object.assign(AppleWatchImpl, watchSlots)
 export interface GalaxyWatchProps extends WatchCommonProps {
   /**
    * Which Galaxy Watch to render: `watch8` (Galaxy Watch 8, 44 mm cushion case
-   * with the round display — the default and only model today).
+   * with the round display - the default and only model today).
    */
   variant?: GalaxyWatchVariant
   /**
    * `true` lays the band out unbuckled and flat: both straps run straight out
    * from the case, so the hole row, the buckle AND the case back all face the
-   * camera — the pose product photography uses. The default (`false`) wears it,
+   * camera - the pose product photography uses. The default (`false`) wears it,
    * fastened around an invisible wrist behind the case, which necessarily hides
    * the back.
    */

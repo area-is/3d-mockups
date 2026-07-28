@@ -12,7 +12,7 @@ import { roundedRectShape } from '@area-3d-mockups/core'
 
 /**
  * A side key as a true stadium pill: semicircular ends along its length and a
- * softly crowned outer face — like the machined keys on the retail hardware.
+ * softly crowned outer face - like the machined keys on the retail hardware.
  * Sits on the `side` rail (`1` right, `-1` left), seated `seat` deep into the
  * frame and protruding `protrusion` beyond it.
  */
@@ -78,7 +78,7 @@ export function SideKey({
  * A machined camera lens ring, modeled on retail macro photography: slightly
  * tapered body-color wall, polished chamfer, a matte-black bezel ring, a
  * stepped barrel of concentric cones, a LARGE glossy front element (the real
- * optics fill roughly half the ring) with a bright center glint — all sealed
+ * optics fill roughly half the ring) with a bright center glint - all sealed
  * under a smoked cover-glass disc, so the interior reads deep black with one
  * soft window reflection. Mount it in a group at the ring's center on the
  * mounting surface; it builds toward -z (the device back's outward direction).
@@ -115,14 +115,14 @@ export function LensRing({
   const faceZ = -proud
   // Barrel steps sink inward from just behind the bezel; on shallow rings the
   // deeper parts vanish behind the (solid) mounting surface, which simply
-  // reads as a flatter lens — like the thin rings on the real devices.
+  // reads as a flatter lens - like the thin rings on the real devices.
   const step = Math.min(0.014, Math.max(0.008, proud * 0.35))
   const bezelZ = faceZ + 0.01
   const domeR = r * Math.min(0.45, Math.max(0.28, pupil))
   const domeTopZ = faceZ + 0.013
   return (
     <group>
-      {/* tapered outer wall — an open tube so the bore stays visible; the
+      {/* tapered outer wall - an open tube so the bore stays visible; the
           chamfer shell below closes its face */}
       <mesh rotation-x={Math.PI / 2} position-z={-(proud - seat) / 2}>
         <cylinderGeometry args={[r, r * 0.97, proud + seat, 48, 1, true]} />
@@ -146,7 +146,7 @@ export function LensRing({
         />
       </mesh>
       {/* anodized collars present a FLAT annular face to the camera (the
-          product shots show a wide, evenly-lit body-color ring) — the tilted
+          product shots show a wide, evenly-lit body-color ring) - the tilted
           chamfer alone self-shadows and reads near-black from the front */}
       {matte && (
         <mesh rotation-y={Math.PI} position-z={faceZ - 0.0005}>
@@ -238,7 +238,7 @@ export function LensRing({
 }
 
 /**
- * A rounded rect with per-corner radii, for slabs whose edges differ — e.g.
+ * A rounded rect with per-corner radii, for slabs whose edges differ - e.g.
  * a foldable's flex panels, rounded on the free corners but nearly square
  * along the fold line so the two panels meet tight at the crease.
  */
@@ -266,7 +266,7 @@ export function mixedRoundedRectShape(
 
 /* -------------------------------------------------------------------------
  * Real cutouts: ports and holes are machined into the chassis with CSG, so
- * every opening is a true cavity with a lip, interior walls and parallax —
+ * every opening is a true cavity with a lip, interior walls and parallax -
  * not a decal painted on a flat edge.
  * ---------------------------------------------------------------------- */
 
@@ -303,7 +303,7 @@ function mergeSolids(solids: THREE.BufferGeometry[]): THREE.BufferGeometry {
 /**
  * Machine real openings into a chassis: subtracts the cutter solids from
  * `base` in one boolean pass. Consumes `base` and the cutters and returns the
- * cut geometry — or the untouched base if the boolean op fails, so a render
+ * cut geometry - or the untouched base if the boolean op fails, so a render
  * never goes blank over a decorative cavity.
  */
 export function cutGeometry(
@@ -332,7 +332,7 @@ export function cutGeometry(
 
 /**
  * Aim a +z-built cavity part (cutter, socket liner, receptacle) down its cut
- * axis. `inward` is the cut direction's sign on that axis — +1 for a bottom
+ * axis. `inward` is the cut direction's sign on that axis - +1 for a bottom
  * edge (cutting up, +y) or a left wall (+x), -1 for a top edge or right wall.
  * Cavity profiles map width → x and height → z on a y cut, width → z and
  * height → y on an x cut.
@@ -376,7 +376,7 @@ export function holeCutter(r: number, depth: number, axis: 'x' | 'y' = 'y'): THR
 /**
  * The dark interior of a machined opening. Stadium slots get a sleeve: thin
  * dark walls hugging the cavity (recessed `lip` past the machined chassis
- * lip) sinking to a floor at the cavity's far end — real visible depth, not a
+ * lip) sinking to a floor at the cavity's far end - real visible depth, not a
  * painted face. Drilled holes (`r`) get a recessed dark plug.
  */
 export function EdgeSocket({
@@ -448,7 +448,7 @@ export function EdgeSocket({
  * The inside of a machined USB-C cavity (cut the cavity itself with
  * `cutGeometry` + `stadiumCutter` first): the stainless receptacle shell
  * seated just past the machined lip, the dark cavity floor behind it and the
- * gold pin tongue in the middle — real geometry at real depths, so the port
+ * gold pin tongue in the middle - real geometry at real depths, so the port
  * shows parallax from every angle like the reference scans.
  */
 export function UsbC({
@@ -520,7 +520,7 @@ export function UsbC({
 
   return (
     <group position={[x, y, z]}>
-      {/* stainless receptacle shell — its rim ring catches light just inside the
+      {/* stainless receptacle shell - its rim ring catches light just inside the
           lip; kept dim so the inner walls stay in shadow like the real ports */}
       <mesh geometry={parts.shell}>
         <meshPhysicalMaterial color="#43464c" metalness={0.7} roughness={0.5} envMapIntensity={0.35} />

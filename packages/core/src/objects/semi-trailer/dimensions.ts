@@ -1,5 +1,5 @@
 /**
- * Semi trailer object dimensions — a 53 ft dry van parked on its landing
+ * Semi trailer object dimensions - a 53 ft dry van parked on its landing
  * gear (no tractor): the biggest advertising canvas on the road.
  *
  * Proportions follow the US standard: 16.15 m long, 2.6 m wide, a 2.9 m box
@@ -23,7 +23,7 @@ export const SEMI_TRAILER = {
   /** Y of the road relative to the origin (box center). */
   groundY: -1.066,
   /**
-   * Tandem axles at the rear, dual tires per side — `width` is each tire of
+   * Tandem axles at the rear, dual tires per side - `width` is each tire of
    * the pair, `dualGap` the space between them.
    */
   wheels: { axles: [-2.03, -2.53] as const, radius: 0.203, width: 0.121, dualGap: 0.026, centerY: -0.863 },
@@ -45,7 +45,7 @@ export const SEMI_TRAILER_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The wheels and landing gear define the road; the shadow grounds under them. */
-/** Millimetres per world unit — the semi-trailer scale (~2485 mm per unit). */
+/** Millimetres per world unit - the semi-trailer scale (~2485 mm per unit). */
 export const SEMI_TRAILER_MM_PER_UNIT = 2485
 
 /** Live geometry of the two side panels and the rear doors. */

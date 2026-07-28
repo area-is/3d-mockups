@@ -20,7 +20,7 @@ type GroupProps = ThreeElements['group']
 
 
 /**
- * The shell's side profile as a THREE shape — shared by the extruded body
+ * The shell's side profile as a THREE shape - shared by the extruded body
  * and the full wrap's depth occluder, so per-pixel blending hides exactly
  * what the wrap's clip covers and nothing more (glass in the carves stays
  * visible; proud hardware like the door mirrors draws over the livery).
@@ -68,12 +68,12 @@ function roundedHolePath(minX: number, minY: number, maxX: number, maxY: number,
 
 /**
  * SVG path (CSS px, y-down) clipping the full-coverage side wrap: the
- * shell's own side profile — wheel-arch arcs included — as the outer
+ * shell's own side profile - wheel-arch arcs included - as the outer
  * boundary, with the operational glass as opposite-winding holes, cut tight
  * to the hardware (~4 mm install margin). What must stay clear is always
  * carved: the curb-side door leaves and the street-side driver's window.
  * The passenger window band is carved only when
- * `overWindows` is false — transit wraps normally run over it as perforated
+ * `overWindows` is false - transit wraps normally run over it as perforated
  * film. `mirrored` builds the street-side (−Z) variant, whose CSS x axis
  * runs nose→tail; mirroring also flips every arc's sweep flag so the
  * geometry stays identical.
@@ -113,7 +113,7 @@ function buildFullSideClip(pxPerUnit: number, mirrored: boolean, overWindows: bo
     `L ${P(tail, bottom + 0.06)} Q ${P(tail, bottom)} ${P(tail + 0.06, bottom)} Z `
 
   // With the band also carved (overWindows false), a door hole reaching the
-  // band top would overlap the band hole — and two overlapping holes cancel
+  // band top would overlap the band hole - and two overlapping holes cancel
   // back to FILLED under the nonzero rule (a stray strip of livery over the
   // door glass). Stop the doors at the band's bottom edge so the two carves
   // meet instead of crossing.
@@ -148,14 +148,14 @@ function buildFullSideClip(pxPerUnit: number, mirrored: boolean, overWindows: bo
       })
   // (No carve for the mirror mount: it sits at the outline's windshield
   // edge, where a "hole" subpath escapes the outer boundary and renders as
-  // an isolated filled dot under the nonzero rule — the floating speck of
+  // an isolated filled dot under the nonzero rule - the floating speck of
   // livery on the mirror arm. The mount is proud 3D hardware anyway.)
   return (outline + (mirrored ? windowHole : doorHoles) + bandHole).trim()
 }
 
 /**
  * SVG path clipping the full-coverage rear wrap: the wrap rect itself as the
- * outer boundary with each taillight lamp carved out individually — the
+ * outer boundary with each taillight lamp carved out individually - the
  * graphic runs right up to every lamp collar. The engine louvers, route-sign
  * box and rear window sit behind the wrap plane and get covered like a real
  * tail wrap, unless `overWindows` is false, which carves the rear window
@@ -195,12 +195,12 @@ function buildFullRearClip(pxPerUnit: number, overWindows: boolean): string {
 export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Creative for the ad surfaces. Bare children fill the curb-side (+Z)
-   * surface — the king-size panel by default, the whole side with
+   * surface - the king-size panel by default, the whole side with
    * `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
    * `<Bus.StreetSide>`, `<Bus.Rear>` and `<Bus.DestinationSign>`. Inside
    * `<Bus.DestinationSign>`, a string (scrolls as a marquee when it
    * overflows) or an array of strings (flips between them like a real
-   * alternating sign) gets the built-in dot-matrix LED renderer — any other
+   * alternating sign) gets the built-in dot-matrix LED renderer - any other
    * React node renders as-is for full custom control.
    */
   children?: React.ReactNode
@@ -214,10 +214,10 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
   /**
    * How much of the vehicle the live wraps cover.
    *
-   * - `'panel'` (default) — the classic mid-panel ad rect.
-   * - `'full'` — the whole side elevation and rear face, with the glass and
+   * - `'panel'` (default) - the classic mid-panel ad rect.
+   * - `'full'` - the whole side elevation and rear face, with the glass and
    *   hardware carved out of the wrap so they stay visible through it.
-   * - `'perforated'` — the same full wrap, but running OVER the glass as
+   * - `'perforated'` - the same full wrap, but running OVER the glass as
    *   perforated window film (the full-print fleet look). Operational glass
    *   is always carved out regardless.
    */
@@ -227,13 +227,13 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
 /**
  * A procedurally built 40 ft / 12 m low-floor city transit bus (generic
  * Xcelsior/LFS/Citaro-class silhouette, no brand): a one-box shell extruded
- * from the side profile — no hood, lightly-raked two-piece windshield under
- * a dark sign fascia, flat roof — with the near-half-height window band, the
+ * from the side profile - no hood, lightly-raked two-piece windshield under
+ * a dark sign fascia, flat roof - with the near-half-height window band, the
  * driver's window behind the street-side A-pillar, two full-glass curb-side
  * doors, roof HVAC pod, wheels, stacked round taillights, rear louvers,
  * mirrors and bumpers added on. The curb side carries a live king-size
- * (30" x 144") ad panel between the wheels — or, with `coverage="full"`, the
- * entire sides and tail become the live surface, transit-wrap style — and
+ * (30" x 144") ad panel between the wheels - or, with `coverage="full"`, the
+ * entire sides and tail become the live surface, transit-wrap style - and
  * the destination sign can be live DOM too (plain strings get the built-in
  * LED renderer). No 3D asset files are loaded.
  *
@@ -275,7 +275,7 @@ function BusImpl({
   } = BUS
   // Screens occlude against OTHER registered bodies only. The shell is a
   // convex hull, so the backface culler already hides every surface the
-  // body itself could cover — own-shell ray hits at oblique angles were
+  // body itself could cover - own-shell ray hits at oblique angles were
   // false positives that blanked a plainly visible surface (the rear wrap
   // vanishing at rear-quarter views). The shell stays registered so it
   // still occludes every other mockup in the scene.
@@ -317,7 +317,7 @@ function BusImpl({
 
   // Depth occluders for the full-coverage sides: the wrap outline as real
   // geometry with the same glass carves as the clip, so per-pixel blending
-  // hides only what the livery visually covers — and the proud door
+  // hides only what the livery visually covers - and the proud door
   // mirrors draw over the wrap instead of being pierced by it.
   const sideOccluderGeometries = React.useMemo(() => {
     if (!fullWrap) return null
@@ -325,7 +325,7 @@ function BusImpl({
     const doorTopY = windowBand.y + windowBand.height / 2
     const build = (mirroredSide: boolean) => {
       const s = busProfileShape()
-      // Door holes meet (never cross) the band hole — see buildFullSideClip.
+      // Door holes meet (never cross) the band hole - see buildFullSideClip.
       const doorHoleTop = overGlass ? doorTopY + margin : windowBand.y - windowBand.height / 2 - margin
       if (mirroredSide) {
         s.holes.push(
@@ -369,7 +369,7 @@ function BusImpl({
   )
   // Only the full-coverage sides need a custom depth mask: their DOM is
   // clipped to the wrap outline, so the mask must carve the same glass out of
-  // the silhouette — otherwise the livery's rectangle would hide the door
+  // the silhouette - otherwise the livery's rectangle would hide the door
   // mirrors and their arms, which stand proud of it. A panel ad is a plain
   // rect, and its own silhouette already is its mask.
   const sideScreenOcclusion = (blendGeometry?: THREE.BufferGeometry) =>
@@ -398,7 +398,7 @@ function BusImpl({
     return geometry
   }, [body, skirtY, wheels, profile])
 
-  // The whole front glass band — windshield up through the sign fascia —
+  // The whole front glass band - windshield up through the sign fascia -
   // reads as one dark plane on these buses.
   const frontBand = React.useMemo(() => {
     const dx = profile.signBandTopX - profile.noseX
@@ -472,7 +472,7 @@ function BusImpl({
         )}
       </group>
 
-      {/* passenger window bands, both sides — almost half the body height.
+      {/* passenger window bands, both sides - almost half the body height.
           A full wrap covering the glass (perforated film) hides its side's
           band; with the wrap under the glass the band stays, showing through
           the window carve-out. */}
@@ -493,7 +493,7 @@ function BusImpl({
       })}
 
       {/* driver's window behind the street-side A-pillar: taller than the
-          passenger band, sill dropping below it — always clear glass (it is
+          passenger band, sill dropping below it - always clear glass (it is
           carved out of a full wrap; vinyl never covers the driver's view) */}
       <RoundedBox
         args={[driverWindow.width, driverWindow.height, 0.1]}
@@ -533,7 +533,7 @@ function BusImpl({
 
       {/* running gear: dark wheel-well liners fill the arch openings, axles
           tie each wheel pair together, and an underbody pan closes the gap
-          between the skirts — the wheels read as attached, not floating */}
+          between the skirts - the wheels read as attached, not floating */}
       {([wheels.frontX, wheels.rearX] as const).map((x) => (
         <group key={x}>
           <mesh position={[x, skirtY + (wheels.archRadius + 0.02) / 2, 0]}>
@@ -552,8 +552,8 @@ function BusImpl({
       </mesh>
 
       {/* wheels: single steer tires up front, duals on the drive axle. The
-          shared road wheel lathes a real tire carcass — bulged sidewalls,
-          rounded shoulders, grooved tread — on a dished ten-lug rim. */}
+          shared road wheel lathes a real tire carcass - bulged sidewalls,
+          rounded shoulders, grooved tread - on a dished ten-lug rim. */}
       {([1, -1] as const).map((side) => (
         <RoadWheel
           key={side}
@@ -623,8 +623,8 @@ function BusImpl({
       ))}
 
       {/* rear: window above the engine bay, small route-sign box near the
-          roof, engine louvers, and stacked round lamps — brake and tail in
-          red, turn signal in amber — at each corner */}
+          roof, engine louvers, and stacked round lamps - brake and tail in
+          red, turn signal in amber - at each corner */}
       <RoundedBox
         args={[0.05, rearWindow.height, rearWindow.width]}
         radius={0.03}
@@ -647,7 +647,7 @@ function BusImpl({
           ] as const
         ).map(({ y, color: lampColor, emissive }) => (
           // Slim lens pucks: rooted in the tail face, ending just ~7 mm proud
-          // of the full-wrap plane (x -3.229) — through the carved holes the
+          // of the full-wrap plane (x -3.229) - through the carved holes the
           // lamps read mounted ON the livery without jutting like knobs. The
           // whole tail stack (window, sign box, louvers) sits within ~23 mm
           // of the face so the wrap plane can hug the body this closely.
@@ -665,7 +665,7 @@ function BusImpl({
       )}
 
       {/* door mirrors on swan-neck arms: the heads hang ~450 mm forward of
-          the windshield at its mid-height, transit style — root stub off the
+          the windshield at its mid-height, transit style - root stub off the
           A-pillar, forward run, then the drop to the head */}
       {[1, -1].map((side) => (
         <group key={side}>

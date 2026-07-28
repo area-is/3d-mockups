@@ -6,7 +6,7 @@ export type IDCardMockupProps = MockupProps<IDCardProps>
 
 /**
  * The badge shifted by the core's stage offset so it (card + hook, with the
- * straps running out of the top of the frame) centers on the stage origin —
+ * straps running out of the top of the frame) centers on the stage origin -
  * the one wrapper concern the factory can't express. The framing's extent
  * accounts for the same offset.
  */

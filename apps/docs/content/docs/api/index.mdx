@@ -32,12 +32,12 @@ props below, and:
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Screen content: any React node, iframe, or video. |
 | `float` | `boolean` | `false` | Gentle floating idle animation for the device. |
-| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage — transforms flow straight through to the device group (`<GalaxyMockup rotation={[0, -0.25, 0]}>`). |
+| `position` / `rotation` / `scale` | r3f transforms | - | Pose the device on the stage - transforms flow straight through to the device group (`<GalaxyMockup rotation={[0, -0.25, 0]}>`). |
 
 ### Staging props
 
 These come from [`MockupCanvas`](/docs/api/mockup-canvas) and work on every
-mockup — the ones that change what the mockup looks like on your page, or what
+mockup - the ones that change what the mockup looks like on your page, or what
 a visitor can do with it:
 
 `controls` · `autoRotate` · `autoRotateSpeed` · `zoom` · `fullscreen` ·
@@ -51,12 +51,12 @@ and the remaining defaults are chosen to look right. Compose
 
 ## Regions and slots
 
-Bare children always fill a mockup's **primary region** — a phone's screen, a
+Bare children always fill a mockup's **primary region** - a phone's screen, a
 book's front cover. Objects with more printable surfaces expose each extra
 region as a compound slot on the component (`<AFrameSignMockup.Back>`,
 `<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
-section. Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults.
+section. Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults.
 
 ## Shared screen props
 

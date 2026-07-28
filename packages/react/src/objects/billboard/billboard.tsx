@@ -9,7 +9,7 @@ type GroupProps = ThreeElements['group']
 
 export interface BillboardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * The creative — any React node. It fills the whole face, full bleed;
+   * The creative - any React node. It fills the whole face, full bleed;
    * wrap in `<Billboard.Face>` to set per-surface props.
    */
   children?: React.ReactNode
@@ -69,7 +69,7 @@ function BillboardImpl({
         <meshPhysicalMaterial {...steel} />
       </RoundedBox>
 
-      {/* torsion box + slatted apron skirt flush under the face — the
+      {/* torsion box + slatted apron skirt flush under the face - the
           structural band the pole actually connects to */}
       <RoundedBox args={[apron.width, apron.height, apron.depth]} radius={0.02} position={[0, apronCenterY, -0.04]}>
         <meshPhysicalMaterial {...steel} roughness={0.55} />
@@ -124,7 +124,7 @@ function BillboardImpl({
         ))}
       </group>
 
-      {/* floodlights on the catwalk edge, aimed up at the face — classic
+      {/* floodlights on the catwalk edge, aimed up at the face - classic
           bulletins are bottom-lit from the walkway, not top-lit */}
       {Array.from({ length: lights.count }, (_, i) => {
         const x = (i - (lights.count - 1) / 2) * (face.width / lights.count) * 0.82
@@ -150,14 +150,14 @@ function BillboardImpl({
         )
       })}
 
-      {/* torsion tube behind the face — the heavy member the pole tees into */}
+      {/* torsion tube behind the face - the heavy member the pole tees into */}
       <mesh rotation-z={Math.PI / 2} position={[0, apronCenterY, -panel.depth / 2 - pole.radius]}>
         <cylinderGeometry args={[pole.radius * 0.72, pole.radius * 0.72, panel.width * 0.7, 18]} />
         <meshPhysicalMaterial {...steel} roughness={0.55} />
       </mesh>
 
       {/* fixed access ladder up the rear of the pole, bolted on with
-          standoff brackets — a fixed ladder is held clear of the structure
+          standoff brackets - a fixed ladder is held clear of the structure
           so a climber's boots have somewhere to go, but it is BOLTED to it,
           not floating beside it */}
       <group position={[0, 0, ladder.z]}>

@@ -5,7 +5,7 @@ description: A digital street totem with a live portrait 9:16 display.
 
 `<DOOHTotem>` and `<DOOHTotemMockup>` render a digital out-of-home street
 totem (digital 6-sheet class): a rounded street-furniture enclosure on a low
-plinth with dark glass on both faces, and a live portrait 540×960 display —
+plinth with dark glass on both faces, and a live portrait 540×960 display -
 the digital sibling of the [billboard](/docs/api/billboard) and
 [bus shelter](/docs/api/bus-shelter).
 
@@ -26,7 +26,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `{ width?, height? }` | `1300×2800` | Physical enclosure in mm — e.g. `{ width: 1100, height: 2500 }` for a slimmer kiosk. The glass and display scale with the cabinet. |
+| `size` | `{ width?, height? }` | `1300×2800` | Physical enclosure in mm - e.g. `{ width: 1100, height: 2500 }` for a slimmer kiosk. The glass and display scale with the cabinet. |
 | `color` | `string` | `'#2f333a'` | Enclosure colorway. |
 | `resolution` | `number` | `540` | Virtual display width; 540 gives 540×960 (a 1080×1920 grid at 2x). |
 
@@ -35,16 +35,16 @@ Beyond the [shared screen props](/docs/screen-content):
 | Slot | Surface |
 | --- | --- |
 | `<DOOHTotemMockup.Front>` | Front display (bare children). |
-| `<DOOHTotemMockup.Back>` | Back display — real totems are double-sided. |
+| `<DOOHTotemMockup.Back>` | Back display - real totems are double-sided. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<DOOHTotem>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-dooh" />

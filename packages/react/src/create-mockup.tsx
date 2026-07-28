@@ -16,7 +16,7 @@ import type { Slot, SlotProps } from './slots'
 /**
  * The one-liner factory: canvas + object + per-object framing in one
  * component. Every `*Mockup` is `createMockup(scene component, its framing
- * from core)` — the factory owns the split between stage props and object
+ * from core)` - the factory owns the split between stage props and object
  * props, so an object can grow a prop without any wrapper edits, and
  * transforms (`position`, `rotation`, `scale`) flow straight through to the
  * object group.
@@ -52,7 +52,7 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
  * mockup LOOKS like on the page, or what a visitor can do with it.
  *
  * The rest of `MockupCanvasProps` tunes the rendering machinery rather than the
- * picture — `freeRotation` (a niche orbit constraint), `shadowY` (framing math
+ * picture - `freeRotation` (a niche orbit constraint), `shadowY` (framing math
  * the mockup already derives from its core spec) and `dpr` (a GPU-load clamp
  * that is already right). Leaving those off this type keeps a mockup's
  * autocomplete to decisions worth making; compose `<MockupCanvas>` directly
@@ -85,7 +85,7 @@ export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>
   /**
    * The core registry key this mockup measures under. Supplied together with
    * `regions` and `metrics`, it attaches `.info()` and `.regions` to the
-   * component — see `MockupStatics`.
+   * component - see `MockupStatics`.
    */
   kind?: K
   /** The object's region list from core, surfaced as `Mockup.regions`. */
@@ -106,7 +106,7 @@ export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>
 
 /**
  * The measurement statics a mockup carries when `createMockup` is given a
- * `kind` — the same answers `mockupInfo` gives, reachable from the component
+ * `kind` - the same answers `mockupInfo` gives, reachable from the component
  * you already imported.
  *
  * ```tsx

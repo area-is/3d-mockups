@@ -25,5 +25,10 @@ yarn-error.log*
 # fumadocs generated
 .source/
 
+# cloudflare / opennext
+.open-next/
+.wrangler/
+cloudflare-env.d.ts
+
 # visual regression diffs (baselines are committed, diffs are not)
 .visual-diffs/

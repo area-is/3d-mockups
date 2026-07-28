@@ -26,7 +26,7 @@ export const CONTACT_SHADOW = { opacity: 0.45, scale: 13, blur: 2.6, far: 4.5 } 
  * Rotation feel shared by all mockups: pan stays disabled (the axis is always
  * the stage center) and motion is damped. By default vertical rotation stays
  * within the classic polar clamp below; opting into free rotation removes the
- * clamp for a full 360° tumble in every direction — see `TumbleOrbit`.
+ * clamp for a full 360° tumble in every direction - see `TumbleOrbit`.
  */
 export const ORBIT = {
   enablePan: false,
@@ -46,7 +46,7 @@ export function cameraDistance(position?: readonly [number, number, number]): nu
  * (billboard, van) must not snap back to a closer maxDistance on the first drag.
  */
 export function orbitDistanceRange(distance: number): { min: number; max: number } {
-  // The near limit allows ~8x magnification over the configured distance —
+  // The near limit allows ~8x magnification over the configured distance -
   // deep enough to inspect seams and ports close up.
   return { min: distance * 0.12, max: Math.max(12, distance * 1.35) }
 }
@@ -55,7 +55,7 @@ export function orbitDistanceRange(distance: number): { min: number; max: number
  * touch-action for the WebGL canvas. pan-y keeps pages scrollable on touch:
  * vertical swipes scroll past the mockup, horizontal drags (and mouse) orbit
  * the device. With zoom on, the trade flips: pinch must reach the controls,
- * so the canvas keeps `none` — the mockup owns two-finger gestures and
+ * so the canvas keeps `none` - the mockup owns two-finger gestures and
  * vertical page scrolling starts outside it.
  */
 export function canvasTouchAction(zoom: boolean): 'none' | 'pan-y' {

@@ -1,5 +1,5 @@
 /**
- * Van object dimensions — a generic Euro-style cargo van (think Transit /
+ * Van object dimensions - a generic Euro-style cargo van (think Transit /
  * Sprinter silhouette, no brand): long-wheelbase panel van with a clamshell
  * hood, cowl break, raked windshield, high roof and a flat cargo side that
  * takes a vinyl-wrap livery.
@@ -41,7 +41,7 @@ export const VAN = {
     noseX: 2.81,
     tailX: -2.81,
     bumperTopY: -0.28,
-    /** Top of the near-vertical nose/grille face — the clamshell hood's front edge. */
+    /** Top of the near-vertical nose/grille face - the clamshell hood's front edge. */
     hoodX: 2.79,
     hoodY: 0.06,
     cowlX: 2.28,
@@ -56,8 +56,8 @@ export const VAN = {
   /** Live wrap panel on the rear doors, between the taillight clusters. */
   rear: { width: 1.42, height: 1.62, y: 0.14, radius: 0.02 },
   /**
-   * Full-coverage rear wrap (`coverage="full"`): the whole barn-door face —
-   * door edge to door edge, plate recess to just under the roofline — with
+   * Full-coverage rear wrap (`coverage="full"`): the whole barn-door face -
+   * door edge to door edge, plate recess to just under the roofline - with
    * the taillight lamps, third brake light, hinge knuckles and the barn-door
    * shut line carved out.
    */
@@ -67,7 +67,7 @@ export const VAN = {
    * The licence plate: the US standard 6 x 12 in (152.4 x 304.8 mm), which is
    * 0.1451 x 0.2903 units at this scale.
    *
-   * ONE rect, used by both the front recess and the rear door — deliberately
+   * ONE rect, used by both the front recess and the rear door - deliberately
    * not a front/rear pair. A vehicle's plates carry the same registration, so
    * the `licensePlate` slot paints both, and sharing the rect is what stops
    * an edit to one from silently reshaping only half of them.
@@ -88,7 +88,7 @@ export const VAN_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The wheels define the road plane; the shadow grounds just under them. */
-/** Millimetres per world unit — the cargo-van scale (~1050 mm per unit). */
+/** Millimetres per world unit - the cargo-van scale (~1050 mm per unit). */
 export const VAN_MM_PER_UNIT = 1050
 
 /**
@@ -104,14 +104,14 @@ export const VAN_FULL_WRAP = {
   y: (VAN.profile.roofY + VAN.rockerY) / 2,
 } as const
 
-/** Default CSS px width of the full-side wrap — same dpi as the panel wrap. */
+/** Default CSS px width of the full-side wrap - same dpi as the panel wrap. */
 export const VAN_FULL_WRAP_RESOLUTION = Math.round(VAN.resolution * (VAN_FULL_WRAP.width / VAN.wrap.width))
 
 /**
  * How much of the bodywork a wrap covers.
  *
  * `perforated` is the full wrap running OVER the operational glass as
- * perforated film, so it shares `full`'s rects exactly — the two differ only
+ * perforated film, so it shares `full`'s rects exactly - the two differ only
  * in what the clip path carves out, which is not a measurement.
  */
 export type VanCoverage = 'panel' | 'full' | 'perforated'
@@ -119,7 +119,7 @@ export type VanCoverage = 'panel' | 'full' | 'perforated'
 /**
  * Live geometry of both flanks, the rear doors and the plates.
  *
- * `licensePlate` resolves to TWO rects — the nose and the tail — from one
+ * `licensePlate` resolves to TWO rects - the nose and the tail - from one
  * shared plate size. They are equal, and the array still carries the count:
  * there are two plate surfaces on this van, and a caller measuring the object
  * should see both. That is what an array-valued region means (see

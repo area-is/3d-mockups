@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The dual-slant "A" mark (assets/area-a-dual-slant-green.svg) on the
-       brand plate. The plate is not decoration: the mark is multi-tone green,
-       so its lightest facets wash out on a light browser tab and its darkest
-       wash out on a dark one. A fixed dark backdrop gives every facet the same
-       contrast wherever the icon is rendered.
+  <!-- The dual-slant "A" mark (assets/area-a-dual-slant-green.svg), drawn on a
+       transparent background so the icon takes the shape of the mark rather
+       than a plate. The tradeoff is that the tab's own colour now shows
+       through: the mark is multi-tone green, so its darkest facets sit closer
+       to a dark tab and its lightest closer to a light one. Every facet still
+       clears both, and the greens are the identity, so the mark is left as
+       drawn rather than re-toned per colour scheme.
 
        The artwork occupies only x[61.96,382.04] y[46,398] of its native 444
-       box, so it is reframed on that content square (46..398) and mapped onto
-       a 26px area — at 16px every wasted pixel of padding costs legibility. -->
-  <rect width="32" height="32" rx="7" fill="#0b0c12"/>
-  <g transform="translate(-0.3977 -0.3977) scale(0.073864)">
+       box, so it is reframed on that content square (46..398). With no plate
+       to sit inside, it is mapped onto a 30px area rather than 26px - at 16px
+       every wasted pixel of padding costs legibility. -->
+  <g transform="translate(-2.920455 -2.920455) scale(0.08522727)">
     <g transform="translate(222.00,213.20)" stroke-linejoin="round">
       <polygon points="-45.73,-29.33 0.00,-2.93 0.00,52.80 -45.73,26.40" fill="#276D3E" stroke="#276D3E" stroke-width="0.6"/>
       <polygon points="45.73,-29.33 0.00,-2.93 0.00,52.80 45.73,26.40" fill="#2D9F4F" stroke="#2D9F4F" stroke-width="0.6"/>

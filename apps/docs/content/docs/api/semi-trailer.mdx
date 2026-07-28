@@ -7,7 +7,7 @@ description: A 53 ft dry-van trailer with live wraps on both sides and the rear 
 parked on its landing gear: smooth wrap-ready sides, tandem rear axles with
 dual wheels and mudflaps, side skirts, ICC bumper, lock-rod rear doors, amber
 front markers and DOT reflective tape along the bottom rails. The biggest
-canvas in the library — both 15.2×2.6 m sides plus the rear doors are live.
+canvas in the library - both 15.2×2.6 m sides plus the rear doors are live.
 
 <ObjectDemo demo="trailer-basic" checker />
 
@@ -24,7 +24,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `color` | `string` | `'#eef0f2'` | Box paint. Wrap trailers are usually white. |
-| `skirtColor` | `string` | matches `color` | Side-skirt paint — the thin aero panels under the box. |
+| `skirtColor` | `string` | matches `color` | Side-skirt paint - the thin aero panels under the box. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
 | `resolution` | `number` | `1100` | Virtual side panel width in CSS px; the rear shares its dpi. |
 
@@ -34,19 +34,19 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- |
 | `<SemiTrailerMockup.CurbSide>` | Curb-side (+Z) wrap panel (bare children). |
 | `<SemiTrailerMockup.StreetSide>` | Street-side (−Z) wrap panel. |
-| `<SemiTrailerMockup.Rear>` | Rear-door panel — the lock rods overlay it like real hardware. |
+| `<SemiTrailerMockup.Rear>` | Rear-door panel - the lock rods overlay it like real hardware. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<SemiTrailer>`.
 
-The road sits `SEMI_TRAILER.groundY` below the origin — the mockup grounds
+The road sits `SEMI_TRAILER.groundY` below the origin - the mockup grounds
 the shadow there automatically.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-semi" />
@@ -55,7 +55,7 @@ what stays 3D hardware.
 
 ### All three panels, auto-rotating
 
-The rear doors carry your panel *under* the lock rods — a DOM overlay draws
+The rear doors carry your panel *under* the lock rods - a DOM overlay draws
 the four rods over the print, the way a real wrap is applied around them.
 
 <ObjectDemo demo="trailer-rear" />

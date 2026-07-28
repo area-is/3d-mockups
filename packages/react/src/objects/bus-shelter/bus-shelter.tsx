@@ -16,7 +16,7 @@ export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>,
    * (the waiting-area lightbox face), `<BusShelter.Arrivals>` and
    * `<BusShelter.ArrivalsBack>`. The arrivals slots take an array of strings
    * for the built-in dot-matrix LED board (one row per arrival, rows scroll
-   * when they overflow), a single string for a one-line message — or any
+   * when they overflow), a single string for a one-line message - or any
    * React node for full custom control; the waiting-area face mirrors
    * `<BusShelter.Arrivals>` unless `<BusShelter.ArrivalsBack>` is given.
    */
@@ -28,12 +28,12 @@ export interface BusShelterProps extends Omit<GroupProps, 'children' | 'color'>,
 /**
  * A procedurally built glass transit shelter with a backlit 6-sheet
  * advertising lightbox as its end panel: flat roof slab on slim posts, glass
- * back wall, bench — and the 1185 x 1750 mm poster live on both faces of
+ * back wall, bench - and the 1185 x 1750 mm poster live on both faces of
  * the lightbox. No 3D asset files are loaded.
  *
  * The origin is the envelope center; the pavement sits
  * `BUS_SHELTER.standHeight` below it. The lightbox faces ±X (along the
- * sidewalk) — pose the shelter in three-quarter view to feature it. Must be
+ * sidewalk) - pose the shelter in three-quarter view to feature it. Must be
  * rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  *
  * ```tsx
@@ -53,11 +53,11 @@ function BusShelterImpl({
 }: BusShelterProps) {
   const regions = collectSlots(children, BUS_SHELTER_REGIONS)
   const { body, roof, backGlass, post, bench, lightbox, poster, flag, display, standHeight } = BUS_SHELTER
-  // The roof and the arrivals board's housing must occlude too — without
+  // The roof and the arrivals board's housing must occlude too - without
   // them the live poster and LED board composite straight through the roof
   // when the shelter is seen from above.
 
-  // Plain strings become the built-in LED arrivals board — an array is one
+  // Plain strings become the built-in LED arrivals board - an array is one
   // row per arrival; custom nodes pass straight through.
   const toBoard = (content: React.ReactNode) =>
     isLedText(content) ? (
@@ -132,7 +132,7 @@ function BusShelterImpl({
         </mesh>
       ))}
 
-      {/* two slim posts on the back-wall line — the roof cantilevers forward,
+      {/* two slim posts on the back-wall line - the roof cantilevers forward,
           and the lightbox cabinet is structural at its end */}
       {([
         [-body.width / 2 + 0.9, -body.depth / 2 + 0.1],
@@ -190,7 +190,7 @@ function BusShelterImpl({
           >
             {board}
           </DeviceScreen>
-          {/* the waiting-area face — mirrors the street face by default */}
+          {/* the waiting-area face - mirrors the street face by default */}
           {backBoard != null && (
             <DeviceScreen
               width={display.width}

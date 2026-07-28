@@ -6,7 +6,7 @@ export type RollupBannerMockupProps = MockupProps<RollupBannerProps>
 
 /**
  * The stand lifted by the core's stage offset so it (graphic + cassette)
- * stays visually centered on the stage origin — the one wrapper concern the
+ * stays visually centered on the stage origin - the one wrapper concern the
  * factory can't express. The framing's extent accounts for the same offset.
  */
 function StagedRollupBanner(props: RollupBannerProps) {

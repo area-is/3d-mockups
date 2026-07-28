@@ -23,14 +23,14 @@ export interface ProductBoxProps extends Omit<GroupProps, 'children' | 'color'>,
    * retail blank.
    */
   size?: ProductBoxSizeMm
-  /** Carton stock color — every unprinted panel and the fold edges. */
+  /** Carton stock color - every unprinted panel and the fold edges. */
   color?: string
 }
 
 /**
  * A procedurally built standing product carton: crisp fold edges, matte
- * coated stock, and all six panels live DOM — front, back, both sides, top
- * and bottom — so a standard 3/4 hero pose shows three printed faces at
+ * coated stock, and all six panels live DOM - front, back, both sides, top
+ * and bottom - so a standard 3/4 hero pose shows three printed faces at
  * once and every other pose stays printed too. No 3D asset files are
  * loaded.
  *
@@ -79,7 +79,7 @@ function ProductBoxImpl({
 
   return (
     <group {...groupProps}>
-      {/* the carton — satin coated stock, crisp but not razor-sharp folds */}
+      {/* the carton - satin coated stock, crisp but not razor-sharp folds */}
       <RoundedBox args={[body.width, body.height, body.depth]} radius={body.radius}>
         <meshPhysicalMaterial color={color} metalness={0} roughness={0.55} clearcoat={0.2} clearcoatRoughness={0.7} />
       </RoundedBox>
@@ -142,7 +142,7 @@ function ProductBoxImpl({
         </DeviceScreen>
       )}
 
-      {/* top panel — oriented so its content reads from the front */}
+      {/* top panel - oriented so its content reads from the front */}
       {regions.top != null && (
         <DeviceScreen
           {...shared}

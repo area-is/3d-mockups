@@ -36,13 +36,13 @@ export interface LaptopProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    * Aluminum color (lid, deck, bottom). Takes a retail colorway id from
    * `LAPTOP_COLORWAYS` (`'skyblue'`, `'starlight'`, `'midnight'`…) or any
    * CSS color for a custom finish. A colorway id wins over a CSS color of
-   * the same name — pass hex if you meant the CSS one.
+   * the same name - pass hex if you meant the CSS one.
    */
   color?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 13.6" panel's
-   * aspect. The default 1280 gives a 1280x832 screen — exactly the MacBook
-   * Air's default scaled resolution (2560x1664 at 2x) — so desktop layouts and
+   * aspect. The default 1280 gives a 1280x832 screen - exactly the MacBook
+   * Air's default scaled resolution (2560x1664 at 2x) - so desktop layouts and
    * breakpoints behave like on the real machine. Style your content with % / flex.
    */
   resolution?: number
@@ -78,7 +78,7 @@ function useSlabGeometry(width: number, depth: number, radius: number, thickness
 
 /* -------------------------------------------------------------------------
  * Keyboard: the 78-key US Magic Keyboard, measured off a retail-unit scan of
- * the MacBook Pro 14" — 18.8 mm x-pitch, 18.5 mm row pitch, 2.5 mm gaps,
+ * the MacBook Pro 14" - 18.8 mm x-pitch, 18.5 mm row pitch, 2.5 mm gaps,
  * six FULL-height rows (the function row matches the others since 2021),
  * half-height inverted-T arrows, caps flush with the deck.
  * ---------------------------------------------------------------------- */
@@ -89,7 +89,7 @@ const KEY_PAD_X = 0.0414
 const KEY_PAD_Z = 0.0456
 /** 2.5 mm air between neighboring caps. */
 const KEY_GAP = 0.0345
-/** 2.2 mm keycap corner radius — the same on every cap, from 1u to the space bar. */
+/** 2.2 mm keycap corner radius - the same on every cap, from 1u to the space bar. */
 const CAP_RADIUS = 0.03
 /** Height of a keycap's flat top face (0.012 extrusion + the 0.005 bevel). */
 const CAP_TOP_Y = 0.017
@@ -107,7 +107,7 @@ type KeyLegend =
   /** Word in a bottom corner (esc, tab, return…). `dot` = caps-lock light. */
   | { t: 'word'; s: string; align: 'bl' | 'br'; dot?: boolean }
   /**
-   * Modifier: word along the bottom with the symbol in the TOP-OUTER corner —
+   * Modifier: word along the bottom with the symbol in the TOP-OUTER corner -
    * top-left on the left-hand keys, mirrored to top-right on the right-hand
    * command/option (scan-measured, ~5.2 mm in / 4.6 mm down to symbol center).
    */
@@ -128,7 +128,7 @@ const F_ICONS: KeyIcon[] = [
 
 /**
  * The US layout in standard key units (every row sums to 14.5u). Every current
- * MacBook — Air and Pro alike — prints the editing keys as words (esc, tab,
+ * MacBook - Air and Pro alike - prints the editing keys as words (esc, tab,
  * caps lock, delete, return, shift), so one layout covers all four variants.
  * Coordinates are keyboard-local, +z toward the user.
  */
@@ -215,7 +215,7 @@ function buildKeyboardLayout(keyboard: { width: number; depth: number }) {
 }
 
 /**
- * Monochrome legend icons drawn as canvas paths — font glyphs for ⌘ ⇧ ⌫ etc.
+ * Monochrome legend icons drawn as canvas paths - font glyphs for ⌘ ⇧ ⌫ etc.
  * aren't dependable across environments, and Apple's media icons have no
  * Unicode form at all. `s` is the icon's box size in canvas px.
  */
@@ -252,7 +252,7 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
   /**
    * F10-F12 share one stroked speaker outline: a shallow box on the left
    * opening into a cone that flares right. Measured off Apple's own art at
-   * 36 x 53 px — so 1.47x as tall as wide, with the box only 0.30 of the
+   * 36 x 53 px - so 1.47x as tall as wide, with the box only 0.30 of the
    * cone's height. `SPK` is the speaker's width; everything follows from it.
    */
   const SPK = 0.523 * s
@@ -301,7 +301,7 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
       break
     case 'mission': {
       // Mission Control is TWO stacked panes on the LEFT beside one tall pane
-      // on the RIGHT — this had it mirrored, with the tall pane left and two
+      // on the RIGHT - this had it mirrored, with the tall pane left and two
       // equal panes right. Apple's three are all different sizes: the
       // upper-left is widest, the lower-left is smaller and steps right, and
       // the right-hand one is the tall one. It is also the widest glyph in the
@@ -427,7 +427,7 @@ function keycapGeometry(width: number, depth: number) {
 /**
  * The raised home-row markers on F and J: a stadium bar standing proud of the
  * cap, the same molding as the cap itself rather than print. Photo-measured
- * off a straight-on Magic Keyboard — 0.237 cap widths long, 0.053 cap depths
+ * off a straight-on Magic Keyboard - 0.237 cap widths long, 0.053 cap depths
  * across, its center 0.816 of the way down the cap (3.9 x 0.9 mm, 5.1 mm below
  * the cap's center on a 16 mm cap), standing ~0.2 mm off the face.
  */
@@ -485,7 +485,7 @@ function CapCluster({ width, depth, keys }: { width: number; depth: number; keys
 function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ: number } }) {
   const layout = React.useMemo(() => buildKeyboardLayout(keyboard), [keyboard])
 
-  // Caps bucketed by footprint — six widths plus the half-height arrows.
+  // Caps bucketed by footprint - six widths plus the half-height arrows.
   const clusters = React.useMemo(() => {
     const byFootprint = new Map<string, { width: number; depth: number; keys: KeyDef[] }>()
     for (const key of layout.keys) {
@@ -550,12 +550,12 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(legend.s, px, py)
-          // the F / J home-row markers are RAISED bars, not print — real
+          // the F / J home-row markers are RAISED bars, not print - real
           // geometry standing on those two caps (see HomeRowNubs).
           break
         case 'dual':
           // shifted symbol centered 4.5 mm from the cap top, base symbol
-          // larger (5.2 mm font) centered 11.1 mm down — scan-measured
+          // larger (5.2 mm font) centered 11.1 mm down - scan-measured
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           font(u(0.052))
@@ -653,7 +653,7 @@ function Keys({ keyboard }: { keyboard: { width: number; depth: number; offsetZ:
  * A procedurally built Apple MacBook Air 13" (M5)-style laptop: rounded
  * unibody base with a Magic-Keyboard deck and Force Touch trackpad, and a thin
  * hinged lid whose notched display carries your live content. No 3D asset
- * files — everything is generated from geometry at runtime.
+ * files - everything is generated from geometry at runtime.
  *
  * The opened pose (deck + raised lid) is centered on the group origin, the
  * pose the stage camera and shadow framing are tuned for.
@@ -674,7 +674,7 @@ function LaptopImpl({
   const spec = LAPTOP_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(LAPTOP_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#e3e4e6'
   const { footprint, base, lid, display, notch: notchDims, keyboard, trackpad } = spec
@@ -684,7 +684,7 @@ function LaptopImpl({
   const lidAngle = openAngle ?? spec.openAngle
 
   // Base chassis: the slab is baked into its resting orientation (footprint in
-  // XZ) so every side-wall port opening can be machined out of it in place —
+  // XZ) so every side-wall port opening can be machined out of it in place -
   // each port is a real cavity in the aluminum, not a dark inlay.
   const baseGeometry = React.useMemo(() => {
     const g = slabGeometry(footprint.width, footprint.depth, footprint.radius, base.thickness, base.bevel)
@@ -700,7 +700,7 @@ function LaptopImpl({
       }
     }
     // Lift-lid scoop: a horizontal capsule half-buried at deck level machines
-    // the crescent recess out of the front edge — deepest at the top surface,
+    // the crescent recess out of the front edge - deepest at the top surface,
     // fading to nothing down the front face, rounded ends. The cut interior
     // stays aluminum, exactly like the milled original.
     const scoop = spec.scoop
@@ -826,7 +826,7 @@ function LaptopImpl({
   // 90° = upright; larger angles lean the screen back, away from the viewer.
   const lidTilt = -((lidAngle - 90) * Math.PI) / 180
 
-  // Anodized aluminum needs a strong diffuse term — at high metalness any face
+  // Anodized aluminum needs a strong diffuse term - at high metalness any face
   // angled away from the key light crushes to black (the lid's outer face in
   // every rear view), where the real finish still reads as body-color metal.
   const aluminum = (
@@ -865,7 +865,7 @@ function LaptopImpl({
           </group>
 
           {/* trackpad: flush glass with a hairline seam around it. Same finish as
-              the deck — a glossier material here reads as a bright sticker */}
+              the deck - a glossier material here reads as a bright sticker */}
           <mesh geometry={trackpadRimGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.0015, trackpad.offsetZ]}>
             <meshPhysicalMaterial color="#5c5f66" metalness={0.4} roughness={0.5} />
           </mesh>
@@ -879,7 +879,7 @@ function LaptopImpl({
           </mesh>
 
           {/* perforated speaker strips flanking the keyboard (Pro): drilled-hole
-              grid painted over the bare deck — aluminum shows between holes */}
+              grid painted over the bare deck - aluminum shows between holes */}
           {spec.speakers &&
             grilleTexture &&
             [-1, 1].map((side) => (
@@ -900,7 +900,7 @@ function LaptopImpl({
               </mesh>
             ))}
 
-          {/* port interiors — the openings are real cavities machined from the
+          {/* port interiors - the openings are real cavities machined from the
               base above. Thunderbolt gets the full USB-C receptacle (shell +
               gold tongue); MagSafe, HDMI, SDXC and the jack get dark sockets. */}
           {([['left', -1], ['right', 1]] as const).map(([side, dir]) =>
@@ -981,7 +981,7 @@ function LaptopImpl({
             <meshPhysicalMaterial color="#0d0e12" metalness={0.5} roughness={0.55} envMapIntensity={0.5} />
           </mesh>
 
-          {/* lid slab — local +y is "up the screen", inner face toward +z */}
+          {/* lid slab - local +y is "up the screen", inner face toward +z */}
           <mesh geometry={lidGeometry} position={[0, footprint.depth / 2, 0]}>
             {aluminum}
           </mesh>

@@ -5,7 +5,7 @@ description: A standing letter Z-fold with three live panels, front and back.
 
 `<Brochure>` and `<BrochureMockup>` render a US letter tri-fold standing in a
 zig-zag (Z-fold) accordion. Each of the three 93×216 mm panels is its own
-live 360×835 DOM surface — and the reverse faces can be printed too. Panels
+live 360×835 DOM surface - and the reverse faces can be printed too. Panels
 shade gently toward the folds, like paper actually bowing.
 
 Each panel has its own named slot, so content goes where the name says
@@ -27,7 +27,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `{ width?, height? }` | `93×216` | One panel's physical size in mm — e.g. `{ width: 99, height: 210 }` for an A4 tri-fold. |
+| `size` | `{ width?, height? }` | `93×216` | One panel's physical size in mm - e.g. `{ width: 99, height: 210 }` for an A4 tri-fold. |
 | `foldAngle` | `number` | `24` | Zig-zag fold angle in degrees. `0` lays the sheet out flat. |
 | `color` | `string` | `'#f5f4f0'` | Stock color of unprinted faces and paper edges. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each panel's content. |
@@ -50,20 +50,20 @@ Six regions, one per printed panel:
 | `<BrochureMockup.BackRight>` | Reverse face, right panel. |
 
 **Left and right are always as the viewer of that face sees it.** Walk around
-the brochure and `BackLeft` is the panel on your left — which is the reverse of
+the brochure and `BackLeft` is the panel on your left - which is the reverse of
 `FrontRight`. That is how a real tri-fold is imposed, and naming each panel for
 its own face is what keeps the mirroring out of your head.
 
 Order does not matter: write the slots in whatever order reads best, and
-leaving one out is not a shift — it just shows bare `color` stock. Every slot
-takes per-surface overrides — `surfaceBackground`, `resolution`,
-`surfaceStyle` — over the mockup-level defaults. The same slots exist on the
+leaving one out is not a shift - it just shows bare `color` stock. Every slot
+takes per-surface overrides - `surfaceBackground`, `resolution`,
+`surfaceStyle` - over the mockup-level defaults. The same slots exist on the
 bare `<Brochure>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-brochure" />
@@ -90,7 +90,7 @@ live surface. Spin the demo to read both sides.
 
 ### Flat, before folding
 
-`foldAngle={0}` lays the sheet out flat — useful for reviewing the design as
+`foldAngle={0}` lays the sheet out flat - useful for reviewing the design as
 the full 11" spread it prints as.
 
 <ObjectDemo demo="brochure-flat" />
@@ -106,7 +106,7 @@ the full 11" spread it prints as.
 ### One designed panel on bare stock
 
 `children` is shorthand for `FrontLeft`; the rest show bare `color`
-stock — a work-in-progress state that reads clearly in reviews.
+stock - a work-in-progress state that reads clearly in reviews.
 
 <ObjectDemo demo="brochure-single" />
 

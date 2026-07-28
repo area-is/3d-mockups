@@ -1,7 +1,7 @@
 {
   "name": "area-3d-mockups",
   "version": "0.1.0",
-  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone \u2014 it stays fully live. React binding of @area-3d-mockups/core.",
+  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone and it stays fully live. React binding of @area-3d-mockups/core.",
   "keywords": [
     "react",
     "threejs",
@@ -19,12 +19,12 @@
   "author": "subwaymatch",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/subwaymatch/area-mockups.git",
+    "url": "git+https://github.com/area-is/3d-mockups.git",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/subwaymatch/area-mockups#readme",
+  "homepage": "https://github.com/area-is/3d-mockups#readme",
   "bugs": {
-    "url": "https://github.com/subwaymatch/area-mockups/issues"
+    "url": "https://github.com/area-is/3d-mockups/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

@@ -16,7 +16,7 @@ export interface TumbleControlsProps {
   autoRotate?: boolean
   autoRotateSpeed?: number
   /**
-   * Allow the camera to tumble a full 360° vertically — straight over the top
+   * Allow the camera to tumble a full 360° vertically - straight over the top
    * and bottom of the stage. Off by default: vertical rotation stays within
    * the classic orbit clamp.
    */
@@ -25,14 +25,14 @@ export interface TumbleControlsProps {
   maxDistance?: number
   /**
    * Called whenever the camera's orbit distance settles on a new value
-   * (wheel, pinch or the +/− buttons) — drives the zoom readout.
+   * (wheel, pinch or the +/− buttons) - drives the zoom readout.
    */
   onDistanceChange?: (distance: number) => void
 }
 
 /**
  * Drag-to-rotate camera controls: horizontal drags spin the turntable,
- * vertical drags tilt within the classic polar clamp — or, with
+ * vertical drags tilt within the classic polar clamp - or, with
  * `freeRotation`, tumble straight over the top and bottom with no pole clamp.
  * The rotation axis always stays at the stage center; damping, auto-rotation
  * and zoom match the classic orbit feel.
@@ -158,7 +158,7 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
       }
     }, [gl, enabled, zoom, orbit, camera])
 
-    // Priority -1: move the camera BEFORE default-priority frame callbacks —
+    // Priority -1: move the camera BEFORE default-priority frame callbacks -
     // drei's <Html transform> positions the DOM screens in its own useFrame,
     // and if the camera moves after that, the live screens visibly trail the
     // WebGL body by one frame during fast drags.

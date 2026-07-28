@@ -39,7 +39,7 @@ export function posterFrameSpec({ width = 457, height = 610 }: PosterFrameSize =
   return {
     /** Physical poster sheet (continues behind the molding lip). */
     poster: { width: w, height: h, radius: 0.004 },
-    /** Rabbet lip overlap per side — the molding covers this much sheet edge. */
+    /** Rabbet lip overlap per side - the molding covers this much sheet edge. */
     lip,
     /** Visible opening. Content you pass as children maps onto this rect. */
     opening: { width: w - lip * 2, height: h - lip * 2, radius: 0.004 },
@@ -65,7 +65,7 @@ export const POSTER_FRAME_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The framed poster grounds on the molding's bottom edge. */
-/** Millimetres per world unit — the poster-frame scale (`POSTER_FRAME_MM` inverted). */
+/** Millimetres per world unit - the poster-frame scale (`POSTER_FRAME_MM` inverted). */
 export const POSTER_FRAME_MM_PER_UNIT = 1 / POSTER_FRAME_MM
 
 /** Live geometry of the visible art. A mat shrinks it to the mat window. */

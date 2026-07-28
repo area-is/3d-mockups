@@ -3,7 +3,7 @@
 /**
  * Full-bleed artwork for the object mockups (book, magazine, brochure, card,
  * poster, billboard, van). Self-contained inline styles so the demos don't
- * lean on page CSS — each component fills its live surface with width/height
+ * lean on page CSS - each component fills its live surface with width/height
  * 100%.
  */
 
@@ -70,7 +70,7 @@ export function MagazineCoverArt() {
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: -2 }}>AREA</div>
-        <div style={{ fontSize: 12, letterSpacing: 2 }}>NO. 07 — JUL 2026</div>
+        <div style={{ fontSize: 12, letterSpacing: 2 }}>NO. 07 - JUL 2026</div>
       </div>
       <div style={{ fontSize: 13, letterSpacing: 3, marginTop: -6 }}>THE DESIGN QUARTERLY</div>
       <div style={{ marginTop: 'auto', display: 'grid', gap: 10, maxWidth: '70%' }}>
@@ -82,7 +82,7 @@ export function MagazineCoverArt() {
 }
 
 /**
- * Spine strip matching the cover — the DOM's left edge lands at the
+ * Spine strip matching the cover - the DOM's left edge lands at the
  * spine's TOP, so this row reads top-to-bottom on the shelf.
  */
 export function MagazineSpineArt() {
@@ -103,12 +103,12 @@ export function MagazineSpineArt() {
     >
       <div style={{ fontSize: 23, fontWeight: 800, letterSpacing: 1, whiteSpace: 'nowrap' }}>AREA</div>
       <div style={{ fontSize: 14, letterSpacing: 5, opacity: 0.85, whiteSpace: 'nowrap' }}>THE DESIGN QUARTERLY · PRINT IS A LIVE SURFACE NOW</div>
-      <div style={{ fontSize: 14, letterSpacing: 2, whiteSpace: 'nowrap' }}>NO. 07 — JUL 2026</div>
+      <div style={{ fontSize: 14, letterSpacing: 2, whiteSpace: 'nowrap' }}>NO. 07 - JUL 2026</div>
     </div>
   )
 }
 
-/** Tri-fold panel 1 — the front. */
+/** Tri-fold panel 1 - the front. */
 export function BrochureFrontArt() {
   return (
     <div
@@ -136,7 +136,7 @@ export function BrochureFrontArt() {
   )
 }
 
-/** Tri-fold panel 2 — the trail list. */
+/** Tri-fold panel 2 - the trail list. */
 export function BrochureTrailsArt() {
   const trails: [string, string, string][] = [
     ['Larch Loop', '2.4 km', 'easy'],
@@ -178,7 +178,7 @@ export function BrochureTrailsArt() {
   )
 }
 
-/** Tri-fold panel 3 — plan your visit. */
+/** Tri-fold panel 3 - plan your visit. */
 export function BrochureVisitArt() {
   return (
     <div
@@ -312,7 +312,7 @@ export function PosterArt() {
   )
 }
 
-/** 14x48 bulletin creative — one message, big type. */
+/** 14x48 bulletin creative - one message, big type. */
 export function BillboardAdArt() {
   return (
     <div
@@ -425,7 +425,7 @@ export function BadgeBackArt() {
   )
 }
 
-/** King-size bus ad — one message, big type, 4.8:1. */
+/** King-size bus ad - one message, big type, 4.8:1. */
 export function BusAdArt() {
   return (
     <div
@@ -454,7 +454,7 @@ export function BusAdArt() {
 
 /**
  * Amber LED destination marquee: the route number holds steady while the
- * destination scrolls past, behind a dot-matrix mask — like a real bus sign.
+ * destination scrolls past, behind a dot-matrix mask - like a real bus sign.
  */
 export function DestinationArt() {
   return (
@@ -673,7 +673,7 @@ export function GreetingInsideArt() {
         very best year yet
       </div>
       <div style={{ width: 60, height: 2, background: '#e8a087' }} />
-      <div style={{ fontSize: 13 }}>— everyone at Area Labs</div>
+      <div style={{ fontSize: 13 }}>- everyone at Area Labs</div>
     </div>
   )
 }
@@ -868,7 +868,7 @@ export function VanLiveryArt() {
   )
 }
 
-/** Storefront fascia sign — traditional gilded shop lettering. */
+/** Storefront fascia sign - traditional gilded shop lettering. */
 export function StoreSignArt() {
   return (
     <div
@@ -894,7 +894,7 @@ export function StoreSignArt() {
   )
 }
 
-/** Storefront window poster — seasonal sale card. */
+/** Storefront window poster - seasonal sale card. */
 export function StorePosterArt() {
   return (
     <div
@@ -923,7 +923,7 @@ export function StorePosterArt() {
   )
 }
 
-/** Storefront wall mural — hand-painted-ad look for the brick elevations. */
+/** Storefront wall mural - hand-painted-ad look for the brick elevations. */
 export function StoreMuralArt() {
   return (
     <div
@@ -956,7 +956,7 @@ export function StoreMuralArt() {
   )
 }
 
-/** Semi-trailer side wrap — coast-to-coast freight brand. */
+/** Semi-trailer side wrap - coast-to-coast freight brand. */
 export function TrailerWrapArt() {
   return (
     <div
@@ -1001,7 +1001,7 @@ export function TrailerWrapArt() {
   )
 }
 
-/** Semi-trailer rear doors — brand mark between the lock rods. */
+/** Semi-trailer rear doors - brand mark between the lock rods. */
 export function TrailerRearArt() {
   return (
     <div
@@ -1029,7 +1029,7 @@ export function TrailerRearArt() {
   )
 }
 
-/** Mailer box lid — kraft-print seed club brand. The layout keeps the
+/** Mailer box lid - kraft-print seed club brand. The layout keeps the
  * middle band clear: the packing tape runs across it. */
 export function BoxLidArt() {
   return (
@@ -1063,7 +1063,7 @@ export function BoxLidArt() {
   )
 }
 
-/** Mailer box front panel — wide brand strip. */
+/** Mailer box front panel - wide brand strip. */
 export function BoxPanelArt() {
   return (
     <div
@@ -1087,7 +1087,7 @@ export function BoxPanelArt() {
   )
 }
 
-/** Shopping bag face — boutique monogram. */
+/** Shopping bag face - boutique monogram. */
 export function BagArt() {
   return (
     <div
@@ -1123,7 +1123,7 @@ export function BagArt() {
   )
 }
 
-/** Bus shelter RTPI arrivals board — amber LED rows on a dot-matrix panel. */
+/** Bus shelter RTPI arrivals board - amber LED rows on a dot-matrix panel. */
 export function ArrivalsBoardArt() {
   const rows: [string, string, string][] = [
     ['12', 'Harbor Loop', '2 min'],
@@ -1201,7 +1201,7 @@ function Barcode({ light = false }: { light?: boolean }) {
   )
 }
 
-/** Hardcover back board — blurb, praise quote, and barcode. */
+/** Hardcover back board - blurb, praise quote, and barcode. */
 export function BookBackArt() {
   return (
     <div
@@ -1218,10 +1218,10 @@ export function BookBackArt() {
       }}
     >
       <div style={{ fontFamily: serif, fontSize: 15, fontStyle: 'italic', lineHeight: 1.5 }}>
-        &ldquo;A voyage told in soundings and star fixes — the rare atlas that reads like a
+        &ldquo;A voyage told in soundings and star fixes - the rare atlas that reads like a
         novel.&rdquo;
       </div>
-      <div style={{ fontSize: 10, letterSpacing: 2, color: '#8fb0cc' }}>— THE COASTAL REVIEW</div>
+      <div style={{ fontSize: 10, letterSpacing: 2, color: '#8fb0cc' }}>- THE COASTAL REVIEW</div>
       <div style={{ fontSize: 11.5, lineHeight: 1.6, color: '#b6c9da', marginTop: 6 }}>
         Charted across four oceans and twelve years, this collection follows the survey ship
         Meridian from her first anchorage to her last. Includes 40 pages of original charts.
@@ -1238,7 +1238,7 @@ export function BookBackArt() {
   )
 }
 
-/** Hardcover spine strip — title reading top to bottom. */
+/** Hardcover spine strip - title reading top to bottom. */
 export function BookSpineArt() {
   return (
     <div
@@ -1271,7 +1271,7 @@ export function BookSpineArt() {
   )
 }
 
-/** Magazine back cover — the classic full-page ad. */
+/** Magazine back cover - the classic full-page ad. */
 export function MagazineBackArt() {
   return (
     <div
@@ -1307,7 +1307,7 @@ export function MagazineBackArt() {
   )
 }
 
-/** Product box back panel — brew steps and barcode. */
+/** Product box back panel - brew steps and barcode. */
 export function BoxBackArt() {
   return (
     <div
@@ -1350,7 +1350,7 @@ export function BoxBackArt() {
   )
 }
 
-/** Product box bottom panel — roast date stamp and lot code. */
+/** Product box bottom panel - roast date stamp and lot code. */
 export function BoxBottomArt() {
   return (
     <div
@@ -1391,7 +1391,7 @@ export function BoxBottomArt() {
   )
 }
 
-/** Mailer box end panel — handling marks. */
+/** Mailer box end panel - handling marks. */
 export function MailerEndArt() {
   return (
     <div
@@ -1418,7 +1418,7 @@ export function MailerEndArt() {
   )
 }
 
-/** Mailer box bottom panel — recycled stamp and origin line. */
+/** Mailer box bottom panel - recycled stamp and origin line. */
 export function MailerBottomArt() {
   return (
     <div
@@ -1446,7 +1446,7 @@ export function MailerBottomArt() {
   )
 }
 
-/** Vinyl back cover — tracklist and credits. */
+/** Vinyl back cover - tracklist and credits. */
 export function VinylBackArt() {
   return (
     <div
