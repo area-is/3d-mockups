@@ -86,7 +86,15 @@ than Node.
 CI/CD is `.github/workflows/deploy-docs.yml`: pushes to `main` deploy, pull requests
 upload a preview version and print its URL. Both need two repository secrets,
 `CLOUDFLARE_API_TOKEN` (an API token with the *Edit Cloudflare Workers* template) and
-`CLOUDFLARE_ACCOUNT_ID`.
+`CLOUDFLARE_ACCOUNT_ID`. The account ID only names the account; the token is the thing
+that authenticates, and publishing a Worker script is an authenticated write.
+
+If you would rather not hold a token in GitHub at all, the alternative is
+[Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/): connect the
+repo from the Cloudflare dashboard and Cloudflare clones, builds and deploys on push,
+generating and holding its own API token. That trades this workflow file for build
+settings in the dashboard, which for a monorepo means pointing the root directory at
+`apps/docs` and setting the build command to run the workspace build first.
 
 ### Worker size
 

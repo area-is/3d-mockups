@@ -42,6 +42,8 @@ jobs:
       # CI and local `npm run deploy:docs` always run the same wrangler.
       - name: Publish
         working-directory: apps/docs
+        # CLOUDFLARE_* are wrangler's current names. It still reads CF_API_TOKEN
+        # and CF_ACCOUNT_ID, but only as deprecated aliases that warn on use.
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
