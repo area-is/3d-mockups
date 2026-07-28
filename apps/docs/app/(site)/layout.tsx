@@ -6,7 +6,7 @@ import '../globals.css'
 import '../screens.css'
 
 export const metadata: Metadata = {
-  title: 'area-mockups: 3D device mockups for React',
+  title: 'area-3d-mockups: 3D device mockups for React',
   description:
     'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live — real DOM, not a texture.',
 }
@@ -23,7 +23,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             <div className="container header-inner">
               <Link href="/" className="brand">
                 <Logo size={28} className="brand-logo" />
-                area-mockups
+                area-3d-mockups
               </Link>
               <nav className="site-nav">
                 <Link href="/docs">Docs</Link>

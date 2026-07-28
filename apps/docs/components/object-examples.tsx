@@ -43,7 +43,7 @@ import {
   VinylRecord,
   VinylRecordMockup,
   FlipMockup,
-} from 'area-mockups'
+} from 'area-3d-mockups'
 import { PreviewStage } from './preview-controls'
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
 import { DEMO_SOURCES } from '../lib/demo-sources.generated'

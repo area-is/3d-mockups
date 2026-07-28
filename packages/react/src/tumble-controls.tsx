@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ORBIT, TumbleOrbit, tumbleAutoRotateStep } from '@area-mockups/core'
+import { ORBIT, TumbleOrbit, tumbleAutoRotateStep } from '@area-3d-mockups/core'
 
 export interface TumbleControlsHandle {
   /** Multiply the camera distance (used by the overlay +/− buttons). */

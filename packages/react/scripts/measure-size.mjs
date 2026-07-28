@@ -53,7 +53,7 @@ for (const [name, contents] of Object.entries(ENTRIES)) {
     external: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
     // Measure the core from its source (same as the published bundle, which
     // inlines it) so sizes don't depend on the core workspace being built.
-    alias: { '@area-mockups/core': new URL('../../core/src/index.ts', import.meta.url).pathname },
+    alias: { '@area-3d-mockups/core': new URL('../../core/src/index.ts', import.meta.url).pathname },
     jsx: 'automatic',
     loader: { '.tsx': 'tsx', '.ts': 'ts' },
   })

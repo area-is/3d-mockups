@@ -8,7 +8,7 @@ import {
   type MockupKind,
   type MockupPropsMap,
   type RegionSpec,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
 import { FloatGroup } from './float-group'
 import type { Slot, SlotProps } from './slots'

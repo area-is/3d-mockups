@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { DOOH_TOTEM, DOOH_TOTEM_REGIONS, doohTotemSpec, type DoohTotemSize, roundedRectShape } from '@area-mockups/core'
+import { DOOH_TOTEM, DOOH_TOTEM_REGIONS, doohTotemSpec, type DoohTotemSize, roundedRectShape } from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 

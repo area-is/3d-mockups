@@ -1,4 +1,4 @@
-import { BILLBOARD_FRAMING, BILLBOARD_STAGE_OFFSET_Y, BILLBOARD_REGIONS, BILLBOARD_METRICS } from '@area-mockups/core'
+import { BILLBOARD_FRAMING, BILLBOARD_STAGE_OFFSET_Y, BILLBOARD_REGIONS, BILLBOARD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Billboard, billboardSlots, type BillboardProps } from './objects/billboard/billboard'
 

@@ -1,4 +1,4 @@
-import { FOLD_FRAMING, SCREEN_REGIONS, FOLD_METRICS } from '@area-mockups/core'
+import { FOLD_FRAMING, SCREEN_REGIONS, FOLD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Fold, foldSlots, type FoldProps } from './devices/fold/fold'
 

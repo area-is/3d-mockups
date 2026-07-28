@@ -1,4 +1,4 @@
-import { MAILER_BOX_FRAMING, MAILER_BOX_REGIONS, MAILER_BOX_METRICS } from '@area-mockups/core'
+import { MAILER_BOX_FRAMING, MAILER_BOX_REGIONS, MAILER_BOX_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { MailerBox, mailerBoxSlots, type MailerBoxProps } from './objects/mailer-box/mailer-box'
 

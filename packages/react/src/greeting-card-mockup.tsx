@@ -1,4 +1,4 @@
-import { GREETING_CARD_FRAMING, GREETING_CARD_REGIONS, GREETING_CARD_METRICS } from '@area-mockups/core'
+import { GREETING_CARD_FRAMING, GREETING_CARD_REGIONS, GREETING_CARD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GreetingCard, greetingCardSlots, type GreetingCardProps } from './objects/greeting-card/greeting-card'
 

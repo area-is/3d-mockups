@@ -1,4 +1,4 @@
-# area-mockups
+# area-3d-mockups
 
 GPU-accelerated **3D device mockups for React** — drop any content onto the screen of a
 3D phone and it renders live: real DOM on the glass, vector crisp at any angle, videos
@@ -19,7 +19,7 @@ on the roadmap.
 ```tsx
 'use client'
 
-import { GalaxyMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-3d-mockups'
 
 export function Hero() {
   return (
@@ -34,12 +34,12 @@ export function Hero() {
 
 | Path | npm name | What it is |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | `@area-mockups/core` | Framework-agnostic core: device/object specs, geometry math, screen & stage behaviors (depends on `three` only) |
-| [`packages/react`](packages/react) | `area-mockups` | The React binding — the publishable npm package (bundles the core) |
+| [`packages/core`](packages/core) | `@area-3d-mockups/core` | Framework-agnostic core: device/object specs, geometry math, screen & stage behaviors (depends on `three` only) |
+| [`packages/react`](packages/react) | `area-3d-mockups` | The React binding — the publishable npm package (bundles the core) |
 | [`apps/docs`](apps/docs) | — | Next.js docs & live demos site |
 
 The project is structured so more framework bindings can be added later —
-`@area-mockups/svelte` (Threlte) and `@area-mockups/vue` (TresJS) are the planned next
+`@area-3d-mockups/svelte` (Threlte) and `@area-3d-mockups/vue` (TresJS) are the planned next
 ones — all sharing the same core. See [ARCHITECTURE.md](ARCHITECTURE.md) for the
 layering rule and the step-by-step guide to adding a binding.
 
@@ -62,7 +62,7 @@ npm publish
 ```
 
 The `prepare` script builds `dist/` automatically before publish. The core is bundled
-into `area-mockups`, so it does not need to be published separately.
+into `area-3d-mockups`, so it does not need to be published separately.
 
 ## License
 

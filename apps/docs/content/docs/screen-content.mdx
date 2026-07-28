@@ -68,7 +68,7 @@ drag anywhere (body, background, or screen) rotates the model.
 
 That is a deliberate architectural choice, and it is what buys the mockup its
 looks. A screen is real DOM composited into a WebGL scene, and where that DOM
-sits in the stacking order decides how hardware can hide it. area-mockups
+sits in the stacking order decides how hardware can hide it. area-3d-mockups
 always stacks it *under* the canvas and masks it with the depth buffer, so
 anything in front of the screen covers it exactly, pixel for pixel: a laptop's
 keyboard hides the screen's reflection, a phone's proud camera ring stands over

@@ -1,4 +1,4 @@
-import { VINYL_RECORD_FRAMING, VINYL_RECORD_REGIONS, VINYL_RECORD_METRICS } from '@area-mockups/core'
+import { VINYL_RECORD_FRAMING, VINYL_RECORD_REGIONS, VINYL_RECORD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { VinylRecord, vinylRecordSlots, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
 

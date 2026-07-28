@@ -1,4 +1,4 @@
-import { DOOH_TOTEM_FRAMING, DOOH_TOTEM_REGIONS, DOOH_TOTEM_METRICS } from '@area-mockups/core'
+import { DOOH_TOTEM_FRAMING, DOOH_TOTEM_REGIONS, DOOH_TOTEM_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { DOOHTotem, doohTotemSlots, type DOOHTotemProps } from './objects/dooh-totem/dooh-totem'
 

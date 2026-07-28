@@ -1,4 +1,4 @@
-import { CUSTOM_BOX_FRAMING, CUSTOM_BOX_REGIONS, CUSTOM_BOX_METRICS } from '@area-mockups/core'
+import { CUSTOM_BOX_FRAMING, CUSTOM_BOX_REGIONS, CUSTOM_BOX_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { CustomBox, customBoxSlots, type CustomBoxProps } from './objects/custom-box/custom-box'
 

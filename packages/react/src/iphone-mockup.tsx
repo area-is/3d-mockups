@@ -1,4 +1,4 @@
-import { IPHONE_FRAMING, SCREEN_REGIONS, IPHONE_METRICS } from '@area-mockups/core'
+import { IPHONE_FRAMING, SCREEN_REGIONS, IPHONE_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IPhone, iPhoneSlots, type IPhoneProps } from './devices/iphone/iphone'
 

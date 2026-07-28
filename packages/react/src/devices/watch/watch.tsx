@@ -23,7 +23,7 @@ import {
   watchStrapLengths,
   WATCH_OPEN_START_Y,
   type StrapPath,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'

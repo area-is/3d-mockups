@@ -8,7 +8,7 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <>
           <Logo size={26} style={{ flexShrink: 0 }} />
-          area-mockups
+          area-3d-mockups
         </>
       ),
     },

@@ -1,4 +1,4 @@
-import { BUS_SHELTER_FRAMING, BUS_SHELTER_REGIONS, BUS_SHELTER_METRICS } from '@area-mockups/core'
+import { BUS_SHELTER_FRAMING, BUS_SHELTER_REGIONS, BUS_SHELTER_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { BusShelter, busShelterSlots, type BusShelterProps } from './objects/bus-shelter/bus-shelter'
 

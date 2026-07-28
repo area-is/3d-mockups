@@ -1,7 +1,7 @@
 import type { SVGProps } from 'react'
 
 /**
- * The area-mockups brand mark — the dual-slant "A" from
+ * The area-3d-mockups brand mark — the dual-slant "A" from
  * `assets/area-a-dual-slant-green.svg`, inlined rather than loaded from
  * `public/` so it paints with the first HTML byte (the site header is sticky,
  * so a late logo is a visible pop) and so its size follows whatever slot it
@@ -17,7 +17,7 @@ import type { SVGProps } from 'react'
  * scale with the viewBox, so it thins out at the sizes this site renders
  * the mark at.
  *
- * Decorative by default: every placement sits next to the "area-mockups"
+ * Decorative by default: every placement sits next to the "area-3d-mockups"
  * wordmark, so announcing it again would just double up for screen readers.
  * Pass `aria-hidden={false}` with a label if it is ever used on its own.
  *

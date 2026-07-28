@@ -3,9 +3,9 @@ import Link from 'next/link'
 import { HeroPhone } from './hero-phone-client'
 
 export const metadata: Metadata = {
-  title: 'Stride — hero phone example | area-mockups',
+  title: 'Stride — hero phone example | area-3d-mockups',
   description:
-    'An isolated example page: a huge, absolutely positioned 3D phone showcasing an app, built with area-mockups.',
+    'An isolated example page: a huge, absolutely positioned 3D phone showcasing an app, built with area-3d-mockups.',
 }
 
 /**
@@ -25,7 +25,7 @@ export default function HeroPhoneExamplePage() {
           Stride
         </span>
         <Link className="xh-badge" href="/">
-          example · built with area-mockups
+          example · built with area-3d-mockups
         </Link>
       </header>
 
@@ -45,7 +45,7 @@ export default function HeroPhoneExamplePage() {
             Get the app
           </button>
           <Link className="xh-link" href="/docs">
-            Read the area-mockups docs →
+            Read the area-3d-mockups docs →
           </Link>
         </div>
         <p className="xh-hint">

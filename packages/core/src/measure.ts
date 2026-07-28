@@ -146,7 +146,7 @@ export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P
 
   const primary = list[0]
   if (!primary) {
-    throw new Error(`[area-mockups] describeMockup: "${String(kind)}" resolved no regions.`)
+    throw new Error(`[area-3d-mockups] describeMockup: "${String(kind)}" resolved no regions.`)
   }
   return { kind, mmPerUnit, primary, regions: byName, list }
 }

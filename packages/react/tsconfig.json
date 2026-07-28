@@ -5,7 +5,7 @@
     // Resolve the core against its TypeScript source so typechecking and the
     // tsup dts build work without building the core workspace first.
     "paths": {
-      "@area-mockups/core": ["../core/src/index.ts"]
+      "@area-3d-mockups/core": ["../core/src/index.ts"]
     }
   },
   "include": ["src"]

@@ -1,6 +1,6 @@
-# @area-mockups/core
+# @area-3d-mockups/core
 
-The framework-agnostic heart of [area-mockups](https://github.com/subwaymatch/area-mockups):
+The framework-agnostic heart of [area-3d-mockups](https://github.com/subwaymatch/area-mockups):
 device and object specs, geometry math, and the live-screen & stage behaviors shared by
 every framework binding. Depends on [three.js](https://threejs.org) only — never on React,
 Svelte or Vue.
@@ -9,7 +9,7 @@ Most users should install a framework binding instead:
 
 | Framework | Package |
 | --- | --- |
-| React | [`area-mockups`](../react) |
+| React | [`area-3d-mockups`](../react) |
 | Svelte | planned — see [ARCHITECTURE.md](../../ARCHITECTURE.md) |
 | Vue | planned — see [ARCHITECTURE.md](../../ARCHITECTURE.md) |
 
@@ -27,8 +27,8 @@ Most users should install a framework binding instead:
 
 ## How bindings consume it
 
-The React binding (`area-mockups`) bundles this package into its published `dist`, so
-`@area-mockups/core` currently does not need to be installed or published separately.
+The React binding (`area-3d-mockups`) bundles this package into its published `dist`, so
+`@area-3d-mockups/core` currently does not need to be installed or published separately.
 Future bindings do the same until the core graduates to a standalone npm release.
 
 See [ARCHITECTURE.md](../../ARCHITECTURE.md) for the full binding contract.

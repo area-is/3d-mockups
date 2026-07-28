@@ -1,4 +1,4 @@
-# area-mockups
+# area-3d-mockups
 
 GPU-accelerated **3D device mockups for React**. Put any content on the screen of a 3D
 device — real DOM, projected onto WebGL glass, so it stays live: text is vector crisp at
@@ -31,7 +31,7 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
 ## Install
 
 ```bash
-npm install area-mockups three @react-three/fiber @react-three/drei
+npm install area-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
 React 18+ (19 recommended). `three`, `@react-three/fiber` and `@react-three/drei` are peer
@@ -42,7 +42,7 @@ dependencies.
 ```tsx
 'use client'
 
-import { GalaxyMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-3d-mockups'
 
 export function Hero() {
   return (
@@ -156,7 +156,7 @@ body, background, or screen — rotates the model.
 
 That is deliberate, and it is what buys the mockup its looks. A screen is real
 DOM composited into a WebGL scene, and where that DOM sits in the stacking
-order decides how hardware can hide it. area-mockups always stacks it *under*
+order decides how hardware can hide it. area-3d-mockups always stacks it *under*
 the canvas and masks it with the depth buffer, so anything in front of the
 screen covers it exactly, pixel for pixel: a laptop's keyboard hides the
 screen's reflection, a proud camera ring stands over a wrap, a bus's mirrors
@@ -226,18 +226,18 @@ button.
 Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPAD_VARIANTS`,
 `APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
 `PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
-available from the `area-mockups/core` subpath — the same data will drive the planned
+available from the `area-3d-mockups/core` subpath — the same data will drive the planned
 2D (CSS/SVG) renderers.
 
 ## Architecture
 
-`area-mockups` is the **React binding** of a framework-agnostic core. All device/object
+`area-3d-mockups` is the **React binding** of a framework-agnostic core. All device/object
 specs, region registries, stage framing, geometry math and shared screen/stage behaviors
 live in
-[`@area-mockups/core`](https://github.com/subwaymatch/area-mockups/tree/main/packages/core)
+[`@area-3d-mockups/core`](https://github.com/subwaymatch/area-mockups/tree/main/packages/core)
 (bundled into this package — nothing extra to install). The main entry re-exports a
 curated slice (variants, colorways, size types); the full core surface is available from
-`area-mockups/core`. Svelte and Vue bindings sharing the same core are planned; see
+`area-3d-mockups/core`. Svelte and Vue bindings sharing the same core are planned; see
 [ARCHITECTURE.md](https://github.com/subwaymatch/area-mockups/blob/main/ARCHITECTURE.md).
 
 ## Docs & demos

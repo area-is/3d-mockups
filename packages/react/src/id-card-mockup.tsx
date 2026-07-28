@@ -1,4 +1,4 @@
-import { ID_CARD_FRAMING, ID_CARD_STAGE_OFFSET_Y, ID_CARD_REGIONS, ID_CARD_METRICS } from '@area-mockups/core'
+import { ID_CARD_FRAMING, ID_CARD_STAGE_OFFSET_Y, ID_CARD_REGIONS, ID_CARD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IDCard, idCardSlots, type IDCardProps } from './objects/id-card/id-card'
 

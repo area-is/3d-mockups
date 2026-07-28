@@ -20,7 +20,7 @@ import {
   canvasTouchAction,
   orbitDistanceRange,
   toggleFullscreen,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 
 /**
  * react-three-fiber stamps `touch-action: none` on its event target when it
@@ -113,7 +113,7 @@ export interface MockupCanvasProps {
  * with any device model, e.g. `<MockupCanvas><Phone>…</Phone></MockupCanvas>`.
  *
  * The stage itself — camera pose, orbit feel, light rig, shadow softness —
- * is defined once in `@area-mockups/core` and shared with every binding.
+ * is defined once in `@area-3d-mockups/core` and shared with every binding.
  */
 export function MockupCanvas({
   children,

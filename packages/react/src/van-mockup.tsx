@@ -1,4 +1,4 @@
-import { VAN_FRAMING, VAN_REGIONS, VAN_METRICS } from '@area-mockups/core'
+import { VAN_FRAMING, VAN_REGIONS, VAN_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Van, vanSlots, type VanProps } from './objects/van/van'
 

@@ -1,4 +1,4 @@
-import { LAPTOP_FRAMING, SCREEN_REGIONS, LAPTOP_METRICS } from '@area-mockups/core'
+import { LAPTOP_FRAMING, SCREEN_REGIONS, LAPTOP_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Laptop, laptopSlots, type LaptopProps } from './devices/laptop/laptop'
 

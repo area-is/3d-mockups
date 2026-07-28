@@ -1,6 +1,6 @@
 'use client'
 
-import { GalaxyMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-3d-mockups'
 import { MusicPlayer } from '../screens/music-player'
 
 export default function HeroScene() {

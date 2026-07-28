@@ -9,7 +9,7 @@ import {
   ledPanelStyle,
   LED_TEXT_BACKGROUND,
   LED_TEXT_COLOR,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 
 // The screens only exist client-side (inside the WebGL canvas), but the docs
 // site renders through Next — keep the server pass warning-free.
