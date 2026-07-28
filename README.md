@@ -83,18 +83,36 @@ npm run deploy:docs    # build + deploy from your machine
 run before trusting a deploy, since it executes the app in the Workers runtime rather
 than Node.
 
-CI/CD is `.github/workflows/deploy-docs.yml`: pushes to `main` deploy, pull requests
-upload a preview version and print its URL. Both need two repository secrets,
-`CLOUDFLARE_API_TOKEN` (an API token with the *Edit Cloudflare Workers* template) and
-`CLOUDFLARE_ACCOUNT_ID`. The account ID only names the account; the token is the thing
-that authenticates, and publishing a Worker script is an authenticated write.
+### CI/CD
 
-If you would rather not hold a token in GitHub at all, the alternative is
-[Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/): connect the
-repo from the Cloudflare dashboard and Cloudflare clones, builds and deploys on push,
-generating and holding its own API token. That trades this workflow file for build
-settings in the dashboard, which for a monorepo means pointing the root directory at
-`apps/docs` and setting the build command to run the workspace build first.
+CI/CD is [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/),
+configured in the Cloudflare dashboard rather than in this repo. Cloudflare clones,
+builds and deploys on push, under an API token it generates and holds itself, so there
+are no deploy credentials in GitHub and no workflow file here.
+
+Settings live under **Workers & Pages → area-3d-mockups-docs → Settings → Build**:
+
+| Setting | Value |
+| --- | --- |
+| Root directory | `apps/docs` |
+| Build command | `npm run cf:build` |
+| Deploy command | `npm run cf:deploy` |
+| Non-production branch deploy command | `npm run cf:upload` |
+| Git branch | `main` |
+
+Two things that are easy to get wrong:
+
+- **The Worker's name in the dashboard has to be `area-3d-mockups-docs`**, matching
+  `name` in `apps/docs/wrangler.jsonc`. A mismatch fails the build rather than
+  deploying to the wrong place.
+- **Root directory is `apps/docs`, not the repo root.** That is where the Wrangler
+  config lives, which is what Cloudflare keys off. It works with npm workspaces
+  because `npm ci` walks up to the root lockfile, installs every workspace, and runs
+  the `prepare` hooks that build `packages/react/dist` before the docs build reads it.
+
+`cf:deploy` and `cf:upload` go through `opennextjs-cloudflare` rather than calling
+`wrangler` directly. Today that is equivalent, but it is the seam where cache
+population would happen if `open-next.config.ts` ever gains an incremental cache.
 
 ### Worker size
 
