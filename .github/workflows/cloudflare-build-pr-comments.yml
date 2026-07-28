@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post build-status comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const cr = context.payload.check_run;
@@ -37,9 +37,19 @@ jobs:
             const sha = cr.head_sha;
             const shortSha = sha.slice(0, 7);
             const { owner, repo } = context.repo;
-            const buildUrl = cr.details_url || cr.html_url;
             const commitUrl = `https://github.com/${owner}/${repo}/commit/${sha}`;
             const commitLink = `[\`${shortSha}\`](${commitUrl})`;
+
+            // A markdown link target ends at the first unescaped ')', and every
+            // URL below is copied out of the check run rather than built by us,
+            // so percent-encode the characters that could close the link early.
+            const safeUrl = (url) => String(url).replace(/[()<>\s]/g, encodeURIComponent);
+            const isHttp = (url) => /^https?:\/\//i.test(url || '');
+
+            // Fall back to the check run's own page if Cloudflare ever sends a
+            // details_url we would not want to render as a link.
+            const rawBuildUrl = cr.details_url || cr.html_url;
+            const buildUrl = safeUrl(isHttp(rawBuildUrl) ? rawBuildUrl : cr.html_url);
 
             // A build that is created already-completed (e.g. an instantly skipped
             // build) also fires a 'completed' event, let that one handle it so we
@@ -49,39 +59,72 @@ jobs:
               return;
             }
 
-            // Resolve the open PR(s) for this commit. The payload usually carries
-            // them; fall back to the REST lookup for safety.
-            let prNumbers = (cr.pull_requests || []).map((p) => p.number);
-            if (prNumbers.length === 0) {
+            // Resolve the PRs for this commit from both the payload and the commit
+            // lookup, then keep only the open ones. The payload's `pull_requests`
+            // entries carry no state, so without this check a merged PR keeps
+            // collecting comments for every build of a commit it still contains.
+            const candidates = new Set((cr.pull_requests || []).map((p) => p.number));
+            try {
               const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
                 owner,
                 repo,
                 commit_sha: sha,
               });
-              prNumbers = data.filter((p) => p.state === 'open').map((p) => p.number);
+              for (const p of data) candidates.add(p.number);
+            } catch (e) {
+              core.warning(`Could not list PRs for ${shortSha}: ${e.message}`);
+            }
+
+            const prNumbers = [];
+            for (const number of candidates) {
+              try {
+                const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
+                if (pr.state === 'open') prNumbers.push(number);
+              } catch (e) {
+                core.warning(`Could not read PR #${number}: ${e.message}`);
+              }
             }
             if (prNumbers.length === 0) {
               core.info('No open PR associated with this commit; nothing to comment.');
               return;
             }
 
-            // Pull the preview URLs out of the check-run summary. On success these
-            // should already be present in the event payload; re-fetch as a fallback.
-            const parse = (text) => {
-              const grab = (label) => {
-                const m = (text || '').match(new RegExp(`${label}:\\s*(https?://\\S+)`));
-                return m ? m[1] : null;
-              };
-              return { alias: grab('Preview Alias URL'), preview: grab('Preview URL') };
+            // Pull the preview URLs out of the check-run output. Cloudflare has
+            // shipped more than one spelling for these labels and wraps them in
+            // markdown, so match the label loosely and take the first URL that
+            // follows it on the same line rather than assuming ": <url>".
+            const LABELS = {
+              alias: ['Preview Alias URL', 'Branch Preview URL', 'Alias URL'],
+              preview: ['Commit Preview URL', 'Version Preview URL', 'Preview URL'],
             };
-            let urls = parse(cr.output && cr.output.summary);
-            if (action === 'completed' && cr.conclusion === 'success' && !urls.alias && !urls.preview) {
+            const outputText = (o) => [o && o.title, o && o.summary, o && o.text].filter(Boolean).join('\n');
+            const parse = (text) => {
+              const grab = (labels) => {
+                for (const label of labels) {
+                  const m = (text || '').match(new RegExp(`${label}[^\\n]*?(https?://[^\\s)\\]<>"']+)`, 'i'));
+                  if (m) return m[1];
+                }
+                return null;
+              };
+              return { alias: grab(LABELS.alias), preview: grab(LABELS.preview) };
+            };
+
+            let urls = parse(outputText(cr.output));
+            const succeeded = action === 'completed' && cr.conclusion === 'success';
+            if (succeeded && !urls.alias && !urls.preview) {
               try {
                 const { data } = await github.rest.checks.get({ owner, repo, check_run_id: cr.id });
-                urls = parse(data.output && data.output.summary);
+                urls = parse(outputText(data.output));
               } catch (e) {
                 core.warning(`Could not re-fetch check run output: ${e.message}`);
               }
+            }
+            if (succeeded && !urls.alias && !urls.preview) {
+              core.warning(
+                'Build succeeded but no preview URL was found in the check-run output. ' +
+                'Preview URLs are opt-in per Worker, so check that they are enabled — and ' +
+                'if they are, the labels in the summary have probably changed again.'
+              );
             }
 
             // Compose the comment body for this event.
@@ -95,7 +138,10 @@ jobs:
               if (conclusion === 'success') {
                 const lines = [`✅ **Cloudflare build succeeded** for ${commitLink}`, ''];
                 if (urls.alias) lines.push(`**Pull Request/Branch Preview URL:** ${urls.alias}`);
-                if (urls.preview) lines.push(`Commit Preview URL: ${urls.preview}`);
+                // A summary carrying only the branch alias matches both label sets.
+                if (urls.preview && urls.preview !== urls.alias) {
+                  lines.push(`Commit Preview URL: ${urls.preview}`);
+                }
                 lines.push('', `[Build details ↗](${buildUrl})`);
                 body = lines.join('\n');
               } else if (conclusion === 'skipped' || conclusion === 'neutral') {
@@ -104,13 +150,24 @@ jobs:
                   `[View build ↗](${buildUrl})`;
               } else {
                 // failure, timed_out, cancelled, action_required, stale
+                const label = String(conclusion || 'failed').replace(/_/g, ' ');
                 body =
-                  `❌ **Cloudflare build ${conclusion}** for ${commitLink}\n\n` +
+                  `❌ **Cloudflare build ${label}** for ${commitLink}\n\n` +
                   `[View build logs ↗](${buildUrl})`;
               }
             }
 
+            // One unlucky PR must not swallow the comment owed to the others.
+            let failures = 0;
             for (const issue_number of prNumbers) {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
-              core.info(`Commented on PR #${issue_number} (${action}/${cr.conclusion || cr.status}).`);
+              try {
+                await github.rest.issues.createComment({ owner, repo, issue_number, body });
+                core.info(`Commented on PR #${issue_number} (${action}/${cr.conclusion || cr.status}).`);
+              } catch (e) {
+                failures++;
+                core.error(`Failed to comment on PR #${issue_number}: ${e.message}`);
+              }
+            }
+            if (failures > 0 && failures === prNumbers.length) {
+              core.setFailed('Could not comment on any PR.');
             }
