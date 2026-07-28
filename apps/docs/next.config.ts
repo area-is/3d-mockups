@@ -3,7 +3,7 @@ import { createMDX } from 'fumadocs-mdx/next'
 
 const nextConfig: NextConfig = {
   // Compile the workspace package (and keep HMR working against its dist output).
-  transpilePackages: ['area-mockups'],
+  transpilePackages: ['area-3d-mockups'],
 }
 
 const withMDX = createMDX()

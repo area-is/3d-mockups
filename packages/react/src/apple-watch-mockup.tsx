@@ -1,4 +1,4 @@
-import { WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, APPLE_WATCH_METRICS } from '@area-mockups/core'
+import { WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, APPLE_WATCH_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { AppleWatch, watchSlots, type AppleWatchProps } from './devices/watch/watch'
 

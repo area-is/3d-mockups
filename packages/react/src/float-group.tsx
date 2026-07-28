@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group } from 'three'
-import { floatPose, randomFloatPhase } from '@area-mockups/core'
+import { floatPose, randomFloatPhase } from '@area-3d-mockups/core'
 
 /**
  * Gentle idle float shared by the device mockups. The pose itself is core math

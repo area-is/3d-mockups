@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '@area-mockups/core'
+import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '@area-3d-mockups/core'
 
 /**
  * What the surface your content is rendering into actually resolved to.
@@ -98,7 +98,7 @@ export function useSurface(): SurfaceInfo {
   const surface = React.useContext(SurfaceContext)
   if (!surface) {
     throw new Error(
-      '[area-mockups] useSurface() must be called from content rendered inside a mockup surface ' +
+      '[area-3d-mockups] useSurface() must be called from content rendered inside a mockup surface ' +
         '(a device screen or a print face). Use useSurfaceOptional() if the component also renders outside one.'
     )
   }

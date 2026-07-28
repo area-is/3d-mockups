@@ -1,4 +1,4 @@
-import { WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, GALAXY_WATCH_METRICS } from '@area-mockups/core'
+import { WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, GALAXY_WATCH_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyWatch, watchSlots, type GalaxyWatchProps } from './devices/watch/watch'
 

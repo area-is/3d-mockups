@@ -1,7 +1,7 @@
 {
-  "name": "area-mockups",
+  "name": "area-3d-mockups",
   "version": "0.1.0",
-  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone \u2014 it stays fully live. React binding of @area-mockups/core.",
+  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone \u2014 it stays fully live. React binding of @area-3d-mockups/core.",
   "keywords": [
     "react",
     "threejs",
@@ -63,7 +63,7 @@
     "three": ">=0.160.0"
   },
   "devDependencies": {
-    "@area-mockups/core": "0.1.0",
+    "@area-3d-mockups/core": "0.1.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@types/react": "^19.2.17",

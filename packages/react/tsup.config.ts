@@ -11,13 +11,13 @@ export default defineConfig({
   // Components use hooks and WebGL, so the bundle is a client module for RSC frameworks.
   banner: { js: "'use client';" },
   external: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
-  // Compile @area-mockups/core straight from its source into this bundle: the
-  // published `area-mockups` package stays a single self-contained install, and
+  // Compile @area-3d-mockups/core straight from its source into this bundle: the
+  // published `area-3d-mockups` package stays a single self-contained install, and
   // the build never depends on the core workspace having been built first.
   esbuildOptions(options) {
     options.alias = {
       ...options.alias,
-      '@area-mockups/core': path.resolve(__dirname, '../core/src/index.ts'),
+      '@area-3d-mockups/core': path.resolve(__dirname, '../core/src/index.ts'),
     }
   },
 })

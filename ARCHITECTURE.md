@@ -1,17 +1,17 @@
 # Architecture
 
-area-mockups is structured as a **framework-agnostic core plus thin framework
+area-3d-mockups is structured as a **framework-agnostic core plus thin framework
 bindings**, so the same devices, objects and behaviors can ship for React today and
 Svelte, Vue or plain three.js later — without forking the project per framework.
 
 ```
                     ┌─────────────────────────────┐
-                    │      @area-mockups/core     │   specs · geometry math ·
+                    │      @area-3d-mockups/core     │   specs · geometry math ·
                     │   (depends on three only)   │   screen behaviors · stage
                     └──────────────┬──────────────┘
               ┌────────────────────┼────────────────────┐
       ┌───────┴────────┐   ┌───────┴────────┐   ┌───────┴────────┐
-      │  area-mockups  │   │ @area-mockups/ │   │ @area-mockups/ │
+      │  area-3d-mockups  │   │ @area-3d-mockups/ │   │ @area-3d-mockups/ │
       │     (React,    │   │     svelte     │   │      vue       │
       │  r3f + drei)   │   │(Threlte, later)│   │ (TresJS, later)│
       └────────────────┘   └────────────────┘   └────────────────┘
@@ -21,16 +21,16 @@ Svelte, Vue or plain three.js later — without forking the project per framewor
 
 | Path | npm name | What it is |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | `@area-mockups/core` | Framework-agnostic specs, geometry math, screen & stage behaviors. Depends on `three` only. |
-| [`packages/react`](packages/react) | `area-mockups` | The React binding: react-three-fiber scene components, canvas, drei `<Html>` screen bridge. Bundles the core. |
-| `packages/svelte` | `@area-mockups/svelte` | Planned — Svelte binding on [Threlte](https://threlte.xyz). |
-| `packages/vue` | `@area-mockups/vue` | Planned — Vue binding on [TresJS](https://tresjs.org). |
+| [`packages/core`](packages/core) | `@area-3d-mockups/core` | Framework-agnostic specs, geometry math, screen & stage behaviors. Depends on `three` only. |
+| [`packages/react`](packages/react) | `area-3d-mockups` | The React binding: react-three-fiber scene components, canvas, drei `<Html>` screen bridge. Bundles the core. |
+| `packages/svelte` | `@area-3d-mockups/svelte` | Planned — Svelte binding on [Threlte](https://threlte.xyz). |
+| `packages/vue` | `@area-3d-mockups/vue` | Planned — Vue binding on [TresJS](https://tresjs.org). |
 | [`apps/docs`](apps/docs) | — | Next.js docs & live demos site. |
 
 ## The layering rule
 
 > If it can be written against **three.js and the DOM** without importing a UI
-> framework, it lives in `@area-mockups/core`. Only the declarative scene graph and
+> framework, it lives in `@area-3d-mockups/core`. Only the declarative scene graph and
 > the framework's HTML-portal wiring live in a binding.
 
 What that puts in the core today:
@@ -92,7 +92,7 @@ What stays in a binding (React's versions in parentheses):
 
 ## The binding contract
 
-A new binding (say `@area-mockups/svelte`) implements four pieces, in order:
+A new binding (say `@area-3d-mockups/svelte`) implements four pieces, in order:
 
 1. **Stage** — a `MockupCanvas` equivalent: create the renderer's canvas with
    `DEFAULT_CAMERA_POSITION`/`DEFAULT_CAMERA_FOV`, apply `canvasTouchAction`, add
@@ -142,21 +142,21 @@ React binding **bundles it from source** into its own `dist` (see the esbuild `a
 in `packages/react/tsup.config.ts` and the `paths` mapping in its `tsconfig.json`).
 That keeps three properties:
 
-- `npm install area-mockups` stays a single self-contained install;
+- `npm install area-3d-mockups` stays a single self-contained install;
 - workspace builds never depend on build order (`prepare` scripts can run in any order);
 - the core is stateless data + pure helpers, so two bindings each bundling their own
   copy can safely coexist on one page.
 
 New bindings should start the same way (alias the core source, bundle it). When
-several bindings are published, `@area-mockups/core` graduates to a standalone npm
+several bindings are published, `@area-3d-mockups/core` graduates to a standalone npm
 release and the bindings switch their alias for a real dependency — a build-config
 change only, no API change.
 
 ## Adding a binding, step by step
 
-1. `mkdir packages/svelte` with a `package.json` named `@area-mockups/svelte`
+1. `mkdir packages/svelte` with a `package.json` named `@area-3d-mockups/svelte`
    (workspaces pick `packages/*` up automatically), a tsconfig extending
-   `tsconfig.base.json` with the `@area-mockups/core` → `../core/src/index.ts` paths
+   `tsconfig.base.json` with the `@area-3d-mockups/core` → `../core/src/index.ts` paths
    mapping, and a build aliasing the core like `packages/react/tsup.config.ts` does.
 2. Implement the stage and screen pieces of the binding contract above.
 3. Port `Galaxy` first — it exercises specs, screen, overlays and orientation; verify
@@ -167,7 +167,7 @@ change only, no API change.
 
 ## Adding a device or object
 
-Five pieces, all of them in `@area-mockups/core` except the last two. The first
+Five pieces, all of them in `@area-3d-mockups/core` except the last two. The first
 four are what make an object measurable, portable to another binding, and
 documentable without anyone re-deriving numbers by hand — skip one and the
 object silently drops out of `mockupInfo`, the generated catalog and the docs

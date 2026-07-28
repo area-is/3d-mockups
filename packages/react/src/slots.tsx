@@ -1,10 +1,10 @@
 import * as React from 'react'
-import type { RegionSpec } from '@area-mockups/core'
+import type { RegionSpec } from '@area-3d-mockups/core'
 
 /**
  * Compound-slot machinery: how a mockup's regions become child elements.
  *
- * Region names come from the object's spec in `@area-mockups/core`
+ * Region names come from the object's spec in `@area-3d-mockups/core`
  * (`A_FRAME_SIGN_REGIONS` → `<AFrameSign.Front>` / `<AFrameSign.Back>`). Slot
  * components render nothing themselves — the parent mockup collects them from
  * its children with `collectSlots` and feeds each region's content and
@@ -21,7 +21,7 @@ import type { RegionSpec } from '@area-mockups/core'
 
 // Symbol.for — not a local symbol — so slot detection survives two copies of
 // the library on one page (each binding bundles its own core by design).
-const REGION = Symbol.for('area-mockups.region')
+const REGION = Symbol.for('area-3d-mockups.region')
 
 /**
  * Settings for a live surface, spelled the same wherever you set them: on a
@@ -70,7 +70,7 @@ export type Slot<P extends SlotProps = SlotProps> = React.FC<P>
 function warnDev(message: string): void {
   if (process.env.NODE_ENV !== 'production') {
     // eslint-disable-next-line no-console
-    console.warn(`[area-mockups] ${message}`)
+    console.warn(`[area-3d-mockups] ${message}`)
   }
 }
 

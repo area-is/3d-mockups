@@ -1,9 +1,9 @@
-// @area-mockups/core — the framework-agnostic heart of area-mockups.
+// @area-3d-mockups/core — the framework-agnostic heart of area-3d-mockups.
 //
 // Everything here depends on `three` at most (never on React, Svelte or Vue):
 // device/object specs, geometry math, the live-screen behaviors and the shared
-// stage configuration. Framework bindings (`area-mockups` for React today;
-// `@area-mockups/svelte`, `@area-mockups/vue` later) are thin layers that feed
+// stage configuration. Framework bindings (`area-3d-mockups` for React today;
+// `@area-3d-mockups/svelte`, `@area-3d-mockups/vue` later) are thin layers that feed
 // this data into their renderer. See ARCHITECTURE.md at the repo root.
 
 export type { Orientation } from './orientation'

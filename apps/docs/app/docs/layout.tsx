@@ -10,10 +10,10 @@ import '../screens.css'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | area-mockups',
-    default: 'Documentation | area-mockups',
+    template: '%s | area-3d-mockups',
+    default: 'Documentation | area-3d-mockups',
   },
-  description: 'Installation, usage guides and API reference for area-mockups.',
+  description: 'Installation, usage guides and API reference for area-3d-mockups.',
 }
 
 // Root layout for the documentation. It is deliberately separate from the

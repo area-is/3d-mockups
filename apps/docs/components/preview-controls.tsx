@@ -47,7 +47,7 @@ import {
   APPLE_WATCH_COLORWAYS,
   GALAXY_WATCH_COLORWAYS,
   type Colorway,
-} from 'area-mockups'
+} from 'area-3d-mockups'
 import { LazyScene } from './lazy-scene'
 
 /**

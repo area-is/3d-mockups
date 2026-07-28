@@ -22,7 +22,7 @@ import {
   GalaxyTabMockup,
   VanMockup,
   FlipMockup,
-} from 'area-mockups'
+} from 'area-3d-mockups'
 import { LiveCounter } from '../screens/live-counter'
 import { LockScreen } from '../screens/lock-screen'
 import { DesktopScreen } from '../screens/desktop-screen'
@@ -40,7 +40,7 @@ import {
   StorefrontMockup,
   TVSetMockup,
   VinylRecordMockup,
-} from 'area-mockups'
+} from 'area-3d-mockups'
 import {
   ArrivalsBoardArt,
   BadgeBackArt,

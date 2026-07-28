@@ -1,4 +1,4 @@
-import { TABLET_FRAMING, SCREEN_REGIONS, IPAD_METRICS } from '@area-mockups/core'
+import { TABLET_FRAMING, SCREEN_REGIONS, IPAD_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { IPad, tabletSlots, type IPadProps } from './devices/tablet/tablet'
 

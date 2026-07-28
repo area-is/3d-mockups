@@ -1,4 +1,4 @@
-import { STOREFRONT_FRAMING, STOREFRONT_REGIONS, STOREFRONT_METRICS } from '@area-mockups/core'
+import { STOREFRONT_FRAMING, STOREFRONT_REGIONS, STOREFRONT_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Storefront, storefrontSlots, type StorefrontProps } from './objects/storefront/storefront'
 

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { DemoGallery } from '@/components/demo-gallery'
 
 export const metadata: Metadata = {
-  title: 'Demos | area-mockups',
-  description: 'Live demos of area-mockups 3D device mockups.',
+  title: 'Demos | area-3d-mockups',
+  description: 'Live demos of area-3d-mockups 3D device mockups.',
 }
 
 export default function DemosPage() {

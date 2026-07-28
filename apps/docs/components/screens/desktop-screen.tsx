@@ -9,7 +9,7 @@ export function DesktopScreen() {
   return (
     <div className="mac">
       <div className="mac-menubar">
-        <span className="mac-menubar-brand"> area-mockups</span>
+        <span className="mac-menubar-brand"> area-3d-mockups</span>
         <span>9:41 AM</span>
       </div>
 

@@ -11,7 +11,7 @@ import {
   screenDistanceFactor,
   screenSurfaceStyle,
   type ScreenRadius,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 import { SurfaceProvider } from './use-surface'
 
 export type { ScreenRadius }
@@ -165,7 +165,7 @@ export interface DeviceScreenProps {
  * `<video>` plays, an `<iframe>` loads.
  *
  * The behaviors layered on top — compositor-layer promotion, backface culling —
- * live in `@area-mockups/core` (see `SCREEN_LAYER_CSS` and
+ * live in `@area-3d-mockups/core` (see `SCREEN_LAYER_CSS` and
  * `createBackfaceCuller` there); this component is the thin React wiring.
  */
 export function DeviceScreen({

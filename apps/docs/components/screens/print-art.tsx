@@ -342,7 +342,7 @@ export function BillboardAdArt() {
           whiteSpace: 'nowrap',
         }}
       >
-        area-mockups
+        area-3d-mockups
       </div>
     </div>
   )

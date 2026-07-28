@@ -9,7 +9,7 @@ import {
   SCREEN_REGIONS,
   findColorway,
   roundedRectShape,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'

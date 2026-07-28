@@ -1,4 +1,4 @@
-import { PRODUCT_BOX_FRAMING, PRODUCT_BOX_REGIONS, PRODUCT_BOX_METRICS } from '@area-mockups/core'
+import { PRODUCT_BOX_FRAMING, PRODUCT_BOX_REGIONS, PRODUCT_BOX_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { ProductBox, productBoxSlots, type ProductBoxProps } from './objects/product-box/product-box'
 

@@ -12,7 +12,7 @@ The framework-agnostic answer. Pure data in, pure data out — no renderer, no
 DOM, no React — so it works in a component, a build script or on a server.
 
 ```ts
-import { mockupInfo } from 'area-mockups'
+import { mockupInfo } from 'area-3d-mockups'
 
 const info = mockupInfo('galaxy', { variant: 's26', orientation: 'landscape' })
 
@@ -77,7 +77,7 @@ The same answers, hanging off the component you already imported — usually the
 one you want, because it's right there in autocomplete next to the slots.
 
 ```tsx
-import { GalaxyMockup, BookMockup } from 'area-mockups'
+import { GalaxyMockup, BookMockup } from 'area-3d-mockups'
 
 GalaxyMockup.info({ variant: 's26ultra' }).primary.px  // { width: 384, height: 833 }
 BookMockup.regions  // [{ name: 'cover', label: 'Front cover' }, …]
@@ -105,14 +105,14 @@ re-derived, they're correct by construction. `useSurface()` throws outside a
 mockup surface; use `useSurfaceOptional()` for a component that renders both
 inside a mockup and on a normal page.
 
-## `area-mockups/catalog.json`
+## `area-3d-mockups/catalog.json`
 
 Every kind, variant and orientation, pre-measured at build time — the whole
 registry with `mockupInfo` already applied. Useful for docs tables, design-tool
 plugins and anything that isn't JavaScript.
 
 ```ts
-import catalog from 'area-mockups/catalog.json'
+import catalog from 'area-3d-mockups/catalog.json'
 
 catalog.entries.find((e) => e.kind === 'galaxy' && e.props.variant === 's26')
 ```

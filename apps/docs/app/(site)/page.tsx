@@ -4,7 +4,7 @@ import { HeroMockup } from '@/components/hero-mockup'
 
 const usageSnippet = `'use client'
 
-import { GalaxyMockup } from 'area-mockups'
+import { GalaxyMockup } from 'area-3d-mockups'
 
 export function Hero() {
   return (
@@ -25,13 +25,13 @@ export default function HomePage() {
             Your app, on a phone, <span className="grad-text">in 3D.</span>
           </h1>
           <p className="lede">
-            <code>area-mockups</code> renders GPU-accelerated 3D devices (Galaxy and iPhone
+            <code>area-3d-mockups</code> renders GPU-accelerated 3D devices (Galaxy and iPhone
             families, iPad Pro and Galaxy Tab tablets, a MacBook Air, an Apple Watch and a
             Studio Display-style monitor) and maps <em>real, live DOM</em> onto their
             screens. Text stays vector crisp, videos play, iframes load. No 3D asset files,
             no screenshots.
           </p>
-          <p className="install-line">$ npm install area-mockups</p>
+          <p className="install-line">$ npm install area-3d-mockups</p>
           <div className="hero-actions">
             <Link className="btn btn-primary" href="/docs">
               Get started
@@ -99,7 +99,7 @@ export default function HomePage() {
         </div>
         <div className="quickstart-code">
           <CodeBlock title="terminal">
-            npm install area-mockups three @react-three/fiber @react-three/drei
+            npm install area-3d-mockups three @react-three/fiber @react-three/drei
           </CodeBlock>
           <CodeBlock title="hero.tsx">{usageSnippet}</CodeBlock>
         </div>

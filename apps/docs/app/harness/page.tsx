@@ -42,7 +42,7 @@ import {
   VanMockup,
   AppleWatch,
   GalaxyWatch,
-} from 'area-mockups'
+} from 'area-3d-mockups'
 
 /**
  * Mockups posed straight from their own framing — no per-device wiring, so

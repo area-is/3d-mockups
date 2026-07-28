@@ -1,19 +1,19 @@
 {
-  "name": "area-mockups-monorepo",
+  "name": "area-3d-mockups-monorepo",
   "private": true,
-  "description": "Monorepo for area-mockups \u2014 interactive, GPU-accelerated 3D device mockups. Framework-agnostic core + per-framework bindings (React today; Svelte/Vue planned).",
+  "description": "Monorepo for area-3d-mockups \u2014 interactive, GPU-accelerated 3D device mockups. Framework-agnostic core + per-framework bindings (React today; Svelte/Vue planned).",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @area-mockups/core && npm run build -w area-mockups && npm run build -w docs",
-    "build:core": "npm run build -w @area-mockups/core",
-    "build:pkg": "npm run build -w area-mockups",
+    "build": "npm run build -w @area-3d-mockups/core && npm run build -w area-3d-mockups && npm run build -w docs",
+    "build:core": "npm run build -w @area-3d-mockups/core",
+    "build:pkg": "npm run build -w area-3d-mockups",
     "build:docs": "npm run build -w docs",
-    "dev": "concurrently -n pkg,docs -c cyan,magenta \"npm run dev -w area-mockups\" \"npm run dev -w docs\"",
+    "dev": "concurrently -n pkg,docs -c cyan,magenta \"npm run dev -w area-3d-mockups\" \"npm run dev -w docs\"",
     "start:docs": "npm run start -w docs",
-    "typecheck": "npm run typecheck -w @area-mockups/core && npm run typecheck -w area-mockups && npm run typecheck -w docs",
+    "typecheck": "npm run typecheck -w @area-3d-mockups/core && npm run typecheck -w area-3d-mockups && npm run typecheck -w docs",
     "visual": "node apps/docs/scripts/visual-check.mjs",
     "devices:check": "node packages/react/scripts/sync-device-table.mjs",
     "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write"

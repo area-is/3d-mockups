@@ -16,7 +16,7 @@ export type ScreenRadius = number | [number, number, number, number]
  * Class applied to the HTML bridge's portal root so it can be promoted to its
  * own compositor layer (see `SCREEN_LAYER_CSS`).
  */
-export const SCREEN_LAYER_CLASS = 'area-mockups-screen-layer'
+export const SCREEN_LAYER_CLASS = 'area-3d-mockups-screen-layer'
 
 /**
  * Stylesheet every binding must inject alongside the screen.

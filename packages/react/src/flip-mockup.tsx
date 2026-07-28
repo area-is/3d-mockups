@@ -1,4 +1,4 @@
-import { FLIP_FRAMING, SCREEN_REGIONS, FLIP_METRICS } from '@area-mockups/core'
+import { FLIP_FRAMING, SCREEN_REGIONS, FLIP_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Flip, flipSlots, type FlipProps } from './devices/flip/flip'
 

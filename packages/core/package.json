@@ -1,7 +1,7 @@
 {
-  "name": "@area-mockups/core",
+  "name": "@area-3d-mockups/core",
   "version": "0.1.0",
-  "description": "Framework-agnostic core for area-mockups: device/object specs, geometry math, and the screen & stage behaviors shared by every framework binding.",
+  "description": "Framework-agnostic core for area-3d-mockups: device/object specs, geometry math, and the screen & stage behaviors shared by every framework binding.",
   "keywords": [
     "threejs",
     "3d",

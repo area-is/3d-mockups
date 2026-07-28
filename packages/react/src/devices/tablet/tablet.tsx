@@ -15,7 +15,7 @@ import {
   type IPadVariant,
   type TabletVariant,
   roundedRectShape,
-} from '@area-mockups/core'
+} from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createLogoGeometry } from '../logos'
 import { createWordmarkTexture } from '../wordmark'

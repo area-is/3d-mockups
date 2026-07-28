@@ -1,4 +1,4 @@
-import { BOOK_FRAMING, BOOK_REGIONS, BOOK_METRICS } from '@area-mockups/core'
+import { BOOK_FRAMING, BOOK_REGIONS, BOOK_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Book, bookSlots, type BookProps } from './objects/book/book'
 

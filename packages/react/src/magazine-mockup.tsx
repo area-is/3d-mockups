@@ -1,4 +1,4 @@
-import { MAGAZINE_FRAMING, MAGAZINE_REGIONS, MAGAZINE_METRICS } from '@area-mockups/core'
+import { MAGAZINE_FRAMING, MAGAZINE_REGIONS, MAGAZINE_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Magazine, magazineSlots, type MagazineProps } from './objects/magazine/magazine'
 
