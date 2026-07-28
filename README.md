@@ -88,12 +88,31 @@ upload a preview version and print its URL. Both need two repository secrets,
 `CLOUDFLARE_API_TOKEN` (an API token with the *Edit Cloudflare Workers* template) and
 `CLOUDFLARE_ACCOUNT_ID`.
 
-One sizing note: the Worker bundle is about 3.9 MB gzipped, which is over the
+### Worker size
+
+The bundle is about 3.9 MB gzipped, over the
 [3 MB Workers Free ceiling](https://developers.cloudflare.com/workers/platform/limits/#worker-size)
-and well under the 10 MB paid one, so deploys need a Workers Paid account. Shiki's
-bundled grammars are most of that weight, and the docs only ever fence `tsx`, `ts` and
-`bash`, so restricting `rehypeCodeOptions.langs` in `source.config.ts` is the lever if
-the free plan matters more than fencing arbitrary languages.
+and well under the 10 MB paid one, so deploys need a Workers Paid account.
+
+Shiki is the weight: around 400 TextMate grammars end up inlined in the Worker. They
+get there because Next externalises `shiki`, so the whole package is traced into the
+server bundle and OpenNext's esbuild pass inlines its full-bundle import map. Nothing
+ever calls it at runtime, though. Every docs route is prerendered, `/api/search` is
+Orama, and `components/code-block.tsx` is a plain `<pre><code>`, so the highlighted
+HTML is baked in at build time and the grammars are dead code.
+
+Two things that look like fixes but are not, both measured at 4035 KiB gzipped
+against a 4036 KiB baseline:
+
+- `rehypeCodeOptions.langs` in `source.config.ts`. It controls which grammars the
+  highlighter *loads*, not which ones are reachable from the module graph.
+- `outputFileTracingExcludes` in `next.config.ts`. OpenNext traces `@shikijs` in
+  regardless.
+
+What would work is shiki's [fine-grained bundle](https://shiki.style/guide/bundles):
+`fumadocs-core/mdx-plugins/rehype-code.core` accepts a `ShikiFactory`, so a highlighter
+built from `shiki/core` plus explicit `@shikijs/langs/{tsx,ts,bash}` imports never
+references the full-bundle map that pulls the other ~397 in.
 
 ## License
 
