@@ -1,9 +1,9 @@
 /**
- * Brochure object dimensions — a standing tri-fold.
+ * Brochure object dimensions - a standing tri-fold.
  *
  * Proportions follow a US letter Z-fold: an 8.5" x 11" sheet folded into
  * three equal 93 x 216 mm panels (equal panels are correct for a zig-zag
- * Z-fold — only roll folds narrow the tuck-in panel), normalized to ~60 mm
+ * Z-fold - only roll folds narrow the tuck-in panel), normalized to ~60 mm
  * per world unit so the standing brochure is 3.6 units tall. The stock
  * thickness is exaggerated a little (~0.45 mm vs ~0.2 mm for 100 lb cover)
  * so the paper edge still reads at mockup scale.
@@ -58,7 +58,7 @@ export const BROCHURE: BrochureSpec = brochureSpec()
  *
  * Six fixed names rather than one repeating slot: the fold is always three
  * panels a side, and positional slots made panel identity depend on document
- * order — so a conditionally rendered panel silently shifted every panel after
+ * order - so a conditionally rendered panel silently shifted every panel after
  * it onto the wrong surface.
  */
 export const BROCHURE_REGIONS = [
@@ -71,14 +71,14 @@ export const BROCHURE_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing brochure grounds on its bottom paper edge. */
-/** Millimetres per world unit — the brochure scale (`BROCHURE_MM` inverted). */
+/** Millimetres per world unit - the brochure scale (`BROCHURE_MM` inverted). */
 export const BROCHURE_MM_PER_UNIT = 1 / BROCHURE_MM
 
-/** Panels per side of a letter-fold brochure — three, printed on both sides. */
+/** Panels per side of a letter-fold brochure - three, printed on both sides. */
 export const BROCHURE_PANELS_PER_SIDE = 3
 
 /**
- * Live geometry of one panel. Every panel — front or back, left to right — is
+ * Live geometry of one panel. Every panel - front or back, left to right - is
  * the same rect, so all six regions resolve to the same measurements; they are
  * separate entries because they are separately addressable, not because they
  * differ in size.

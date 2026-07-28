@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 /**
- * "Stride" — the fictional step-tracking app showcased on the
+ * "Stride" - the fictional step-tracking app showcased on the
  * /examples/hero-phone page. Fully live on the device screen: log a walk and
  * the ring, the stat tiles and today's bar all update; tap a day in the week
  * chart to read it out; the tab bar switches its active pill.

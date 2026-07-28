@@ -4,8 +4,8 @@ description: A wrap-ready cargo van with a live livery panel on the cargo side.
 ---
 
 `<Van>` and `<VanMockup>` render a generic Euro-style cargo van (a
-Transit/Sprinter-class silhouette, no brand): the shell is the side profile —
-clamshell hood, cowl break, raked windshield, high roof, wheel-arch cutouts —
+Transit/Sprinter-class silhouette, no brand): the shell is the side profile -
+clamshell hood, cowl break, raked windshield, high roof, wheel-arch cutouts -
 extruded across the width, with six-lug steel wheels, A-pillar-raked door
 glass, parked windshield wipers, cab-door shut lines, a sliding-door entry
 step, pressed roof ribs, a stub antenna, a wide slatted grille between
@@ -34,7 +34,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- | --- | --- |
 | `color` | `string` | `'#eef0f2'` | Body paint. Wrap fleets are usually white. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your wrap content. |
-| `coverage` | `'panel' \| 'full' \| 'perforated'` | `'panel'` | `'full'` covers the entire side elevations AND the whole rear face — door edge to door edge — carving out the wheel arches and door glass, while the proud hardware (mirrors, handles, door track, cab-door shut lines) draws on top of the livery via per-pixel depth compositing, like hardware remounted over the vinyl. On the rear, every taillight lamp, the third brake light and the hinge knuckles are carved to a slim install margin. Both coverages keep the barn-door shut line visible through the wrap. `'perforated'` is the same full wrap running OVER the cab door glass as perforated window film. |
+| `coverage` | `'panel' \| 'full' \| 'perforated'` | `'panel'` | `'full'` covers the entire side elevations AND the whole rear face - door edge to door edge - carving out the wheel arches and door glass, while the proud hardware (mirrors, handles, door track, cab-door shut lines) draws on top of the livery via per-pixel depth compositing, like hardware remounted over the vinyl. On the rear, every taillight lamp, the third brake light and the hinge knuckles are carved to a slim install margin. Both coverages keep the barn-door shut line visible through the wrap. `'perforated'` is the same full wrap running OVER the cab door glass as perforated window film. |
 | `resolution` | `number` | `900` panel · `1360` full | Virtual side-wrap width in CSS px; the rear panel shares its dpi. |
 
 ## Regions
@@ -44,10 +44,10 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<VanMockup.CurbSide>` | Curb-side (+Z) wrap panel (bare children). |
 | `<VanMockup.StreetSide>` | Street-side (−Z) wrap panel. |
 | `<VanMockup.Rear>` | Rear doors: the between-the-taillights panel, or the whole barn-door face with `coverage="full"`. |
-| `<VanMockup.LicensePlate>` | Both plates — US standard 6 × 12 in, nose and tail. One slot, since a vehicle's plates carry the same registration. A string renders the built-in plate face; a node renders as-is. |
+| `<VanMockup.LicensePlate>` | Both plates - US standard 6 × 12 in, nose and tail. One slot, since a vehicle's plates carry the same registration. A string renders the built-in plate face; a node renders as-is. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<Van>`.
 
 With the default `coverage="panel"` all three wrap panels sit clear of the
@@ -57,7 +57,7 @@ panels stay live at any angle.
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-van" />
@@ -66,12 +66,12 @@ what stays 3D hardware.
 
 ### Full-coverage wrap with carve-outs
 
-`coverage="full"` stretches the live panels across the entire side elevation
-— rockers to roofline, tail to nose — and across the whole barn-door rear
+`coverage="full"` stretches the live panels across the entire side
+elevation (rockers to roofline, tail to nose) and across the whole barn-door rear
 face. A CSS `clip-path` (computed from the same dimension spec the geometry
 is built from) carves the body outline, wheel arches, door glass and rear
 taillight clusters out of the live panels, and the sides composite per-pixel
-against a depth occluder shaped like that clip — so the wheels and glass
+against a depth occluder shaped like that clip - so the wheels and glass
 show through the carves while the proud hardware (mirrors, door handles,
 the sliding-door track, the cab-door shut lines) draws over your livery,
 the way remounted hardware sits on real vinyl.
@@ -103,7 +103,7 @@ clusters, street-side wrap beyond.
 
 ### Painted body + full-color wrap
 
-Match `color` and `surfaceBackground` for a fully-wrapped look — the paint
+Match `color` and `surfaceBackground` for a fully-wrapped look - the paint
 carries across the cab, nose and roof that the panel doesn't cover.
 
 <ObjectDemo demo="van-paint" />

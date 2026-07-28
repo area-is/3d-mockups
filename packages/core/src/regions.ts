@@ -1,13 +1,11 @@
 /**
- * Region registry + framing — the cross-binding contract for mockup surfaces
+ * Region registry + framing: the cross-binding contract for mockup surfaces
  * and stage framing.
  *
  * Every device/object spec declares its live (DOM-backed) regions here as pure
  * data. Region names are the API contract shared by every binding: the React
  * binding derives its compound slot components from them (`front` →
- * `<AFrameSign.Front>`), and future bindings map the same names onto their
- * framework's native slots (Svelte `slot="front"`, Vue `#front`) and onto the
- * planned 2D renderers.
+ * `<AFrameSign.Front>`), and the planned 2D renderers address the same names.
  *
  * Framing is the per-object stage math that used to live in each React
  * wrapper: camera pose, float intensity and the ground line the contact
@@ -18,7 +16,7 @@
 /** One live (printable / DOM-backed) region of a device or object. */
 export interface RegionSpec {
   /**
-   * Region identifier in camelCase — the slot name in every binding.
+   * Region identifier in camelCase - the slot name in every binding.
    * The FIRST region in a spec's list is the primary one: the region that
    * bare (non-slot) children render into.
    */
@@ -42,8 +40,8 @@ export type RegionRadius = number | readonly [number, number, number, number]
  * The measured geometry of one live region: the rect content is mapped onto,
  * in world units, plus the CSS pixel width its virtual surface defaults to.
  *
- * These are exactly the numbers a binding feeds its screen bridge — the React
- * binding's `<DeviceScreen width height radius resolution>` — so declaring
+ * These are exactly the numbers a binding feeds its screen bridge - the React
+ * binding's `<DeviceScreen width height radius resolution>` - so declaring
  * them next to the dimensions makes the same values available to a developer
  * (via `mockupInfo`) without rendering anything.
  */
@@ -59,12 +57,12 @@ export interface RegionMetrics {
 }
 
 /**
- * Per-mockup measurements, declared next to the object's dimensions — the
+ * Per-mockup measurements, declared next to the object's dimensions - the
  * metrics sibling of `MockupFraming`.
  *
  * `P` is the (plain-data) subset of the object's props the geometry depends
  * on: variant, orientation, physical size, open/closed… A region resolves to an
- * array when its one slot is painted onto several distinct surfaces — the van's
+ * array when its one slot is painted onto several distinct surfaces - the van's
  * nose and tail licence plates. The array carries the surface COUNT; the entries
  * may or may not differ in size.
  */
@@ -98,7 +96,7 @@ export const CONTACT_SHADOW_GAP = 0.02
 
 /**
  * Per-object stage framing, declared next to the object's dimensions.
- * `P` is the (plain-data) subset of the object's props the math depends on —
+ * `P` is the (plain-data) subset of the object's props the math depends on -
  * variant, orientation, physical size…
  */
 export interface MockupFraming<P = Record<string, never>> {
@@ -108,7 +106,7 @@ export interface MockupFraming<P = Record<string, never>> {
   readonly floatIntensity?: number
   /**
    * How far the object's lowest point sits below its group origin, in world
-   * units — the ground line the contact shadow hugs.
+   * units - the ground line the contact shadow hugs.
    */
   readonly extent: (props: P) => number
   /** Gap between the grounded object and its shadow plane. */

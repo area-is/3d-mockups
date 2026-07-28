@@ -1,12 +1,12 @@
 /**
- * Framework-agnostic styling for the built-in LED text renderer — the
+ * Framework-agnostic styling for the built-in LED text renderer - the
  * amber dot-matrix look shared by transit LED surfaces (the bus destination
  * sign, the bus shelter's RTPI arrivals board).
  *
  * A binding renders plain strings into this look: a dark panel, glowing
  * monospaced capitals-style text, and a dot-matrix mask overlay. Motion is
- * pure CSS — a horizontal marquee for overflowing lines and a stepped
- * vertical page flip for alternating messages — so the sign animates without
+ * pure CSS - a horizontal marquee for overflowing lines and a stepped
+ * vertical page flip for alternating messages - so the sign animates without
  * per-frame JS. Font sizes use container-query units (`cqh`), so the same
  * styles fit any panel: the element returned by `ledPanelStyle` (and each
  * row in a multi-row board) declares `container-type: size`.

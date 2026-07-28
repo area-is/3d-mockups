@@ -4,10 +4,10 @@ description: A retail carton with all six panels as live print areas.
 ---
 
 `<ProductBox>` and `<ProductBoxMockup>` render a standing retail carton
-(190×265×55 mm — the classic cereal/software hero proportion) in satin
+(190×265×55 mm - the classic cereal/software hero proportion) in satin
 coated stock with crisp fold edges and the tuck-flap seam on top. All six
-panels are live DOM — the front (bare children) plus the `Right`, `Left`,
-`Top`, `Bottom` and `Back` slots — so a standard 3/4 pose shows three
+panels are live DOM - the front (bare children) plus the `Right`, `Left`,
+`Top`, `Bottom` and `Back` slots - so a standard 3/4 pose shows three
 printed faces at once, all
 sharing one dpi, and no pose reveals bare stock unless you want it to.
 Pass `size` (in millimeters) for a carton of any other dimensions.
@@ -46,13 +46,13 @@ Beyond the [shared screen props](/docs/screen-content):
 | `<ProductBoxMockup.Bottom>` | Bottom panel, reading from the front when tipped. |
 | `<ProductBoxMockup.Back>` | Back panel. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults.
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-box" />
@@ -61,7 +61,7 @@ what stays 3D hardware.
 
 ### Every panel printed
 
-Front, back, both sides, top and bottom — brew steps and barcode on the
+Front, back, both sides, top and bottom - brew steps and barcode on the
 back, the roast-date stamp underneath. Drag it anywhere; it stays designed.
 
 <ObjectDemo demo="box-full" />
@@ -79,7 +79,7 @@ back, the roast-date stamp underneath. Drag it anywhere; it stays designed.
 
 ### Kraft stock
 
-Unprinted faces show the stock — `color` turns it into kraft board.
+Unprinted faces show the stock - `color` turns it into kraft board.
 
 <ObjectDemo demo="box-kraft" />
 

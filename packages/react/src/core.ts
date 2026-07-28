@@ -1,4 +1,4 @@
-// area-3d-mockups/core — the full framework-agnostic core surface.
+// area-3d-mockups/core - the full framework-agnostic core surface.
 //
 // Everything in `@area-3d-mockups/core` (device/object specs, region registries,
 // framing, geometry math, screen & stage behaviors), re-exported behind a

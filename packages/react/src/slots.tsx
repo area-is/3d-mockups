@@ -6,20 +6,20 @@ import type { RegionSpec } from '@area-3d-mockups/core'
  *
  * Region names come from the object's spec in `@area-3d-mockups/core`
  * (`A_FRAME_SIGN_REGIONS` → `<AFrameSign.Front>` / `<AFrameSign.Back>`). Slot
- * components render nothing themselves — the parent mockup collects them from
+ * components render nothing themselves - the parent mockup collects them from
  * its children with `collectSlots` and feeds each region's content and
  * per-surface settings into the matching `DeviceScreen`.
  *
- * Bare (non-slot) children are shorthand for the primary region — the first
- * region in the spec's list — so the single-surface one-liner stays a
+ * Bare (non-slot) children are shorthand for the primary region - the first
+ * region in the spec's list - so the single-surface one-liner stays a
  * one-liner: `<GalaxyMockup><App/></GalaxyMockup>`.
  *
  * Slots must be DIRECT children of the mockup (fragments are flattened). A
- * user component that merely renders a slot element cannot be detected — the
+ * user component that merely renders a slot element cannot be detected - the
  * slot then renders in place and warns instead of disappearing silently.
  */
 
-// Symbol.for — not a local symbol — so slot detection survives two copies of
+// Symbol.for - not a local symbol - so slot detection survives two copies of
 // the library on one page (each binding bundles its own core by design).
 const REGION = Symbol.for('area-3d-mockups.region')
 
@@ -29,7 +29,7 @@ const REGION = Symbol.for('area-3d-mockups.region')
  * they override those defaults for that one region.
  *
  * One vocabulary on purpose. `background` and `style` on a mockup already mean
- * the CANVAS's CSS — its page background and its wrapper styles — so a screen's
+ * the CANVAS's CSS - its page background and its wrapper styles - so a screen's
  * equivalents have to be named apart from them, and naming them apart at only
  * one of the two levels is how `style` ends up meaning two different things
  * depending on which element you hang it off.
@@ -42,7 +42,7 @@ export interface SurfaceProps {
    * It only shows where your content does NOT paint: a logo on a transparent
    * PNG, a layout shorter than the surface, a rounded card over the corners,
    * the moment before an `<iframe>` loads. Pass full-bleed opaque artwork and
-   * you will never see it — which is why changing it often appears to do
+   * you will never see it - which is why changing it often appears to do
    * nothing.
    *
    * Do not set it to `transparent` expecting the hardware to show through.
@@ -76,7 +76,7 @@ function warnDev(message: string): void {
 
 /**
  * Create one slot component for a region. The component never renders through
- * the normal path — `collectSlots` lifts it out of the children — so its body
+ * the normal path - `collectSlots` lifts it out of the children - so its body
  * only runs when the slot was NOT a direct child of its mockup, which is
  * exactly when the user needs a warning.
  */
@@ -84,7 +84,7 @@ export function createSlot<P extends SlotProps = SlotProps>(region: string, disp
   const name = displayName ?? region.charAt(0).toUpperCase() + region.slice(1)
   const SlotComponent = (_props: P): React.ReactElement | null => {
     warnDev(
-      `<${name}> must be a direct child of its mockup — it was rendered somewhere else, so its content is ignored.`
+      `<${name}> must be a direct child of its mockup - it was rendered somewhere else, so its content is ignored.`
     )
     return null
   }
@@ -122,7 +122,7 @@ function regionOf(type: unknown): string | undefined {
  * Split a mockup's children into regions. Slot elements land under their
  * region name; everything else is bare content and lands in the primary
  * (first-listed) region. Fragments are flattened; unknown slots (a slot of a
- * different mockup) and duplicate slots warn in development — last one wins.
+ * different mockup) and duplicate slots warn in development - last one wins.
  */
 export function collectSlots<const R extends readonly RegionSpec[]>(
   children: React.ReactNode,
@@ -147,11 +147,11 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
       if (region !== undefined) {
         const spec = specs.get(region)
         if (!spec) {
-          warnDev(`<${String(region)}> is not a region of this mockup — it renders nothing here.`)
+          warnDev(`<${String(region)}> is not a region of this mockup - it renders nothing here.`)
           return
         }
         if (out[region]) {
-          warnDev(`Duplicate <${spec.label}> slot — the last one wins.`)
+          warnDev(`Duplicate <${spec.label}> slot - the last one wins.`)
         }
         out[region] = node.props as SlotProps
         return
@@ -170,7 +170,7 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
     }
     if (out[first.name]) {
       warnDev(
-        `Both bare children and an explicit ${first.label} slot were given — the explicit slot wins, bare children are ignored.`
+        `Both bare children and an explicit ${first.label} slot were given - the explicit slot wins, bare children are ignored.`
       )
     } else {
       out[first.name] = bare

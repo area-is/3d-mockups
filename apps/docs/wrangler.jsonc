@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "area-3d-mockups-docs",
+  "main": ".open-next/worker.js",
+
+  // nodejs_compat is required by @opennextjs/cloudflare (the Next server it
+  // wraps reaches for node: builtins), and the flag is only honoured from
+  // compatibility_date 2024-09-23 onward.
+  "compatibility_date": "2026-07-28",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Everything Next emits as a static file is served straight off the edge by
+  // Workers Assets and never counts against the Worker's own bundle size. That
+  // matters here: the mockup scenes are `ssr: false` dynamic imports, so
+  // three.js / r3f / drei live entirely in these assets and never enter the
+  // Worker.
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,15 +1,15 @@
 ---
 title: Objects and print surfaces
-description: Books, packaging, posters, out-of-home formats, vehicles, and custom-size panels and boxes — every non-device mockup in the library.
+description: Books, packaging, posters, out-of-home formats, vehicles, and custom-size panels and boxes - every non-device mockup in the library.
 ---
 
 Beyond phones and laptops, the library models everyday objects whose printable
 surface is a live DOM area: design a book cover or a van livery in plain React
-(or drop in an `<iframe>`), and it renders as real DOM on the 3D object — no
+(or drop in an `<iframe>`), and it renders as real DOM on the 3D object - no
 texture bake, no re-export.
 
 Like the devices, every object is procedurally generated at runtime from real
-product dimensions — no GLB files, no hosting, no pop-in.
+product dimensions - no GLB files, no hosting, no pop-in.
 
 ## The objects
 
@@ -40,7 +40,7 @@ product dimensions — no GLB files, no hosting, no pop-in.
 | Custom box | `CustomBox` | any size (mm) | all six faces | 560 wide front |
 
 Each object also has a one-liner `*Mockup` wrapper (`BookMockup`,
-`VanMockup`, …) that bundles the stage, camera, and grounded shadow — the same
+`VanMockup`, …) that bundles the stage, camera, and grounded shadow - the same
 pattern as the devices.
 
 ```tsx
@@ -58,12 +58,12 @@ export function CoverPreview() {
 ```
 
 Every object's API page has multiple live, draggable examples with the code
-next to them — see the API reference section in the sidebar.
+next to them - see the API reference section in the sidebar.
 
 ## Multiple live surfaces
 
 Several objects host more than one surface. Bare children fill the object's
-primary surface; name any other region with its compound slot — the same
+primary surface; name any other region with its compound slot - the same
 pattern the devices use. Slots must be direct children of the mockup.
 
 ```tsx
@@ -75,37 +75,37 @@ pattern the devices use. Slots must be direct children of the mockup.
 ```
 
 - **`Brochure`** renders three panels in a standing zig-zag, each with its own
-  named slot — `<Brochure.FrontLeft>` through `<Brochure.BackRight>`, where
+  named slot - `<Brochure.FrontLeft>` through `<Brochure.BackRight>`, where
   left and right are as the viewer of that face sees it. `foldAngle={0}` lays
   the sheet flat.
 - **`BusinessCard`** and **`IDCard`** take bare children for the front and
-  `<BusinessCard.Back>` / `<IDCard.Back>` for the reverse — spin them around
+  `<BusinessCard.Back>` / `<IDCard.Back>` for the reverse - spin them around
   to see it.
 - **`ProductBox`** prints all six panels: bare children (front) plus the
   `<ProductBox.Right>`, `<ProductBox.Left>`, `<ProductBox.Top>`,
   `<ProductBox.Bottom>` and `<ProductBox.Back>` slots, all sharing one dpi.
 - **`Bus`** pairs the king-size ad panel with an optional live LED
   `<Bus.DestinationSign>` above the windshield.
-- **`SemiTrailer`** wraps both 53 ft sides plus the rear doors — the
+- **`SemiTrailer`** wraps both 53 ft sides plus the rear doors - the
   `<SemiTrailer.Rear>` panel sits under a lock-rod overlay like a real wrap.
 - **`MailerBox`** prints the top, front and end panels, with the packing
   tape overlaid on your print.
 - **`Storefront`** pairs the fascia sign (bare children) with live display
-  panes — `<Storefront.FrontLeft>` and the other window slots.
+  panes - `<Storefront.FrontLeft>` and the other window slots.
 - **`CustomBox`** prints all six faces of any-size rectangular boxes at one
   shared dpi.
 
 ## Custom sizes
 
-`CustomPanel` and `CustomBox` take real millimeters via `size` — any
+`CustomPanel` and `CustomBox` take real millimeters via `size` - any
 rectangle or box your project needs. The longest edge auto-normalizes to
 the stage, so every size fills the default camera while keeping true
 proportions. See their API pages for examples.
 
 `ProductBox`, `MailerBox` and `ShoppingBag` accept the same optional
 `size` prop (`{ width, height, depth }` in millimeters), so a 300×300×300
-mm cube shipper or a slim 100×420×80 mm bottle bag keeps its dressing —
-tuck flap, tape band, rope handles — in proportion.
+mm cube shipper or a slim 100×420×80 mm bottle bag keeps its dressing -
+tuck flap, tape band, rope handles - in proportion.
 
 ## Ground planes
 

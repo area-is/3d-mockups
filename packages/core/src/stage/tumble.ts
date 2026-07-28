@@ -3,7 +3,7 @@ import * as THREE from 'three'
 const WORLD_UP = new THREE.Vector3(0, 1, 0)
 
 /**
- * Orbital tumble around a fixed center — the camera motion behind every
+ * Orbital tumble around a fixed center - the camera motion behind every
  * mockup's drag-to-rotate.
  *
  * Horizontal drags spin the stage like a turntable (about the world's
@@ -11,7 +11,7 @@ const WORLD_UP = new THREE.Vector3(0, 1, 0)
  * polar limits set (the default stage feel), vertical rotation clamps like
  * the classic orbit controls and up stays world-up. With limits cleared, the
  * camera's up vector is carried along, so rotation is a full, unclamped 360°
- * in every direction — straight over the poles. The rotation center stays
+ * in every direction - straight over the poles. The rotation center stays
  * fixed at the target and motion is damped either way.
  */
 export class TumbleOrbit {
@@ -34,7 +34,7 @@ export class TumbleOrbit {
 
   /**
    * Clamp vertical rotation to a polar range (radians from the top pole),
-   * like classic orbit controls — or pass `null` to allow the full 360°
+   * like classic orbit controls - or pass `null` to allow the full 360°
    * tumble. Setting limits also snaps an out-of-range camera (e.g. one left
    * upside-down by free rotation) back into range on the next update.
    */
@@ -53,7 +53,7 @@ export class TumbleOrbit {
   }
 
   /**
-   * Pan the camera and target together in the view plane — the standard
+   * Pan the camera and target together in the view plane - the standard
    * middle/right-drag behavior: the scene follows the cursor. Deltas are in
    * CSS px; world units per px derive from the target distance and fov.
    */
@@ -115,7 +115,7 @@ export class TumbleOrbit {
       this.offset.applyQuaternion(this.quat)
       camera.up.applyQuaternion(this.quat)
 
-      // Vertical tumble about the camera's right axis — up is carried along, so
+      // Vertical tumble about the camera's right axis - up is carried along, so
       // the motion continues smoothly across the poles instead of clamping.
       this.right.crossVectors(camera.up, this.offset).normalize()
       this.quat.setFromAxisAngle(this.right, pitch)

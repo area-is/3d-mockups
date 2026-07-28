@@ -6,7 +6,7 @@ export type FlipMockupProps = MockupProps<FlipProps>
 
 /**
  * The one-liner: a complete, interactive 3D Galaxy Z Flip mockup. Open by
- * default — your content fills the tall main display.
+ * default - your content fills the tall main display.
  *
  * ```tsx
  * <FlipMockup autoRotate float>

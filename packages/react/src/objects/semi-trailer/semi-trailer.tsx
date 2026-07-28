@@ -61,7 +61,7 @@ function SemiTrailerImpl({
 
   return (
     <group {...groupProps}>
-      {/* the box — smooth-sided, wrap-ready */}
+      {/* the box - smooth-sided, wrap-ready */}
       <RoundedBox args={[body.length, body.height, body.width]} radius={body.radius}>
         <meshPhysicalMaterial color={color} metalness={0.3} roughness={0.4} clearcoat={0.6} clearcoatRoughness={0.3} />
       </RoundedBox>
@@ -110,7 +110,7 @@ function SemiTrailerImpl({
         </group>
       ))}
 
-      {/* DOT reflective tape along both bottom rails — ≥50% length coverage */}
+      {/* DOT reflective tape along both bottom rails - ≥50% length coverage */}
       {([1, -1] as const).map((s) =>
         Array.from({ length: 20 }, (_, i) => (
           <mesh key={`${s}${i}`} position={[-body.length / 2 + 0.5 + i * 0.29, floorY + 0.045, s * (body.width / 2 + 0.002)]}>
@@ -139,7 +139,7 @@ function SemiTrailerImpl({
           </mesh>
           {/* dual tire pair per side, on the shared road wheel: a lathed
               carcass with bulged sidewalls and grooved tread. Only the outer
-              of each pair shows polished hardware — the inner one is buried */}
+              of each pair shows polished hardware - the inner one is buried */}
           {([1, -1] as const).map((s) => (
             <React.Fragment key={s}>
               <RoadWheel
@@ -244,7 +244,7 @@ function SemiTrailerImpl({
       ))}
 
       {/* rear frame: corner posts with hinge blocks, header beam across the
-          top — all clear of the rear DeviceScreen (its half-width is 0.45) */}
+          top - all clear of the rear DeviceScreen (its half-width is 0.45) */}
       {([1, -1] as const).map((s) => (
         <group key={s}>
           <mesh position={[-body.length / 2 - 0.012, 0, s * (body.width / 2 - 0.022)]}>

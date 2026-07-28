@@ -16,7 +16,7 @@ type GroupProps = ThreeElements['group']
 
 export interface RollupBannerProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Banner graphic — any React node. It fills the visible graphic, full
+   * Banner graphic - any React node. It fills the visible graphic, full
    * bleed; wrap in `<RollupBanner.Banner>` to set per-surface props.
    */
   children?: React.ReactNode
@@ -83,7 +83,7 @@ function RollupBannerImpl({
         <meshPhysicalMaterial color="#c9c9c6" metalness={0} roughness={0.85} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* cassette base: an oval-section extrusion lying flat on the floor — a
+      {/* cassette base: an oval-section extrusion lying flat on the floor - a
           horizontal cylinder scaled front-to-back into the teardrop profile */}
       <group position={[0, cassetteY, -0.06]} scale={[1, 1, cassette.depth / cassette.height]}>
         <mesh rotation-z={Math.PI / 2}>

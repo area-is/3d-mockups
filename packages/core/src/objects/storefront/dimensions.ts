@@ -1,19 +1,19 @@
 /**
- * Storefront object dimensions — a free-standing single-story corner shop.
+ * Storefront object dimensions - a free-standing single-story corner shop.
  *
  * Proportions follow the classic high-street shopfront: a 6 m frontage,
  * ~4.4 m deep, with the parapet just above the cornice (~3.1 m) so the
- * painted shopfront composition IS the whole elevation — no masonry band.
+ * painted shopfront composition IS the whole elevation - no masonry band.
  * Normalized to ~1100 mm per world unit so the façade is 5.45 units wide.
  *
  * All four elevations are glazed shopfront compositions:
  * - front (+Z): display windows, transom lights, fascia sign, glazed door;
  * - the other three sides (+X, −X, −Z): the same composition without the
- *   door — windows only — each carrying its own live fascia sign.
+ *   door - windows only - each carrying its own live fascia sign.
  *
  * Live surfaces: the four fascia signs (the front `fascia` region plus
  * left/right/rear), both front display bays, the glazed door leaf and the
- * center pane of each other elevation — every elevation is mockup-able
+ * center pane of each other elevation - every elevation is mockup-able
  * (the roof is not).
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
@@ -70,7 +70,7 @@ export const STOREFRONT_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The façade stands on the pavement. */
-/** Millimetres per world unit — the storefront scale (~1100 mm per unit). */
+/** Millimetres per world unit - the storefront scale (~1100 mm per unit). */
 export const STOREFRONT_MM_PER_UNIT = 1100
 
 /**
@@ -79,7 +79,7 @@ export const STOREFRONT_MM_PER_UNIT = 1100
  * window's glazing extent and the two bays either side of its mullion.
  *
  * Lived in the React scene component until the metrics needed it. Everything
- * downstream — the renderer, `mockupInfo`, the catalog, a second binding —
+ * downstream - the renderer, `mockupInfo`, the catalog, a second binding -
  * is a consumer of this one function.
  */
 export function storefrontLayout() {
@@ -92,7 +92,7 @@ export function storefrontLayout() {
   const paneTop = transomY - 0.033
   const paneBottom = riserTop + 0.02
   const paneH = paneTop - paneBottom
-  // Front window glazing extent — the door bay sits to its right.
+  // Front window glazing extent - the door bay sits to its right.
   const glazeX = (win.doorX - 0.35 - body.width / 2) / 2
   const glazeW = win.doorX - 0.35 + body.width / 2 - 0.3
   return {

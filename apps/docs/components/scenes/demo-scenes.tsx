@@ -143,7 +143,7 @@ export default function DemoScenes() {
         description={
           <>
             An <code>&lt;iframe&gt;</code> pointed at <code>/embedded</code>, a real route of
-            this site — loading and rendering live inside the glass, animations and all.
+            this site - loading and rendering live inside the glass, animations and all.
           </>
         }
       >
@@ -174,7 +174,7 @@ export default function DemoScenes() {
         title="MacBook Pro 14&quot; (M5)"
         description={
           <>
-            <code>variant=&quot;pro14&quot;</code> in Space Black — deeper body, HDMI/SDXC
+            <code>variant=&quot;pro14&quot;</code> in Space Black - deeper body, HDMI/SDXC
             port array, speaker grilles, and the 1512×982 point grid.
           </>
         }
@@ -188,7 +188,7 @@ export default function DemoScenes() {
         title="Galaxy S26"
         description={
           <>
-            <code>variant=&quot;s26&quot;</code> in Cobalt Violet — the 6.3″ baseline model:
+            <code>variant=&quot;s26&quot;</code> in Cobalt Violet - the 6.3″ baseline model:
             vertical pill camera island and a device-accurate 360×780 virtual screen.
           </>
         }
@@ -246,7 +246,7 @@ export default function DemoScenes() {
         title="Galaxy Z Fold 7 (folded)"
         description={
           <>
-            <code>open={'{'}false{'}'}</code> — the same device folded to the tall cover
+            <code>open={'{'}false{'}'}</code> - the same device folded to the tall cover
             display, with the rear triple camera on the back.
           </>
         }
@@ -274,7 +274,7 @@ export default function DemoScenes() {
         title="iPhone 17 Air"
         description={
           <>
-            <code>variant=&quot;air&quot;</code> in Sky Blue — the 5.6 mm-thin model with a
+            <code>variant=&quot;air&quot;</code> in Sky Blue - the 5.6 mm-thin model with a
             single camera on the full-width plateau.
           </>
         }
@@ -302,7 +302,7 @@ export default function DemoScenes() {
         title="iPhone 17 Pro Max"
         description={
           <>
-            <code>variant=&quot;promax&quot;</code> in Deep Blue — the biggest body in the
+            <code>variant=&quot;promax&quot;</code> in Deep Blue - the biggest body in the
             family, with a 440×956 virtual screen.
           </>
         }
@@ -316,7 +316,7 @@ export default function DemoScenes() {
         title="iPad Pro 13″ (M5)"
         description={
           <>
-            <code>&lt;IPadMockup&gt;</code> in Space Black, landscape — the pencil mount
+            <code>&lt;IPadMockup&gt;</code> in Space Black, landscape - the pencil mount
             and camera pod follow the orientation, and the virtual screen is a true
             1376×1032.
           </>
@@ -331,7 +331,7 @@ export default function DemoScenes() {
         title="iPad Pro 11″ (M5)"
         description={
           <>
-            <code>variant=&quot;ipadpro11&quot;</code> in Silver, portrait — same design
+            <code>variant=&quot;ipadpro11&quot;</code> in Silver, portrait - same design
             language at the smaller true relative size.
           </>
         }
@@ -345,7 +345,7 @@ export default function DemoScenes() {
         title="iPad Air 13″ (M4)"
         description={
           <>
-            <code>variant=&quot;ipadair13&quot;</code> in Starlight — the bare single lens,
+            <code>variant=&quot;ipadair13&quot;</code> in Starlight - the bare single lens,
             Touch ID top button and back Smart Connector of the Air.
           </>
         }
@@ -359,7 +359,7 @@ export default function DemoScenes() {
         title="iPad (A16)"
         description={
           <>
-            <code>variant=&quot;ipad11&quot;</code> in Blue — the standard iPad&apos;s punchier
+            <code>variant=&quot;ipad11&quot;</code> in Blue - the standard iPad&apos;s punchier
             anodizing, crisper rails and edge Smart Connector.
           </>
         }
@@ -373,7 +373,7 @@ export default function DemoScenes() {
         title="Galaxy Tab S11"
         description={
           <>
-            <code>variant=&quot;tabs11&quot;</code> in Gray, portrait — the single protruding
+            <code>variant=&quot;tabs11&quot;</code> in Gray, portrait - the single protruding
             camera ring, speaker slots and pogo contacts of the Samsung slate.
           </>
         }
@@ -387,7 +387,7 @@ export default function DemoScenes() {
         title="Galaxy Tab S11 Ultra"
         description={
           <>
-            <code>variant=&quot;tabs11ultra&quot;</code> in Gray, landscape — the 14.6″
+            <code>variant=&quot;tabs11ultra&quot;</code> in Gray, landscape - the 14.6″
             panel with its U-shaped notch, dual rings and SAMSUNG wordmark.
           </>
         }
@@ -431,7 +431,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;GalaxyWatchMockup&gt;</code>: the cushion case with a fully round
-            1.47″ display — a live circular 240×240 face — two flat keys, and the
+            1.47″ display - a live circular 240×240 face - two flat keys, and the
             Dynamic Lug band.
           </>
         }
@@ -445,8 +445,8 @@ export default function DemoScenes() {
         title="Hardcover book"
         description={
           <>
-            <code>&lt;BookMockup&gt;</code>: a 156×234 mm trade hardcover — cloth boards,
-            rounded spine, cream page block — with the whole jacket as live DOM.
+            <code>&lt;BookMockup&gt;</code>: a 156×234 mm trade hardcover - cloth boards,
+            rounded spine, cream page block - with the whole jacket as live DOM.
           </>
         }
       >
@@ -494,7 +494,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BusinessCardMockup&gt;</code>: 32 pt stock with rounded die-cut
-            corners. Drag it around — the <code>Back</code> slot prints the reverse.
+            corners. Drag it around - the <code>Back</code> slot prints the reverse.
           </>
         }
       >
@@ -538,7 +538,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BillboardMockup&gt;</code>: the classic 14′×48′ bulletin on a
-            monopole — catwalk, railing, gooseneck floodlights — grounded like a monitor.
+            monopole - catwalk, railing, gooseneck floodlights - grounded like a monitor.
           </>
         }
       >
@@ -552,7 +552,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;BusMockup&gt;</code>: a 40′ low-floor transit bus with a live king-size
-            (30″×144″) ad panel — and the LED destination sign is live DOM too.
+            (30″×144″) ad panel - and the LED destination sign is live DOM too.
           </>
         }
       >
@@ -569,7 +569,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;ProductBoxMockup&gt;</code>: a retail carton with live front, side and
-            top panels sharing one dpi — three printed faces in a single 3/4 pose.
+            top panels sharing one dpi - three printed faces in a single 3/4 pose.
           </>
         }
       >
@@ -585,8 +585,8 @@ export default function DemoScenes() {
         title="Roll-up banner"
         description={
           <>
-            <code>&lt;RollupBannerMockup&gt;</code>: the 850×2000 trade-show stand — cassette
-            base, swivel feet, top rail — with a live 420×988 graphic.
+            <code>&lt;RollupBannerMockup&gt;</code>: the 850×2000 trade-show stand - cassette
+            base, swivel feet, top rail - with a live 420×988 graphic.
           </>
         }
       >
@@ -600,7 +600,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;VanMockup&gt;</code>: a procedural cargo van with a live vinyl-wrap
-            panel on the cargo side — design a fleet livery in plain CSS.
+            panel on the cargo side - design a fleet livery in plain CSS.
           </>
         }
       >
@@ -632,7 +632,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;GreetingCardMockup&gt;</code>: a folded A7 card standing like a tent
-            — cover, back and the inside spread are all live faces.
+            - cover, back and the inside spread are all live faces.
           </>
         }
       >
@@ -649,7 +649,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;VinylRecordMockup&gt;</code>: a 12″ LP half-out of its jacket. The
-            cover is live DOM — and so is the circular center label.
+            cover is live DOM - and so is the circular center label.
           </>
         }
       >
@@ -665,7 +665,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;TVSetMockup&gt;</code>: a near-bezel-less 65″ panel on splayed
-            feet with a live 1920×1080 screen — desktop layouts and video apply directly.
+            feet with a live 1920×1080 screen - desktop layouts and video apply directly.
           </>
         }
       >
@@ -679,7 +679,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;AFrameSignMockup&gt;</code>: the sidewalk sandwich board, legs
-            splayed like the real thing — both chalkboard panels are live.
+            splayed like the real thing - both chalkboard panels are live.
           </>
         }
       >
@@ -694,7 +694,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;DOOHTotemMockup&gt;</code>: a digital street totem with a live
-            portrait 540×960 display — the digital sibling of the billboard.
+            portrait 540×960 display - the digital sibling of the billboard.
           </>
         }
       >
@@ -708,7 +708,7 @@ export default function DemoScenes() {
         title="Storefront"
         description={
           <>
-            <code>&lt;StorefrontMockup&gt;</code>: a high-street shop façade — the fascia
+            <code>&lt;StorefrontMockup&gt;</code>: a high-street shop façade - the fascia
             sign and the poster in the display window are both live DOM.
           </>
         }
@@ -741,7 +741,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;MailerBoxMockup&gt;</code>: a corrugated shipper with printed top and
-            front panels — the packing tape rides over your print.
+            front panels - the packing tape rides over your print.
           </>
         }
       >
@@ -757,7 +757,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>&lt;ShoppingBagMockup&gt;</code>: a kraft carrier with rope handles and a
-            fold-over cuff — front and back faces are live print areas.
+            fold-over cuff - front and back faces are live print areas.
           </>
         }
       >
@@ -768,11 +768,11 @@ export default function DemoScenes() {
       </DemoCard>
 
       <DemoCard
-        title="Custom panel — any size"
+        title="Custom panel - any size"
         description={
           <>
             <code>&lt;CustomPanelMockup&gt;</code>: pass real millimeters via{' '}
-            <code>size</code> and get a live rectangular sheet at true proportions —
+            <code>size</code> and get a live rectangular sheet at true proportions -
             here a 600×900 mm board.
           </>
         }
@@ -784,7 +784,7 @@ export default function DemoScenes() {
       </DemoCard>
 
       <DemoCard
-        title="Custom box — any size"
+        title="Custom box - any size"
         description={
           <>
             <code>&lt;CustomBoxMockup&gt;</code>: a 240×320×80 mm box with all six faces
@@ -806,7 +806,7 @@ export default function DemoScenes() {
         description={
           <>
             <code>zoom</code>: pinch on touch, scroll wheel on desktop, and the overlay
-            +/− buttons — clamped to the same range as the orbit controls.
+            +/− buttons - clamped to the same range as the orbit controls.
           </>
         }
       >

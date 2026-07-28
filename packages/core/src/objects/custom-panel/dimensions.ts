@@ -1,12 +1,12 @@
 /**
- * Custom panel object dimensions — a flat rectangular sheet at ANY size you
+ * Custom panel object dimensions - a flat rectangular sheet at ANY size you
  * specify in millimeters: foam board, acrylic sign, art print, table card,
  * banner blank… whatever rectangle your project needs.
  *
  * Unlike the fixed-size objects, the panel normalizes itself: the longest
  * edge always maps to `CUSTOM_PANEL.target` world units, so a 100×150 mm
  * card and a 1000×1500 mm board both fill the default stage. The mm sizes
- * still matter — they set the aspect ratio and the relative thickness.
+ * still matter - they set the aspect ratio and the relative thickness.
  *
  * Live faces: front (bare children) and back.
  */
@@ -45,7 +45,7 @@ export const CUSTOM_PANEL_REGIONS = [
 /** The panel stands on its bottom edge at half its (normalized) height. */
 /**
  * Millimetres per world unit. The panel's longest edge always maps to
- * `CUSTOM_PANEL.target`, so the scale — and therefore this ratio — depends on
+ * `CUSTOM_PANEL.target`, so the scale - and therefore this ratio - depends on
  * the size you asked for.
  */
 export function customPanelMmPerUnit(size: CustomSizeMm): number {

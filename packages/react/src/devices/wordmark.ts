@@ -2,7 +2,7 @@ import * as THREE from 'three'
 
 /**
  * A crisp canvas-drawn wordmark (e.g. the "SAMSUNG" imprint on a Galaxy back
- * panel) as a transparent texture. Draws white glyphs — tint via the material
+ * panel) as a transparent texture. Draws white glyphs - tint via the material
  * `color` so one texture serves any colorway.
  */
 export function createWordmarkTexture(

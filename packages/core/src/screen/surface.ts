@@ -3,10 +3,9 @@
  * maps a world-unit display onto a DOM element, the wrapper style for that
  * element, and the compositor-layer CSS every binding must inject.
  *
- * Each framework binding (React today; Svelte/Vue later) renders its own
- * content into a plain `<div>` styled with `screenSurfaceStyle()` and projects
- * it onto the display glass with its renderer's CSS3D/HTML bridge (drei's
- * `<Html transform>` in React, Threlte's `<HTML>`, TresJS's equivalent…).
+ * A binding renders its own content into a plain `<div>` styled with
+ * `screenSurfaceStyle()` and projects it onto the display glass with its
+ * renderer's CSS3D/HTML bridge (drei's `<Html transform>` in React).
  */
 
 /** Per-corner radii in world units (top-left, top-right, bottom-right, bottom-left). */

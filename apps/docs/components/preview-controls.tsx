@@ -53,8 +53,8 @@ import { LazyScene } from './lazy-scene'
 /**
  * Every live preview on this docs site is a playground: the mockup gets zoom +
  * full-screen overlays, and a prop bar under the canvas exposes *every* public
- * prop of the mockup it wraps — the model's own props, the shared screen props,
- * and the stage props from `MockupCanvas` — wired to the real props a caller
+ * prop of the mockup it wraps - the model's own props, the shared screen props,
+ * and the stage props from `MockupCanvas` - wired to the real props a caller
  * would pass in code. Rather than hand-editing the ~130 demo instances, we
  * inject everything here at the single point where a scene is mounted.
  *
@@ -146,7 +146,7 @@ const OPEN: Control = {
   label: 'open',
   kind: 'toggle',
   preset: true,
-  title: 'Flat open (off folds it shut) — the shorthand for openAngle 180 / 0',
+  title: 'Flat open (off folds it shut) - the shorthand for openAngle 180 / 0',
 }
 
 const openAngle = (min: number, max: number, preset: number): Control => ({
@@ -421,7 +421,7 @@ const SCREEN_CONTROLS: Control[] = [
     kind: 'color',
     preset: '#000000',
     title:
-      'CSS background behind the screen content. Only shows where the content does not paint — these demos ship full-bleed art, so it looks inert here',
+      'CSS background behind the screen content. Only shows where the content does not paint - these demos ship full-bleed art, so it looks inert here',
   },
 ]
 
@@ -704,7 +704,7 @@ function useMockupControls(children: React.ReactNode) {
       })
     }
     // `color` takes a colorway id or a raw CSS color, so the catalog picker and
-    // the swatch write to the SAME prop — picking a retail finish and nudging a
+    // the swatch write to the SAME prop - picking a retail finish and nudging a
     // custom one are the same control, whichever you reach for last.
     if (catalog?.length) {
       own.push({

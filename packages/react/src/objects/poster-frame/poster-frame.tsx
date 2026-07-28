@@ -15,7 +15,7 @@ type GroupProps = ThreeElements['group']
 
 export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Poster art — any React node. It fills the visible opening, full bleed;
+   * Poster art - any React node. It fills the visible opening, full bleed;
    * wrap in `<PosterFrame.Poster>` to set per-surface props.
    */
   children?: React.ReactNode
@@ -81,7 +81,7 @@ function PosterFrameImpl({
       outerHeight - frame.bevel * 2,
       frame.radius - frame.bevel
     )
-    // the through-hole is the visible opening — the rabbet lip overlaps the sheet
+    // the through-hole is the visible opening - the rabbet lip overlaps the sheet
     shape.holes.push(roundedRectShape(opening.width, opening.height, opening.radius))
     const depth = frame.depth - frame.bevel * 2
     const geometry = new THREE.ExtrudeGeometry(shape, {

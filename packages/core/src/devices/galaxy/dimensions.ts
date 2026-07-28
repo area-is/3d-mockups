@@ -1,14 +1,14 @@
 /**
- * Galaxy-style phone device dimensions — the current Galaxy S26 line
+ * Galaxy-style phone device dimensions - the current Galaxy S26 line
  * (Galaxy S26 and Galaxy S26 Ultra).
  *
- * All variants share one world scale (~36.66 mm per unit — the library's
+ * All variants share one world scale (~36.66 mm per unit - the library's
  * long-standing Galaxy scale, kept so devices stay in true relative size
  * beside the Fold, Watch and every other object in the catalog).
  *
  * Body sizes are the published ones: S26 149.6 x 71.7 x 7.2 mm, S26 Ultra
- * 163.6 x 78.1 x 7.9 mm. Every detail on top of them — corner radii, punch
- * hole, bezel width, camera islands, ring pitch, button pills, wordmark — is
+ * 163.6 x 78.1 x 7.9 mm. Every detail on top of them - corner radii, punch
+ * hole, bezel width, camera islands, ring pitch, button pills, wordmark - is
  * measured off the official four-view product renders, whose panels scale
  * exactly to those published widths (0.243 mm/px for the S26, 0.265 for the
  * Ultra), so the numbers come from the hardware rather than from taste.
@@ -23,7 +23,7 @@ import type { MockupFraming, MockupMetrics } from '../../regions'
 export interface GalaxyPhoneSpec {
   /** Aluminum/titanium frame + chassis. `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: number; height: number; depth: number; radius: number; bevel: number }
-  /** Front cover glass (slightly larger than the active display — forms the bezel ring). */
+  /** Front cover glass (slightly larger than the active display - forms the bezel ring). */
   glass: { width: number; height: number; radius: number }
   /** Active display area. Content you pass as children is mapped onto this rect. */
   display: { width: number; height: number; radius: number }
@@ -79,9 +79,9 @@ export interface GalaxyPhoneSpec {
 }
 
 /**
- * Galaxy S26 — 149.6 x 71.7 x 7.2 mm, 6.3" 2340x1080 (19.5:9) flat display.
+ * Galaxy S26 - 149.6 x 71.7 x 7.2 mm, 6.3" 2340x1080 (19.5:9) flat display.
  * The three lenses sit in a single vertical capsule island top-left of the back
- * — a ~2.4 mm shoulder of island showing all the way around every ring — with
+ * - a ~2.4 mm shoulder of island showing all the way around every ring - with
  * the LED flash alone on the flat back just inboard of it. Logical resolution
  * 360x780 (the panel at exactly one-third scale).
  */
@@ -109,7 +109,7 @@ const S26: GalaxyPhoneSpec = {
     ],
     flash: { x: 0.169, y: 1.413 },
     // Photo-measured capsule: 19.3 x 51.4 mm, i.e. a ~2.4 mm shoulder of
-    // island around every ring — not the tight sleeve a ring-width pill gives.
+    // island around every ring - not the tight sleeve a ring-width pill gives.
     island: { x: 0.584, y: 1.21, width: 0.527, height: 1.402, radius: 0.2635, raise: 0.028 },
     ringHeight: 0.026,
   },
@@ -125,7 +125,7 @@ const S26: GalaxyPhoneSpec = {
 }
 
 /**
- * Galaxy S26 Ultra — 163.6 x 78.1 x 7.9 mm, 6.9" 3120x1440 display, titanium
+ * Galaxy S26 Ultra - 163.6 x 78.1 x 7.9 mm, 6.9" 3120x1440 display, titanium
  * frame with newly rounded corners and the S Pen silo on the bottom-left. The
  * rear array moves to the S26 pill language, scaled up: three large rings
  * stacked in a raised stadium island top-left (each ring standing proud of the
@@ -191,13 +191,13 @@ export type GalaxyVariant = keyof typeof GALAXY_VARIANTS
 /** The variant every binding defaults to. */
 export const GALAXY_DEFAULT_VARIANT: GalaxyVariant = 's26'
 
-/** Millimetres per world unit — the shared Galaxy-family scale. */
+/** Millimetres per world unit - the shared Galaxy-family scale. */
 export const GALAXY_MM_PER_UNIT = 36.66
 
 /**
  * Live geometry of the display, in the current orientation. `landscape` swaps
  * the panel's W/H and re-derives the logical width from the portrait one, so
- * the S26 reads 360x780 upright and 780x360 on its side — exactly what
+ * the S26 reads 360x780 upright and 780x360 on its side - exactly what
  * `<Galaxy>` hands its screen bridge.
  */
 export const GALAXY_METRICS = {

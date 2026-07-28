@@ -7,8 +7,8 @@ description: A corrugated shipper with every panel printable under real packing 
 box (350×120×250 mm): kraft stock, the flaps hinged on the long walls
 meeting along the width, a visible flap gap under the translucent
 packing-tape band that wraps over the top and down both short ends, and the
-manufacturer's glued lap seam on one corner. Every panel is live — top,
-front, back, both ends and the bottom — and the tape rides *over* your
+manufacturer's glued lap seam on one corner. Every panel is live - top,
+front, back, both ends and the bottom - and the tape rides *over* your
 print via a DOM overlay, exactly like tape over a printed box. Pass `size` (in millimeters) for a shipper of
 any other dimensions.
 
@@ -37,21 +37,21 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Slot | Panel |
 | --- | --- |
-| `<MailerBoxMockup.Top>` | Top panel — the hero face, with the tape riding over it (bare children). |
+| `<MailerBoxMockup.Top>` | Top panel - the hero face, with the tape riding over it (bare children). |
 | `<MailerBoxMockup.Front>` | Front (long) panel. |
 | `<MailerBoxMockup.Back>` | Back (long) panel. |
-| `<MailerBoxMockup.Right>` | Right end panel — the wrapped tape rides over it. |
-| `<MailerBoxMockup.Left>` | Left end panel — the wrapped tape rides over it. |
+| `<MailerBoxMockup.Right>` | Right end panel - the wrapped tape rides over it. |
+| `<MailerBoxMockup.Left>` | Left end panel - the wrapped tape rides over it. |
 | `<MailerBoxMockup.Bottom>` | Bottom panel, reading from the front when flipped. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<MailerBox>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-mailer" />
@@ -61,7 +61,7 @@ what stays 3D hardware.
 ### Every panel printed
 
 Handling marks on both ends, the recycled stamp underneath, brand panels
-front and back — the box reads as a designed shipper from any angle.
+front and back - the box reads as a designed shipper from any angle.
 
 <ObjectDemo demo="mailer-full" />
 
@@ -78,7 +78,7 @@ front and back — the box reads as a designed shipper from any angle.
 
 ### Unprinted white shipper
 
-Leave `children` off and the box renders in its unprinted state — flap slabs
+Leave `children` off and the box renders in its unprinted state - flap slabs
 and a skewed 4×6 shipping label instead of a live top panel.
 
 <ObjectDemo demo="mailer-blank" />

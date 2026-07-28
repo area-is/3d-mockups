@@ -3,15 +3,15 @@
  *
  * A watch strap is not a tube. Its outer face is gently domed, its inner face
  * is flat against the wrist, its edges are half-round, and it tapers between
- * the lug and the free tip. Sweeping that section along a path — rather than
- * extruding one rectangle around a circle — is what separates a strap from a
+ * the lug and the free tip. Sweeping that section along a path - rather than
+ * extruding one rectangle around a circle - is what separates a strap from a
  * rubber O-ring, so the math lives here and every binding gets it.
  *
  * A band gets a DIFFERENT path per pose rather than one path bent to fit.
  * Worn, it follows the oval of a wrist (`wristLoopPath`); unbuckled, it lies
  * dead straight on a surface (`flatStrapPath`). Approximating the flat pose as
  * a huge-radius arc technically works, but every offset expressed in degrees
- * then means a wildly different distance in the two poses — the bug that put
+ * then means a wildly different distance in the two poses - the bug that put
  * the buckle tens of units off the band. A path is parameterized 0→1 along the
  * strap in both poses, so positions transfer between them unchanged.
  *
@@ -24,7 +24,7 @@ import { BufferAttribute, BufferGeometry, Vector2, Vector3 } from 'three'
 
 /** The oval an on-wrist band traces, in the device's local YZ plane. */
 export interface WristLoop {
-  /** Vertical radius at the case (front) — the strap leaves the lugs here. */
+  /** Vertical radius at the case (front) - the strap leaves the lugs here. */
   ryFront: number
   /** Vertical radius at the far side of the wrist. */
   ryBack: number
@@ -49,7 +49,7 @@ export interface LoopFrame {
 }
 
 /**
- * The loop's circumference, by Ramanujan's ellipse approximation — accurate to
+ * The loop's circumference, by Ramanujan's ellipse approximation - accurate to
  * a few parts in 10^5 at these proportions. This is what fixes a band's true
  * length: a band is cut to go round a wrist, so however it is posed, its
  * straps measure what they measure here.
@@ -93,7 +93,7 @@ export function wristLoopAt(loop: WristLoop, phi: number): LoopFrame {
 
 /**
  * A strap's centre path, sampled at `t` from 0 at the lug end to 1 at the free
- * end. Every position along a band — a hole, the buckle, the keeper — is a `t`,
+ * end. Every position along a band - a hole, the buckle, the keeper - is a `t`,
  * so it means the same place whichever pose the band is in.
  */
 export type StrapPath = (t: number) => LoopFrame
@@ -108,7 +108,7 @@ export function wristLoopPath(loop: WristLoop, from: number, to: number): StrapP
 export interface FlatStrapOptions {
   /** Where the strap's lug end sits on the case's centre line. */
   startY: number
-  /** Depth of the strap's mid-surface — the plane it lies in. */
+  /** Depth of the strap's mid-surface - the plane it lies in. */
   z: number
   /** True length of the strap. */
   length: number
@@ -118,7 +118,7 @@ export interface FlatStrapOptions {
 
 /**
  * Path for a strap laid out flat: a straight run along Y at a fixed depth,
- * its outer face toward the viewer. This is the unbuckled pose — a real band
+ * its outer face toward the viewer. This is the unbuckled pose - a real band
  * off the wrist is straight, not a very wide arc, and holes and hardware sit
  * at exact multiples of the strap's length rather than of some arc's radius.
  */
@@ -139,7 +139,7 @@ export interface StrapOptions {
   /** How far the outer face domes above the nominal thickness. */
   crown: StrapTaper
   /**
-   * Extra ride height above the loop — how far this strap stands off the
+   * Extra ride height above the loop - how far this strap stands off the
    * wrist. A strap crossing over another one lifts by roughly the other's
    * thickness so the two stack instead of interpenetrating.
    */
@@ -196,12 +196,12 @@ function strapSection(width: number, thickness: number, crown: number, out: Vect
   out.length = i
 }
 
-/** Points per section ring — fixed, so the sweep grid stays rectangular. */
+/** Points per section ring - fixed, so the sweep grid stays rectangular. */
 export const STRAP_SECTION_POINTS = (OUTER_SEGMENTS + 1) * 2 + (EDGE_SEGMENTS - 1) * 2
 
 /**
  * Sweep a strap section along part of a wrist loop. The result is an indexed
- * grid with smooth vertex normals — flat-shaded extrusions turn a glossy
+ * grid with smooth vertex normals - flat-shaded extrusions turn a glossy
  * band into visible facets.
  */
 export function sweptStrapGeometry({

@@ -9,7 +9,7 @@ type GroupProps = ThreeElements['group']
 
 export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Album cover art — full bleed on the jacket front. Bare children fill the
+   * Album cover art - full bleed on the jacket front. Bare children fill the
    * cover; name faces explicitly with `<VinylRecord.Cover>`,
    * `<VinylRecord.Back>`, `<VinylRecord.Label>` (the live circular side-A
    * disc label) and `<VinylRecord.BackLabel>` (side B).
@@ -23,8 +23,8 @@ export interface VinylRecordProps extends Omit<GroupProps, 'children' | 'color'>
 
 /**
  * A procedurally built 12" vinyl LP sliding out of its jacket: a hollow
- * square sleeve — front and back boards joined along the spine, top and
- * bottom edges, open at the mouth — with live front and back cover art, a
+ * square sleeve - front and back boards joined along the spine, top and
+ * bottom edges, open at the mouth - with live front and back cover art, a
  * white paper inner sleeve peeking out of the mouth, and a glossy disc,
  * grooved on both sides, riding INSIDE the sleeve with its center label as
  * a live circular DOM area. No 3D asset files are loaded.
@@ -52,7 +52,7 @@ function VinylRecordImpl({
 
   // The jacket is HOLLOW: two thin boards with a slot between them that the
   // disc and inner sleeve actually occupy, like a real record coming out of
-  // its sleeve — not a solid slab with the disc floating behind it.
+  // its sleeve - not a solid slab with the disc floating behind it.
   const board = 0.0085
   const slotHalf = sleeve.thickness / 2 - board // interior face of each board
   const boardGeometry = React.useMemo(() => {
@@ -127,7 +127,7 @@ function VinylRecordImpl({
 
   // The spindle hole is a real hole: bored through the disc, out of the paper
   // label, out of the live label's DOM, and out of the depth mask that clears
-  // the canvas over it — so you see whatever is BEHIND the record through it
+  // the canvas over it - so you see whatever is BEHIND the record through it
   // (the inner sleeve, the jacket, or nothing at all), not a painted dot.
   const spindleStop = (disc.spindleRadius / disc.labelRadius) * 100
   const spindleBore = `radial-gradient(circle closest-side at 50% 50%, transparent ${spindleStop}%, #000 ${spindleStop + 1}%)`
@@ -167,13 +167,13 @@ function VinylRecordImpl({
           <meshBasicMaterial map={grooveTexture} transparent opacity={0.55} depthWrite={false} />
         </mesh>
       )}
-      {/* dead wax — the smooth matte annulus between grooves and label,
+      {/* dead wax - the smooth matte annulus between grooves and label,
           flat ON the face like the real pressing */}
       <mesh position-z={disc.thickness / 2 + 0.0012}>
         <ringGeometry args={[disc.labelRadius + 0.004, disc.deadWaxRadius, 96]} />
         <meshPhysicalMaterial color={vinylColor} metalness={0.05} roughness={0.5} />
       </mesh>
-      {/* paper label — the physical print under the (optional) live design */}
+      {/* paper label - the physical print under the (optional) live design */}
       <mesh position-z={disc.thickness / 2 + 0.0015}>
         <ringGeometry args={[disc.spindleRadius, disc.labelRadius, 64]} />
         <meshPhysicalMaterial color="#e7e1d3" metalness={0} roughness={0.85} />
@@ -194,7 +194,7 @@ function VinylRecordImpl({
           <meshPhysicalMaterial {...stock} />
         </mesh>
 
-        {/* sealed edges: spine on the left, folded seams top and bottom —
+        {/* sealed edges: spine on the left, folded seams top and bottom -
             only the right edge (the mouth) stays open */}
         <mesh position={[-sleeve.size / 2 + 0.011, 0, 0]}>
           <boxGeometry args={[0.022, sleeve.size - 0.02, sleeve.thickness * 0.94]} />

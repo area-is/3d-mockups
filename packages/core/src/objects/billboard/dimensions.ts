@@ -1,5 +1,5 @@
 /**
- * Billboard object dimensions — a classic 14' x 48' bulletin on a monopole.
+ * Billboard object dimensions - a classic 14' x 48' bulletin on a monopole.
  *
  * The standard US highway bulletin face (4.27 x 14.63 m) is normalized to
  * ~2.8 m per world unit, giving a 5.2 x 1.52 unit face. The origin is the
@@ -17,7 +17,7 @@ export const BILLBOARD = {
   face: { width: 5.2, height: 1.517, radius: 0.01 },
   /** Steel face panel behind the vinyl, with its trim lip. */
   panel: { width: 5.32, height: 1.637, depth: 0.1, radius: 0.02 },
-  /** Torsion box + slatted apron skirt directly under the face — the pole
+  /** Torsion box + slatted apron skirt directly under the face - the pole
    * connects to this, not to the face itself. */
   apron: { width: 5.32, height: 0.48, depth: 0.25 },
   /** Distance from the face center down to the ground plane. Real bulletins
@@ -46,7 +46,7 @@ export const BILLBOARD_REGIONS = [
 export const BILLBOARD_STAGE_OFFSET_Y = 1.1
 
 /** The pole base of the (stage-offset) billboard defines the ground plane. */
-/** Millimetres per world unit — the billboard scale (~2.8 m per unit). */
+/** Millimetres per world unit - the billboard scale (~2.8 m per unit). */
 export const BILLBOARD_MM_PER_UNIT = 2800
 
 /** Live geometry of the single printed face. */

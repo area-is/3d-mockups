@@ -26,7 +26,7 @@ type GroupProps = ThreeElements['group']
 
 // Machined USB-C opening, measured off the reference A16 scan: ~9.9 × 3.2 mm
 // stadium at the tablet world scale (64 mm/unit). Same receptacle across the
-// lineup — the connector is the standard part, only its edge differs.
+// lineup - the connector is the standard part, only its edge differs.
 const USB_WIDTH = 0.155
 const USB_HEIGHT = 0.05
 
@@ -43,21 +43,21 @@ export interface TabletCommonProps extends Omit<GroupProps, 'children' | 'color'
   children?: React.ReactNode
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
-   * H×W with upright content — exactly like rotating the real tablet.
+   * H×W with upright content - exactly like rotating the real tablet.
    */
   orientation?: 'portrait' | 'landscape'
   /**
    * Body color. Takes a retail colorway id from the family's catalog
-   * (`IPAD_COLORWAYS` / `GALAXY_TAB_COLORWAYS` — iPad Pro Space Black and
+   * (`IPAD_COLORWAYS` / `GALAXY_TAB_COLORWAYS` - iPad Pro Space Black and
    * Silver, iPad Air Space Gray / Starlight / Purple / Blue, Galaxy Tab
    * Gray and Silver) or any CSS color for a custom finish. A colorway id
-   * wins over a CSS color of the same name — pass hex if you meant the CSS one.
+   * wins over a CSS color of the same name - pass hex if you meant the CSS one.
    */
   color?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
-   * follows the panel aspect. Defaults to the device's logical grid — e.g.
-   * the 13" iPad Pro gives 1032×1376 in portrait and 1376×1032 in landscape —
+   * follows the panel aspect. Defaults to the device's logical grid - e.g.
+   * the 13" iPad Pro gives 1032×1376 in portrait and 1376×1032 in landscape -
    * so content and breakpoints lay out just like on the real device.
    */
   resolution?: number
@@ -71,12 +71,12 @@ interface TabletBodyProps extends TabletCommonProps {
 }
 
 /**
- * The tablet both families are built from — an ultra-thin flat slab machined
+ * The tablet both families are built from - an ultra-thin flat slab machined
  * out of its spec: thin bezels, the spec's rear camera (the iPad Pro's pod with
  * LiDAR and flash, the Air's and iPad's bare single lens, the Galaxy Tab's
  * protruding rings), its buttons, brand mark and model wordmark on the back,
  * speaker machining on the short edges, landscape-edge front camera and USB-C.
- * No 3D asset files are loaded — everything is generated from geometry at
+ * No 3D asset files are loaded - everything is generated from geometry at
  * runtime.
  */
 function TabletBody({
@@ -94,7 +94,7 @@ function TabletBody({
   const spec = TABLET_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(catalog, colorProp)
   const color = retail?.color ?? colorProp ?? '#2b292c'
   const { body, glass, display, rearCamera, stylus, notch, pogo, logo, backText, speakers } = spec
@@ -160,14 +160,14 @@ function TabletBody({
   }, [rearCamera])
 
   // Brand mark on the back: real vector geometry from the SVG. The retail
-  // marks are polished inlays reading darker than the aluminum around them —
+  // marks are polished inlays reading darker than the aluminum around them -
   // near-black gloss on Space Black, dark steel on the light finishes.
   const logoGeometry = React.useMemo(() => {
     if (!logo) return null
     const geometry = createLogoGeometry(logo.mark, logo.width, logo.height)
     // Samsung's wordmark lies along the edge in portrait. The turn is baked
     // into the geometry (not the mount group) so the back-face mirror keeps
-    // the glyphs reading correctly — horizontal, left-to-right, when the
+    // the glyphs reading correctly - horizontal, left-to-right, when the
     // tablet is held landscape.
     if (logo.rotate) geometry.rotateZ(Math.PI / 2)
     return geometry
@@ -216,7 +216,7 @@ function TabletBody({
     <group {...groupProps}>
       {/* landscape lays the body on its side; the screen counter-rotates below */}
       <group rotation-z={landscape ? Math.PI / 2 : 0}>
-        {/* chassis — bead-blasted aluminum: mostly dielectric response so the
+        {/* chassis - bead-blasted aluminum: mostly dielectric response so the
             anodized albedo reads true under the studio rig */}
         <mesh geometry={bodyGeometry}>
           <meshPhysicalMaterial color={color} metalness={0.6} roughness={0.4} envMapIntensity={0.9} />
@@ -232,7 +232,7 @@ function TabletBody({
           <meshPhysicalMaterial color="#020205" metalness={0.1} roughness={0.08} clearcoat={1} />
         </mesh>
 
-        {/* front camera — a dot in the bezel on the landscape-top (portrait
+        {/* front camera - a dot in the bezel on the landscape-top (portrait
             right) edge, where every current iPad and the Tab S11 put it; the
             Tab Ultra's camera lives in its display notch instead */}
         {!notch && (
@@ -245,7 +245,7 @@ function TabletBody({
           </mesh>
         )}
 
-        {/* rear camera — iPad Pro pod: wide lens + LiDAR on the corner
+        {/* rear camera - iPad Pro pod: wide lens + LiDAR on the corner
             column, flash + sensor dot + mic inboard (positions mirror on the
             back, matching the retail pod's back-view layout) */}
         {rearCamera.style === 'pod' && podGeometry && (
@@ -261,34 +261,34 @@ function TabletBody({
               // Apple's drawing places every element on a 20.04 mm-centered pod
               // (both Pro sizes share it): the wide lens and the LiDAR on the
               // outboard column 6.01 mm either side of center, and the ALS,
-              // flash and mic on the inboard column 6.78 mm in — the flash
+              // flash and mic on the inboard column 6.78 mm in - the flash
               // exactly on the pod's center line.
               const s = rearCamera.size / 0.4913
-              // The pod's extruded face (depth + bevels) — contents sit ON it.
+              // The pod's extruded face (depth + bevels) - contents sit ON it.
               const podZ = backZ - 0.044
               return (
                 <group position={[rearCamera.x, rearCamera.y, podZ]}>
-                  {/* 48MP wide — Ø10.83 opening, a flat black window with a
+                  {/* 48MP wide - Ø10.83 opening, a flat black window with a
                       subtle dark collar (no bright metal ring on the retail pod) */}
                   <group position={[0.0939 * s, 0.0939 * s, 0]}>
                     <LensRing r={0.0984 * s} proud={0.022} seat={0.02} frameColor="#15171b" pupil={0.62} matte />
                   </group>
-                  {/* LiDAR scanner — Ø8.41 black glass circle */}
+                  {/* LiDAR scanner - Ø8.41 black glass circle */}
                   <mesh rotation-x={Math.PI / 2} position={[0.0939 * s, -0.0939 * s, -0.004]}>
                     <cylinderGeometry args={[0.0657 * s, 0.0657 * s, 0.01, 32]} />
                     <meshPhysicalMaterial color="#0a0c11" metalness={0.35} roughness={0.14} clearcoat={1} envMapIntensity={0.5} />
                   </mesh>
-                  {/* True Tone flash — Ø6.70 frosted window */}
+                  {/* True Tone flash - Ø6.70 frosted window */}
                   <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0, -0.004]}>
                     <cylinderGeometry args={[0.0523 * s, 0.0523 * s, 0.01, 24]} />
                     <meshPhysicalMaterial color="#e9e6df" emissive="#fff3d6" emissiveIntensity={0.12} roughness={0.35} clearcoat={0.6} />
                   </mesh>
-                  {/* ambient light sensor — Ø3.60 */}
+                  {/* ambient light sensor - Ø3.60 */}
                   <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0.1267 * s, -0.003]}>
                     <cylinderGeometry args={[0.0281 * s, 0.0281 * s, 0.008, 20]} />
                     <meshPhysicalMaterial color="#0b0d12" metalness={0.4} roughness={0.25} clearcoat={1} />
                   </mesh>
-                  {/* pinhole mic — Ø1.72 */}
+                  {/* pinhole mic - Ø1.72 */}
                   <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, -0.1241 * s, -0.002]}>
                     <cylinderGeometry args={[0.0134, 0.0134, 0.008, 12]} />
                     <meshStandardMaterial color="#08090c" roughness={0.6} />
@@ -299,14 +299,14 @@ function TabletBody({
           </>
         )}
 
-        {/* rear camera — iPad Air / iPad bare single lens: a polished ring
+        {/* rear camera - iPad Air / iPad bare single lens: a polished ring
             rising straight out of the aluminum (no plate, no flash), with the
             pinhole mic beside it */}
         {rearCamera.style === 'single' && (
           <>
             {/* Apple draws a body-colored mound (Ø16.92) with the black lens
                 window (Ø11.89) rising out of it, the whole stack standing
-                ~2 mm off the back — blue iPads get a blue mound, exactly like
+                ~2 mm off the back - blue iPads get a blue mound, exactly like
                 the product photography */}
             {rearCamera.boss && (
               <mesh rotation-x={Math.PI / 2} position={[rearCamera.x, rearCamera.y, backZ - 0.009]}>
@@ -324,12 +324,12 @@ function TabletBody({
           </>
         )}
 
-        {/* rear camera — Galaxy Tab floating rings + flash dot */}
+        {/* rear camera - Galaxy Tab floating rings + flash dot */}
         {rearCamera.style === 'rings' && (
           <>
             {rearCamera.rings.map(({ x, y, r }, i) => (
               <group key={i} position={[x, y, backZ]}>
-                {/* protruding ring — dark gunmetal with a polished chamfer,
+                {/* protruding ring - dark gunmetal with a polished chamfer,
                     clearly darker than the body on both colorways */}
                 <mesh rotation-x={Math.PI / 2} position-z={-0.016}>
                   <cylinderGeometry args={[r, r, 0.05, 40]} />
@@ -356,7 +356,7 @@ function TabletBody({
           </>
         )}
 
-        {/* brand mark on the back — Apple's glyph centered upright, or the
+        {/* brand mark on the back - Apple's glyph centered upright, or the
             SAMSUNG wordmark near the corner diagonal from the cameras, laid
             along the edge in portrait exactly like the print */}
         {logo && logoGeometry && (
@@ -393,7 +393,7 @@ function TabletBody({
           </mesh>
         )}
 
-        {/* Pencil charging window — the flat antenna strip on the portrait
+        {/* Pencil charging window - the flat antenna strip on the portrait
             right edge (landscape top), flush with the rail. The Galaxy Tabs'
             S Pen clips magnetically to a clean edge, so they render nothing. */}
         {isPad && stylus && (
@@ -455,7 +455,7 @@ function TabletBody({
             )
           })}
 
-        {/* buttons — machined pills seated in the frame. iPads: the top
+        {/* buttons - machined pills seated in the frame. iPads: the top
             (Touch ID) button on the top edge + two separate volume pills on
             the right edge. Tabs: volume rocker nearer the corner, then the
             power key, on the right edge (the top edge in landscape). */}
@@ -532,7 +532,7 @@ function TabletBody({
                 aria-hidden
                 style={{
                   position: 'absolute',
-                  // the Tab Ultra notch lives on the landscape-top edge — the
+                  // the Tab Ultra notch lives on the landscape-top edge - the
                   // right edge when the tablet is held in portrait
                   ...(landscape
                     ? { top: 0, left: '50%', transform: 'translateX(-50%)', width: px(notch.width), height: px(notch.height), borderRadius: `0 0 ${px(notch.radius)}px ${px(notch.radius)}px` }
@@ -571,7 +571,7 @@ export const tabletSlots = createSlots(SCREEN_REGIONS)
 export interface IPadProps extends TabletCommonProps {
   /**
    * Which iPad to render, at true relative sizes: `ipadpro13` (default) or
-   * `ipadpro11` — camera pod with LiDAR, Face ID, Thunderbolt — `ipadair13` /
+   * `ipadpro11` - camera pod with LiDAR, Face ID, Thunderbolt - `ipadair13` /
    * `ipadair11` (bare single lens, Touch ID top button), or `ipad11`, the
    * standard A16 iPad.
    */
@@ -598,7 +598,7 @@ export const IPad = Object.assign(IPadImpl, tabletSlots)
 export interface GalaxyTabProps extends TabletCommonProps {
   /**
    * Which Galaxy Tab to render, at true relative sizes: `tabs11` (Tab S11,
-   * 11" — the default) or `tabs11ultra` (Tab S11 Ultra, 14.6", with the
+   * 11" - the default) or `tabs11ultra` (Tab S11 Ultra, 14.6", with the
    * display notch and dual camera rings).
    */
   variant?: GalaxyTabVariant
@@ -608,7 +608,7 @@ export interface GalaxyTabProps extends TabletCommonProps {
  * A procedurally built Galaxy Tab S11: the ultra-thin slab with its floating
  * camera rings and flash, volume rocker and power key, the magnetic S Pen
  * side-mount, keyboard pogo column, SAMSUNG wordmark set for the landscape
- * hold, milled speaker slots near all four corners — and, on the Ultra, the
+ * hold, milled speaker slots near all four corners - and, on the Ultra, the
  * front camera's display notch.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).

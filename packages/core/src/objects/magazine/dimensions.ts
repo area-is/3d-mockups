@@ -1,5 +1,5 @@
 /**
- * Magazine object dimensions — a perfect-bound glossy monthly.
+ * Magazine object dimensions - a perfect-bound glossy monthly.
  *
  * Proportions follow a standard US letter-trim magazine: 216 x 279 mm with a
  * ~6 mm perfect-bound page block (roughly a 100-page issue), normalized to
@@ -33,7 +33,7 @@ export function magazineSpec({ width = 216, height = 279, thickness = 6 }: Magaz
   const w = width * MAGAZINE_MM
   const h = height * MAGAZINE_MM
   return {
-    /** Trimmed page block — real guillotine cuts are near-square, so the edge
+    /** Trimmed page block - real guillotine cuts are near-square, so the edge
      * rounding is just enough to catch a highlight. */
     body: { width: w, height: h, thickness: thickness * MAGAZINE_MM, radius: 0.003 },
     /** Cover art area (the whole front). Content you pass as children maps onto this rect. */
@@ -56,7 +56,7 @@ export const MAGAZINE_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing magazine grounds on its bottom trim edge. */
-/** Millimetres per world unit — the magazine scale (`MAGAZINE_MM` inverted). */
+/** Millimetres per world unit - the magazine scale (`MAGAZINE_MM` inverted). */
 export const MAGAZINE_MM_PER_UNIT = 1 / MAGAZINE_MM
 
 /** Live geometry of the two covers and the perfect-bound spine strip. */

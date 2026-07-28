@@ -1,5 +1,5 @@
 /**
- * A-frame sign object dimensions — a sidewalk sandwich board.
+ * A-frame sign object dimensions - a sidewalk sandwich board.
  *
  * Proportions follow the classic 600 x 900 mm chalkboard-class sidewalk
  * sign: two framed panels hinged at the top, legs splayed ~15° each side (measured from street photos),
@@ -30,7 +30,7 @@ export const A_FRAME_SIGN_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The splayed legs define the pavement; the sign stands on its leg tips. */
-/** Millimetres per world unit — the sandwich-board scale (~280 mm per unit). */
+/** Millimetres per world unit - the sandwich-board scale (~280 mm per unit). */
 export const A_FRAME_SIGN_MM_PER_UNIT = 280
 
 /** Live geometry of the two framed faces. */

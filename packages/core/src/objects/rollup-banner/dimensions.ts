@@ -1,5 +1,5 @@
 /**
- * Roll-up banner object dimensions — the 850 x 2000 mm retractable
+ * Roll-up banner object dimensions - the 850 x 2000 mm retractable
  * trade-show banner stand.
  *
  * Normalized to ~540 mm per world unit so the standing unit is ~4 units
@@ -66,7 +66,7 @@ export const ROLLUP_BANNER_REGIONS = [
 export const ROLLUP_BANNER_STAGE_OFFSET_Y = 0.14
 
 /** The cassette of the (stage-offset) stand defines the floor. */
-/** Millimetres per world unit — the roll-up scale (`ROLLUP_BANNER_MM` inverted). */
+/** Millimetres per world unit - the roll-up scale (`ROLLUP_BANNER_MM` inverted). */
 export const ROLLUP_BANNER_MM_PER_UNIT = 1 / ROLLUP_BANNER_MM
 
 /** Live geometry of the printed banner web. */

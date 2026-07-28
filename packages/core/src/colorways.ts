@@ -10,7 +10,7 @@ import type { AppleWatchVariant, GalaxyWatchVariant } from './devices/watch/dime
  * The well-known retail colorways of every device, as pure data. Each device
  * component accepts a `colorway` prop taking one of these ids and presets its
  * `color` / `frameColor` (explicit color props still win). Limited editions
- * and store exclusives beyond the headline palette are left out on purpose —
+ * and store exclusives beyond the headline palette are left out on purpose -
  * pass custom `color` values for those.
  */
 export interface Colorway {

@@ -41,22 +41,22 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
   variant?: GalaxyVariant
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
-   * H×W with upright content — exactly like rotating the real phone.
+   * H×W with upright content - exactly like rotating the real phone.
    */
   orientation?: 'portrait' | 'landscape'
   /**
    * Back panel color. Takes a retail colorway id from `GALAXY_COLORWAYS`
    * (`'icyblue'`, `'mint'`…), which also presets `frameColor`, or any CSS
    * color for a custom finish. A colorway id wins over a CSS color of the
-   * same name — pass hex if you meant the CSS one.
+   * same name - pass hex if you meant the CSS one.
    */
   color?: string
   /** Metal frame, buttons and camera-ring color. */
   frameColor?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
-   * follows the panel aspect. Defaults to the device's logical resolution —
-   * e.g. the S26 gives 360×780 in portrait and 780×360 in landscape — so
+   * follows the panel aspect. Defaults to the device's logical resolution -
+   * e.g. the S26 gives 360×780 in portrait and 780×360 in landscape - so
    * content lays out just like it would on the real device.
    */
   resolution?: number
@@ -64,7 +64,7 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
 
 /**
  * A procedurally built Samsung Galaxy S26-family phone. No 3D asset files are
- * loaded — the whole device is generated from geometry at runtime, so it
+ * loaded - the whole device is generated from geometry at runtime, so it
  * tree-shakes and never pops in. Detail geometry (button
  * pills, camera island, port and speaker cutouts, antenna seams) follows
  * reference scans of the retail devices.
@@ -86,7 +86,7 @@ function GalaxyImpl({
   const spec = GALAXY_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(GALAXY_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#101216'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#4a4f59'
@@ -99,7 +99,7 @@ function GalaxyImpl({
   // the bevel size so the final silhouette lands exactly on the spec body. The
   // bottom-edge port, speaker slot and mic holes are then machined out of it
   // with CSG so every opening is a real cavity (SIM tray and S Pen cap stay
-  // flush — they're covers, not holes).
+  // flush - they're covers, not holes).
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
       body.width - body.bevel * 2,
@@ -168,7 +168,7 @@ function GalaxyImpl({
     return geometry
   }, [rearCamera.island])
 
-  // SAMSUNG wordmark on the lower back — real vector geometry from the SVG.
+  // SAMSUNG wordmark on the lower back - real vector geometry from the SVG.
   // The retail print is a low-contrast gray: mostly neutral, keeping a hint
   // of the colorway, legible without jumping off the glass.
   const logoGeometry = React.useMemo(
@@ -181,7 +181,7 @@ function GalaxyImpl({
     return `#${c.lerp(new THREE.Color(luminance > 0.45 ? '#14161a' : '#dfe3e9'), 0.55).getHexString()}`
   }, [color])
 
-  // SIM tray: a thin stadium plate whose rounded ends lie in the edge plane —
+  // SIM tray: a thin stadium plate whose rounded ends lie in the edge plane -
   // a RoundedBox can't do that at this aspect (its all-edge radius would
   // balloon a 0.2 mm plate into a thick slab bulging out of the edge).
   const simGeometry = React.useMemo(
@@ -220,7 +220,7 @@ function GalaxyImpl({
 
   const bottomY = -body.height / 2 - 0.002
 
-  // The pill island is tone-on-tone with the back — on the retail devices it
+  // The pill island is tone-on-tone with the back - on the retail devices it
   // reads as a subtle seam and a slightly different sheen, never as a
   // contrasting plate.
   const islandColor = React.useMemo(
@@ -318,7 +318,7 @@ function GalaxyImpl({
           </mesh>
         )}
 
-        {/* side keys on the right rail — machined pills seated in the frame,
+        {/* side keys on the right rail - machined pills seated in the frame,
             protruding ~0.5 mm like the real keys (positions from the scan) */}
         {buttons.map(({ y, length }, i) => (
           <SideKey
@@ -346,7 +346,7 @@ function GalaxyImpl({
         ))}
 
         {/* bottom-edge machining: the USB-C, speaker slot and mic holes are real
-            cavities cut from the chassis above — these are their interiors.
+            cavities cut from the chassis above - these are their interiors.
             SIM tray and S Pen cap are flush covers with a seam. */}
         {spec.bottomEdge && (
           <>
@@ -372,7 +372,7 @@ function GalaxyImpl({
                 geometry={simGeometry}
                 position={[spec.bottomEdge.sim.x, -body.height / 2 + 0.002, 0]}
               >
-                {/* the SIM tray is frame-toned metal — only its seam reads dark */}
+                {/* the SIM tray is frame-toned metal - only its seam reads dark */}
                 <meshStandardMaterial color="#15181d" transparent opacity={0.35} roughness={0.5} />
               </mesh>
             )}
@@ -416,7 +416,7 @@ function GalaxyImpl({
               aria-hidden
               style={{
                 position: 'absolute',
-                // the hole sits at the panel's physical top — the left edge in landscape
+                // the hole sits at the panel's physical top - the left edge in landscape
                 ...(landscape
                   ? { left: px(hole.offsetY - hole.radius), top: '50%', transform: 'translateY(-50%)' }
                   : { top: px(hole.offsetY - hole.radius), left: '50%', transform: 'translateX(-50%)' }),

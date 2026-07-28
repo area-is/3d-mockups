@@ -5,8 +5,8 @@ import { floatPose, randomFloatPhase } from '@area-3d-mockups/core'
 
 /**
  * Gentle idle float shared by the device mockups. The pose itself is core math
- * (`floatPose`); this wrapper samples it at frame priority -2 — before the
- * orbit controls (-1) and before drei's `<Html>` screen sync (0) — so the DOM
+ * (`floatPose`); this wrapper samples it at frame priority -2 - before the
+ * orbit controls (-1) and before drei's `<Html>` screen sync (0) - so the DOM
  * screen is positioned from this frame's device pose and never trails the
  * WebGL body.
  */

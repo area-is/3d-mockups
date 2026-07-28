@@ -26,7 +26,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `{ width?, height?, thickness? }` | `156×234×27` | Physical trim in mm — e.g. `{ width: 216, height: 279 }` for a letter-size art book, `{ thickness: 45 }` for a fat novel. |
+| `size` | `{ width?, height?, thickness? }` | `156×234×27` | Physical trim in mm - e.g. `{ width: 216, height: 279 }` for a letter-size art book, `{ thickness: 45 }` for a fat novel. |
 | `color` | `string` | `'#1f3a5f'` | Cloth color: spine, back board, and board edges. |
 | `pageColor` | `string` | `'#f4eede'` | Paper color of the page block edges. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your cover content. |
@@ -38,18 +38,18 @@ Every example below is live: drag to spin it.
 
 | Slot | Surface |
 | --- | --- |
-| `<BookMockup.Cover>` | Front cover (bare children) — fills the front board, full bleed. |
-| `<BookMockup.Back>` | Back cover — fills the back board, full bleed. |
-| `<BookMockup.Spine>` | Spine — a tall strip on the backbone crown. |
+| `<BookMockup.Cover>` | Front cover (bare children) - fills the front board, full bleed. |
+| `<BookMockup.Back>` | Back cover - fills the back board, full bleed. |
+| `<BookMockup.Spine>` | Spine - a tall strip on the backbone crown. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<Book>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-book" />
@@ -59,7 +59,7 @@ what stays 3D hardware.
 ### Every surface printed
 
 The `.Back` and `.Spine` slots complete the case: blurb and barcode on the
-back board, the title reading down the spine — the whole book stays designed
+back board, the title reading down the spine - the whole book stays designed
 as it turns.
 
 <ObjectDemo demo="book-full" />
@@ -89,10 +89,10 @@ page block for an older, cream-paper look.
 </BookMockup>
 ```
 
-### A row of books — composing bare objects
+### A row of books - composing bare objects
 
 Skip the all-in-one wrapper and drop several `<Book>` objects into one
-[`MockupCanvas`](/docs/api/mockup-canvas) — a series lineup in a single
+[`MockupCanvas`](/docs/api/mockup-canvas) - a series lineup in a single
 WebGL context.
 
 <ObjectDemo demo="book-row" />

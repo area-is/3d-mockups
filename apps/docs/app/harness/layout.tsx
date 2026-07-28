@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 }
 
-// Root layout for the standalone /harness route — a chrome-less stage used by
+// Root layout for the standalone /harness route - a chrome-less stage used by
 // the repo's Playwright screenshot tooling to render any device variant from
 // URL params (see page.tsx). Not linked from the site.
 export default function HarnessLayout({ children }: { children: React.ReactNode }) {

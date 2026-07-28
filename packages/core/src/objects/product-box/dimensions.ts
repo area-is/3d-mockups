@@ -1,9 +1,9 @@
 /**
- * Product box object dimensions — a standing retail carton.
+ * Product box object dimensions - a standing retail carton.
  *
  * Proportions follow the classic retail-carton hero (cereal/software class):
- * 190 mm wide x 265 mm tall x 55 mm deep — a ~1:1.4 front with a shallow
- * side — normalized to ~62 mm per world unit so the box stands 4.27 units
+ * 190 mm wide x 265 mm tall x 55 mm deep - a ~1:1.4 front with a shallow
+ * side - normalized to ~62 mm per world unit so the box stands 4.27 units
  * tall on the default mockup stage. The tuck flap on the top face stops
  * short of the back edge, leaving the visible seam every real carton has.
  *

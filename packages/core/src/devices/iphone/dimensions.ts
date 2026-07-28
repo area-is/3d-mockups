@@ -1,5 +1,5 @@
 /**
- * iPhone device dimensions — the full iPhone 17 family.
+ * iPhone device dimensions - the full iPhone 17 family.
  *
  * All variants share one world scale (~37.15 mm per unit, set so the base
  * iPhone 17's display is exactly 1.8 units wide), so the variants keep their
@@ -34,7 +34,7 @@ export interface IPhoneButton {
 export interface IPhoneSpec {
   /** Flat frame + chassis. `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: number; height: number; depth: number; radius: number; bevel: number }
-  /** Front cover glass (slightly larger than the active display — forms the bezel ring). */
+  /** Front cover glass (slightly larger than the active display - forms the bezel ring). */
   glass: { width: number; height: number; radius: number }
   /** Active display area. Content you pass as children is mapped onto this rect. */
   display: { width: number; height: number; radius: number }
@@ -55,7 +55,7 @@ export interface IPhoneSpec {
     style: 'pill' | 'bar'
     /**
      * The raised pedestal. `radius` is its corner radius, `raise` its height
-     * off the back, `wall` how far its top face sits inside the footprint —
+     * off the back, `wall` how far its top face sits inside the footprint -
      * the width of the sloped wall around it (Apple's drawings put the 17's
      * pill face 2.6 mm inside its base, the Air's 4.7 mm).
      */
@@ -94,7 +94,7 @@ export interface IPhoneSpec {
 }
 
 /**
- * iPhone 17 — 149.6 x 71.5 x 7.95 mm, 6.3" 2622x1206 display, Dynamic Island,
+ * iPhone 17 - 149.6 x 71.5 x 7.95 mm, 6.3" 2622x1206 display, Dynamic Island,
  * vertical two-lens camera pill. Logical resolution 402x874 pt. Button and
  * edge detail follows the family scan geometry.
  */
@@ -140,12 +140,12 @@ const IPHONE_17: IPhoneSpec = {
   },
   antennaLines: [1.6, -1.6],
   // Apple's drawing: 15.75 x 19.34 mm, centered, its center 73.18 mm below the
-  // top edge — a hair above the body's center line.
+  // top edge - a hair above the body's center line.
   logo: { y: 0.044, width: 0.4239, height: 0.5206 },
 }
 
 /**
- * iPhone 17 Air — 156.2 x 74.7 x 5.64 mm (ultra-thin), 6.5" 2736x1260 display.
+ * iPhone 17 Air - 156.2 x 74.7 x 5.64 mm (ultra-thin), 6.5" 2736x1260 display.
  * Single 48MP lens in a full-width stadium bar across the top of the back with
  * the flash and mic on the opposite half; titanium frame; buttons protrude a
  * bare 0.3 mm. Logical resolution 420x912 pt.
@@ -194,7 +194,7 @@ const IPHONE_17_AIR: IPhoneSpec = {
 }
 
 /**
- * iPhone 17 Pro — 150.0 x 71.9 x 8.75 mm, 6.3" 2622x1206 display (same panel
+ * iPhone 17 Pro - 150.0 x 71.9 x 8.75 mm, 6.3" 2622x1206 display (same panel
  * as the 17). Aluminum unibody with the full-width camera plateau: triangular
  * 48MP trio on one side, flash + mic + LiDAR column on the other, and the
  * Ceramic Shield charging window on the lower back. Logical resolution
@@ -216,7 +216,7 @@ const IPHONE_17_PRO: IPhoneSpec = {
     { edge: 'right', y: -0.797, length: 0.458, flush: true },
   ],
   buttonProfile: { protrusion: 0.011, thickness: 0.072 },
-  // Apple's drawing: the plateau is the unibody's own shelf — it runs the full
+  // Apple's drawing: the plateau is the unibody's own shelf - it runs the full
   // width, its top edge IS the product's top edge, and it steps down to the
   // glass 44.01 mm below that, standing 2.55 mm proud. The lens trio sits
   // 14.37 mm in from the top-left corner (rows 14.37 / 33.61, third lens at
@@ -244,7 +244,7 @@ const IPHONE_17_PRO: IPhoneSpec = {
     screws: [{ x: 0.183, r: 0.02 }, { x: -0.183, r: 0.02 }],
     speakers: [
       // Scan: six drilled holes per side, slightly asymmetric groups. Hole
-      // radius from the retail drilling (~1.8 mm bore) — the scan's clusters
+      // radius from the retail drilling (~1.8 mm bore) - the scan's clusters
       // read wider because they include each hole's chamfer, which would make
       // neighboring cavities intersect.
       { x: -0.552, r: 0.024 },
@@ -263,13 +263,13 @@ const IPHONE_17_PRO: IPhoneSpec = {
   },
   antennaLines: [1.62, -1.62],
   // Apple's drawing: 16.32 x 20.04 mm, centered in the glass window rather than
-  // on the body — 95.30 mm below the top edge, i.e. 20.30 mm below the body's
+  // on the body - 95.30 mm below the top edge, i.e. 20.30 mm below the body's
   // center line, so the MagSafe ring lands around it.
   logo: { y: -0.5464, width: 0.4393, height: 0.5394 },
 }
 
 /**
- * iPhone 17 Pro Max — 163.4 x 78.0 x 8.75 mm, 6.9" 2868x1320 display. Same
+ * iPhone 17 Pro Max - 163.4 x 78.0 x 8.75 mm, 6.9" 2868x1320 display. Same
  * plateau architecture as the Pro at the larger size, plus the top-edge RF
  * window. Logical resolution 440x956 pt. Detail geometry from a retail-unit
  * scan (dimensionally the cleanest of the family models).
@@ -291,8 +291,8 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
   ],
   buttonProfile: { protrusion: 0.012, thickness: 0.072 },
   // Apple's drawing: same plateau architecture and the same camera rows as the
-  // Pro — full-width unibody shelf from the top edge down to 44.01 mm, 2.55 mm
-  // proud, lens trio 14.37 mm in from the top-left corner — with the flash /
+  // Pro - full-width unibody shelf from the top edge down to 44.01 mm, 2.55 mm
+  // proud, lens trio 14.37 mm in from the top-left corner - with the flash /
   // mic / LiDAR column pushed out to 64.16 mm by the wider body.
   rearCamera: {
     style: 'bar',
@@ -309,7 +309,7 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
     ],
   },
   // Apple's drawing: Ceramic Shield window 70.19 x 111.57 mm with ~16 mm
-  // corners, 47.96 to 159.53 mm below the top edge — the two-tone back.
+  // corners, 47.96 to 159.53 mm below the top edge - the two-tone back.
   backWindow: { y: -0.5932, width: 1.8894, height: 3.0032, radius: 0.4307 },
   bottomEdge: {
     usb: { x: 0, width: 0.244, height: 0.085 },
@@ -331,7 +331,7 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
   },
   antennaLines: [1.764, -1.764],
   topWindow: { width: 0.738, height: 0.121 },
-  // Apple's drawing: 16.32 x 20.04 mm — the same badge as the Pro, and the same
+  // Apple's drawing: 16.32 x 20.04 mm - the same badge as the Pro, and the same
   // 20.30 mm below the body's center line, centered in the glass window.
   logo: { y: -0.5464, width: 0.4393, height: 0.5394 },
 }
@@ -348,7 +348,7 @@ export type IPhoneVariant = keyof typeof IPHONE_VARIANTS
 /** The variant every binding defaults to. */
 export const IPHONE_DEFAULT_VARIANT: IPhoneVariant = '17'
 
-/** Millimetres per world unit — the shared iPhone-family scale. */
+/** Millimetres per world unit - the shared iPhone-family scale. */
 export const IPHONE_MM_PER_UNIT = 37.15
 
 /** Live geometry of the display, in the current orientation. */

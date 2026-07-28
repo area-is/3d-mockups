@@ -24,7 +24,7 @@
 /*
  * Transparency checkerboard behind each page's hero example. The WebGL canvas
  * is alpha-transparent, so the checker stays visible everywhere the scene
- * doesn't paint — the classic way to show the mockup (and its contact shadow)
+ * doesn't paint - the classic way to show the mockup (and its contact shadow)
  * composites onto whatever the page puts behind it. Checks are tinted from
  * the foreground color so the pattern adapts to light and dark themes.
  */

@@ -1,5 +1,5 @@
 /**
- * Bus object dimensions — a generic 40 ft / 12 m low-floor city transit bus
+ * Bus object dimensions - a generic 40 ft / 12 m low-floor city transit bus
  * (New Flyer Xcelsior / Nova LFS / Mercedes Citaro class, no brand):
  * one-box silhouette with no hood, a near-vertical lightly-raked front, a
  * dark upper fascia band holding the LED destination sign, a window band
@@ -27,7 +27,7 @@ export const BUS = {
   skirtY: -0.676,
   /**
    * Wheels: front axle 2.7 m from the nose, 6 m wheelbase, ~1 m tires.
-   * The front axle runs single tires; the drive axle runs duals —
+   * The front axle runs single tires; the drive axle runs duals -
    * `dualWidth` is each tire of the pair, `dualGap` the space between them.
    */
   wheels: {
@@ -56,17 +56,17 @@ export const BUS = {
     roofStartX: 2.79,
     roofY: 0.842,
   },
-  /** Passenger window band (both sides) — nearly half the body height. */
+  /** Passenger window band (both sides) - nearly half the body height. */
   windowBand: { y: 0.079, height: 0.66, frontX: 2.35, backX: -3.02 },
   /**
-   * Driver's window on the street side (−Z), right behind the A-pillar —
+   * Driver's window on the street side (−Z), right behind the A-pillar -
    * same height and sill line as the passenger band, like the sliding
    * driver's glass on real low-floor buses.
    */
   driverWindow: { x: 2.73, width: 0.6, y: 0.079, height: 0.66 },
   /**
    * Curb-side doors: two-leaf full-glass slabs whose glass drops to ~350 mm
-   * above the ground — the low-floor entry these buses are known for.
+   * above the ground - the low-floor entry these buses are known for.
    */
   doors: [
     { x: 2.724, width: 0.6, bottomY: -0.66 },
@@ -83,7 +83,7 @@ export const BUS = {
   rearAd: { width: 0.936, height: 0.281, y: -0.28, radius: 0.012 },
   /**
    * Full-coverage rear wrap (`coverage="full"`): the whole tail between the
-   * bumper and the roof dome, out to the corner bevels — engine louvers and
+   * bumper and the roof dome, out to the corner bevels - engine louvers and
    * the rear window get covered like a real tail wrap; each taillight lamp
    * is carved out individually.
    */
@@ -106,7 +106,7 @@ export const BUS_REGIONS = [
   { name: 'destinationSign', label: 'Destination sign' },
 ] as const satisfies readonly RegionSpec[]
 
-/** Millimetres per world unit — the transit-bus scale (~1900 mm per unit). */
+/** Millimetres per world unit - the transit-bus scale (~1900 mm per unit). */
 export const BUS_MM_PER_UNIT = 1900
 
 /**
@@ -129,7 +129,7 @@ export const BUS_FULL_SIDE = {
  * How much of the bodywork a wrap covers.
  *
  * `perforated` is the full wrap running OVER the operational glass as
- * perforated film, so it shares `full`'s rects exactly — the two differ only
+ * perforated film, so it shares `full`'s rects exactly - the two differ only
  * in what the clip path carves out, which is not a measurement.
  */
 export type BusCoverage = 'panel' | 'full' | 'perforated'

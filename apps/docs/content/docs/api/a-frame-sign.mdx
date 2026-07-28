@@ -5,7 +5,7 @@ description: A sidewalk sandwich board with two live framed panels.
 
 `<AFrameSign>` and `<AFrameSignMockup>` render the classic 600×900 mm
 chalkboard-class sidewalk sign: two wood-framed panels hinged at the top,
-legs splayed ~15° (measured from street photos), with both faces live DOM —
+legs splayed ~15° (measured from street photos), with both faces live DOM -
 chalk menus, sale boards, open/closed signs.
 
 <ObjectDemo demo="aframe-basic" checker />
@@ -22,7 +22,7 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `color` | `string` | `'#4a3826'` | Frame color — dark-stained wood by default. |
+| `color` | `string` | `'#4a3826'` | Frame color - dark-stained wood by default. |
 | `surfaceBackground` | `string` | `'#20241f'` | CSS background behind each panel (chalkboard black). |
 | `resolution` | `number` | `420` | Virtual face width in CSS px; height follows the panel. |
 
@@ -31,16 +31,16 @@ Beyond the [shared screen props](/docs/screen-content):
 | Slot | Surface |
 | --- | --- |
 | `<AFrameSignMockup.Front>` | Front panel (bare children). |
-| `<AFrameSignMockup.Back>` | Back panel — the other side of the A. |
+| `<AFrameSignMockup.Back>` | Back panel - the other side of the A. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<AFrameSign>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-a-frame" />

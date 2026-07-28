@@ -36,9 +36,9 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   /** Which Galaxy Z Fold device to render. */
   variant?: FoldVariant
   /**
-   * `true` (default) renders the unfolded tablet — your content fills the large,
+   * `true` (default) renders the unfolded tablet - your content fills the large,
    * nearly square inner display (with a faint center crease). `false` renders the
-   * folded candy-bar — your content fills the tall cover display and the rear
+   * folded candy-bar - your content fills the tall cover display and the rear
    * triple camera shows on the back.
    */
   open?: boolean
@@ -47,7 +47,7 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * open), overriding `open` when set. Intermediate angles render the real
    * Flex Mode book pose: the panels pivot around the hinge line, the spine's
    * flat band (with its SAMSUNG engraving) bisects the fold, and your
-   * content bends across the crease — e.g. `openAngle={110}` for the
+   * content bends across the crease - e.g. `openAngle={110}` for the
    * half-open standing pose. The pose is continuous from nearly shut to
    * nearly flat; only ~0° snaps to the dedicated folded pose and ~177°+
    * to the flat-open one. At intermediate angles the display is composited
@@ -57,13 +57,13 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   openAngle?: number
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
-   * H×W with upright content — exactly like rotating the real device.
+   * H×W with upright content - exactly like rotating the real device.
    */
   orientation?: 'portrait' | 'landscape'
   /**
    * Back panel color. Takes a retail colorway id from `FOLD_COLORWAYS`,
    * which also presets `frameColor`, or any CSS color for a custom finish.
-   * A colorway id wins over a CSS color of the same name — pass hex if you
+   * A colorway id wins over a CSS color of the same name - pass hex if you
    * meant the CSS one.
    */
   color?: string
@@ -95,9 +95,9 @@ function slabGeometry(width: number, height: number, radius: number, depth: numb
 
 /**
  * A procedurally built Samsung Galaxy Z Fold 7. One device, two form factors:
- * the unfolded tablet (big inner display) and the folded candy-bar — two
- * stacked slabs with the real crevice of air between them — switched with the
- * `open` prop. No 3D asset files are loaded — the whole device is generated
+ * the unfolded tablet (big inner display) and the folded candy-bar - two
+ * stacked slabs with the real crevice of air between them - switched with the
+ * `open` prop. No 3D asset files are loaded - the whole device is generated
  * from geometry at runtime.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
@@ -119,14 +119,14 @@ function FoldImpl({
   const spec = FOLD_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(FOLD_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#3a3d42'
   const frameColor = frameColorProp ?? retail?.frameColor ?? '#54585f'
   // Resolve the pose: an explicit fold angle wins over the boolean; the
   // extremes snap to the dedicated flat-open / folded-shut paths so the
   // default renders are pixel-identical to before. The flex rig pivots on
-  // the display surface, so the pose is continuous all the way down —
+  // the display surface, so the pose is continuous all the way down -
   // only ~0° itself snaps to the dedicated folded pose.
   const angle = openAngle === undefined ? (open ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
   const mode: 'open' | 'closed' | 'flex' = angle >= 177 ? 'open' : angle < 0.5 ? 'closed' : 'flex'
@@ -141,7 +141,7 @@ function FoldImpl({
   // Screens occlude against EVERY registered body, this device's own panels
   // included. Excluding them (to stop a grazing corner ray blacking out a
   // visible display) meant a panel's DOM screen composited straight over its
-  // own chassis — the flex pose's far display piercing through the near one,
+  // own chassis - the flex pose's far display piercing through the near one,
   // and the main display showing through the device's own back. The occlusion
   // test now needs a MAJORITY of its samples blocked before it hides, which
   // handles the grazing case without giving up self-occlusion.
@@ -152,8 +152,8 @@ function FoldImpl({
   const halfZ = gap / 2 + halfDepth / 2
 
   // Machined chassis geometry, built ONLY for the pose being rendered. Each
-  // `cutGeometry` is a CSG boolean over a tessellated slab — easily the most
-  // expensive thing this component does — and the three poses never share a
+  // `cutGeometry` is a CSG boolean over a tessellated slab - easily the most
+  // expensive thing this component does - and the three poses never share a
   // shell, so building all of them on every mount paid that cost three times
   // over for two shells that never reach the scene graph. One memo keyed on
   // `mode` also gives the render branches below a discriminated union to
@@ -194,7 +194,7 @@ function FoldImpl({
 
     // Flex pose panels: the open slab split at the hinge line, each half
     // machining only the bottom-edge openings that live on its side. The
-    // fold-side corners are nearly square (the display bends there — the real
+    // fold-side corners are nearly square (the display bends there - the real
     // panels run straight into the hinge), so the two panels stay tight at
     // the crease instead of opening rounded-corner gaps.
     const b = spec.open.body
@@ -302,7 +302,7 @@ function FoldImpl({
   }, [mode, spec.closed])
   React.useEffect(() => () => coverGlassGeometry?.dispose(), [coverGlassGeometry])
 
-  // The vertical SAMSUNG emboss on the hinge spine — vector geometry from the SVG.
+  // The vertical SAMSUNG emboss on the hinge spine - vector geometry from the SVG.
   const spineLogoGeometry = React.useMemo(
     () => createLogoGeometry('samsung', spec.hinge.emboss.length, spec.hinge.emboss.length * 0.155),
     [spec.hinge.emboss.length]
@@ -358,7 +358,7 @@ function FoldImpl({
       >
         <meshPhysicalMaterial color={color} metalness={0.4} roughness={0.32} clearcoat={0.8} />
       </mesh>
-      {/* the lens housing matches the body color on the real device — an
+      {/* the lens housing matches the body color on the real device - an
           anodized boss, not a black plate (only the lens glass is dark) */}
       <mesh
         geometry={islandGeometry}
@@ -413,7 +413,7 @@ function FoldImpl({
     ))
 
   // The inner display's soft center crease and punch-hole camera, positioned
-  // in the full virtual-display coordinate space — shared by the flat-open
+  // in the full virtual-display coordinate space - shared by the flat-open
   // screen (via the overlay slot) and the flex pose (inside each half's
   // clipped full-size wrapper, where the same coordinates apply).
   const creaseOverlay = (
@@ -488,23 +488,23 @@ function FoldImpl({
     // distance from that axis at every angle, the Armor FlexHinge spine is
     // modeled as a cylinder segment of exactly that radius: it stays tangent
     // to both halves' back shells from nearly-shut to nearly-flat, wrapping
-    // the fold like the real teardrop hinge — no seams, no detached band.
+    // the fold like the real teardrop hinge - no seams, no detached band.
     const alpha = ((180 - angle) / 2) * (Math.PI / 180)
     const b = spec.open.body
     const hw = b.width / 2
     // Pivot ON the display surface: the two half-screens then meet exactly
-    // at the crease at every angle — nearly shut included — instead of
+    // at the crease at every angle - nearly shut included - instead of
     // interpenetrating (crossed DOM planes glitch near 0°).
     const pz = b.depth / 2 + 0.006
     // Below ~26° the whole rig glides into the folded pose's canonical
-    // placement — a quarter-turn of the assembly around the vertical hinge
-    // line plus re-centering onto the spine edge — converging exactly
+    // placement - a quarter-turn of the assembly around the vertical hinge
+    // line plus re-centering onto the spine edge - converging exactly
     // where the dedicated closed pose renders, so the ~0° swap never
     // jumps. Identity above 26°.
     const w = THREE.MathUtils.smoothstep(26 - angle, 0, 26)
     // Tangent radius: pivot plane to the back face. The exposed arc spans
     // ±alpha around straight-back, meeting each half at its back corner.
-    // Run the spine and its caps essentially edge to edge — the panels'
+    // Run the spine and its caps essentially edge to edge - the panels'
     // fold-side corners are square now, so a shorter spine would show the
     // V's interior past its ends at shallow angles (the detached-pill read).
     const spineR = pz + b.depth / 2
@@ -514,7 +514,7 @@ function FoldImpl({
     // wider than the wordmark; flatter than that the spine has retracted.
     const showEmboss = 2 * spineR * Math.sin(alpha) > spec.hinge.emboss.length * 0.155 + 0.06
     // Sector filling the V at each end: center at the axis, arc radius
-    // `spineR`, spanning the same ±alpha — the exact cross-section of the
+    // `spineR`, spanning the same ±alpha - the exact cross-section of the
     // fold's opening (shape v runs toward the back; world z = pz − v).
     const capSector = new THREE.Shape()
     capSector.moveTo(0, 0)
@@ -570,7 +570,7 @@ function FoldImpl({
       <group {...groupProps}>
         <group key="flex" rotation-z={landscape ? Math.PI / 2 : 0}>
           {/* convergence chain: re-center onto the spine edge → quarter-turn
-              the assembly around the vertical hinge line — weighted by `w` */}
+              the assembly around the vertical hinge line - weighted by `w` */}
           <group position={[(-hw / 2) * w, 0, -pz * w]}>
           <group position={[0, 0, pz]} rotation-y={alpha * w}>
           <group position={[0, 0, -pz]}>
@@ -652,7 +652,7 @@ function FoldImpl({
           </group>
 
           {/* the spine wrapping the fold: a cylinder segment tangent to both
-              back shells, its exposed arc growing as the book closes — plus
+              back shells, its exposed arc growing as the book closes - plus
               sector end caps closing the V at the top and bottom edges, and
               the vertical SAMSUNG engraving while the band is wide enough */}
           <group position={[0, 0, pz]}>
@@ -720,7 +720,7 @@ function FoldImpl({
             <meshPhysicalMaterial color="#040507" metalness={0.1} roughness={0.09} clearcoat={1} />
           </mesh>
 
-          {/* hinge crevice: fully open the spine retracts flush — only a thin
+          {/* hinge crevice: fully open the spine retracts flush - only a thin
               dark seam separates the two halves (retail photos), so no wide
               spine band and no wordmark here: a near-black core line with
               soft shadowed shoulders, top to bottom */}
@@ -788,7 +788,7 @@ function FoldImpl({
   return (
     <group {...groupProps}>
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
-        {/* front (cover) slab — carries the cover screen and the speaker slot */}
+        {/* front (cover) slab - carries the cover screen and the speaker slot */}
         <group position-z={halfZ}>
           <mesh geometry={shell.front}>
             {chassisMaterial}
@@ -806,7 +806,7 @@ function FoldImpl({
           {screen(halfDepth / 2 + 0.006)}
         </group>
 
-        {/* rear (camera) slab — colorway back, camera stack, buttons, USB-C */}
+        {/* rear (camera) slab - colorway back, camera stack, buttons, USB-C */}
         <group position-z={-halfZ}>
           <mesh geometry={shell.rear}>
             {chassisMaterial}
@@ -833,9 +833,9 @@ function FoldImpl({
 
         {/* the hinge spine capping the left edge: a vertical capsule whose
             radius spans the WHOLE folded stack, so its crown is tangent to
-            both the front and back faces — the smooth book spine of the
+            both the front and back faces - the smooth book spine of the
             retail device, sealing the crevice at the hinge edge instead of
-            reading as a thin separate rod — with the vertical SAMSUNG
+            reading as a thin separate rod - with the vertical SAMSUNG
             emboss on its crown */}
         {(() => {
           // A hair inside the stack's outer faces so the near-tangent
@@ -848,7 +848,7 @@ function FoldImpl({
                 <capsuleGeometry args={[spineR, spineLen, 12, 32]} />
                 <meshPhysicalMaterial color={frameColor} metalness={0.8} roughness={0.34} />
               </mesh>
-              {/* hairline seams where the spine's roll meets the two faces —
+              {/* hairline seams where the spine's roll meets the two faces -
                   without them the hinge side reads as one featureless pill */}
               {([1, -1] as const).map((s) => (
                 <mesh key={s} position={[0, 0, s * (spineR + 0.0028)]}>

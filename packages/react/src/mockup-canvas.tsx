@@ -26,7 +26,7 @@ import {
  * react-three-fiber stamps `touch-action: none` on its event target when it
  * connects, which traps page scrolling on touch devices. Pin it to the core's
  * `canvasTouchAction` instead: vertical swipes scroll past the mockup,
- * horizontal drags orbit — unless zoom is on, in which case the canvas owns
+ * horizontal drags orbit - unless zoom is on, in which case the canvas owns
  * two-finger gestures. (Checked per frame because r3f can reconnect and
  * re-stamp.)
  */
@@ -63,7 +63,7 @@ function OverlayIcon({ path }: { path: string }) {
 }
 
 export interface MockupCanvasProps {
-  /** Your scene — typically a device such as `<Phone>`. */
+  /** Your scene - typically a device such as `<Phone>`. */
   children: React.ReactNode
   /** Drag-to-rotate controls, axis at the stage center. */
   controls?: boolean
@@ -71,7 +71,7 @@ export interface MockupCanvasProps {
   autoRotate?: boolean
   autoRotateSpeed?: number
   /**
-   * Allow the camera to rotate a full 360° vertically — straight over the top
+   * Allow the camera to rotate a full 360° vertically - straight over the top
    * and bottom of the device. Off by default: vertical rotation stays within
    * the classic orbit clamp so the device never flips upside down by accident.
    */
@@ -79,7 +79,7 @@ export interface MockupCanvasProps {
   /**
    * Zoom controls: pinch on touch, scroll wheel on desktop, plus overlay
    * +/− buttons. Off by default so an embedded mockup never hijacks page
-   * scroll — turning it on gives the canvas the two-finger gesture (vertical
+   * scroll - turning it on gives the canvas the two-finger gesture (vertical
    * page scrolling then starts outside the mockup).
    */
   zoom?: boolean
@@ -112,7 +112,7 @@ export interface MockupCanvasProps {
  * WebGL canvas, studio lighting, soft shadows and orbit controls. Compose it
  * with any device model, e.g. `<MockupCanvas><Phone>…</Phone></MockupCanvas>`.
  *
- * The stage itself — camera pose, orbit feel, light rig, shadow softness —
+ * The stage itself - camera pose, orbit feel, light rig, shadow softness -
  * is defined once in `@area-3d-mockups/core` and shared with every binding.
  */
 export function MockupCanvas({
@@ -236,14 +236,14 @@ export function MockupCanvas({
   const showZoomButtons = zoom && controls
   if (!showZoomButtons && !fullscreen) return canvas
 
-  // Wrap so the overlay buttons anchor to the canvas box — and so the
+  // Wrap so the overlay buttons anchor to the canvas box - and so the
   // Fullscreen API has an element to expand. A dark backdrop fills the letter-
   // boxing only while actually full-screen, using `background` when provided.
   //
   // This wrapper is also the stacking context that confines the screen
   // z-index band (see SCREEN_Z_RANGE): it holds the canvas AND every screen
-  // drei portals next to it, so isolating it here — statically, in the same
-  // render that creates them — settles the question before any screen mounts.
+  // drei portals next to it, so isolating it here - statically, in the same
+  // render that creates them - settles the question before any screen mounts.
   // DeviceScreen still derives a host at runtime for a foreign <Canvas>, but
   // inside a MockupCanvas it only ever re-finds this element.
   return (

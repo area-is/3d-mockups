@@ -22,7 +22,7 @@ export interface CustomPanelProps extends Omit<GroupProps, 'children' | 'color'>
 }
 
 /**
- * A flat rectangular panel at ANY size you specify in millimeters — foam
+ * A flat rectangular panel at ANY size you specify in millimeters - foam
  * board, acrylic sign, art print, table card. The longest edge normalizes
  * to the stage, so every size fills the default camera; the mm dimensions
  * set the aspect ratio and relative thickness. Front and back are live DOM.

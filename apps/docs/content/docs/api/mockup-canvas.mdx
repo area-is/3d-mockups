@@ -8,7 +8,7 @@ shot needs. Compose it with any device, for example
 `<MockupCanvas><Galaxy>...</Galaxy></MockupCanvas>`.
 
 The one-liner `*Mockup` components are built on this stage and forward most of
-these props. Three of them — `freeRotation`, `shadowY` and `dpr` — are canvas
+these props. Three of them - `freeRotation`, `shadowY` and `dpr` - are canvas
 only: they tune the rendering rather than the picture, and a mockup already
 derives its shadow ground line from the object's own framing. Reach for
 `MockupCanvas` when you want that level of control, or when you are staging
@@ -16,7 +16,7 @@ more than one device.
 
 The procedural studio light rig is always on. It is what gives every material
 its reflections, it costs no network requests (no HDR files are fetched), and a
-mockup without it reads as flat untextured plastic — so it is not a prop.
+mockup without it reads as flat untextured plastic - so it is not a prop.
 
 One canvas, two bare devices, one shared studio light rig and shadow plane.
 
@@ -39,14 +39,14 @@ One canvas, two bare devices, one shared studio light rig and shadow plane.
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Your scene, typically a device such as `Galaxy`. |
 | `controls` | `boolean` | `true` | Drag-to-rotate controls with the axis fixed at the stage center (pan is always disabled). Vertical rotation stays within the classic orbit clamp by default. |
-| `freeRotation` | `boolean` | `false` | Allow the camera to rotate a full 360° vertically — vertical drags continue straight over the top and bottom of the device instead of clamping. |
+| `freeRotation` | `boolean` | `false` | Allow the camera to rotate a full 360° vertically - vertical drags continue straight over the top and bottom of the device instead of clamping. |
 | `autoRotate` | `boolean` | `false` | Slowly spin the camera around the device. |
 | `autoRotateSpeed` | `number` | `1` | Spin speed when `autoRotate` is on. |
 | `zoom` | `boolean` | `false` | Pinch zoom on touch, scroll-wheel zoom on desktop, plus overlay +/− buttons. Off by default so embedded mockups never hijack page scroll; on, the canvas owns two-finger gestures. |
 | `fullscreen` | `boolean` | `false` | Adds an overlay button that expands the mockup to fill the screen via the Fullscreen API (and collapses it back). Off by default. |
 | `shadows` | `boolean` | `true` | Soft contact shadow under the device. |
 | `shadowY` | `number` | `-2.05` | Y position (world units) of the shadow plane. Grounds the device on its shadow. The mockup wrappers compute this per device. |
-| `background` | `string` | - | CSS background of the canvas (color, gradient, or image). Transparent when unset — that is what the checkerboard behind each page's first example is showing through. |
+| `background` | `string` | - | CSS background of the canvas (color, gradient, or image). Transparent when unset - that is what the checkerboard behind each page's first example is showing through. |
 | `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Override the default camera. |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device pixel ratio clamp. Keeps hi-dpi GPU load predictable. |
 | `className`, `style` | - | - | Forwarded to the canvas wrapper. |

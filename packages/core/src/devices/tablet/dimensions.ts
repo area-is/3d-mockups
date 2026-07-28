@@ -1,5 +1,5 @@
 /**
- * Tablet device dimensions — the current Apple iPad lineup (iPad Pro M5,
+ * Tablet device dimensions - the current Apple iPad lineup (iPad Pro M5,
  * iPad Air M4, iPad A16) and Samsung Galaxy Tab S11 family.
  *
  * All variants share one world scale (~64 mm per unit, set so the 13" iPad
@@ -8,8 +8,8 @@
  * landscape. Rear-hardware coordinates are FRONT-view (they mirror on the
  * back panel).
  *
- * Every iPad detail — camera pod and lens boss, buttons, Smart Connector,
- * Pencil connector window, speaker drilling — comes from Apple's own
+ * Every iPad detail - camera pod and lens boss, buttons, Smart Connector,
+ * Pencil connector window, speaker drilling - comes from Apple's own
  * dimensional drawings for accessory makers
  * (developer.apple.com/accessories/dimensional-drawings). Apple dimensions the
  * rear view from the top-left corner and the edges from the nearest corner, so
@@ -27,7 +27,7 @@ import type { CameraFraming, MockupFraming, MockupMetrics } from '../../regions'
 export interface TabletSpec {
   /** Ultra-thin flat slab. `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: number; height: number; depth: number; radius: number; bevel: number }
-  /** Front cover glass (slightly larger than the active display — forms the bezel ring). */
+  /** Front cover glass (slightly larger than the active display - forms the bezel ring). */
   glass: { width: number; height: number; radius: number }
   /** Active display area (portrait). Content you pass as children maps onto this rect. */
   display: { width: number; height: number; radius: number }
@@ -48,7 +48,7 @@ export interface TabletSpec {
       }
     | {
         /** iPad-Air/iPad-style bare raised lens: polished ring straight out of
-         * the aluminum, no plate, no flash — plus the pinhole mic beside it.
+         * the aluminum, no plate, no flash - plus the pinhole mic beside it.
          * `r` is the black lens window's ring; `boss` the wider body-colored
          * mound it rises from (Apple draws Ø16.92 around an Ø11.89 window). */
         style: 'single'
@@ -74,7 +74,7 @@ export interface TabletSpec {
    */
   sideButtons: { y: number; length: number }[]
   /** Which short edge carries the USB-C port in portrait. The Galaxy Tabs'
-   * port sits on the edge adjacent to the camera corner — the portrait TOP
+   * port sits on the edge adjacent to the camera corner - the portrait TOP
    * edge (it centers on the landscape-left edge); iPads use the bottom. */
   usbEdge?: 'top' | 'bottom'
   /**
@@ -88,7 +88,7 @@ export interface TabletSpec {
    */
   stylus?: { length: number; offsetY: number }
   /**
-   * Keyboard pogo contacts — three dots. `surface: 'back'` puts them on the
+   * Keyboard pogo contacts - three dots. `surface: 'back'` puts them on the
    * back panel laid along `axis` ('x' = a horizontal row, the iPads' Smart
    * Connector near the portrait-bottom edge; 'y' = a vertical column, the
    * Galaxy Tabs' contacts ~11 mm in from the portrait-left edge, centered).
@@ -99,7 +99,7 @@ export interface TabletSpec {
   /**
    * Brand mark on the back. Apple's glyph sits centered (x 0), portrait
    * upright. Samsung's wordmark sits near the corner diagonal from the
-   * cameras, set for the landscape hold — `rotate` lays it along the edge in
+   * cameras, set for the landscape hold - `rotate` lays it along the edge in
    * portrait, exactly like the hardware print.
    */
   logo?: { mark: 'apple' | 'samsung'; x?: number; y: number; width: number; height: number; rotate?: boolean }
@@ -119,7 +119,7 @@ export interface TabletSpec {
         r: number
         /**
          * Holes dropped from the outer end of the positive-x run on the TOP
-         * edge only — the A16's top button truncates that run (12 → 9 on the
+         * edge only - the A16's top button truncates that run (12 → 9 on the
          * reference scan) while the other three runs keep the full count.
          */
         topTrim?: number
@@ -128,7 +128,7 @@ export interface TabletSpec {
 }
 
 /**
- * iPad Pro 13" (M5, Oct 2025 — the M4 chassis carried over): 281.6 x 215.5
+ * iPad Pro 13" (M5, Oct 2025 - the M4 chassis carried over): 281.6 x 215.5
  * x 5.1 mm, 13" 2752x2064 tandem OLED, uniform ~8.4 mm bezel. Logical
  * resolution 1032x1376 pt. Camera pod ~32 mm square: wide lens top-left +
  * LiDAR below it (back view), flash/sensor/mic inboard. Smart Connector:
@@ -150,7 +150,7 @@ const IPAD_PRO_13: TabletSpec = {
     { y: 4.4 / 2 - 0.5691, length: 0.1572 },
   ],
   // The Pencil's magnetic-connector window: a 25.53 mm non-metal strip centered
-  // on the edge — not the whole length the Pencil clings to.
+  // on the edge - not the whole length the Pencil clings to.
   stylus: { length: 0.399, offsetY: 0 },
   // Smart Connector: three Ø3.40 pins 5.27 mm apart, 12.00 mm up from the edge.
   pogo: { surface: 'back', x: 0, y: -4.4 / 2 + 0.1875, axis: 'x', spacing: 0.0823 },
@@ -170,7 +170,7 @@ const IPAD_PRO_11: TabletSpec = {
   display: { width: 2.508, height: 3.639, radius: 0.15 },
   resolution: 834,
   // Apple's drawing gives the 11" the SAME camera pod, buttons, Smart Connector
-  // and speaker runs as the 13" — only the body around them changes.
+  // and speaker runs as the 13" - only the body around them changes.
   rearCamera: { style: 'pod', x: 2.773 / 2 - 0.3131, y: 3.902 / 2 - 0.3131, size: 0.4913, radius: 0.14 },
   topButton: { x: 2.773 / 2 - 0.3127, length: 0.1884 },
   sideButtons: [
@@ -184,7 +184,7 @@ const IPAD_PRO_11: TabletSpec = {
 }
 
 /**
- * iPad Air 13" (M4, Mar 2026 — the M2/M3 chassis carried over): 280.6 x
+ * iPad Air 13" (M4, Mar 2026 - the M2/M3 chassis carried over): 280.6 x
  * 214.9 x 6.1 mm, 12.9" 2732x2048 Liquid Retina, uniform ~8.9 mm bezel.
  * Logical resolution 1024x1366 pt. Bare single 12 MP lens (polished ring
  * ~13.5 mm, no flash) at the back's top-left with the pinhole mic below it;
@@ -255,7 +255,7 @@ const IPAD_AIR_11: TabletSpec = {
 }
 
 /**
- * iPad (11th generation, A16, Mar 2025 — the 10th-gen chassis carried over):
+ * iPad (11th generation, A16, Mar 2025 - the 10th-gen chassis carried over):
  * 248.6 x 179.5 x 7.0 mm, 10.86" 2360x1640 Liquid Retina, uniform ~10.8 mm
  * bezel, crisper chamfered rails than the Air. Logical resolution
  * 820x1180 pt. Bare single lens (no flash), ~17 mm Touch ID top button,
@@ -263,7 +263,7 @@ const IPAD_AIR_11: TabletSpec = {
  * (Magic Keyboard Folio), no Pencil charging strip.
  */
 const IPAD_11: TabletSpec = {
-  // Corner rounding measured at ~15.3 mm on this chassis — visibly softer
+  // Corner rounding measured at ~15.3 mm on this chassis - visibly softer
   // than the Air/Pro, with the camera ring "nesting" inside the corner arc.
   body: { width: 2.805, height: 3.884, depth: 0.109, radius: 0.235, bevel: 0.008 },
   glass: { width: 2.748, height: 3.828, radius: 0.21 },
@@ -299,7 +299,7 @@ const IPAD_11: TabletSpec = {
 }
 
 /**
- * Galaxy Tab S11 (11") — 253.8 x 165.3 x 5.5 mm, 11" 2560x1600 (16:10)
+ * Galaxy Tab S11 (11") - 253.8 x 165.3 x 5.5 mm, 11" 2560x1600 (16:10)
  * AMOLED, uniform ~8.5 mm bezel, no notch (bezel front camera on the
  * landscape-top edge). Single 13 MP rear ring (~13.3 mm, photo-measured
  * 16.5 mm in from the landscape-top edge / 15.9 mm from the portrait-top
@@ -330,7 +330,7 @@ const TAB_S11: TabletSpec = {
 }
 
 /**
- * Galaxy Tab S11 Ultra (14.6") — 326.3 x 208.5 x 5.1 mm, 14.6" 2960x1848
+ * Galaxy Tab S11 Ultra (14.6") - 326.3 x 208.5 x 5.1 mm, 14.6" 2960x1848
  * (16:10) AMOLED, uniform ~5.9 mm bezel with a small U-shaped notch
  * (~12.4 mm, single 12 MP front camera) on the landscape-top edge (the
  * portrait right edge). Dual protruding rear rings (~14.8 mm, centers
@@ -384,7 +384,7 @@ export const GALAXY_TAB_VARIANTS: Record<'tabs11' | 'tabs11ultra', TabletSpec> =
 export type IPadVariant = keyof typeof IPAD_VARIANTS
 export type GalaxyTabVariant = keyof typeof GALAXY_TAB_VARIANTS
 
-/** Every tablet spec in one table — the shared framing keys off it. */
+/** Every tablet spec in one table - the shared framing keys off it. */
 export const TABLET_VARIANTS: Record<IPadVariant | GalaxyTabVariant, TabletSpec> = {
   ...IPAD_VARIANTS,
   ...GALAXY_TAB_VARIANTS,
@@ -396,7 +396,7 @@ export type TabletVariant = IPadVariant | GalaxyTabVariant
 export const IPAD_DEFAULT_VARIANT: IPadVariant = 'ipadpro13'
 export const GALAXY_TAB_DEFAULT_VARIANT: GalaxyTabVariant = 'tabs11'
 
-/** Millimetres per world unit — the shared tablet scale. */
+/** Millimetres per world unit - the shared tablet scale. */
 export const TABLET_MM_PER_UNIT = 64
 
 /** Live geometry of a tablet display, in the current orientation. */

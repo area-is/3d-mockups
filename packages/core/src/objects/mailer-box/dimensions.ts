@@ -1,12 +1,12 @@
 /**
- * Mailer box object dimensions — a closed corrugated shipper.
+ * Mailer box object dimensions - a closed corrugated shipper.
  *
  * Proportions follow the classic e-commerce hero shipper: 350 x 250 x 120 mm
  * kraft corrugated, lying flat, with a 48 mm packing-tape band over the flap
  * seam that wraps down both ends. Normalized to ~78 mm per world unit so the
  * box is 4.49 units wide.
  *
- * Live faces: top (the primary region — tape rendered as a DOM overlay so it
+ * Live faces: top (the primary region - tape rendered as a DOM overlay so it
  * stays over your print), front and end panels.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a

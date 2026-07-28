@@ -45,7 +45,7 @@ import {
 } from 'area-3d-mockups'
 
 /**
- * Mockups posed straight from their own framing — no per-device wiring, so
+ * Mockups posed straight from their own framing - no per-device wiring, so
  * every object in the catalog can be probed from arbitrary angles. Anything
  * needing extra props (a variant, a second screen region, a pose) gets its
  * own branch below instead.
@@ -80,7 +80,7 @@ const PLAIN = {
  *
  * Slots are enumerated off the mockup itself (`createSlots` attaches one
  * capitalized component per region), so this covers objects it has never
- * heard of — including any added later.
+ * heard of - including any added later.
  */
 function regionProbe(Mockup: object): React.ReactNode {
   const slots = Object.entries(Mockup).filter(
@@ -108,7 +108,7 @@ function regionProbe(Mockup: object): React.ReactNode {
 
 /**
  * Screenshot harness: renders one device, posed from URL params, on a plain
- * stage — no float, no controls — so Playwright can capture deterministic
+ * stage - no float, no controls - so Playwright can capture deterministic
  * high-resolution frames for model-vs-photo comparisons.
  *
  * Params:
@@ -116,7 +116,7 @@ function regionProbe(Mockup: object): React.ReactNode {
  *               | phone | iphone | bus | van | shelter | tv | idcard
  *               | store | magazine (default tablet)
  *   pvariant    device variant id                  (phone, iphone)
- *   bandOpen    1 | 0 — unbuckled band             (watch)
+ *   bandOpen    1 | 0 - unbuckled band             (watch)
  *   variant     device variant id                  (tablet only)
  *   color       retail colorway id, or any CSS color (colorway= also accepted)
  *   orientation portrait | landscape               (tablet)
@@ -129,8 +129,8 @@ function regionProbe(Mockup: object): React.ReactNode {
  *   dist        camera distance in world units     (default per device)
  *   cy          camera height                      (default 0)
  *   screen      dark | gradient                    (default gradient)
- *   shadows     1 | 0                              (default 0 — clean poses)
- *   controls    1 | 0                              (default 0 — drag tests)
+ *   shadows     1 | 0                              (default 0 - clean poses)
+ *   controls    1 | 0                              (default 0 - drag tests)
  */
 function HarnessScene() {
   const params = useSearchParams()
@@ -146,7 +146,7 @@ function HarnessScene() {
   const controls = params.get('controls') === '1'
   const screen =
     // `clear` paints nothing at all: it exists to show what the surface
-    // background is FOR — with it, content that doesn't cover every pixel
+    // background is FOR - with it, content that doesn't cover every pixel
     // shows the page straight through the glass.
     params.get('screen') === 'clear' ? null :
     params.get('screen') === 'dark' ? (

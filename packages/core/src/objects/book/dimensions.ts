@@ -1,10 +1,10 @@
 /**
- * Book object dimensions — a trade hardcover.
+ * Book object dimensions - a trade hardcover.
  *
  * Proportions follow a standard 6.14" x 9.21" (156 x 234 mm) trade hardcover,
  * 27 mm thick overall: a 22 mm page block between 2.5 mm binder's boards, with
  * a 3 mm board overhang ("squares") past the pages on the three open edges.
- * Normalized to ~56 mm per world unit so the book stands 4.18 units tall —
+ * Normalized to ~56 mm per world unit so the book stands 4.18 units tall -
  * phone-sized on the default mockup stage.
  *
  * This is pure, renderer-agnostic data: the 3D model consumes it today and a
@@ -71,12 +71,12 @@ export const BOOK_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The standing hardcover grounds on its bottom board edge. */
-/** Millimetres per world unit — the book scale (`BOOK_MM` inverted). */
+/** Millimetres per world unit - the book scale (`BOOK_MM` inverted). */
 export const BOOK_MM_PER_UNIT = 1 / BOOK_MM
 
 /**
  * Live geometry of the three printed faces. The spine strip is the flat crown
- * left between the two joint rolls, which is what `<Book>` prints onto — not
+ * left between the two joint rolls, which is what `<Book>` prints onto - not
  * the full closed thickness.
  */
 export const BOOK_METRICS = {

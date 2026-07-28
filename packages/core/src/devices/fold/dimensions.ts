@@ -1,13 +1,13 @@
 /**
- * Galaxy Z Fold-style device dimensions — the Galaxy Z Fold 7.
+ * Galaxy Z Fold-style device dimensions - the Galaxy Z Fold 7.
  *
  * A book-fold foldable has two form factors, and this spec carries both so the
  * one device can render either:
  *
- * - `closed`: the folded candy-bar — a narrow, thick body with a tall cover
+ * - `closed`: the folded candy-bar - a narrow, thick body with a tall cover
  *   display on the front, the camera pill on the back and the hinge spine
  *   capping the left edge.
- * - `open`: the unfolded tablet — a wide, thin body with the large, nearly
+ * - `open`: the unfolded tablet - a wide, thin body with the large, nearly
  *   square inner display (a faint crease runs down its center) and the
  *   recessed hinge spine on the back.
  *
@@ -78,7 +78,7 @@ export interface FoldSpec {
   /**
    * Bottom-edge machining per pose (x positions in that pose's coordinates).
    * Folded, the USB lives on the camera half (rear slab) and the speaker on
-   * the cover half (front slab) — each opening is machined into its own slab.
+   * the cover half (front slab) - each opening is machined into its own slab.
    */
   bottomEdge: {
     closed: {
@@ -100,7 +100,7 @@ const FOLD7: FoldSpec = {
     body: { width: 1.942, height: 4.321, depth: 0.241, radius: 0.081, bevel: 0.018 },
     // A hairline seam between the folded halves. (The scan measured 1.3 mm
     // of air, but with the slabs' edge bevels that renders as a deep V
-    // groove from the side — the retail device reads closed-flush, so the
+    // groove from the side - the retail device reads closed-flush, so the
     // model keeps just enough gap to draw the seam line.)
     gap: 0.012,
     // 65.98 x 153.03 mm cover panel, centered, sharp scan-true corners.
@@ -146,7 +146,7 @@ const FOLD7: FoldSpec = {
     { y: 0.775, length: 0.507 },
     { y: 0.177, length: 0.354 },
   ],
-  // Slim ~1.8 mm key strips — the rail is much thicker than the keys, with
+  // Slim ~1.8 mm key strips - the rail is much thicker than the keys, with
   // clear frame above and below them (product photography), not pills
   // filling the edge.
   buttonProfile: { protrusion: 0.01, thickness: 0.05 },
@@ -179,10 +179,10 @@ export type FoldVariant = keyof typeof FOLD_VARIANTS
 export const FOLD_DEFAULT_VARIANT: FoldVariant = 'fold7'
 
 /**
- * Grounded by default: the shadow plane kisses the bottom edge of the body —
+ * Grounded by default: the shadow plane kisses the bottom edge of the body -
  * the halves' folded extent at partial angles in landscape.
  */
-/** Millimetres per world unit — shared with the Galaxy phones. */
+/** Millimetres per world unit - shared with the Galaxy phones. */
 export const FOLD_MM_PER_UNIT = 36.66
 
 /**

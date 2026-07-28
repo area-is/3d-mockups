@@ -25,14 +25,14 @@ export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color
   /**
    * Aluminum color (enclosure + stand). Takes a retail colorway id from
    * `STUDIO_DISPLAY_COLORWAYS` or any CSS color for a custom finish. A
-   * colorway id wins over a CSS color of the same name — pass hex if you
+   * colorway id wins over a CSS color of the same name - pass hex if you
    * meant the CSS one.
    */
   color?: string
   /**
    * CSS pixel width of the virtual display. Height follows the 16:9 panel.
-   * The default 2560 gives a 2560×1440 screen — exactly the Studio Display's
-   * logical "looks like" resolution (5120×2880 at 2x) — so desktop layouts
+   * The default 2560 gives a 2560×1440 screen - exactly the Studio Display's
+   * logical "looks like" resolution (5120×2880 at 2x) - so desktop layouts
    * behave like on the real display.
    */
   resolution?: number
@@ -43,13 +43,13 @@ export interface StudioDisplayProps extends Omit<GroupProps, 'children' | 'color
  * 27" 5K panel behind an edge-to-edge glass front (uniform black bezel, only
  * a hairline of aluminum at the rim), the barely-there centered camera dot,
  * the generation's gloss-black Apple mark on the back, speaker perforations
- * along the bottom edge, and the signature tilt stand — a wide thin-sheet
+ * along the bottom edge, and the signature tilt stand - a wide thin-sheet
  * arm hanging from its hinge (machined pivot caps on the sides) with the
  * circular cable-routing hole punched clean through, straddling the
  * enclosure's bottom edge exactly as in the product photography, down to
  * the knee and the thin forward foot plate on rubber pads.
  * Thunderbolt/USB-C port row and the captive power cord's circular recess on
- * the back — and, faithfully, no power button. No 3D asset files are loaded.
+ * the back - and, faithfully, no power button. No 3D asset files are loaded.
  *
  * The monitor renders lifted `STUDIO_DISPLAY_STAGE_OFFSET_Y` above the group origin,
  * so the panel + stand ensemble is visually centered on it (the stage pose the
@@ -68,11 +68,11 @@ function StudioDisplayImpl({
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   // `color` doubles as the colorway selector: a catalog id resolves to
   // that retail finish, anything else is passed through as a raw CSS
-  // color. Ids win over same-named CSS colors — pass hex for those.
+  // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(STUDIO_DISPLAY_COLORWAYS, colorProp)
   const color = retail?.color ?? colorProp ?? '#c8cbd0'
   const { body, glass, display, stand, standHeight } = STUDIO_DISPLAY
-  // The stand pieces occlude too — from low rear angles they stand between
+  // The stand pieces occlude too - from low rear angles they stand between
   // the camera and the screen plane, and an unregistered mesh lets the DOM
   // screen paint right through them.
 
@@ -105,7 +105,7 @@ function StudioDisplayImpl({
   // gently back down to the knee and runs forward as the thin foot plate.
   // Foot + knee are one bent side profile (z/y plane) extruded across the
   // stand width and capped just above the knee, where the separate arm
-  // slab — carrying the real circular cable-routing hole — takes over
+  // slab - carrying the real circular cable-routing hole - takes over
   // along the lean axis.
   const standParts = React.useMemo(() => {
     const {
@@ -134,8 +134,8 @@ function StudioDisplayImpl({
     const footTopY = deskY + footThickness
     const tangentAngle = Math.atan2(n.y, n.z) + Math.PI
 
-    // Both fillets are CONCAVE — the corners where the arm rises out of the
-    // plate — so each circle sits outside the metal: above the plate's top
+    // Both fillets are CONCAVE - the corners where the arm rises out of the
+    // plate - so each circle sits outside the metal: above the plate's top
     // face, and off the arm face it touches.
     const bC = { y: footTopY + Rb, z: 0 }
     bC.z = (cBack - Rb - n.y * bC.y) / n.z
@@ -143,7 +143,7 @@ function StudioDisplayImpl({
     const fC = { y: footTopY + Rf, z: 0 }
     fC.z = (cFront + Rf - n.y * fC.y) / n.z
     const fTan = { z: fC.z - n.z * Rf, y: fC.y - n.y * Rf }
-    // Cap the plate piece just above the tangencies — the cut hides inside
+    // Cap the plate piece just above the tangencies - the cut hides inside
     // the (slightly thicker) arm slab that overlaps it.
     const yCut = Math.max(bTan.y, fTan.y) + 0.17
     const zCutBack = bTan.z + (d.z / d.y) * (yCut - bTan.y)
@@ -181,7 +181,7 @@ function StudioDisplayImpl({
 
     // Arm slab: rounded-rect face (x across, y down the lean axis, hinge
     // center at +armLen/2) with the stadium cutout as a real punched
-    // opening — the extrude bevel rounds its bore, giving the rim highlight
+    // opening - the extrude bevel rounds its bore, giving the rim highlight
     // the product photos show around the opening.
     // The arm's rounded top stands a little proud of the hinge, exactly as the
     // rear photography shows it above the pivot.
@@ -217,13 +217,13 @@ function StudioDisplayImpl({
       hinge.z + d.z * (topProud - armLen / 2),
     ]
 
-    // Rubber pad positions on the plate's underside — a pair inside each lip.
+    // Rubber pad positions on the plate's underside - a pair inside each lip.
     const feetZ = { front: footFrontZ - 0.16, rear: footBackZ + 0.16 }
 
     return { footKnee, armSlab, armPos, hinge, feetZ }
   }, [body, stand, standHeight])
 
-  // The generation's gloss-black Apple mark on the back — real vector
+  // The generation's gloss-black Apple mark on the back - real vector
   // geometry from the SVG, reading as a dark glass inlay on the aluminum.
   const logoGeometry = React.useMemo(
     () => createLogoGeometry('apple', STUDIO_DISPLAY.logo.width, STUDIO_DISPLAY.logo.height),
@@ -287,7 +287,7 @@ function StudioDisplayImpl({
         <meshPhysicalMaterial color="#020205" metalness={0.1} roughness={0.07} clearcoat={1} />
       </mesh>
 
-      {/* centered camera dot in the top bezel — tiny and nearly flush, the
+      {/* centered camera dot in the top bezel - tiny and nearly flush, the
           lens only reads as a faint blue-black circle in the product shots */}
       <mesh rotation-x={Math.PI / 2} position={[0, glass.height / 2 - (glass.height - display.height) / 4, body.depth / 2 + 0.003]}>
         <cylinderGeometry args={[0.012, 0.012, 0.002, 16]} />
@@ -316,7 +316,7 @@ function StudioDisplayImpl({
           center seen from behind (front-view right), pill slots ~14.5 mm apart.
           The two innermost slots are the Thunderbolt pair: each is printed with
           the bolt above it, and the upstream (innermost) one adds the host dot
-          below — the marking Apple's rear-port callout shows. */}
+          below - the marking Apple's rear-port callout shows. */}
       {[0, 1, 2, 3].map((i) => {
         const { ports } = STUDIO_DISPLAY
         const x = ports.x - i * ports.spacing
@@ -360,7 +360,7 @@ function StudioDisplayImpl({
         )
       })}
 
-      {/* the captive power cord's circular recess, centered low on the back —
+      {/* the captive power cord's circular recess, centered low on the back -
           the cable is not user-detachable, so a molded collar sits proud of
           the machined ring instead of a socket */}
       <group position={[0, -body.height / 2 + STUDIO_DISPLAY.power.y, -body.depth / 2]}>
@@ -397,7 +397,7 @@ function StudioDisplayImpl({
         <cylinderGeometry args={[stand.hingeRadius, stand.hingeRadius, stand.width - 0.03, 32]} />
         <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.42} />
       </mesh>
-      {/* machined pivot caps flush on the arm's sides — the visible circular
+      {/* machined pivot caps flush on the arm's sides - the visible circular
           detail in the product's side view */}
       {([1, -1] as const).map((s) => (
         <mesh

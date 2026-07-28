@@ -1,6 +1,6 @@
 ---
 title: Measuring a mockup
-description: Region sizes in world units, millimetres and CSS pixels — before you render, and from inside the screen.
+description: Region sizes in world units, millimetres and CSS pixels - before you render, and from inside the screen.
 ---
 
 Every mockup knows how big its live surfaces are. Four ways to ask, depending on
@@ -8,22 +8,22 @@ where you're standing.
 
 ## `mockupInfo(kind, props)`
 
-The framework-agnostic answer. Pure data in, pure data out — no renderer, no
-DOM, no React — so it works in a component, a build script or on a server.
+The framework-agnostic answer. Pure data in, pure data out - no renderer, no
+DOM, no React - so it works in a component, a build script or on a server.
 
 ```ts
 import { mockupInfo } from 'area-3d-mockups'
 
 const info = mockupInfo('galaxy', { variant: 's26', orientation: 'landscape' })
 
-info.primary.px        // { width: 780, height: 360 }  — CSS px your content lays out in
-info.primary.mm        // { width: 145.2, height: 67.1 } — the physical panel
-info.primary.units     // { width: 3.962, height: 1.829 } — three.js world units
+info.primary.px        // { width: 780, height: 360 }  - CSS px your content lays out in
+info.primary.mm        // { width: 145.2, height: 67.1 } - the physical panel
+info.primary.units     // { width: 3.962, height: 1.829 } - three.js world units
 info.primary.aspect    // 2.1662
 info.mmPerUnit         // 36.66
 ```
 
-`props` takes only the props that can actually move a surface — `variant`,
+`props` takes only the props that can actually move a surface - `variant`,
 `orientation`, `size`, `open`, `mat`, `inches`. Colors and transforms can't
 change a measurement, so they're not accepted. Omit `props` entirely and you get
 exactly what the bare component renders.
@@ -37,15 +37,15 @@ declaration order.
 const book = mockupInfo('book')
 book.regions.cover.px      // { width: 480, height: 720 }
 book.regions.spine.mm      // { width: 20.9, height: 232.3 }
-book.primary               // === book.regions.cover — where bare children go
+book.primary               // === book.regions.cover - where bare children go
 ```
 
 A region can resolve to an **array**, which means one slot is painted onto
-several distinct surfaces — one design, several places it lands:
+several distinct surfaces - one design, several places it lands:
 
 ```ts
 const plates = mockupInfo('van').regions.licensePlate
-plates.length  // 2 — the van carries a plate at the nose and at the tail
+plates.length  // 2 - the van carries a plate at the nose and at the tail
 plates[0].mm   // { width: 304.8, height: 152.4 }   both are the US 6 × 12 in
 ```
 
@@ -53,14 +53,14 @@ The length counts *surfaces*, not sizes: these two are the same rect and it is
 still an array of two, because there really are two plates on the van.
 
 Every other region resolves to a single rect. There is no region that takes a
-variable number of slot children — every surface has its own name.
+variable number of slot children - every surface has its own name.
 
 ### What's in a region
 
 | Field | What it is |
 | --- | --- |
 | `units` | The live rect in three.js world units. |
-| `mm` | The same rect in millimetres — the real printed size. |
+| `mm` | The same rect in millimetres - the real printed size. |
 | `px` | The CSS-pixel viewport your content lays out in, at the default resolution. |
 | `pxPerUnit` | CSS pixels per world unit. |
 | `resolution` | Default CSS pixel width of the virtual surface. |
@@ -73,7 +73,7 @@ bridge, so what this reports and what actually renders cannot drift apart.
 
 ## `Mockup.info()` and `Mockup.regions`
 
-The same answers, hanging off the component you already imported — usually the
+The same answers, hanging off the component you already imported - usually the
 one you want, because it's right there in autocomplete next to the slots.
 
 ```tsx
@@ -86,7 +86,7 @@ BookMockup.regions  // [{ name: 'cover', label: 'Front cover' }, …]
 ## `useSurface()`
 
 `mockupInfo` answers "how big is an S26 screen?". `useSurface` answers "how big
-am I, right now?" — from inside the content, after slot overrides are applied.
+am I, right now?" - from inside the content, after slot overrides are applied.
 Those are different questions the moment a slot changes anything:
 
 ```tsx
@@ -107,7 +107,7 @@ inside a mockup and on a normal page.
 
 ## `area-3d-mockups/catalog.json`
 
-Every kind, variant and orientation, pre-measured at build time — the whole
+Every kind, variant and orientation, pre-measured at build time - the whole
 registry with `mockupInfo` already applied. Useful for docs tables, design-tool
 plugins and anything that isn't JavaScript.
 
@@ -120,12 +120,12 @@ catalog.entries.find((e) => e.kind === 'galaxy' && e.props.variant === 's26')
 ## Coverage
 
 `MOCKUP_KINDS` is the authoritative list of what can be measured. Every mockup
-in the catalog is measurable — 33 kinds.
+in the catalog is measurable - 33 kinds.
 
 Vehicles take a `coverage` prop, since a full wrap and a panel ad are different
 surfaces:
 
 ```ts
-mockupInfo('bus', { coverage: 'panel' }).regions.curbSide.mm  // 3657.5 x 761.9 — king-size board
-mockupInfo('bus', { coverage: 'full' }).regions.curbSide.mm   // 12160 x 2884.2 — whole elevation
+mockupInfo('bus', { coverage: 'panel' }).regions.curbSide.mm  // 3657.5 x 761.9 - king-size board
+mockupInfo('bus', { coverage: 'full' }).regions.curbSide.mm   // 12160 x 2884.2 - whole elevation
 ```

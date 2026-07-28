@@ -1,5 +1,5 @@
 /**
- * Watch device dimensions — Apple Watch Series 11 and Samsung Galaxy Watch 8.
+ * Watch device dimensions - Apple Watch Series 11 and Samsung Galaxy Watch 8.
  *
  * Both variants share one world scale (~17.7 mm per unit) so they keep true
  * relative sizes side by side:
@@ -13,7 +13,7 @@
  *   grille. The Solo Loop slides into dark band slots in the case's flat
  *   top/bottom edges, offset toward the case back.
  * - Galaxy Watch 8, 44 mm: 46.0 x 43.7 x 8.6 mm "cushion" case (squircle
- *   aluminum armor with a flat top) carrying a RAISED round dial — the fully
+ *   aluminum armor with a flat top) carrying a RAISED round dial - the fully
  *   round 1.47" 480x480 sAMOLED sits on a slightly protruding black puck, so
  *   the aluminum cushion stays visible around it (unlike the Apple's
  *   edge-to-edge crystal). Right edge (per GSMArena's review macros): two
@@ -76,7 +76,7 @@ export interface WatchSpec {
   /**
    * The case back's sensor cluster. Both families put an optical heart sensor
    * behind a round crystal in the middle of the back, ringed by the metal
-   * electrode the ECG reads from — but they mount it differently: Apple sinks
+   * electrode the ECG reads from - but they mount it differently: Apple sinks
    * the crystal flush into a back plate that matches the case colour (so the
    * watch reads as one piece of metal), while Samsung raises the whole
    * BioActive puck proud of the aluminium cushion.
@@ -84,7 +84,7 @@ export interface WatchSpec {
   back: {
     /** Crystal / puck radius. */
     radius: number
-    /** How far it stands proud of the case back — negative sinks it in. */
+    /** How far it stands proud of the case back - negative sinks it in. */
     raise: number
     /** Central photodiode window. */
     hubRadius: number
@@ -99,20 +99,20 @@ export interface WatchSpec {
    * Wristband. Two families, discriminated on `closure`.
    *
    * `seamless` is Apple's Solo Loop: ONE continuous stretchy band with no
-   * closure, no holes and no hardware of any kind — it simply flares into the
+   * closure, no holes and no hardware of any kind - it simply flares into the
    * lugs at both ends and is sized to the wrist rather than adjusted.
    *
    * `tuck` and `buckle` are the two-strap bands. The twelve-o'clock strap
    * carries the closure hardware and lies against the wrist; the six-o'clock
    * strap is the long one, carrying the row of punched adjustment holes,
-   * lapping OVER the other past the closure — the pin or buckle tongue comes
-   * up through one of its holes — and running on as a free tail.
+   * lapping OVER the other past the closure - the pin or buckle tongue comes
+   * up through one of its holes - and running on as a free tail.
    *
    * The loop is an ovoid (see `WristLoop`): the vertical radius eases from
    * `ryFront` at the case to `ryBack` at the far side of the wrist, `rz` is
    * the depth radius around `centerZ`, and the band emerges `startAngle`
    * degrees off the front axis so its cut ends stay buried in the case.
-   * Every other angle below is measured the same way — 90° is the
+   * Every other angle below is measured the same way - 90° is the
    * twelve-o'clock side, 180° the underside of the wrist, 270° six o'clock.
    */
   band: WatchBand
@@ -143,7 +143,7 @@ export interface FastenedWatchBand extends WatchBandBase {
    * classic pin buckle with a keeper.
    */
   closure: 'tuck' | 'buckle'
-  /** Width at the free tip — tapered straps (Galaxy's Dynamic Lug band). */
+  /** Width at the free tip - tapered straps (Galaxy's Dynamic Lug band). */
   tipWidth: number
   /** Where the twelve-o'clock strap ends, under the lapping tail (worn). */
   pinStrapEnd: number
@@ -153,7 +153,7 @@ export interface FastenedWatchBand extends WatchBandBase {
    * Adjustment holes punched clean through the six-o'clock strap, as
    * normalized positions along it (0 at the lug, 1 at the tip). Positions
    * rather than sweep angles, so the row stays ON the strap whichever pose
-   * the band is in — the unbuckled pose sweeps a different arc.
+   * the band is in - the unbuckled pose sweeps a different arc.
    */
   holes: number[]
   /** Half-width of a hole across the strap. */
@@ -199,7 +199,7 @@ const SERIES_11: WatchSpec = {
     coilRing: 0.86,
   },
   // Solo Loop: ONE continuous stretchy band, no closure, no holes, no
-  // hardware — it flares into the lug slots at both ends and is sized to the
+  // hardware - it flares into the lug slots at both ends and is sized to the
   // wrist rather than adjusted. The loop below is a 58 x 45 mm wrist (~162 mm
   // round), which is what a Solo Loop is cut to.
   band: {
@@ -279,7 +279,7 @@ export const GALAXY_WATCH_VARIANTS: Record<'watch8', WatchSpec> = {
 export type AppleWatchVariant = keyof typeof APPLE_WATCH_VARIANTS
 export type GalaxyWatchVariant = keyof typeof GALAXY_WATCH_VARIANTS
 
-/** Every watch spec in one table — the shared framing and camera math key off it. */
+/** Every watch spec in one table - the shared framing and camera math key off it. */
 export const WATCH_VARIANTS: Record<AppleWatchVariant | GalaxyWatchVariant, WatchSpec> = {
   ...APPLE_WATCH_VARIANTS,
   ...GALAXY_WATCH_VARIANTS,
@@ -315,7 +315,7 @@ export function watchCameraDistance(variant: WatchVariant, bandOpen: boolean): n
  * clearance, with the grounded line (0.05 under the strap) restored by the
  * 0.1 contact gap.
  */
-/** Millimetres per world unit — the shared watch scale. */
+/** Millimetres per world unit - the shared watch scale. */
 export const WATCH_MM_PER_UNIT = 17.7
 
 /** Live geometry of a watch display. Watches have a single pose. */
@@ -352,7 +352,7 @@ export const WATCH_FRAMING = {
 
 /**
  * True length of each strap, measured along the wrist loop it wraps. The worn
- * pose is what fixes a band's length — it is cut to go round a wrist — so the
+ * pose is what fixes a band's length - it is cut to go round a wrist - so the
  * flat pose reads its lengths from here rather than carrying its own numbers
  * that could drift out of agreement.
  */

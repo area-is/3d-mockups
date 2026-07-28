@@ -5,13 +5,13 @@ description: A CR80 badge hanging from a lanyard, with live front and back faces
 
 `<IDCard>` and `<IDCardMockup>` render a portrait CR80 badge (54×85.6 mm,
 30 mil PVC) hanging from a lanyard: a real 14×3 mm punched slot through the
-card, the full hardware chain from real lanyards — a flat stamped-steel
+card, the full hardware chain from real lanyards - a flat stamped-steel
 swivel J-hook pierced through the slot (its plane perpendicular to the
 card, the ring window swallowing the punch strip) with its spring gate
-closing the mouth, swivel barrel, strap crimp — and two woven strap halves
+closing the mouth, swivel barrel, strap crimp - and two woven strap halves
 rising in a hanging ~30° V out of the top of the frame.
 
-The printable face is live DOM on the front and, optionally, the back —
+The printable face is live DOM on the front and, optionally, the back -
 full bleed over the ENTIRE card, punch strip included, like a real
 edge-to-edge badge print. The slot punch is carved out of the live area
 with the same stadium outline as the 3D hole, so your design wraps
@@ -40,17 +40,17 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Slot | Surface |
 | --- | --- |
-| `<IDCardMockup.Front>` | Front face — full bleed over the whole card, slot punch carved out (bare children). |
-| `<IDCardMockup.Back>` | Back face — plain stock when omitted. |
+| `<IDCardMockup.Front>` | Front face - full bleed over the whole card, slot punch carved out (bare children). |
+| `<IDCardMockup.Back>` | Back face - plain stock when omitted. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<IDCard>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-id-card" />
@@ -59,9 +59,9 @@ what stays 3D hardware.
 
 ### Both sides, on a corporate lanyard
 
-`lanyardColor` takes any CSS color; `<IDCardMockup.Back>` prints the reverse
-— barcodes, return-if-found text, wifi credentials for the office guest
-network…
+`lanyardColor` takes any CSS color; `<IDCardMockup.Back>` prints the
+reverse: barcodes, return-if-found text, wifi credentials for the office
+guest network…
 
 <ObjectDemo demo="idcard-back" />
 

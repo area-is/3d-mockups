@@ -10,7 +10,7 @@ type GroupProps = ThreeElements['group']
 
 export interface BookProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Cover art — full bleed on the front board. Bare children fill the front
+   * Cover art - full bleed on the front board. Bare children fill the front
    * cover; name faces explicitly with `<Book.Cover>`, `<Book.Back>` and
    * `<Book.Spine>`.
    */
@@ -67,7 +67,7 @@ function BookImpl({
   // A cased-in hardback's backbone is NOT a half-round tube: it is flat
   // across the printed area and rolls off into the joints. Modelling it as a
   // half-cylinder left the flat DOM spine strip floating off the shell
-  // everywhere but its centre line — a visible gap down both sides of the
+  // everywhere but its centre line - a visible gap down both sides of the
   // spine art. The joint roll is set first (~5 mm of real cloth), and the
   // printed strip is exactly the flat crown that remains, so it sits ON the
   // surface at every point.
@@ -76,7 +76,7 @@ function BookImpl({
   const spineWidth = thickness - spineJoint * 2
   const spineX = -board.width / 2 + 0.012 - spineOut - 0.002
 
-  // the boards stop short of the spine by the french groove width — the
+  // the boards stop short of the spine by the french groove width - the
   // groove itself is a thinner recessed strip added separately below
   const boardGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -99,7 +99,7 @@ function BookImpl({
 
   // The backbone's cross-section, extruded along the book's height: a
   // rounded rectangle whose straight run is the printed crown and whose two
-  // rolls are the joints. Only the outboard half is ever seen — the rest is
+  // rolls are the joints. Only the outboard half is ever seen - the rest is
   // buried behind the page block.
   const spineGeometry = React.useMemo(() => {
     const shape = roundedRectShape(spineOut * 2, thickness, spineJoint)

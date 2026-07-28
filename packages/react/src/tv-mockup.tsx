@@ -6,7 +6,7 @@ export type TVSetMockupProps = MockupProps<TVProps>
 
 // The factory handles everything but the camera: the TV's default camera
 // pulls back with the diagonal (`tvCameraFraming`), which the static
-// `MockupFraming.camera` cannot express — a thin shell injects it per render.
+// `MockupFraming.camera` cannot express - a thin shell injects it per render.
 const TVSetMockupBase = createMockup({
   kind: 'tv',
   regions: SCREEN_REGIONS,

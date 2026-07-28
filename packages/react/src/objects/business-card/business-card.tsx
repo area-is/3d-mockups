@@ -14,7 +14,7 @@ export interface BusinessCardProps extends Omit<GroupProps, 'children' | 'color'
    * stock when the back is omitted).
    */
   children?: React.ReactNode
-  /** Stock color — the faces' base (and the back, behind any back content). */
+  /** Stock color - the faces' base (and the back, behind any back content). */
   color?: string
   /**
    * Painted-edge color, the signature of premium 32 pt stock (think a bright
@@ -25,7 +25,7 @@ export interface BusinessCardProps extends Omit<GroupProps, 'children' | 'color'
 
 /**
  * A procedurally built business card on premium 32 pt stock: rounded die-cut
- * corners, visible paper edge, and live full-bleed DOM on the front — and,
+ * corners, visible paper edge, and live full-bleed DOM on the front - and,
  * optionally, the back. No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
@@ -83,7 +83,7 @@ function BusinessCardImpl({
 
   return (
     <group {...groupProps}>
-      {/* the stock — faces in the stock color, die-cut edge optionally painted
+      {/* the stock - faces in the stock color, die-cut edge optionally painted
           (ExtrudeGeometry material group 0 is the caps, group 1 the sides) */}
       <mesh geometry={bodyGeometry}>
         <meshPhysicalMaterial attach="material-0" color={color} metalness={0} roughness={0.82} />
@@ -104,7 +104,7 @@ function BusinessCardImpl({
         {regions.front?.children}
       </DeviceScreen>
 
-      {/* live back face — only mounted when there's a design for it */}
+      {/* live back face - only mounted when there's a design for it */}
       {regions.back != null && (
         <DeviceScreen
           {...faceProps}

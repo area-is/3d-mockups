@@ -1,5 +1,5 @@
 /**
- * Compile-time contract tests for the public API. Nothing here runs — the
+ * Compile-time contract tests for the public API. Nothing here runs - the
  * file only has to typecheck (`npm run typecheck`), pinning the shapes an API
  * refactor must not silently change. It is not part of the published bundle
  * (only `index.ts`/`core.ts` are tsup entries).
@@ -122,7 +122,7 @@ const _slotsUsage = (
       </CustomBoxMockup.Top>
     </CustomBoxMockup>
 
-    {/* one named slot per panel — position comes from the name, not the order */}
+    {/* one named slot per panel - position comes from the name, not the order */}
     <BrochureMockup>
       <BrochureMockup.BackRight>
         <div />
@@ -134,13 +134,13 @@ const _slotsUsage = (
   </>
 )
 
-// @ts-expect-error — a mockup must reject a slot region it does not have
+// @ts-expect-error - a mockup must reject a slot region it does not have
 const _wrongSlot = <CustomBoxMockup size={{ width: 1, height: 1, depth: 1 }}>{CustomBoxMockup.Spine}</CustomBoxMockup>
 
-// @ts-expect-error — panels are named, so a fourth one cannot be expressed
+// @ts-expect-error - panels are named, so a fourth one cannot be expressed
 const _noFourthPanel = <BrochureMockup.FrontFar />
 
-// @ts-expect-error — it is FrontCenter, not FrontMiddle
+// @ts-expect-error - it is FrontCenter, not FrontMiddle
 const _wrongPanelName = <BrochureMockup.FrontMiddle />
 
 // ---- the measurement API -------------------------------------------------------------
@@ -152,9 +152,9 @@ type _primaryIsRegion = Expect<Equal<MockupInfo['primary'], RegionInfo>>
 const _galaxyInfo = mockupInfo('galaxy', { variant: 's26ultra', orientation: 'landscape' })
 const _bookInfo = mockupInfo('book', { size: { width: 216, height: 279 } })
 const _defaults = mockupInfo('galaxy')
-// @ts-expect-error — 's27' is not a Galaxy variant
+// @ts-expect-error - 's27' is not a Galaxy variant
 mockupInfo('galaxy', { variant: 's27' })
-// @ts-expect-error — colors cannot change a measurement, so they are not accepted
+// @ts-expect-error - colors cannot change a measurement, so they are not accepted
 mockupInfo('galaxy', { color: '#fff' })
 const _storeInfo = mockupInfo('storefront')
 // bus and van joined the registry once their wrap geometry moved into core

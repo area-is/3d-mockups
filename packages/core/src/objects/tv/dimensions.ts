@@ -1,24 +1,24 @@
 /**
- * TV object dimensions — three premium flat-screen designs, each sized by its
+ * TV object dimensions - three premium flat-screen designs, each sized by its
  * diagonal in inches (default 65").
  *
  * The variants are proportioned from the published dimensions of current
  * Samsung and LG sets, which is what makes them read as different products
  * rather than one cabinet with different legs:
  *
- * - `legs` — the wide-set 4K class on splayed A-frame feet: a near-bezel-less
+ * - `legs` - the wide-set 4K class on splayed A-frame feet: a near-bezel-less
  *   panel (~7.6 mm frame, ~14.6 mm bottom chin), thin at the edges with a
  *   shallow electronics bulge low on the back, standing on two slim feet near
  *   the ends, each a pair of struts meeting at the cabinet in the shallow Λ of
  *   current retail stands.
- * - `pedestal` — the Neo QLED class on a center plate, from Samsung's own
+ * - `pedestal` - the Neo QLED class on a center plate, from Samsung's own
  *   QN70F spec sheet (75": 1677.5 x 960.7 x 26.6 mm over a 1660.6 x 934.1 mm
  *   panel, so an 8.45 mm frame and an 18.15 mm chin on a 26.6 mm AirSlim slab;
  *   the AERO CENTER stand's footprint is 354.8 x 331.5 mm, and the 1017.5 mm
  *   height-with-stand puts the panel 56.8 mm up). Samsung publishes that
  *   footprint at four sizes, so the plate is interpolated between them rather
  *   than scaled off one.
- * - `frame` — the picture-frame class (Samsung The Frame LS03F, 65":
+ * - `frame` - the picture-frame class (Samsung The Frame LS03F, 65":
  *   1458 x 833 x 25.4 mm over the same panel, i.e. a UNIFORM ~14.75 mm bezel
  *   with no chin, and a slab of even thickness because the electronics live in
  *   an external One Connect box). It ships with the Slim Fit Wall Mount and
@@ -135,7 +135,7 @@ export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARI
             kind: 'splayed' as const,
             /**
              * Two feet near the ends: each a pair of slim struts splaying fore
-             * and aft from a common ankle at the cabinet bottom — the shallow Λ
+             * and aft from a common ankle at the cabinet bottom - the shallow Λ
              * of current retail stands. `offsetX` is the foot centerline from
              * the TV center, `span` the fore-aft footprint on the media stand.
              */
@@ -158,7 +158,7 @@ export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARI
     body: { width: bodyW, height: bodyH, depth: v.depth, radius: 0.03, bevel: 0.012, centerY },
     /** Active display area. Content you pass as children maps onto this rect. */
     display: { width: displayW, height: displayH, radius: 0.008 },
-    /** Wide, shallow electronics bulge low on the back — absent on `frame`. */
+    /** Wide, shallow electronics bulge low on the back - absent on `frame`. */
     backBulge: v.bulge ? { width: bodyW - 0.47, height: bodyH * 0.58, depth: v.bulge } : null,
     /** Whether the IR/logo tab projects under the chin. */
     logoBar: v.logoBar,
@@ -202,7 +202,7 @@ export function tvCameraFraming(size?: number, variant?: TVVariant): CameraFrami
 }
 
 /** The stand defines the media-stand plane; the shadow grounds under it. */
-/** Millimetres per world unit — the TV scale (`TV_MM` inverted). */
+/** Millimetres per world unit - the TV scale (`TV_MM` inverted). */
 export const TV_MM_PER_UNIT = 1 / TV_MM
 
 /** Live geometry of the active panel at the requested diagonal. */

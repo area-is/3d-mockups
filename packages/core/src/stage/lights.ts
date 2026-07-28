@@ -1,7 +1,7 @@
 /**
  * The procedural light studio shared by every binding: two direct lights plus
  * a tiny rig of area lights rendered once into an environment map. No HDR
- * downloads — works offline.
+ * downloads - works offline.
  */
 
 export const STAGE_AMBIENT_LIGHT = { intensity: 0.4 } as const
@@ -19,7 +19,7 @@ export interface StudioLightformer {
   intensity: number
   position: [number, number, number]
   scale: [number, number, number]
-  /** Rotation around the X axis (drei `rotation-x`, Threlte/Tres equivalents). */
+  /** Rotation around the X axis (drei `rotation-x`). */
   rotationX?: number
   /** Rotation around the Y axis. */
   rotationY?: number

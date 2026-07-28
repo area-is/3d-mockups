@@ -13,14 +13,14 @@ export interface AFrameSignProps extends Omit<GroupProps, 'children' | 'color'>,
    * with `<AFrameSign.Front>` and `<AFrameSign.Back>`.
    */
   children?: React.ReactNode
-  /** Frame color — classic dark-stained wood by default. */
+  /** Frame color - classic dark-stained wood by default. */
   color?: string
 }
 
 /**
  * A procedurally built sidewalk A-frame sandwich board: two wood-framed
  * 600 x 900 mm panels hinged near the corners and splayed into an A, held by
- * webbing straps at mid-height, standing on four leg tips — both sides live
+ * webbing straps at mid-height, standing on four leg tips - both sides live
  * DOM: chalk menus, sale boards, open/closed signs. No 3D asset files are
  * loaded.
  *
@@ -137,7 +137,7 @@ function AFrameSignImpl({
         )
       })}
 
-      {/* hinge blocks (~80 mm) near the ends — the center gap is the carry-handle area */}
+      {/* hinge blocks (~80 mm) near the ends - the center gap is the carry-handle area */}
       {([1, -1] as const).map((side) => (
         <mesh key={side} rotation-z={Math.PI / 2} position={[side * (panel.width / 2 - 0.35), legLift + topY + 0.02, 0]}>
           <cylinderGeometry args={[0.035, 0.035, 0.286, 12]} />

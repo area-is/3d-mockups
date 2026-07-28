@@ -1,5 +1,5 @@
 /**
- * Apple Studio Display (2nd generation, 2026 — the 2022 enclosure carried
+ * Apple Studio Display (2nd generation, 2026 - the 2022 enclosure carried
  * over): 27" 5K 5120x2880 at 218 ppi and 600 nits, 623 x 478 x 168 mm on the
  * tilt-adjustable stand, a ~19.5 mm flat-back aluminum slab standing 362 mm
  * bare (Apple's own VESA-configuration height), all-glass front with a uniform
@@ -17,8 +17,8 @@
  * Origin sits at the panel center; the desk plane is `standHeight` below it.
  *
  * The tilt stand is a 152.5 mm wide, 6.5 mm thin sheet arm hanging from its
- * hinge 89 mm below the panel center — the machined pivot caps show on the
- * arm's sides — leaning 13° back over a long, thin (6.9 mm) foot plate whose
+ * hinge 89 mm below the panel center - the machined pivot caps show on the
+ * arm's sides - leaning 13° back over a long, thin (6.9 mm) foot plate whose
  * rounded ends reach 66 mm ahead of the panel and 101 mm behind it: the
  * published 168 mm depth, with the arm landing near the plate's rear on small
  * fillets rather than a heel. A single vertical stadium cutout passes clean
@@ -35,7 +35,7 @@ import type { MockupFraming, MockupMetrics } from '../../regions'
 export const STUDIO_DISPLAY = {
   /** Aluminum enclosure (glass face). `radius` is the corner radius, `bevel` the edge rounding. */
   body: { width: 5.417, height: 3.148, depth: 0.17, radius: 0.09, bevel: 0.022 },
-  /** Front cover glass — edge-to-edge, leaving only a hairline of aluminum.
+  /** Front cover glass - edge-to-edge, leaving only a hairline of aluminum.
    * The glass itself paints the uniform black bezel around the panel. */
   glass: { width: 5.373, height: 3.104, radius: 0.08 },
   /** Active display area. Content you pass as children maps onto this rect. */
@@ -46,20 +46,20 @@ export const STUDIO_DISPLAY = {
    * panel's bottom edge floats 116 mm above the desk and the whole assembly
    * stands 478 mm tall, exactly as published. */
   standHeight: 2.585,
-  /** Gloss-black Apple mark on the back, centered horizontally — measured off
+  /** Gloss-black Apple mark on the back, centered horizontally - measured off
    * the official rear photography: 67 x 83 mm, glyph center 50 mm above the
    * panel's center line (130 mm below its top edge). */
   logo: { width: 0.583, height: 0.724, y: 0.437 },
   /**
-   * Rear port row — 2x Thunderbolt 5 + 2x USB-C machined as a tight cluster
+   * Rear port row - 2x Thunderbolt 5 + 2x USB-C machined as a tight cluster
    * of VERTICAL pill slots near the bottom, left of center seen from the
    * back (the official rear photography shows four upright slots). FRONT-view
    * coordinates: `x` is the first slot's center (subsequent slots step
    * `spacing` toward the center), `y` is above the bottom edge; each slot is
    * `slot.width` x `slot.height` (~3.5 x 8.8 mm, centers ~14.5 mm apart,
-   * ~29 mm up — photo-measured).
+   * ~29 mm up - photo-measured).
    *
-   * `thunderbolt` marks the LAST `count` slots of that run — the ones nearest
+   * `thunderbolt` marks the LAST `count` slots of that run - the ones nearest
    * the panel's center, i.e. the rightmost pair seen from behind, exactly as
    * on the hardware. Each wears the bolt above it, and the upstream (host)
    * port, the innermost one, adds a dot below. Both are sized and placed off
@@ -79,7 +79,7 @@ export const STUDIO_DISPLAY = {
     },
   },
   /** The captive power cord's round inlet: centered horizontally on the
-   * back, ~35 mm across, its center ~32 mm above the bottom edge — aligned
+   * back, ~35 mm across, its center ~32 mm above the bottom edge - aligned
    * behind the upper half of the stand blade's stadium cutout. */
   power: { r: 0.152, y: 0.278 },
   /**
@@ -87,7 +87,7 @@ export const STUDIO_DISPLAY = {
    * `thickness` cross-section, 152.5 x 6.5 mm) hangs from the hinge barrel
    * (`hingeRadius` 9.4 mm, centered `attachY` = 89 mm below the panel center)
    * leaning `leanDeg` back, and meets a thin foot plate (`footThickness`
-   * 6.9 mm) whose rounded lips sit at `footFrontZ` and `footBackZ` — 66 mm
+   * 6.9 mm) whose rounded lips sit at `footFrontZ` and `footBackZ` - 66 mm
    * ahead of the panel and 101 mm behind it, the published 168 mm depth. The
    * arm lands 74 mm behind the panel, a quarter of the way in from the plate's
    * rear lip, blended by small fillets (`backFillet` behind it,
@@ -106,7 +106,7 @@ export const STUDIO_DISPLAY = {
     backFillet: 0.075,
     frontFillet: 0.11,
     hingeRadius: 0.082,
-    /** The blade's single vertical stadium (racetrack) cutout — 40 x 58 mm,
+    /** The blade's single vertical stadium (racetrack) cutout - 40 x 58 mm,
      * centered, its center `edgeOffset` above the enclosure's bottom edge.
      * The panel's power inlet shows through its upper half; the lower half
      * is open air the captive cord drops through. */
@@ -122,7 +122,7 @@ export const STUDIO_DISPLAY = {
  */
 export const STUDIO_DISPLAY_STAGE_OFFSET_Y = 0.95
 
-/** Millimetres per world unit — the Studio Display scale. */
+/** Millimetres per world unit - the Studio Display scale. */
 export const STUDIO_DISPLAY_MM_PER_UNIT = 115
 
 /** Live geometry of the display. One variant, one landscape pose. */

@@ -6,7 +6,7 @@ description: A 32 pt business card with live front and back faces and painted ed
 `<BusinessCard>` and `<BusinessCardMockup>` render an 89×51 mm (3.5"×2")
 business card on premium 32 pt stock: square die-cut corners (the standard
 for thick stock), an optional painted edge, and a live 520×298 DOM surface
-on the front — and, optionally, the back.
+on the front - and, optionally, the back.
 
 <ObjectDemo demo="card-basic" checker />
 
@@ -23,7 +23,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `color` | `string` | `'#f7f6f2'` | Stock color: the faces' base and unprinted back. |
-| `edgeColor` | `string` | stock color | Painted-edge color — the bright seam that says "32 pt". |
+| `edgeColor` | `string` | stock color | Painted-edge color - the bright seam that says "32 pt". |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each face's content. |
 | `resolution` | `number` | `520` | Virtual face width in CSS px (~150 dpi); height follows the card aspect. |
 
@@ -32,16 +32,16 @@ Beyond the [shared screen props](/docs/screen-content):
 | Slot | Surface |
 | --- | --- |
 | `<BusinessCardMockup.Front>` | Front face (bare children). |
-| `<BusinessCardMockup.Back>` | Back face — plain stock when omitted. |
+| `<BusinessCardMockup.Back>` | Back face - plain stock when omitted. |
 
-Every slot takes per-surface overrides — `surfaceBackground`,
-`resolution`, `surfaceStyle` — over the mockup-level defaults. The
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<BusinessCard>`.
 
 ## Mockup-able areas
 
 Every live surface filled with chroma green, labeled with the slot that
-feeds it — the fastest way to see exactly where your content lands and
+feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-card" />
@@ -50,7 +50,7 @@ what stays 3D hardware.
 
 ### Front and back
 
-Add a `<BusinessCardMockup.Back>` and let it orbit — both faces are live DOM.
+Add a `<BusinessCardMockup.Back>` and let it orbit - both faces are live DOM.
 
 <ObjectDemo demo="card-back" />
 
@@ -66,7 +66,7 @@ Add a `<BusinessCardMockup.Back>` and let it orbit — both faces are live DOM.
 ### Showing both sides at once
 
 Two bare `<BusinessCard>` objects in one
-[`MockupCanvas`](/docs/api/mockup-canvas) — the classic front-and-back
+[`MockupCanvas`](/docs/api/mockup-canvas) - the classic front-and-back
 presentation pair.
 
 <ObjectDemo demo="card-pair" />

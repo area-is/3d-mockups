@@ -9,11 +9,11 @@ type GroupProps = ThreeElements['group']
 
 export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Panel content. Bare children fill the top panel — the hero face of a
+   * Panel content. Bare children fill the top panel - the hero face of a
    * shipper, with the tape overlaying it like real tape over print. Name
    * panels explicitly with `<MailerBox.Top>`, `<MailerBox.Front>`,
    * `<MailerBox.Back>`, `<MailerBox.Right>` / `<MailerBox.Left>` (the short
-   * end faces — the wrapped tape rides over them) and `<MailerBox.Bottom>`
+   * end faces - the wrapped tape rides over them) and `<MailerBox.Bottom>`
    * (oriented to read from the front when flipped).
    */
   children?: React.ReactNode
@@ -33,7 +33,7 @@ export interface MailerBoxProps extends Omit<GroupProps, 'children' | 'color'>, 
 /**
  * A procedurally built closed corrugated shipper: kraft stock with softened
  * corrugated edges, the flap seam under a packing-tape band that wraps down
- * both ends — and live DOM on every panel: top, front, back, both ends and
+ * both ends - and live DOM on every panel: top, front, back, both ends and
  * the bottom. The tape stays over your print via a DOM overlay, exactly
  * like real tape over a printed box. No 3D asset files are loaded.
  *
@@ -88,7 +88,7 @@ function MailerBoxImpl({
   )
 
   // flap seam: the flaps hinge on the LONG walls and meet along the width,
-  // so the gap runs left-right — visible through the translucent tape
+  // so the gap runs left-right - visible through the translucent tape
   const seamOverlay = (
     <>
       <div
@@ -129,7 +129,7 @@ function MailerBoxImpl({
       </RoundedBox>
 
       {/* geometry seam gap + tape for the unprinted faces (hidden under live
-          DOM). The tape runs along the width — over the flap seam — and wraps
+          DOM). The tape runs along the width - over the flap seam - and wraps
           down both short end faces. It is slightly translucent so the dark
           gap between the flaps reads through it, like real packing tape. */}
       <mesh position={[0, body.height / 2 + 0.0015, 0]} rotation-x={-Math.PI / 2}>
@@ -158,7 +158,7 @@ function MailerBoxImpl({
       {regions.top == null && (
         <group position={[0, body.height / 2, 0]}>
           {/* the two flaps, hinged on the long walls, meeting along the width
-              — below the seam/tape planes so both stay visible */}
+              - below the seam/tape planes so both stay visible */}
           {([1, -1] as const).map((s) => (
             <mesh key={s} position={[0, 0.001, s * (body.depth / 4 + 0.006)]} rotation-x={-Math.PI / 2}>
               <planeGeometry args={[body.width - 0.012, body.depth / 2 - 0.012]} />
@@ -172,7 +172,7 @@ function MailerBoxImpl({
         </group>
       )}
 
-      {/* live top panel — the seam and tape ride over the print */}
+      {/* live top panel - the seam and tape ride over the print */}
       {regions.top != null && (
         <DeviceScreen
           {...shared}
@@ -228,7 +228,7 @@ function MailerBoxImpl({
         </DeviceScreen>
       )}
 
-      {/* live end panels — the wrapped tape rides over them */}
+      {/* live end panels - the wrapped tape rides over them */}
       {regions.right != null && (
         <DeviceScreen
           {...shared}

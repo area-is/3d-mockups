@@ -30,7 +30,7 @@ export interface DOOHTotemProps extends Omit<GroupProps, 'children' | 'color'>, 
  * A procedurally built digital out-of-home totem (digital 6-sheet class): a
  * rounded street-furniture enclosure running full-width into a kick plinth,
  * ventilation louvres, cover glass on both faces, and a live portrait 9:16
- * display behind the front glass (plus an optional back display — real
+ * display behind the front glass (plus an optional back display - real
  * units are double-sided). No 3D asset files are loaded.
  *
  * The origin is the enclosure center; the pavement sits
@@ -111,7 +111,7 @@ function DOOHTotemImpl({
       {/* both faces: matte display surround, subtle cover glass, louvre bands */}
       {([1, -1] as const).map((s) => (
         <group key={s} rotation-y={s === 1 ? 0 : Math.PI}>
-          {/* matte black surround — reads through the glass around the display */}
+          {/* matte black surround - reads through the glass around the display */}
           <mesh geometry={glassGeometry} position-z={body.depth / 2 + 0.001}>
             <meshPhysicalMaterial color="#05070b" metalness={0.1} roughness={0.5} />
           </mesh>
@@ -136,7 +136,7 @@ function DOOHTotemImpl({
         </group>
       ))}
 
-      {/* full-width kick plinth — the enclosure runs straight into it, no neck */}
+      {/* full-width kick plinth - the enclosure runs straight into it, no neck */}
       <RoundedBox
         args={[plinth.width, plinth.height, plinth.depth]}
         radius={0.03}
@@ -154,7 +154,7 @@ function DOOHTotemImpl({
         {regions.front?.children}
       </DeviceScreen>
 
-      {/* the back display — real totems are double-sided */}
+      {/* the back display - real totems are double-sided */}
       {regions.back != null && (
         <DeviceScreen
           {...screenProps}

@@ -17,13 +17,13 @@ type GroupProps = ThreeElements['group']
 
 export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
-   * Face designs — full bleed over the WHOLE card (punch strip included);
+   * Face designs - full bleed over the WHOLE card (punch strip included);
    * the slot punch is carved out of the live area. Bare children fill the
    * front face; name faces explicitly with `<IDCard.Front>` and
    * `<IDCard.Back>` (plain stock when the back is omitted).
    */
   children?: React.ReactNode
-  /** Card stock color — the edges and the inside of the punched slot. */
+  /** Card stock color - the edges and the inside of the punched slot. */
   color?: string
   /** Woven lanyard strap color. */
   lanyardColor?: string
@@ -34,8 +34,8 @@ export interface IDCardProps extends Omit<GroupProps, 'children' | 'color'>, Sur
  * real punched slot, a swivel J-hook pierced through it (plane perpendicular
  * to the card, like a hanging badge), a crimp in brushed metal, and two
  * woven strap halves rising in a hanging V that exits the top of the frame.
- * The printable face is live DOM covering the ENTIRE card — front and,
- * optionally, back — with the slot punch carved out of the live area.
+ * The printable face is live DOM covering the ENTIRE card - front and,
+ * optionally, back - with the slot punch carved out of the live area.
  * No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
@@ -95,10 +95,10 @@ function IDCardImpl({
   )
 
   // Hardware chain, referenced from the standard retail swivel J-hook: the
-  // FLAT stamped-steel hook hangs pierced THROUGH the slot — its plane
+  // FLAT stamped-steel hook hangs pierced THROUGH the slot - its plane
   // perpendicular to the card, the ring's lower band crossing inside the
   // punched opening (just clear of resting on its bottom edge) while the
-  // ring window swallows the punch strip — then the stem rises to the
+  // ring window swallows the punch strip - then the stem rises to the
   // swivel barrel, and the crimp above it swallows the strap fold.
   const ringY = slot.centerY + (hook.outerR + hook.innerR) / 2 - 0.01
   const stemBottom = ringY + hook.innerR - 0.03
@@ -174,8 +174,8 @@ function IDCardImpl({
   // slot punched out, so blending mode never depth-hides the hook where it
   // should show through the real opening.
   const faceOccluderGeometry = React.useMemo(() => {
-    // True arcs, and held a hair inside the DOM's clip at every edge — the
-    // outline inward, the punch outward — so neither seam shows the page.
+    // True arcs, and held a hair inside the DOM's clip at every edge - the
+    // outline inward, the punch outward - so neither seam shows the page.
     const inset = Math.min(face.width, face.height) * SCREEN_MASK_INSET
     const r = Math.max(0, face.radius - inset)
     const shape = roundedRectShapeCorners(face.width - inset * 2, face.height - inset * 2, [r, r, r, r])
@@ -241,7 +241,7 @@ function IDCardImpl({
       >
         {metal}
       </RoundedBox>
-      {/* swivel barrel with its collar — the joint that lets the badge spin */}
+      {/* swivel barrel with its collar - the joint that lets the badge spin */}
       <mesh position={[0, barrelY, 0]}>
         <cylinderGeometry args={[hook.barrel.radius, hook.barrel.radius, hook.barrel.height, 16]} />
         {metal}
@@ -276,7 +276,7 @@ function IDCardImpl({
         </group>
       ))}
 
-      {/* live front face — full bleed over the whole card, slot carved out */}
+      {/* live front face - full bleed over the whole card, slot carved out */}
       <DeviceScreen
         {...faceProps}
         {...front}
@@ -286,7 +286,7 @@ function IDCardImpl({
         {regions.front?.children}
       </DeviceScreen>
 
-      {/* live back face — only mounted when there's a design for it */}
+      {/* live back face - only mounted when there's a design for it */}
       {regions.back != null && (
         <DeviceScreen
           {...faceProps}

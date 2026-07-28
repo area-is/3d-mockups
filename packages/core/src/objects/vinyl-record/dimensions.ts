@@ -1,5 +1,5 @@
 /**
- * Vinyl record object dimensions — a 12" LP half-out of its sleeve.
+ * Vinyl record object dimensions - a 12" LP half-out of its sleeve.
  *
  * Proportions follow the real thing: a 313 mm square jacket ~4 mm thick, and
  * a 302 mm disc with a 100 mm center label, peeking out of the sleeve far
@@ -23,7 +23,7 @@ export const VINYL_RECORD = {
   /** White paper inner sleeve, slightly smaller than the jacket. */
   innerSleeve: { size: 3.35, thickness: 0.006 },
   /** Fraction of the disc exposed past the sleeve edge. 70% clears the whole
-   * label past the jacket with margin — the DOM label must never overlap the
+   * label past the jacket with margin - the DOM label must never overlap the
    * DOM cover, since CSS3D layers can't depth-sort against each other. */
   discPeek: 0.7,
   /** Default CSS px width of the virtual cover; the label shares its dpi. */
@@ -39,7 +39,7 @@ export const VINYL_RECORD_REGIONS = [
 ] as const satisfies readonly RegionSpec[]
 
 /** The upright jacket grounds on its bottom edge. */
-/** Millimetres per world unit — the vinyl scale (~92 mm per unit). */
+/** Millimetres per world unit - the vinyl scale (~92 mm per unit). */
 export const VINYL_RECORD_MM_PER_UNIT = 92
 
 /** Live geometry of the square jacket faces and the two round disc labels. */

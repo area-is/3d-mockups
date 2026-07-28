@@ -67,7 +67,7 @@ function ShoppingBagImpl({
 
   // Each side gusset is two ruled panels meeting at an inward crease down the
   // vertical centerline. The crease is deepest at the mouth and dies to
-  // nothing at the base — a standing bag folds open to a flat square bottom,
+  // nothing at the base - a standing bag folds open to a flat square bottom,
   // so the footprint stays a clean rectangle the floor panel can fill.
   const gussetGeometry = React.useMemo(() => {
     const xo = body.width / 2 - wall / 2
@@ -84,7 +84,7 @@ function ShoppingBagImpl({
         const outerBottom: [number, number, number] = [sx * xo, bottom, sz * zo]
         const creaseTop: [number, number, number] = [sx * (xo - gusset), top, 0]
         const creaseBottom: [number, number, number] = [sx * xo, bottom, 0]
-        // split along the creaseTop–outerBottom diagonal — the fold line a
+        // split along the creaseTop–outerBottom diagonal - the fold line a
         // real gusset shows, running from the bottom corner up to the crease
         push(creaseTop, creaseBottom, outerBottom)
         push(creaseTop, outerBottom, outerTop)
@@ -111,7 +111,7 @@ function ShoppingBagImpl({
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, w, h)
     const inset = h / 2
-    // the glued flap sits a hair proud — a whisper darker band down the middle
+    // the glued flap sits a hair proud - a whisper darker band down the middle
     ctx.fillStyle = 'rgba(0,0,0,0.045)'
     ctx.beginPath()
     ctx.moveTo(0, 0)
@@ -173,7 +173,7 @@ function ShoppingBagImpl({
         <meshPhysicalMaterial {...paper} />
       </mesh>
 
-      {/* side gussets — creased at the mouth, flat at the base */}
+      {/* side gussets - creased at the mouth, flat at the base */}
       <mesh geometry={gussetGeometry}>
         <meshPhysicalMaterial {...paper} side={THREE.DoubleSide} />
       </mesh>
@@ -214,7 +214,7 @@ function ShoppingBagImpl({
         </group>
       ))}
 
-      {/* live front face — full bleed to the top edge */}
+      {/* live front face - full bleed to the top edge */}
       <DeviceScreen
         {...faceProps}
         {...resolveSurface(regions.front, surfaceDefaults)}
