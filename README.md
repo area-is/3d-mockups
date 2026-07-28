@@ -54,7 +54,7 @@ Uses npm workspaces. Node 18.18+ required.
 ```bash
 npm install        # installs all workspaces + builds the package (prepare hook)
 npm run dev        # package in watch mode + docs at http://localhost:3000
-npm run build      # builds the package, then the docs site
+npm run build      # builds the package, then the docs site as a Worker bundle
 npm run typecheck  # typechecks both workspaces
 ```
 
@@ -95,9 +95,9 @@ Settings live under **Workers & Pages → area-3d-mockups-docs → Settings → 
 | Setting | Value |
 | --- | --- |
 | Root directory | `apps/docs` |
-| Build command | `npm run cf:build` |
-| Deploy command | `npm run cf:deploy` |
-| Non-production branch deploy command | `npm run cf:upload` |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+| Non-production branch deploy command | `npx wrangler versions upload` |
 | Git branch | `main` |
 
 Two things that are easy to get wrong:
@@ -110,9 +110,23 @@ Two things that are easy to get wrong:
   because `npm ci` walks up to the root lockfile, installs every workspace, and runs
   the `prepare` hooks that build `packages/react/dist` before the docs build reads it.
 
-`cf:deploy` and `cf:upload` go through `opennextjs-cloudflare` rather than calling
-`wrangler` directly. Today that is equivalent, but it is the seam where cache
-population would happen if `open-next.config.ts` ever gains an incremental cache.
+Those are the stock Workers Builds commands, unedited. They land on OpenNext through
+two indirections worth knowing about:
+
+- **`npm run build` in `apps/docs` is `opennextjs-cloudflare build`, not `next build`.**
+  Wrangler needs `.open-next/worker.js`, which a plain Next build never produces. The
+  Next build survives as `build:next`, and `open-next.config.ts` sets that as OpenNext's
+  `buildCommand` — without it the adapter would fall back to its own default of
+  `npm run build` and recurse into itself.
+- **`wrangler deploy` re-executes itself as `opennextjs-cloudflare deploy`.** It detects
+  an OpenNext project from a `next.config.*`, an `open-next.config.*` and an installed
+  `@opennextjs/cloudflare`, then hands off. That hand-off is the seam where cache
+  population would happen if `open-next.config.ts` ever gains an incremental cache.
+
+`wrangler versions upload` has no such hand-off — it uploads the built Worker directly.
+That is equivalent today, because the incremental cache is `dummy` and there is nothing
+to populate. If that changes, the non-production command has to become an explicit
+`opennextjs-cloudflare upload` rather than the default.
 
 ### Worker size
 
