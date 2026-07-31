@@ -34,8 +34,15 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
 npm install area-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
-React 18+ (19 recommended). `three`, `@react-three/fiber` and `@react-three/drei` are peer
-dependencies.
+React 18+ (19 recommended). `three`, `@react-three/fiber` and `@react-three/drei` are
+**peer** dependencies rather than bundled ones, because each has to exist exactly once in
+an app - two copies of `three` mean two different `THREE.Mesh` classes, so `instanceof`
+checks and r3f's element catalogue stop matching.
+
+npm 7+ and pnpm 8+ install peers automatically, so `npm install area-3d-mockups` alone
+already pulls all three in. Listing them explicitly still records them in your
+`package.json`, which is what you want if you import from `three` yourself. Yarn does not
+auto-install peers, so there the full command is required.
 
 ## Quick start
 
