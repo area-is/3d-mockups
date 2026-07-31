@@ -21,11 +21,13 @@
  * wrong one.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const core = await import(join(here, '..', 'dist', 'core.js'))
+// `import()` of an absolute path only works on POSIX; on Windows `C:\...` reads
+// as a `c:` URL scheme and throws. A file:// URL is portable across both.
+const core = await import(pathToFileURL(join(here, '..', 'dist', 'core.js')).href)
 const { mockupInfo } = core
 
 const DOC = join(here, '..', '..', '..', 'apps', 'docs', 'content', 'docs', 'devices.mdx')
