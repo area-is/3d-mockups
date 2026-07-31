@@ -12,12 +12,19 @@ name: Release area-3d-mockups
 # hand from a laptop; this workflow takes over from the release after that.
 # Setup, once, after that first manual publish:
 #
-#   npm trust github --package area-3d-mockups \
-#     --repository area-is/3d-mockups --workflow release.yml
+#   npm trust github area-3d-mockups \
+#     --repo area-is/3d-mockups --file release.yml --allow-publish
 #
 #   (or npmjs.com → area-3d-mockups → Settings → Trusted publishing. `npm trust`
 #    needs npm 11.15.0+ and account-level 2FA; it is not workspace-aware, hence
-#    the explicit --package.)
+#    naming the package explicitly. --allow-publish defaults to false, so the
+#    config is inert without it.)
+#
+# This job deliberately declares no `environment:`. Adding one is a reasonable
+# upgrade — it gives a deployment record and an optional approval gate — but the
+# GitHub environment name becomes part of the OIDC claim, so it has to be created
+# in repo settings AND passed to the trust config as `--env <name>` or the
+# exchange stops matching.
 #
 # Release flow afterwards: bump the version in packages/react/package.json, land
 # it on main, then push a matching tag.
@@ -49,9 +56,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment:
-      name: npm
-      url: https://www.npmjs.com/package/area-3d-mockups
     steps:
       - uses: actions/checkout@v5
 
