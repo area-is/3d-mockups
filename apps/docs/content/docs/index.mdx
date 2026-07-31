@@ -40,8 +40,22 @@ no 3D asset files to host and nothing to download at runtime.
 npm install area-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
-React 18 or newer (19 recommended). `three`, `@react-three/fiber`, and
-`@react-three/drei` are peer dependencies.
+React 18 or newer (19 recommended).
+
+`three`, `@react-three/fiber`, and `@react-three/drei` are **peer** dependencies
+rather than bundled ones, because each has to exist exactly once in an app. Two
+copies of `three` on a page mean two different `THREE.Mesh` classes, so
+`instanceof` checks and react-three-fiber's element catalogue stop matching; two
+copies of `@react-three/fiber` mean `useThree()` inside your own components reads
+a different store than the one the mockup rendered into. Keeping them as peers
+lets your app own those versions instead of this package pinning them.
+
+You do not have to install them by hand: npm 7+ and pnpm 8+ resolve peer
+dependencies automatically, so `npm install area-3d-mockups` on its own already
+pulls all three in. Naming them explicitly is still worth it - it records them in
+your `package.json`, so upgrades are yours to control and `import * as THREE from
+'three'` in your own code resolves to a dependency you declared. Yarn (Classic and
+Berry) does not auto-install peers, so there the full command is required.
 
 ## Explore
 

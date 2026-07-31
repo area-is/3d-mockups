@@ -1,0 +1,108 @@
+name: Release area-3d-mockups
+
+# Publishes `packages/react` to npm as `area-3d-mockups` using npm Trusted
+# Publishing (OIDC) — no NPM_TOKEN, no secret in this repo at all. GitHub mints
+# a short-lived OIDC token, the npm CLI exchanges it for a publish credential,
+# and npm attaches a provenance attestation linking the tarball to this commit.
+#
+# THIS CANNOT PERFORM THE FIRST PUBLISH. npm requires the package to already
+# exist before a trusted publisher can be attached to it
+# (https://docs.npmjs.com/cli/v11/commands/npm-trust: "The package you're
+# configuring must already exist on the npm registry"). So v0.1.0 goes out by
+# hand from a laptop; this workflow takes over from the release after that.
+# Setup, once, after that first manual publish:
+#
+#   npm trust github area-3d-mockups \
+#     --repo area-is/3d-mockups --file release.yml --allow-publish
+#
+#   (or npmjs.com → area-3d-mockups → Settings → Trusted publishing. `npm trust`
+#    needs npm 11.15.0+ and account-level 2FA; it is not workspace-aware, hence
+#    naming the package explicitly. --allow-publish defaults to false, so the
+#    config is inert without it.)
+#
+# This job deliberately declares no `environment:`. Adding one is a reasonable
+# upgrade — it gives a deployment record and an optional approval gate — but the
+# GitHub environment name becomes part of the OIDC claim, so it has to be created
+# in repo settings AND passed to the trust config as `--env <name>` or the
+# exchange stops matching.
+#
+# Release flow afterwards: bump the version in packages/react/package.json, land
+# it on main, then push a matching tag.
+#
+#   npm version patch -w area-3d-mockups   # or minor / major
+#   git push origin main --follow-tags
+#
+# The tag is the trigger and the version guard below refuses any tag that does
+# not match the manifest, so a stale tag fails loudly instead of publishing the
+# wrong tree.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack and validate without publishing'
+        type: boolean
+        default: true
+
+# id-token: write is what makes OIDC — and therefore this whole workflow —
+# possible. Everything else stays read-only.
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+. Node 22 still
+          # ships an npm 10.x, so the CLI has to be upgraded explicitly — without
+          # it the publish falls back to looking for a token and fails.
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm to a trusted-publishing capable version
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      # Installs every workspace and runs the `prepare` hooks, which is what
+      # builds packages/react/dist. `npm publish` would rebuild it anyway; doing
+      # it here means a broken build fails before anything is sent to npm.
+      - name: Install and build
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Check the tag matches the manifest version
+        if: github.event_name == 'push'
+        run: |
+          manifest="$(node -p "require('./packages/react/package.json').version")"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$manifest" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match packages/react/package.json ($manifest)."
+            exit 1
+          fi
+          echo "Publishing area-3d-mockups@$manifest"
+
+      # A dispatched run defaults to packing only, so the workflow itself can be
+      # exercised on a branch without burning a version number.
+      - name: Pack (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        working-directory: packages/react
+        run: npm publish --dry-run --provenance
+
+      - name: Publish to npm
+        if: github.event_name == 'push' || !inputs.dry_run
+        working-directory: packages/react
+        # --provenance is documented as automatic under trusted publishing, but
+        # it is cheap to be explicit and it makes the failure obvious if the OIDC
+        # exchange silently did not happen.
+        run: npm publish --provenance --access public
