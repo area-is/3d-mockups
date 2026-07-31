@@ -412,7 +412,7 @@ export default function CarouselScene() {
 
   useEffect(() => {
     if (!auto) return
-    const t = setInterval(() => setActive((a) => (a + 1) % N), 4200)
+    const t = setInterval(() => setActive((a) => (a + 1) % N), 6000)
     return () => clearInterval(t)
   }, [auto])
 
