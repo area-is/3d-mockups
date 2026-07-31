@@ -16,7 +16,7 @@ const GRID_URLS = new Set<string>(
  */
 export function hideGridPages(tree: PageTree.Root): PageTree.Root {
   const walk = (nodes: PageTree.Node[]): PageTree.Node[] =>
-    nodes.flatMap((node) => {
+    nodes.flatMap<PageTree.Node>((node) => {
       if (node.type === 'page') return GRID_URLS.has(node.url) ? [] : [node]
       if (node.type === 'folder') return [{ ...node, children: walk(node.children) }]
       return [node]
