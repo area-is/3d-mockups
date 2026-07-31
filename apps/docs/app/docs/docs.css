@@ -9,84 +9,50 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  Showroom palette: the handoff's green ramp over the fd variables.  */
-/*  Light uses the darker #1C9D14 ramp so accent text passes contrast  */
-/*  on white; dark uses #31D322.                                       */
+/*  Showroom accent                                                    */
+/*                                                                     */
+/*  Only the accent moves; every neutral surface and text color stays  */
+/*  on fumadocs' own neutral theme, so the docs read exactly as they   */
+/*  did before. Light uses the darker #1C9D14 ramp so accent text      */
+/*  passes contrast on white; dark uses #31D322.                       */
 /* ------------------------------------------------------------------ */
 
 :root {
-  --color-fd-background: #ffffff;
-  --color-fd-foreground: #0f1319;
-  --color-fd-muted: rgba(13, 17, 23, 0.04);
-  --color-fd-muted-foreground: #565f6e;
-  --color-fd-popover: #ffffff;
-  --color-fd-popover-foreground: #0f1319;
-  --color-fd-card: #ffffff;
-  --color-fd-card-foreground: #0f1319;
-  --color-fd-border: #e3e6ec;
   --color-fd-primary: #1c9d14;
   --color-fd-primary-foreground: #ffffff;
-  --color-fd-secondary: rgba(13, 17, 23, 0.05);
-  --color-fd-secondary-foreground: #0f1319;
-  --color-fd-accent: rgba(13, 17, 23, 0.05);
-  --color-fd-accent-foreground: #0f1319;
   --color-fd-ring: #1c9d14;
 }
 
 .dark {
-  --color-fd-background: #08090c;
-  --color-fd-foreground: #e8eaf0;
-  --color-fd-muted: rgba(255, 255, 255, 0.04);
-  --color-fd-muted-foreground: #9aa1af;
-  --color-fd-popover: #0b0d12;
-  --color-fd-popover-foreground: #d6dbe7;
-  --color-fd-card: #0b0d12;
-  --color-fd-card-foreground: #e8eaf0;
-  --color-fd-border: #1e222b;
   --color-fd-primary: #31d322;
   --color-fd-primary-foreground: #08240b;
-  --color-fd-secondary: rgba(255, 255, 255, 0.045);
-  --color-fd-secondary-foreground: #e8eaf0;
-  --color-fd-accent: rgba(255, 255, 255, 0.06);
-  --color-fd-accent-foreground: #e8eaf0;
   --color-fd-ring: #31d322;
 }
 
-/* neutral.css re-tints the sidebar surface in dark mode; keep it on ours. */
-.dark #nd-sidebar {
-  --color-fd-muted: rgba(255, 255, 255, 0.04);
-  --color-fd-secondary: rgba(255, 255, 255, 0.045);
-  --color-fd-muted-foreground: #9aa1af;
+/* ------------------------------------------------------------------ */
+/*  Docs shell                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Fumadocs centers the whole grid inside `--fd-layout-width` (97rem) and
+ * absorbs the slack into a `1fr` gutter on each side, which pushes the
+ * sidebar off the left edge on wide screens. Letting the layout use the full
+ * width collapses both gutters: the sidebar sits flush left and the article
+ * column - where the live mockup previews live - keeps everything that was
+ * being spent on margins.
+ */
+#nd-docs-layout {
+  --fd-layout-width: 100%;
+}
+
+/* The sidebar reads as part of the page, not as a tinted panel. */
+#nd-sidebar {
+  background: transparent;
 }
 
 /* ------------------------------------------------------------------ */
 /*  Sidebar mockup grids (Devices / Objects)                           */
 /* ------------------------------------------------------------------ */
-
-/* Section headings, per the handoff: 12px, 0.16em tracked uppercase. */
-.docs-sep {
-  font-size: 12px !important;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 400 !important;
-  color: var(--color-fd-muted-foreground) !important;
-}
-
-.mockup-grid-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-fd-muted-foreground);
-  margin: 22px 10px 10px;
-}
-
-.mockup-grid-heading .count {
-  letter-spacing: 0.06em;
-  padding-right: 2px;
-}
 
 .mockup-grid {
   display: grid;

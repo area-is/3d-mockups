@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import {
   GalaxyMockup,
   IPhoneMockup,
@@ -376,6 +376,27 @@ const DEVICES: Entry[] = [
 
 const N = DEVICES.length
 
+/**
+ * The strip under the stage: a spread across the families rather than every
+ * variant, so one glance shows the catalog's range. Thumbnails are the
+ * pre-rendered shots in public/thumbs (see scripts/generate-thumbs.mjs).
+ */
+const FEATURED = [
+  'galaxy-s26',
+  'iphone-17-pro',
+  'galaxy-z-fold7',
+  'galaxy-z-flip7',
+  'macbook-pro-14',
+  'ipad-pro-13',
+  'galaxy-tab-s11-ultra',
+  'apple-watch-series-11',
+  'galaxy-watch-8',
+  'studio-display',
+].map((id) => {
+  const index = DEVICES.findIndex((d) => d.id === id)
+  return { index, id, name: DEVICES[index]!.name }
+})
+
 /** Signed shortest distance from `active` to slot `i` on the ring. */
 function ringDistance(i: number, active: number): number {
   let d = (i - active + N) % N
@@ -383,20 +404,38 @@ function ringDistance(i: number, active: number): number {
   return d
 }
 
+/** How much smaller the two flanking devices read than the centered one. */
+const SIDE_SCALE = 0.52
+
+/**
+ * Slots are sized through their LAYOUT box, never a CSS `transform: scale()`.
+ *
+ * react-three-fiber measures its container with `getBoundingClientRect()`,
+ * which reports the *transformed* rect - so a scaled ancestor makes the
+ * renderer size itself (and its camera aspect) to the scaled box and draw the
+ * device small, anchored to the top-left of the canvas. Worse, a transform
+ * leaves the layout box alone, so the ResizeObserver behind that measurement
+ * never fires and the wrong size sticks until some unrelated scroll event
+ * forces a re-measure.
+ *
+ * Driving width/height instead keeps rect and layout box in agreement: the
+ * canvas is measured correctly on mount, and every slide re-measures because
+ * the box genuinely changed. The device scales with it for free - each mockup
+ * frames its object to the canvas it is given.
+ */
 function slotStyle(d: number, entry: Entry): CSSProperties {
-  const base: CSSProperties = { width: entry.w, height: entry.h }
+  const factor = entry.scale * (d === 0 ? 1 : SIDE_SCALE)
+  const size: CSSProperties = {
+    width: `calc(${entry.w}px * ${factor} * var(--carousel-fit, 1))`,
+    height: `calc(${entry.h}px * ${factor} * var(--carousel-fit, 1))`,
+  }
   if (d === 0) {
-    return {
-      ...base,
-      transform: `translate(-50%, -50%) scale(calc(var(--carousel-fit, 1) * ${entry.scale}))`,
-      opacity: 1,
-      zIndex: 3,
-    }
+    return { ...size, transform: 'translate(-50%, -50%)', opacity: 1, zIndex: 3 }
   }
   const sign = d === 1 ? '+' : '-'
   return {
-    ...base,
-    transform: `translate(calc(-50% ${sign} min(460px, 44vw)), -50%) scale(calc(var(--carousel-fit, 1) * ${0.52 * entry.scale}))`,
+    ...size,
+    transform: `translate(calc(-50% ${sign} min(460px, 44vw)), -50%)`,
     opacity: 0.35,
     zIndex: 2,
     filter: 'saturate(0.6) brightness(0.85)',
@@ -422,6 +461,55 @@ export default function CarouselScene() {
     setActive(((i % N) + N) % N)
   }
 
+  /**
+   * Swipe handling, delegated at the stage so it works over the dimmed cards
+   * and the empty space around them.
+   *
+   * A gesture that starts on the centered device is left alone - that one
+   * belongs to the mockup's own orbit controls, so dragging it spins the
+   * object. Anywhere else a horizontal swipe steps the carousel (drag left for
+   * the next device, right for the previous), and a tap on a side card brings
+   * that card to the front.
+   */
+  const drag = useRef<{ x: number; y: number; card: number | null } | null>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * Which card is under a point, resolved geometrically rather than from the
+   * event target: each mockup's canvas is absolutely positioned at a huge
+   * z-index, so while one is briefly wider than its slot it hit-tests over the
+   * neighbouring cards and `closest()` would name the wrong one. Slots are
+   * checked front-to-back so the centered device wins any overlap.
+   */
+  const cardAt = (x: number, y: number): number | null => {
+    const slots = [...(stageRef.current?.querySelectorAll<HTMLElement>('.carousel-slot') ?? [])]
+    slots.sort((a, b) => Number(b.style.zIndex || 0) - Number(a.style.zIndex || 0))
+    for (const slot of slots) {
+      const r = slot.getBoundingClientRect()
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return Number(slot.dataset.index)
+    }
+    return null
+  }
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const card = cardAt(e.clientX, e.clientY)
+    // The centered device orbits instead of navigating.
+    drag.current = card === active ? null : { x: e.clientX, y: e.clientY, card }
+  }
+
+  const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const start = drag.current
+    drag.current = null
+    if (!start) return
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      go(active + (dx < 0 ? 1 : -1))
+    } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && start.card !== null) {
+      go(start.card)
+    }
+  }
+
   const entry = DEVICES[active]!
   const selected = finish[entry.id] ?? entry.colorways[0]!.id
   const counter = `${String(active + 1).padStart(2, '0')} / ${N}`
@@ -429,7 +517,15 @@ export default function CarouselScene() {
   return (
     <section className="carousel" aria-label="Device carousel">
       <div className="carousel-glow" aria-hidden />
-      <div className="carousel-stage">
+      <div
+        className="carousel-stage"
+        ref={stageRef}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          drag.current = null
+        }}
+      >
         {DEVICES.map((dev, i) => {
           const d = ringDistance(i, active)
           // Only the visible ring (center + both neighbors) holds a live
@@ -441,15 +537,26 @@ export default function CarouselScene() {
             <div
               key={dev.id}
               className="carousel-slot"
+              data-index={i}
               style={slotStyle(d, dev)}
-              onClick={isActive ? undefined : () => go(i)}
+              // Orbiting the centered device is a deliberate interaction, so
+              // it also ends the auto-advance.
               onPointerDown={isActive ? stop : undefined}
             >
-              {dev.render({ color: finish[dev.id] ?? dev.colorways[0]!.id, active: isActive })}
-              {isActive ? null : (
-                // A dimmed neighbor is one big "bring me to the front" target;
-                // without this shield its live screen would eat the click.
-                <span style={{ position: 'absolute', inset: 0, zIndex: 5 }} aria-hidden />
+              {isActive ? (
+                dev.render({ color: finish[dev.id] ?? dev.colorways[0]!.id, active: true })
+              ) : (
+                /*
+                 * Only the device on show is a live WebGL scene. The flanking
+                 * cards use their pre-rendered shots (the same ones the docs
+                 * sidebar uses): three simultaneous contexts, each building a
+                 * studio environment map, is enough to get one dropped -
+                 * "THREE.WebGLRenderer: Context Lost" - and browsers cap live
+                 * contexts at as few as 8 on mobile. At 35% opacity and
+                 * desaturated, a neighbour reads the same either way, and it
+                 * cannot resize mid-slide.
+                 */
+                <img className="carousel-ghost" src={`/thumbs/${dev.id}.png`} alt="" aria-hidden />
               )}
             </div>
           )
@@ -494,6 +601,24 @@ export default function CarouselScene() {
           <span className="carousel-finish-name" style={{ textTransform: 'uppercase' }}>
             {entry.colorways.find((c) => c.id === selected)?.name}
           </span>
+        </div>
+      </div>
+
+      <div className="featured">
+        <p className="featured-label">Featured devices</p>
+        <div className="featured-strip">
+          {FEATURED.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className="featured-card"
+              data-active={f.index === active}
+              onClick={() => go(f.index)}
+            >
+              <img src={`/thumbs/${f.id}.png`} alt="" loading="lazy" width="120" height="72" />
+              <span className="featured-card-label">{f.name}</span>
+            </button>
+          ))}
         </div>
       </div>
     </section>
