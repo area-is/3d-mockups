@@ -153,6 +153,17 @@ function HarnessScene() {
       <div style={{ width: '100%', height: '100%', background: '#000' }} />
     ) : params.get('screen') === 'light' ? (
       <div style={{ width: '100%', height: '100%', background: '#dfe3e8' }} />
+    ) : params.get('screen') === 'green' ? (
+      // The docs-sidebar thumbnail treatment: the Showroom design's green
+      // glow over near-black glass.
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background:
+            'radial-gradient(120% 90% at 30% 18%, rgba(80,224,66,0.5) 0%, rgba(49,211,34,0.24) 42%, transparent 76%), #0d1016',
+        }}
+      />
     ) : (
       <div
         style={{
@@ -506,15 +517,31 @@ function HarnessScene() {
   )
 }
 
+/**
+ * The stage wrapper reads `bg` itself: any CSS color, or `transparent` to
+ * let `screenshot({ omitBackground: true })` produce alpha PNGs (used by
+ * scripts/generate-thumbs.mjs for the docs-sidebar thumbnails).
+ */
+function HarnessStage() {
+  const params = useSearchParams()
+  const bg = params.get('bg') ?? '#f4f5f7'
+  return (
+    <div id="harness-stage" style={{ width: '100vw', height: '100vh', background: bg }}>
+      {bg === 'transparent' ? <style>{'html,body{background:transparent!important}'}</style> : null}
+      <HarnessScene />
+    </div>
+  )
+}
+
 export default function HarnessPage() {
   return (
-    <div id="harness-stage" style={{ width: '100vw', height: '100vh', background: '#f4f5f7' }}>
+    <>
       {/* The dev-mode indicator floats over the stage and animates, which would
           make every screenshot differ from the last. */}
       <style>{'nextjs-portal{display:none!important}'}</style>
       <Suspense>
-        <HarnessScene />
+        <HarnessStage />
       </Suspense>
-    </div>
+    </>
   )
 }

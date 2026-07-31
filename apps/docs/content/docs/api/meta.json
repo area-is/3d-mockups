@@ -4,6 +4,7 @@
     "index",
     "mockup-canvas",
     "mockup-info",
+    "---Devices---",
     "galaxy",
     "iphone",
     "fold",
@@ -14,7 +15,7 @@
     "apple-watch",
     "galaxy-watch",
     "studio-display",
-    "tv",
+    "---Objects---",
     "book",
     "magazine",
     "brochure",
@@ -36,6 +37,7 @@
     "storefront",
     "bus",
     "van",
-    "semi-trailer"
+    "semi-trailer",
+    "tv"
   ]
 }

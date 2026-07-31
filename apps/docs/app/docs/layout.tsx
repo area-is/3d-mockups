@@ -4,6 +4,7 @@ import { RootProvider } from 'fumadocs-ui/provider/next'
 import { DocsLayout } from 'fumadocs-ui/layouts/docs'
 import { source } from '@/lib/source'
 import { baseOptions } from '@/lib/layout.shared'
+import { DocsSidebarItem, DocsSidebarSeparator } from '@/components/docs-sidebar'
 import { inter, jetbrainsMono } from '@/lib/fonts'
 import './docs.css'
 import '../screens.css'
@@ -28,7 +29,13 @@ export default function DocsRootLayout({ children }: { children: ReactNode }) {
     >
       <body className="flex flex-col min-h-screen">
         <RootProvider>
-          <DocsLayout tree={source.getPageTree()} {...baseOptions()}>
+          <DocsLayout
+            tree={source.getPageTree()}
+            {...baseOptions()}
+            sidebar={{
+              components: { Item: DocsSidebarItem, Separator: DocsSidebarSeparator },
+            }}
+          >
             {children}
           </DocsLayout>
         </RootProvider>

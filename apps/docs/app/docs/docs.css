@@ -8,6 +8,137 @@
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Showroom palette: the handoff's green ramp over the fd variables.  */
+/*  Light uses the darker #1C9D14 ramp so accent text passes contrast  */
+/*  on white; dark uses #31D322.                                       */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --color-fd-background: #ffffff;
+  --color-fd-foreground: #0f1319;
+  --color-fd-muted: rgba(13, 17, 23, 0.04);
+  --color-fd-muted-foreground: #565f6e;
+  --color-fd-popover: #ffffff;
+  --color-fd-popover-foreground: #0f1319;
+  --color-fd-card: #ffffff;
+  --color-fd-card-foreground: #0f1319;
+  --color-fd-border: #e3e6ec;
+  --color-fd-primary: #1c9d14;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-secondary: rgba(13, 17, 23, 0.05);
+  --color-fd-secondary-foreground: #0f1319;
+  --color-fd-accent: rgba(13, 17, 23, 0.05);
+  --color-fd-accent-foreground: #0f1319;
+  --color-fd-ring: #1c9d14;
+}
+
+.dark {
+  --color-fd-background: #08090c;
+  --color-fd-foreground: #e8eaf0;
+  --color-fd-muted: rgba(255, 255, 255, 0.04);
+  --color-fd-muted-foreground: #9aa1af;
+  --color-fd-popover: #0b0d12;
+  --color-fd-popover-foreground: #d6dbe7;
+  --color-fd-card: #0b0d12;
+  --color-fd-card-foreground: #e8eaf0;
+  --color-fd-border: #1e222b;
+  --color-fd-primary: #31d322;
+  --color-fd-primary-foreground: #08240b;
+  --color-fd-secondary: rgba(255, 255, 255, 0.045);
+  --color-fd-secondary-foreground: #e8eaf0;
+  --color-fd-accent: rgba(255, 255, 255, 0.06);
+  --color-fd-accent-foreground: #e8eaf0;
+  --color-fd-ring: #31d322;
+}
+
+/* neutral.css re-tints the sidebar surface in dark mode; keep it on ours. */
+.dark #nd-sidebar {
+  --color-fd-muted: rgba(255, 255, 255, 0.04);
+  --color-fd-secondary: rgba(255, 255, 255, 0.045);
+  --color-fd-muted-foreground: #9aa1af;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sidebar mockup grids (Devices / Objects)                           */
+/* ------------------------------------------------------------------ */
+
+/* Section headings, per the handoff: 12px, 0.16em tracked uppercase. */
+.docs-sep {
+  font-size: 12px !important;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 400 !important;
+  color: var(--color-fd-muted-foreground) !important;
+}
+
+.mockup-grid-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+  margin: 22px 10px 10px;
+}
+
+.mockup-grid-heading .count {
+  letter-spacing: 0.06em;
+  padding-right: 2px;
+}
+
+.mockup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.mockup-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 6px 8px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.mockup-tile:hover {
+  background: var(--color-fd-accent);
+}
+
+.mockup-tile[data-active='true'] {
+  background: color-mix(in oklab, var(--color-fd-primary) 10%, transparent);
+}
+
+.mockup-tile-thumb {
+  height: 62px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mockup-tile-thumb img {
+  max-width: 88%;
+  max-height: 62px;
+  object-fit: contain;
+}
+
+.mockup-tile-label {
+  font-size: 12px;
+  letter-spacing: -0.005em;
+  color: var(--color-fd-muted-foreground);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.mockup-tile:hover .mockup-tile-label,
+.mockup-tile[data-active='true'] .mockup-tile-label {
+  color: var(--color-fd-foreground);
+}
+
 /* Live mockup examples embedded in doc pages (see components/object-examples.tsx). */
 .object-demo {
   position: relative;
