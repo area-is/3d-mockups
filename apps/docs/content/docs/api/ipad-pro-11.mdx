@@ -1,15 +1,88 @@
 ---
 title: iPad Pro 11″
-description: Live prop explorer for the iPad Pro 11″ mockup - drive every prop and copy the code it generates.
+description: The iPad Pro 11″ in WebGL, with a live prop explorer and the full IPadMockup reference.
 ---
 
-The iPad Pro 11″ rendered in WebGL, with a live React tree on its surfaces. Change
-anything in the inspector and the `demo.tsx` panel rewrites itself to exactly
-what is being passed.
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. The explorer is pinned to `variant="ipadpro11"`; everything below applies to the whole family.
 
 <MockupExplorer component="IPadMockup" variant="ipadpro11" />
 
-## Full API
+`<IPad>` and `<IPadMockup>` cover the current Apple iPad lineup at true
+relative sizes - iPad Pro (M5), iPad Air (M4) and the standard iPad (A16).
+Each variant gets its real hardware: the Pro's camera pod with LiDAR and
+flash, the Air's and iPad's bare single lens with the Touch ID top button, the
+Apple Pencil charging strip on the long edge, the Smart Connector dots (on the
+back, or sunk into the rail on the A16), the Apple glyph as real vector
+geometry centered on the back, the model wordmark below it, drilled speaker
+clusters in both short edges, and the front camera in the landscape-top bezel.
 
-Every prop, region and colorway this family accepts is documented on the
-[`IPadMockup` reference](/docs/api/ipad); this page pins `variant="ipadpro11"`.
+The virtual display swaps to 1376×1032 in landscape - real desktop-class
+layouts apply.
+
+<ObjectDemo demo="ipad-landscape" checker />
+
+```tsx
+<IPadMockup orientation="landscape" rotation={[0, -0.3, 0]}>
+  <YourApp />
+</IPadMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'ipadpro13' \| 'ipadpro11' \| 'ipadair13' \| 'ipadair11' \| 'ipad11'` | `'ipadpro13'` | Which iPad: Pro 13"/11" (camera pod, Pencil strip, Face ID), Air 13"/11" (single lens, Touch ID top button), or the A16 iPad (single lens, edge Smart Connector). |
+| `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display (for example 1376×1032 on the 13" Pro) with upright content. |
+| `resolution` | `number` | per variant | Defaults to the variant's logical grid: 1032×1376 (ipadpro13), 834×1210 (ipadpro11), 1024×1366 (ipadair13), 820×1180 (ipadair11, ipad11). |
+| `color` | `string` | per variant | Body color. Takes a retail colorway id from `IPAD_COLORWAYS` - Pro `spaceblack`/`silver`, Air `spacegray`/`starlight`/`purple`/`blue`, iPad `silver`/`blue`/`pink`/`yellow` - or any CSS color. |
+
+## All variants
+
+### iPad Air 13″
+
+The M4 Air: bare single 12 MP lens with its polished ring, Touch ID top
+button, Smart Connector dots on the back - in Starlight.
+
+<ObjectDemo demo="ipad-air13" />
+
+```tsx
+<IPadMockup variant="ipadair13" color="starlight">
+  <YourApp />
+</IPadMockup>
+```
+
+### iPad (A16)
+
+The standard iPad in its punchy Blue, with the crisper chamfered rails and
+the edge-mounted Smart Connector of the 10th-gen chassis.
+
+<ObjectDemo demo="ipad-a16" />
+
+```tsx
+<IPadMockup variant="ipad11" color="blue">
+  <YourApp />
+</IPadMockup>
+```
+
+### iPad Pro 11″
+
+The same Pro design language at the smaller true relative size, in Silver.
+
+<ObjectDemo demo="ipad-pro11" />
+
+```tsx
+<IPadMockup variant="ipadpro11" color="silver">
+  <YourApp />
+</IPadMockup>
+```
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-ipad" />

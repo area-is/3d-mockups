@@ -14,7 +14,8 @@
     "thumbs": "node scripts/generate-thumbs.mjs",
     "preview": "npm run build && opennextjs-cloudflare preview",
     "deploy": "npm run build && npx wrangler deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "docs:variants": "node scripts/generate-variant-pages.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

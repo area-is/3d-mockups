@@ -87,7 +87,8 @@ function SurfaceArt({ label }: { label: string }) {
   return (
     <div className="mx-surface-art">
       <span className="mx-surface-art-label">{label}</span>
-      <span className="mx-surface-art-mark">area</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="mx-surface-art-mark" src="/assets/area_ag_white.svg" alt="area" />
     </div>
   )
 }

@@ -589,9 +589,9 @@
 }
 
 .mx-surface-art-mark {
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  width: min(52%, 220px);
+  height: auto;
+  opacity: 0.95;
 }
 
 /* Code panel */

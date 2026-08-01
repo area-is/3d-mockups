@@ -1,15 +1,75 @@
 ---
 title: Galaxy Watch 8
-description: Live prop explorer for the Galaxy Watch 8 mockup - drive every prop and copy the code it generates.
+description: The Galaxy Watch 8 in WebGL, with a live prop explorer and the full GalaxyWatchMockup reference.
 ---
 
-The Galaxy Watch 8 rendered in WebGL, with a live React tree on its surfaces. Change
-anything in the inspector and the `demo.tsx` panel rewrites itself to exactly
-what is being passed.
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. Everything below applies to this component.
 
 <MockupExplorer component="GalaxyWatchMockup" />
 
-## Full API
+`<GalaxyWatch>` and `<GalaxyWatchMockup>` render a Samsung Galaxy Watch 8,
+44 mm, wearing a real wristband on an invisible wrist directly behind the case -
+two domed, tapering straps meeting at a closure on the underside of the wrist,
+matching how worn-band product photos pose it.
 
-Every prop, region and colorway this family accepts is documented on the
-[`GalaxyWatchMockup` reference](/docs/api/galaxy-watch).
+The case is the aluminium "cushion" squircle carrying a **fully round** 1.47"
+display raised on its dial puck, so the metal stays visible around the live
+circular 240×240 face. Two raised chamfered keys straddle the mic hole on the
+right edge, with twin machined speaker slots on the left. The back carries the
+BioActive sensor puck standing proud of the aluminium, an optical heart sensor
+behind its round crystal ringed by the ECG electrode.
+
+Its band is the Dynamic-Lug-style two-strap band: nearly case-wide at the
+connector, tapering around the wrist to a stainless pin buckle whose tongue
+rises through one of the adjustment holes punched clean through the long strap,
+with a keeper holding the tail down. The lengths come from the retail fit range
+rather than being eyeballed.
+
+<ObjectDemo demo="galaxy-watch" checker />
+
+```tsx
+<GalaxyWatchMockup float color="#33363c" bandColor="#23252a">
+  <YourRoundFace />
+</GalaxyWatchMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'watch8'` | `'watch8'` | Which Galaxy Watch to render. |
+| `color` | `string` | `'#1c1d21'` | Aluminium case. Takes a retail colorway id from `GALAXY_WATCH_COLORWAYS` (`graphite`, `silver`) or any CSS color. |
+| `bandColor` | `string` | `'#2a2c31'` | Strap colorway (fluoroelastomer). |
+| `bandOpen` | `boolean` | `false` | Lay the band out unbuckled and flat instead of wearing it. |
+| `resolution` | `number` | `240` | Virtual display width - 240 is the watch's own dp grid, and the display is round, so give your face a `border-radius: 50%` root (or design edge-to-edge and let the crystal mask it). |
+
+There is no `orientation` prop.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the prop that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-galaxy-watch" />
+
+## More examples
+
+### Unbuckled, showing the sensor back
+
+A worn band is a closed loop, and the far side of a closed loop sits between
+the camera and the watch - so it always hides the case back. `bandOpen` runs
+both straps straight out from the case instead, so the hole row, the buckle and
+the BioActive sensor back all face the viewer, the way a band is photographed
+off-wrist. The mockup backs the camera off to frame the full length.
+
+<ObjectDemo demo="galaxy-watch-open" />
+
+```tsx
+<GalaxyWatchMockup bandOpen color="#33363c" bandColor="#23252a" rotation={[0, Math.PI, 0]}>
+  <YourRoundFace />
+</GalaxyWatchMockup>
+```

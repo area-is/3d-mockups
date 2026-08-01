@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -77,13 +78,13 @@ const CAMERA_Z = 9
 /** How much of the frame the staged device fills, leaving room for the row. */
 const STAGE_FILL = 0.74
 /** World-space gap between the staged device and each flanking one. */
-const SPACING = 3.5
+const SPACING = 4.8
 const STAGE_Y = 0.72
 const SIDE_SCALE = 0.5
 /** The picker row, well below the stage. */
 const ROW_Y = -2.2
 const ROW_SCALE = 0.17
-const ROW_SPACING = 1.02
+const ROW_SPACING = 1.25
 /** Painted screen for the picker row, matching the sidebar thumbnails. */
 const ROW_SURFACE =
   'radial-gradient(120% 90% at 30% 18%, rgba(80,224,66,0.55) 0%, rgba(49,211,34,0.22) 45%, transparent 78%), #0d1016'
@@ -407,6 +408,17 @@ const DEVICES: Entry[] = [
 
 const N = DEVICES.length
 
+/**
+ * Shortest signed distance from `x` to 0 on a ring of N - the float version,
+ * so a slide that crosses the seam (21 → 0) travels one step rather than
+ * winding all the way back. This is what makes the loop endless in both
+ * directions.
+ */
+function wrapDelta(x: number): number {
+  const m = ((x % N) + N) % N
+  return m > N / 2 ? m - N : m
+}
+
 /** The screen each device wears while it is the one on stage. */
 function screenFor(id: string): ReactNode {
   if (id.startsWith('macbook') || id === 'studio-display' || id === 'galaxy-z-fold7') return <DesktopScreen />
@@ -416,118 +428,109 @@ function screenFor(id: string): ReactNode {
   return <MusicPlayer />
 }
 
-/** A spread across the families for the picker row under the stage. */
-const FEATURED = [
-  'galaxy-s26',
-  'iphone-17-pro',
-  'galaxy-z-fold7',
-  'galaxy-z-flip7',
-  'macbook-pro-14',
-  'ipad-pro-13',
-  'apple-watch-series-11',
-  'studio-display',
-].map((id) => ({ id, index: DEVICES.findIndex((d) => d.id === id) }))
-
-/** Signed shortest distance from `active` to slot `i` on the ring. */
-function ringDistance(i: number, active: number): number {
-  let d = (i - active + N) % N
-  if (d > N / 2) d -= N
-  return d
-}
-
 interface Orbit {
   rx: number
   ry: number
 }
 
 /**
- * One staged device. Position, scale and pose are eased every frame rather
- * than set from React, so a slide is a continuous motion in the scene instead
- * of a CSS transition over a canvas.
+ * Eases the ring position toward its target once per frame.
+ *
+ * Every slot in both rows reads this one number, so the stage and the strip
+ * beneath it are the same motion sampled at two scales - the strip cannot
+ * drift out of step with the device on stage, and neither of them "swaps":
+ * they travel.
  */
+function Ticker({ anim, target }: { anim: RefObject<number>; target: RefObject<number> }) {
+  useFrame((_, delta) => {
+    anim.current += (target.current - anim.current) * (1 - Math.exp(-6 * delta))
+  })
+  return null
+}
+
+/** One staged device, placed from the shared ring position every frame. */
 function StageSlot({
   entry,
-  offset,
-  active,
-  color,
+  index,
+  anim,
   orbit,
+  live,
+  color,
   onSelect,
 }: {
   entry: Entry
-  offset: number
-  active: boolean
-  color: string
+  index: number
+  anim: RefObject<number>
   orbit: RefObject<Orbit>
+  live: boolean
+  color: string
   onSelect: () => void
 }) {
   const group = useRef<Group>(null)
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const g = group.current
     if (!g) return
-    // Frame-rate independent easing towards the slot's target pose.
-    const k = 1 - Math.exp(-7 * delta)
-    const scale = entry.fit * (active ? 1 : SIDE_SCALE)
-    const bob = active ? Math.sin(state.clock.elapsedTime * 1.1) * 0.05 : 0
-    g.position.x += (offset * SPACING - g.position.x) * k
-    g.position.y += (STAGE_Y + entry.lift * scale + bob - g.position.y) * k
-    g.position.z += ((active ? 0 : -1.4) - g.position.z) * k
-    g.scale.setScalar(g.scale.x + (scale - g.scale.x) * k)
-    g.rotation.y += ((active ? orbit.current.ry : BASE_RY) - g.rotation.y) * k
-    g.rotation.x += ((active ? orbit.current.rx : 0) - g.rotation.x) * k
+    const d = wrapDelta(index - anim.current)
+    // 0 while centred, 1 once a full step out - drives everything that
+    // distinguishes the device on stage from the ones flanking it.
+    const t = Math.min(Math.abs(d), 1)
+    const scale = entry.fit * (1 - (1 - SIDE_SCALE) * t)
+    g.position.x = d * SPACING
+    g.position.y = STAGE_Y + entry.lift * scale + Math.sin(state.clock.elapsedTime * 1.1) * 0.05 * (1 - t)
+    g.position.z = -1.4 * t
+    g.scale.setScalar(scale)
+    g.rotation.y = BASE_RY + (orbit.current.ry - BASE_RY) * (1 - t)
+    g.rotation.x = orbit.current.rx * (1 - t)
   })
 
   return (
-    <group
-      ref={group}
-      position={[offset * SPACING, STAGE_Y, active ? 0 : -1.4]}
-      scale={entry.fit * (active ? 1 : SIDE_SCALE)}
-      onClick={(e) => {
-        if (active) return
-        e.stopPropagation()
-        onSelect()
-      }}
-    >
-      {entry.render({ color, screen: screenFor(entry.id) })}
+    <group ref={group} onClick={onSelect}>
+      {entry.render({
+        color,
+        // Only the device on stage carries live DOM; the ones sliding past
+        // wear a painted screen, which costs no DOM layer and cannot flash
+        // as it mounts mid-transition.
+        screen: live ? screenFor(entry.id) : null,
+        surface: live ? undefined : ROW_SURFACE,
+      })}
     </group>
   )
 }
 
-/** One device in the picker row - hardware only, no live screen. */
+/** One thumbnail in the strip, scrolling on the same ring position. */
 function RowSlot({
   entry,
-  x,
-  active,
+  index,
+  anim,
   color,
   onSelect,
 }: {
   entry: Entry
-  x: number
-  active: boolean
+  index: number
+  anim: RefObject<number>
   color: string
   onSelect: () => void
 }) {
   const group = useRef<Group>(null)
   const hovered = useRef(false)
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     const g = group.current
     if (!g) return
-    const k = 1 - Math.exp(-8 * delta)
-    const scale = entry.fit * ROW_SCALE * (active ? 1.25 : hovered.current ? 1.12 : 1)
-    g.scale.setScalar(g.scale.x + (scale - g.scale.x) * k)
-    g.rotation.y += (BASE_RY - g.rotation.y) * k
+    const d = wrapDelta(index - anim.current)
+    const near = Math.max(0, 1 - Math.abs(d))
+    const scale = entry.fit * ROW_SCALE * (1 + 0.3 * near) * (hovered.current ? 1.1 : 1)
+    g.position.x = d * ROW_SPACING
+    g.position.y = ROW_Y + entry.lift * scale
+    g.scale.setScalar(scale)
+    g.rotation.y = BASE_RY
   })
 
   return (
     <group
       ref={group}
-      position={[x, ROW_Y + entry.lift * entry.fit * ROW_SCALE, 0]}
-      scale={entry.fit * ROW_SCALE}
-      onClick={(e) => {
-        e.stopPropagation()
-        onSelect()
-      }}
+      onClick={onSelect}
       onPointerOver={() => {
         hovered.current = true
       }}
@@ -546,35 +549,50 @@ export default function CarouselScene() {
   const [finish, setFinish] = useState<Record<string, string>>({})
   const [auto, setAuto] = useState(true)
 
+  // The ring position: `target` is unbounded so successive steps keep moving
+  // in one direction across the seam; `anim` chases it.
+  const target = useRef(0)
+  const anim = useRef(0)
+  const activeRef = useRef(0)
+  const orbit = useRef<Orbit>({ rx: 0, ry: BASE_RY })
+
+  const goTo = useCallback((next: number) => {
+    const to = ((next % N) + N) % N
+    target.current += wrapDelta(to - activeRef.current)
+    activeRef.current = to
+    orbit.current = { rx: 0, ry: BASE_RY }
+    setActive(to)
+  }, [])
+
+  const step = useCallback((dir: number) => goTo(activeRef.current + dir), [goTo])
+
   useEffect(() => {
     if (!auto) return
-    const t = setInterval(() => setActive((a) => (a + 1) % N), 6000)
+    const t = setInterval(() => step(1), 6000)
     return () => clearInterval(t)
-  }, [auto])
+  }, [auto, step])
 
   const stop = () => setAuto(false)
   const go = (i: number) => {
     stop()
-    setActive(((i % N) + N) % N)
+    goTo(i)
   }
 
-  const orbit = useRef<Orbit>({ rx: 0, ry: BASE_RY })
   const drag = useRef<{ x: number; y: number; orbiting: boolean; moved: boolean } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
 
   /**
-   * Everything is one canvas now, so the gesture is split by where it starts
-   * rather than by which element it lands on: the middle of the upper stage
-   * belongs to the device (drag to spin it), and everywhere else a horizontal
-   * swipe steps the carousel. Taps on an object are handled in the scene by
-   * r3f's own raycaster.
+   * One canvas means the gesture is split by where it starts rather than by
+   * which element it lands on: the middle of the upper stage belongs to the
+   * device (drag to spin it), and everywhere else a horizontal swipe steps the
+   * carousel. Taps on an object are handled in the scene by r3f's raycaster.
    */
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const r = stageRef.current?.getBoundingClientRect()
     if (!r) return
     const overDevice =
       Math.abs(e.clientX - (r.left + r.width / 2)) < r.width * 0.17 &&
-      e.clientY < r.top + r.height * 0.72
+      e.clientY < r.top + r.height * 0.66
     drag.current = { x: e.clientX, y: e.clientY, orbiting: overDevice, moved: false }
     if (overDevice) stop()
   }
@@ -596,7 +614,7 @@ export default function CarouselScene() {
     if (!d || d.orbiting) return
     const dx = e.clientX - d.x
     const dy = e.clientY - d.y
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(active + (dx < 0 ? 1 : -1))
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(activeRef.current + (dx < 0 ? 1 : -1))
   }
 
   /** A tap on an object only counts when the gesture did not become a drag. */
@@ -612,7 +630,12 @@ export default function CarouselScene() {
     return dev.colorways.find((c) => c.id === id)?.color ?? dev.colorways[0]!.color
   }
   const counter = `${String(active + 1).padStart(2, '0')} / ${N}`
-  const rowStart = -((FEATURED.length - 1) * ROW_SPACING) / 2
+
+  /**
+   * Which slots exist. Both windows are wider than what is on screen so a slot
+   * mounts out at the faded edge and slides in, rather than appearing in view.
+   */
+  const inWindow = (i: number, w: number) => Math.abs(wrapDelta(i - active)) <= w
 
   return (
     <section className="carousel" aria-label="Device carousel">
@@ -632,34 +655,35 @@ export default function CarouselScene() {
           shadows={false}
           camera={{ position: [0, 0, CAMERA_Z], fov: 40 }}
         >
-          {DEVICES.map((dev, i) => {
-            const d = ringDistance(i, active)
-            // Only the visible ring is built; the rest is geometry we would
-            // pay for and never show.
-            if (Math.abs(d) > 1) return null
-            return (
+          <Ticker anim={anim} target={target} />
+
+          {DEVICES.map((dev, i) =>
+            inWindow(i, 2) ? (
               <StageSlot
                 key={dev.id}
                 entry={dev}
-                offset={d}
-                active={d === 0}
-                color={colorOf(dev)}
+                index={i}
+                anim={anim}
                 orbit={orbit}
+                live={i === active}
+                color={colorOf(dev)}
                 onSelect={select(i)}
               />
-            )
-          })}
+            ) : null
+          )}
 
-          {FEATURED.map((f, i) => (
-            <RowSlot
-              key={`row-${f.id}`}
-              entry={DEVICES[f.index]!}
-              x={rowStart + i * ROW_SPACING}
-              active={f.index === active}
-              color={colorOf(DEVICES[f.index]!)}
-              onSelect={select(f.index)}
-            />
-          ))}
+          {DEVICES.map((dev, i) =>
+            inWindow(i, 3) ? (
+              <RowSlot
+                key={`row-${dev.id}`}
+                entry={dev}
+                index={i}
+                anim={anim}
+                color={colorOf(dev)}
+                onSelect={select(i)}
+              />
+            ) : null
+          )}
         </MockupCanvas>
       </div>
 
@@ -702,12 +726,12 @@ export default function CarouselScene() {
             {entry.colorways.find((c) => c.id === selected)?.name}
           </span>
         </div>
-        {/* The picker row lives in the canvas, so keyboard and screen-reader
-            users get the same jumps as real controls here. */}
-        <div className="carousel-picker-labels">
-          {FEATURED.map((f) => (
-            <button key={f.id} type="button" onClick={() => go(f.index)} data-active={f.index === active}>
-              {DEVICES[f.index]!.name}
+        {/* The strip is geometry in the canvas, so keyboard and screen-reader
+            users get the same jumps from real buttons here. */}
+        <div className="sr-only">
+          {DEVICES.map((dev, i) => (
+            <button key={dev.id} type="button" onClick={() => go(i)}>
+              Show {dev.name}
             </button>
           ))}
         </div>
