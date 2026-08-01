@@ -426,7 +426,7 @@ code {
 .carousel-glow {
   position: absolute;
   left: 50%;
-  top: calc(clamp(520px, 72vw, 640px) - 120px);
+  top: calc(clamp(560px, 76vw, 700px) - 210px);
   transform: translateX(-50%);
   width: 760px;
   height: 260px;
@@ -438,34 +438,8 @@ code {
 /* pan-y: vertical swipes still scroll the page, horizontal ones are ours. */
 .carousel-stage {
   position: relative;
-  height: clamp(520px, 72vw, 640px);
-  overflow: hidden;
+  height: clamp(560px, 76vw, 700px);
   touch-action: pan-y;
-}
-
-/*
- * Position, fade and desaturation animate; width/height deliberately do not.
- * Each slot holds a WebGL canvas, and transitioning its box would resize the
- * drawing buffer on every frame of the slide - the size change lands at once
- * instead, hidden inside the movement.
- */
-.carousel-slot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  /* Keeps a canvas that is momentarily wider than its slot - the frame or two
-     before it re-measures - from painting or hit-testing over its neighbours. */
-  overflow: hidden;
-  transition: transform 0.65s cubic-bezier(0.22, 0.8, 0.24, 1), opacity 0.65s ease,
-    filter 0.65s ease;
-}
-
-.carousel-ghost {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
 }
 
 .carousel-loading {
@@ -571,76 +545,39 @@ code {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Featured device strip                                              */
+/*  Picker row labels (the row itself is rendered in the canvas)       */
 /* ------------------------------------------------------------------ */
 
-.featured {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px clamp(16px, 4vw, 48px) 0;
+.carousel-picker-labels {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 900px;
 }
 
-.featured-label {
+.carousel-picker-labels button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-low);
   font-family: var(--font-mono);
   font-size: 10.5px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-low);
-  margin: 0 0 12px;
-  text-align: center;
-}
-
-/* Scrolls inside itself on narrow screens; the page never scrolls sideways. */
-.featured-strip {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  padding-bottom: 4px;
-}
-
-.featured-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  flex: none;
-  width: 96px;
-  padding: 10px 8px 9px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--muted);
-  font-family: inherit;
+  padding: 3px 9px;
   cursor: pointer;
-  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.featured-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.05);
+.carousel-picker-labels button:hover {
   color: var(--text);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
-.featured-card[data-active='true'] {
-  border-color: var(--accent);
-  background: rgba(49, 211, 34, 0.08);
-  color: var(--text);
-}
-
-.featured-card img {
-  width: 100%;
-  height: 62px;
-  object-fit: contain;
-}
-
-.featured-card-label {
-  font-size: 11px;
-  line-height: 1.3;
-  text-align: center;
-  letter-spacing: -0.005em;
+.carousel-picker-labels button[data-active='true'] {
+  color: var(--accent);
+  border-color: rgba(49, 211, 34, 0.35);
 }
 
 /* ------------------------------------------------------------------ */

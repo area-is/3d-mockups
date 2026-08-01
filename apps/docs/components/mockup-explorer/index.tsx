@@ -47,7 +47,12 @@ interface PropState {
   background: string
 }
 
-const defaults = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
+/**
+ * What the components do with no props at all. The code panel diffs against
+ * this, so anything the explorer switches on for you still shows up in the
+ * snippet you copy.
+ */
+const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
   frameColor: '',
@@ -64,6 +69,17 @@ const defaults = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
   fullscreen: false,
   shadows: true,
   background: '',
+})
+
+/**
+ * Where the explorer starts. Zoom is on so the stage is immediately
+ * scroll/pinch-zoomable and MockupCanvas draws its zoom overlay - the
+ * "modified" count and the reset action measure against this, so an untouched
+ * explorer still reads as unmodified.
+ */
+const initialState = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
+  ...libraryDefaults(spec, lockedVariant),
+  zoom: true,
 })
 
 /** Artwork for a print/packaging surface, labelled with the region it fills. */
@@ -192,7 +208,7 @@ interface Line {
 
 /** The snippet for the current props - only what differs from the defaults. */
 function buildSource(spec: ExplorerSpec, p: PropState, stageHeight: number, screen: string): Line[] {
-  const base = defaults(spec)
+  const base = libraryDefaults(spec)
   const props: string[] = []
   const add = (text: string) => props.push(text)
 
@@ -273,7 +289,7 @@ function Code({ text }: { text: string }) {
 
 export function MockupExplorer({ component, variant, stageHeight = 460 }: MockupExplorerProps) {
   const spec = EXPLORERS[component]
-  const [p, setP] = useState<PropState>(() => defaults(spec, variant))
+  const [p, setP] = useState<PropState>(() => initialState(spec, variant))
   const [inspectorOpen, setInspectorOpen] = useState(true)
   const [view, setView] = useState<string>('3d')
   const [copied, setCopied] = useState(false)
@@ -281,7 +297,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   const set = <K extends keyof PropState>(key: K, value: PropState[K]) =>
     setP((prev) => ({ ...prev, [key]: value }))
 
-  const base = useMemo(() => defaults(spec, variant), [spec, variant])
+  const base = useMemo(() => initialState(spec, variant), [spec, variant])
   const modified = useMemo(
     () => (Object.keys(base) as (keyof PropState)[]).filter((k) => p[k] !== base[k]).length,
     [p, base]
@@ -420,7 +436,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 type="button"
                 className="mx-reset"
                 style={{ visibility: modified ? 'visible' : 'hidden' }}
-                onClick={() => setP(defaults(spec, variant))}
+                onClick={() => setP(initialState(spec, variant))}
               >
                 reset {modified} <ResetGlyph />
               </button>
