@@ -39,6 +39,7 @@ import {
 } from 'area-3d-mockups'
 import {
   DEFAULT_CAMERA_POSITION,
+  ORBIT,
   FLIP_FRAMING,
   FOLD_FRAMING,
   GALAXY_FRAMING,
@@ -90,6 +91,42 @@ const ROW_SURFACE =
   'radial-gradient(120% 90% at 30% 18%, rgba(80,224,66,0.55) 0%, rgba(49,211,34,0.22) 45%, transparent 78%), #0d1016'
 /** Resting pose - a slight turn reads as three-dimensional at a glance. */
 const BASE_RY = -0.3
+/**
+ * Vertical limit, matched to the stage's polar clamp: the library's controls
+ * orbit the camera between `ORBIT.minPolarAngle` and its mirror, which from a
+ * level start is this much tilt either way.
+ */
+const PITCH_LIMIT = Math.PI / 2 - ORBIT.minPolarAngle
+
+/**
+ * Drag-to-rotate with the same feel as every mockup in the docs.
+ *
+ * Those spin the CAMERA with `TumbleControls`; here the camera has to stay put
+ * - it frames the whole carousel - so the staged object turns instead. The
+ * numbers are the library's, not new ones: a drag is queued as
+ * `2*PI * delta / height` radians (a full-height drag is a full turn), and
+ * each frame applies `ORBIT.dampingFactor` of what is pending and decays the
+ * rest. That buffer is what keeps a flick spinning after release, slowing to a
+ * stop. Rotating the object is the mirror of rotating the camera around it, so
+ * both signs are flipped against `TumbleOrbit` to land on the same direction.
+ */
+interface Tumble {
+  pendingYaw: number
+  pendingPitch: number
+  yaw: number
+  pitch: number
+}
+
+const restingTumble = (): Tumble => ({ pendingYaw: 0, pendingPitch: 0, yaw: BASE_RY, pitch: 0 })
+
+function advanceTumble(t: Tumble): void {
+  const yaw = t.pendingYaw * ORBIT.dampingFactor
+  const pitch = t.pendingPitch * ORBIT.dampingFactor
+  t.pendingYaw *= 1 - ORBIT.dampingFactor
+  t.pendingPitch *= 1 - ORBIT.dampingFactor
+  t.yaw += yaw
+  t.pitch = Math.min(PITCH_LIMIT, Math.max(-PITCH_LIMIT, t.pitch + pitch))
+}
 
 /** Framing distance the library itself uses for a family. */
 const distanceOf = (framing: MockupFraming<never>): number =>
@@ -109,7 +146,12 @@ interface Entry {
    * The bare object. `screen` is live DOM for the staged devices; the picker
    * row passes `surface` instead - a painted screen costs no DOM layer.
    */
-  render: (props: { color: string; screen: ReactNode; surface?: string }) => ReactNode
+  render: (props: {
+    color: string
+    screen: ReactNode
+    surface?: string
+    surfaceStyle?: Record<string, unknown>
+  }) => ReactNode
 }
 
 /** "360 × 780" for the primary screen of a mockup kind. */
@@ -141,8 +183,8 @@ const DEVICES: Entry[] = [
     fit: PHONE_FIT,
     lift: 0,
     colorways: GALAXY_COLORWAYS.s26,
-    render: ({ color, screen, surface }) => (
-      <Galaxy variant="s26" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Galaxy variant="s26" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Galaxy>
     ),
@@ -154,8 +196,8 @@ const DEVICES: Entry[] = [
     fit: PHONE_FIT,
     lift: 0,
     colorways: GALAXY_COLORWAYS.s26ultra,
-    render: ({ color, screen, surface }) => (
-      <Galaxy variant="s26ultra" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Galaxy variant="s26ultra" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Galaxy>
     ),
@@ -167,8 +209,8 @@ const DEVICES: Entry[] = [
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS['17'],
-    render: ({ color, screen, surface }) => (
-      <IPhone variant="17" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPhone variant="17" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPhone>
     ),
@@ -180,8 +222,8 @@ const DEVICES: Entry[] = [
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS.air,
-    render: ({ color, screen, surface }) => (
-      <IPhone variant="air" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPhone variant="air" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPhone>
     ),
@@ -193,8 +235,8 @@ const DEVICES: Entry[] = [
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS.pro,
-    render: ({ color, screen, surface }) => (
-      <IPhone variant="pro" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPhone variant="pro" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPhone>
     ),
@@ -206,8 +248,8 @@ const DEVICES: Entry[] = [
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS.promax,
-    render: ({ color, screen, surface }) => (
-      <IPhone variant="promax" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPhone variant="promax" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPhone>
     ),
@@ -219,8 +261,8 @@ const DEVICES: Entry[] = [
     fit: FOLD_FIT,
     lift: 0,
     colorways: FOLD_COLORWAYS.fold7,
-    render: ({ color, screen, surface }) => (
-      <Fold color={color} surfaceBackground={surface}>{screen}</Fold>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Fold color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</Fold>
     ),
   },
   {
@@ -230,8 +272,8 @@ const DEVICES: Entry[] = [
     fit: FLIP_FIT,
     lift: 0,
     colorways: FLIP_COLORWAYS.flip7,
-    render: ({ color, screen, surface }) => (
-      <Flip color={color} surfaceBackground={surface}>{screen}</Flip>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Flip color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</Flip>
     ),
   },
   {
@@ -241,8 +283,8 @@ const DEVICES: Entry[] = [
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.air13,
-    render: ({ color, screen, surface }) => (
-      <Laptop variant="air13" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Laptop variant="air13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Laptop>
     ),
@@ -254,8 +296,8 @@ const DEVICES: Entry[] = [
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.air15,
-    render: ({ color, screen, surface }) => (
-      <Laptop variant="air15" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Laptop variant="air15" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Laptop>
     ),
@@ -267,8 +309,8 @@ const DEVICES: Entry[] = [
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.pro14,
-    render: ({ color, screen, surface }) => (
-      <Laptop variant="pro14" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Laptop variant="pro14" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Laptop>
     ),
@@ -280,8 +322,8 @@ const DEVICES: Entry[] = [
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.pro16,
-    render: ({ color, screen, surface }) => (
-      <Laptop variant="pro16" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Laptop variant="pro16" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </Laptop>
     ),
@@ -293,8 +335,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadpro13,
-    render: ({ color, screen, surface }) => (
-      <IPad variant="ipadpro13" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPad variant="ipadpro13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPad>
     ),
@@ -306,8 +348,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadpro11,
-    render: ({ color, screen, surface }) => (
-      <IPad variant="ipadpro11" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPad variant="ipadpro11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPad>
     ),
@@ -319,8 +361,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadair13,
-    render: ({ color, screen, surface }) => (
-      <IPad variant="ipadair13" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPad variant="ipadair13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPad>
     ),
@@ -332,8 +374,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadair11,
-    render: ({ color, screen, surface }) => (
-      <IPad variant="ipadair11" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPad variant="ipadair11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPad>
     ),
@@ -345,8 +387,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipad11,
-    render: ({ color, screen, surface }) => (
-      <IPad variant="ipad11" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <IPad variant="ipad11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </IPad>
     ),
@@ -358,8 +400,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: GALAXY_TAB_COLORWAYS.tabs11,
-    render: ({ color, screen, surface }) => (
-      <GalaxyTab variant="tabs11" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <GalaxyTab variant="tabs11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </GalaxyTab>
     ),
@@ -371,8 +413,8 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: GALAXY_TAB_COLORWAYS.tabs11ultra,
-    render: ({ color, screen, surface }) => (
-      <GalaxyTab variant="tabs11ultra" color={color} surfaceBackground={surface}>
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <GalaxyTab variant="tabs11ultra" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
       </GalaxyTab>
     ),
@@ -384,7 +426,7 @@ const DEVICES: Entry[] = [
     fit: WATCH_FIT,
     lift: 0,
     colorways: APPLE_WATCH_COLORWAYS.series11,
-    render: ({ color, screen, surface }) => <AppleWatch color={color} surfaceBackground={surface}>{screen}</AppleWatch>,
+    render: ({ color, screen, surface, surfaceStyle }) => <AppleWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</AppleWatch>,
   },
   {
     id: 'galaxy-watch-8',
@@ -393,7 +435,7 @@ const DEVICES: Entry[] = [
     fit: WATCH_FIT,
     lift: 0,
     colorways: GALAXY_WATCH_COLORWAYS.watch8,
-    render: ({ color, screen, surface }) => <GalaxyWatch color={color} surfaceBackground={surface}>{screen}</GalaxyWatch>,
+    render: ({ color, screen, surface, surfaceStyle }) => <GalaxyWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</GalaxyWatch>,
   },
   {
     id: 'studio-display',
@@ -402,7 +444,7 @@ const DEVICES: Entry[] = [
     fit: DISPLAY_FIT,
     lift: 0.1,
     colorways: STUDIO_DISPLAY_COLORWAYS,
-    render: ({ color, screen, surface }) => <StudioDisplay color={color} surfaceBackground={surface}>{screen}</StudioDisplay>,
+    render: ({ color, screen, surface, surfaceStyle }) => <StudioDisplay color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</StudioDisplay>,
   },
 ]
 
@@ -428,11 +470,6 @@ function screenFor(id: string): ReactNode {
   return <MusicPlayer />
 }
 
-interface Orbit {
-  rx: number
-  ry: number
-}
-
 /**
  * Eases the ring position toward its target once per frame.
  *
@@ -441,10 +478,30 @@ interface Orbit {
  * drift out of step with the device on stage, and neither of them "swaps":
  * they travel.
  */
-function Ticker({ anim, target }: { anim: RefObject<number>; target: RefObject<number> }) {
+function Ticker({
+  anim,
+  target,
+  tumble,
+  onSettled,
+}: {
+  anim: RefObject<number>
+  target: RefObject<number>
+  tumble: RefObject<Tumble>
+  onSettled: (settled: boolean) => void
+}) {
+  const settled = useRef(true)
+  // Priority -2: the ring position and the tumble are inputs to every slot's
+  // own -1 pass, which in turn has to land before drei's default-priority
+  // <Html> sync (see StageSlot).
   useFrame((_, delta) => {
     anim.current += (target.current - anim.current) * (1 - Math.exp(-6 * delta))
-  })
+    advanceTumble(tumble.current)
+    const atRest = Math.abs(target.current - anim.current) < 0.004
+    if (atRest !== settled.current) {
+      settled.current = atRest
+      onSettled(atRest)
+    }
+  }, -2)
   return null
 }
 
@@ -453,7 +510,7 @@ function StageSlot({
   entry,
   index,
   anim,
-  orbit,
+  tumble,
   live,
   color,
   onSelect,
@@ -461,13 +518,24 @@ function StageSlot({
   entry: Entry
   index: number
   anim: RefObject<number>
-  orbit: RefObject<Orbit>
+  tumble: RefObject<Tumble>
   live: boolean
   color: string
   onSelect: () => void
 }) {
   const group = useRef<Group>(null)
+  const hovered = useRef(false)
 
+  /*
+   * Priority -1, then an explicit matrix flush.
+   *
+   * drei's <Html transform> places each live screen from its own
+   * default-priority frame callback, reading the matrix three last computed -
+   * during the PREVIOUS frame's render. Moving the object at -1 is only half
+   * the fix; without recomputing the matrix here the screen still positions
+   * itself from where the device used to be, and the DOM visibly trails the
+   * body while a slide is in flight.
+   */
   useFrame((state) => {
     const g = group.current
     if (!g) return
@@ -475,17 +543,28 @@ function StageSlot({
     // 0 while centred, 1 once a full step out - drives everything that
     // distinguishes the device on stage from the ones flanking it.
     const t = Math.min(Math.abs(d), 1)
-    const scale = entry.fit * (1 - (1 - SIDE_SCALE) * t)
+    const near = 1 - t
+    const scale = entry.fit * (1 - (1 - SIDE_SCALE) * t) * (hovered.current && t > 0.5 ? 1.05 : 1)
     g.position.x = d * SPACING
-    g.position.y = STAGE_Y + entry.lift * scale + Math.sin(state.clock.elapsedTime * 1.1) * 0.05 * (1 - t)
+    g.position.y = STAGE_Y + entry.lift * scale + Math.sin(state.clock.elapsedTime * 1.1) * 0.05 * near
     g.position.z = -1.4 * t
     g.scale.setScalar(scale)
-    g.rotation.y = BASE_RY + (orbit.current.ry - BASE_RY) * (1 - t)
-    g.rotation.x = orbit.current.rx * (1 - t)
-  })
+    g.rotation.y = BASE_RY + (tumble.current.yaw - BASE_RY) * near
+    g.rotation.x = tumble.current.pitch * near
+    g.updateMatrixWorld(true)
+  }, -1)
 
   return (
-    <group ref={group} onClick={onSelect}>
+    <group
+      ref={group}
+      onClick={onSelect}
+      onPointerOver={() => {
+        hovered.current = true
+      }}
+      onPointerOut={() => {
+        hovered.current = false
+      }}
+    >
       {entry.render({
         color,
         // Only the device on stage carries live DOM; the ones sliding past
@@ -493,6 +572,7 @@ function StageSlot({
         // as it mounts mid-transition.
         screen: live ? screenFor(entry.id) : null,
         surface: live ? undefined : ROW_SURFACE,
+        surfaceStyle: live ? { animation: 'screen-fade-in 260ms ease both' } : undefined,
       })}
     </group>
   )
@@ -525,7 +605,8 @@ function RowSlot({
     g.position.y = ROW_Y + entry.lift * scale
     g.scale.setScalar(scale)
     g.rotation.y = BASE_RY
-  })
+    g.updateMatrixWorld(true)
+  }, -1)
 
   return (
     <group
@@ -554,13 +635,16 @@ export default function CarouselScene() {
   const target = useRef(0)
   const anim = useRef(0)
   const activeRef = useRef(0)
-  const orbit = useRef<Orbit>({ rx: 0, ry: BASE_RY })
+  const tumble = useRef<Tumble>(restingTumble())
+  // The live screen only mounts once the slide has come to rest, so DOM never
+  // rides a moving object in the first place.
+  const [settled, setSettled] = useState(true)
 
   const goTo = useCallback((next: number) => {
     const to = ((next % N) + N) % N
     target.current += wrapDelta(to - activeRef.current)
     activeRef.current = to
-    orbit.current = { rx: 0, ry: BASE_RY }
+    tumble.current = restingTumble()
     setActive(to)
   }, [])
 
@@ -587,23 +671,45 @@ export default function CarouselScene() {
    * device (drag to spin it), and everywhere else a horizontal swipe steps the
    * carousel. Taps on an object are handled in the scene by r3f's raycaster.
    */
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+  /** True over the staged device, where a drag spins instead of navigating. */
+  const overDevice = (clientX: number, clientY: number) => {
     const r = stageRef.current?.getBoundingClientRect()
-    if (!r) return
-    const overDevice =
-      Math.abs(e.clientX - (r.left + r.width / 2)) < r.width * 0.17 &&
-      e.clientY < r.top + r.height * 0.66
-    drag.current = { x: e.clientX, y: e.clientY, orbiting: overDevice, moved: false }
-    if (overDevice) stop()
+    if (!r) return false
+    return (
+      Math.abs(clientX - (r.left + r.width / 2)) < r.width * 0.17 &&
+      clientY < r.top + r.height * 0.66
+    )
+  }
+
+  /**
+   * The cursor is the affordance: which half of the gesture you get is a
+   * matter of where you are, and nothing on screen says so otherwise. Written
+   * straight to the element rather than through state - this fires on every
+   * pointer move.
+   */
+  const setZone = (clientX: number, clientY: number) => {
+    const el = stageRef.current
+    if (el) el.dataset.zone = overDevice(clientX, clientY) ? 'device' : 'browse'
+  }
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const orbiting = overDevice(e.clientX, e.clientY)
+    drag.current = { x: e.clientX, y: e.clientY, orbiting, moved: false }
+    if (stageRef.current) stageRef.current.dataset.dragging = 'true'
+    if (orbiting) stop()
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current
-    if (!d) return
+    if (!d) {
+      setZone(e.clientX, e.clientY)
+      return
+    }
     if (Math.abs(e.clientX - d.x) > 4 || Math.abs(e.clientY - d.y) > 4) d.moved = true
     if (!d.orbiting) return
-    orbit.current.ry += (e.clientX - d.x) * 0.007
-    orbit.current.rx = Math.max(-0.4, Math.min(0.4, orbit.current.rx - (e.clientY - d.y) * 0.004))
+    const height = stageRef.current?.clientHeight || 1
+    tumble.current.pendingYaw += (2 * Math.PI * (e.clientX - d.x)) / height
+    tumble.current.pendingPitch += (2 * Math.PI * (e.clientY - d.y)) / height
     d.x = e.clientX
     d.y = e.clientY
   }
@@ -611,6 +717,7 @@ export default function CarouselScene() {
   const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current
     drag.current = null
+    if (stageRef.current) stageRef.current.dataset.dragging = 'false'
     if (!d || d.orbiting) return
     const dx = e.clientX - d.x
     const dy = e.clientY - d.y
@@ -648,6 +755,10 @@ export default function CarouselScene() {
         onPointerUp={onPointerUp}
         onPointerCancel={() => {
           drag.current = null
+          if (stageRef.current) stageRef.current.dataset.dragging = 'false'
+        }}
+        onPointerLeave={() => {
+          if (stageRef.current) stageRef.current.dataset.zone = ''
         }}
       >
         <MockupCanvas
@@ -655,7 +766,7 @@ export default function CarouselScene() {
           shadows={false}
           camera={{ position: [0, 0, CAMERA_Z], fov: 40 }}
         >
-          <Ticker anim={anim} target={target} />
+          <Ticker anim={anim} target={target} tumble={tumble} onSettled={setSettled} />
 
           {DEVICES.map((dev, i) =>
             inWindow(i, 2) ? (
@@ -664,8 +775,8 @@ export default function CarouselScene() {
                 entry={dev}
                 index={i}
                 anim={anim}
-                orbit={orbit}
-                live={i === active}
+                tumble={tumble}
+                live={settled && i === active}
                 color={colorOf(dev)}
                 onSelect={select(i)}
               />
@@ -726,6 +837,9 @@ export default function CarouselScene() {
             {entry.colorways.find((c) => c.id === selected)?.name}
           </span>
         </div>
+        <p className="carousel-hint">
+          Drag the device to spin it · drag either side to browse
+        </p>
         {/* The strip is geometry in the canvas, so keyboard and screen-reader
             users get the same jumps from real buttons here. */}
         <div className="sr-only">

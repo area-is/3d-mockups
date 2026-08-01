@@ -461,6 +461,43 @@ code {
   mask-image: var(--carousel-fade);
 }
 
+/* Which gesture you are about to get, before you commit to it. */
+.carousel-stage[data-zone='device'] {
+  cursor: grab;
+}
+
+.carousel-stage[data-zone='browse'] {
+  cursor: ew-resize;
+}
+
+.carousel-stage[data-zone='device'][data-dragging='true'] {
+  cursor: grabbing;
+}
+
+.carousel-hint {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-low);
+  margin: 2px 0 0;
+  text-align: center;
+}
+
+/*
+ * A staged screen only mounts once its device has come to rest, so it arrives
+ * rather than pops. Global because the screen DOM is portalled out of the
+ * component that renders it.
+ */
+@keyframes screen-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .carousel-loading {
   position: absolute;
   inset: 0;
