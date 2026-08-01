@@ -676,6 +676,7 @@ export default function CarouselScene() {
     at: number
   } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
   const moved = useRef(false)
 
   /**
@@ -713,7 +714,7 @@ export default function CarouselScene() {
    * the matching edge, so the navigable region is visible before you commit.
    */
   const setZone = (clientX: number, clientY: number) => {
-    const el = stageRef.current
+    const el = sectionRef.current
     if (el) el.dataset.zone = zoneAt(clientX, clientY)
   }
 
@@ -735,7 +736,7 @@ export default function CarouselScene() {
       vx: 0,
       at: performance.now(),
     }
-    if (stageRef.current) stageRef.current.dataset.dragging = 'true'
+    if (sectionRef.current) sectionRef.current.dataset.dragging = 'true'
     stop()
   }
 
@@ -774,7 +775,7 @@ export default function CarouselScene() {
   const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current
     drag.current = null
-    if (stageRef.current) stageRef.current.dataset.dragging = 'false'
+    if (sectionRef.current) sectionRef.current.dataset.dragging = 'false'
     if (!d) return
     if (!d.moved) {
       // A click, not a drag. Either half of the stage steps one slot towards
@@ -816,8 +817,20 @@ export default function CarouselScene() {
   const inWindow = (i: number, w: number) => Math.abs(wrapDelta(i - active)) <= w
 
   return (
-    <section className="carousel" aria-label="Device carousel">
+    <section className="carousel" aria-label="Device carousel" ref={sectionRef}>
       <div className="carousel-glow" aria-hidden />
+
+      {/*
+       * Hover lighting, BEHIND the canvas. The canvas is alpha-transparent, so
+       * a wash under it reads as light in the scene rather than a film over
+       * the hardware - which is what it looked like when this sat on top.
+       */}
+      <div className="carousel-layer carousel-washes" aria-hidden>
+        <span className="carousel-centre" />
+        <span className="carousel-edge" data-side="left" />
+        <span className="carousel-edge" data-side="right" />
+      </div>
+
       <div
         className="carousel-stage"
         ref={stageRef}
@@ -826,10 +839,10 @@ export default function CarouselScene() {
         onPointerUp={onPointerUp}
         onPointerCancel={() => {
           drag.current = null
-          if (stageRef.current) stageRef.current.dataset.dragging = 'false'
+          if (sectionRef.current) sectionRef.current.dataset.dragging = 'false'
         }}
         onPointerLeave={() => {
-          if (stageRef.current) stageRef.current.dataset.zone = ''
+          if (sectionRef.current) sectionRef.current.dataset.zone = ''
         }}
       >
         <MockupCanvas
@@ -867,24 +880,22 @@ export default function CarouselScene() {
         </MockupCanvas>
       </div>
 
-      {/* Lights the half you are hovering, so the drag-to-browse region is
-          visible rather than merely implied by the cursor. */}
-      <div className="carousel-edges" aria-hidden>
-        <span className="carousel-centre">
-          <span className="carousel-rotate-badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-              <path d="M21 3v6h-6" />
-            </svg>
-            Drag to rotate
-          </span>
+      {/* The markers stay in FRONT: they name the gesture, and a label the
+          device could hide would be worse than no label. */}
+      <div className="carousel-layer carousel-marks" aria-hidden>
+        <span className="carousel-rotate-badge">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+          Drag to rotate
         </span>
-        <span className="carousel-edge" data-side="left">
+        <span className="carousel-chevron" data-side="left">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </span>
-        <span className="carousel-edge" data-side="right">
+        <span className="carousel-chevron" data-side="right">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg>

@@ -463,14 +463,14 @@ code {
 }
 
 /* Every zone is a drag; only what it moves differs. */
-.carousel-stage[data-zone='device'],
-.carousel-stage[data-zone='left'],
-.carousel-stage[data-zone='right'],
-.carousel-stage[data-zone='row'] {
+.carousel[data-zone='device'] .carousel-stage,
+.carousel[data-zone='left'] .carousel-stage,
+.carousel[data-zone='right'] .carousel-stage,
+.carousel[data-zone='row'] .carousel-stage {
   cursor: grab;
 }
 
-.carousel-stage[data-dragging='true'][data-zone] {
+.carousel[data-dragging='true'][data-zone] .carousel-stage {
   cursor: grabbing;
 }
 
@@ -490,10 +490,6 @@ code {
   transform: translateX(-50%);
   opacity: 0;
   transition: opacity 0.2s ease;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  color: var(--accent-2);
   background: radial-gradient(
     62% 56% at 50% 46%,
     rgba(49, 211, 34, 0.2),
@@ -505,8 +501,32 @@ code {
   mask-image: var(--centre-fade);
 }
 
-.carousel-stage[data-zone='device'] ~ .carousel-edges .carousel-centre {
+.carousel[data-zone='device'] .carousel-centre,
+.carousel[data-zone='device'] .carousel-rotate-badge {
   opacity: 1;
+}
+
+/* Markers in the front layer: the chevrons and the rotate badge. */
+.carousel-chevron {
+  position: absolute;
+  top: 0;
+  bottom: 26%;
+  display: flex;
+  align-items: center;
+  color: var(--accent-2);
+  filter: drop-shadow(0 0 10px rgba(49, 211, 34, 0.5));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.carousel-chevron[data-side='left'] {
+  left: 0;
+  padding-left: clamp(12px, 3vw, 40px);
+}
+
+.carousel-chevron[data-side='right'] {
+  right: 0;
+  padding-right: clamp(12px, 3vw, 40px);
 }
 
 /*
@@ -514,10 +534,16 @@ code {
  * the thing being looked at, and a badge across its face would be in the way.
  */
 .carousel-rotate-badge {
+  /* In the gap between the staged device and the strip, clear of both. */
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-bottom: 6%;
   padding: 5px 12px 5px 9px;
   border: 1px solid rgba(49, 211, 34, 0.35);
   border-radius: 999px;
@@ -534,7 +560,7 @@ code {
 
 /* ---- the navigable halves, lit on hover ---- */
 
-.carousel-edges {
+.carousel-layer {
   position: absolute;
   inset: 0 0 auto 0;
   height: var(--carousel-stage-h);
@@ -546,10 +572,6 @@ code {
   top: 0;
   bottom: 26%;
   width: 30%;
-  display: flex;
-  align-items: center;
-  color: var(--accent-2);
-  filter: drop-shadow(0 0 10px rgba(49, 211, 34, 0.5));
   opacity: 0;
   transition: opacity 0.2s ease;
   /* Fade the wash out vertically too, or it ends on a hard horizontal line. */
@@ -560,20 +582,18 @@ code {
 
 .carousel-edge[data-side='left'] {
   left: 0;
-  justify-content: flex-start;
-  padding-left: clamp(12px, 3vw, 40px);
   background: linear-gradient(90deg, rgba(49, 211, 34, 0.26), rgba(49, 211, 34, 0.07) 46%, transparent 80%);
 }
 
 .carousel-edge[data-side='right'] {
   right: 0;
-  justify-content: flex-end;
-  padding-right: clamp(12px, 3vw, 40px);
   background: linear-gradient(270deg, rgba(49, 211, 34, 0.26), rgba(49, 211, 34, 0.07) 46%, transparent 80%);
 }
 
-.carousel-stage[data-zone='left'] ~ .carousel-edges .carousel-edge[data-side='left'],
-.carousel-stage[data-zone='right'] ~ .carousel-edges .carousel-edge[data-side='right'] {
+.carousel[data-zone='left'] .carousel-edge[data-side='left'],
+.carousel[data-zone='left'] .carousel-chevron[data-side='left'],
+.carousel[data-zone='right'] .carousel-edge[data-side='right'],
+.carousel[data-zone='right'] .carousel-chevron[data-side='right'] {
   opacity: 1;
 }
 
