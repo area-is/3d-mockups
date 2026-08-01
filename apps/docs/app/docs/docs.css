@@ -307,9 +307,44 @@
 }
 
 .mx-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   font-weight: 600;
   color: var(--color-fd-muted-foreground);
   margin: 22px 0 6px;
+}
+
+.mx-group-note {
+  font-weight: 400;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Props the explorer documents but does not drive. */
+.mx-row-doc {
+  min-height: 26px;
+}
+
+.mx-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  border-radius: 50%;
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px var(--color-fd-muted-foreground);
+  opacity: 0.7;
+}
+
+.mx-doc-type {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-fd-muted-foreground);
+  opacity: 0.85;
+  text-align: right;
+  max-width: 58%;
+  overflow-wrap: anywhere;
 }
 
 .mx-row {
@@ -607,10 +642,27 @@
   border-bottom: 1px solid var(--color-fd-border);
 }
 
+.mx-tabs {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
 .mx-tab {
   font-family: var(--font-mono);
   font-size: 12px;
   padding: 10px 12px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--color-fd-muted-foreground);
+}
+
+.mx-tab:hover {
+  color: var(--color-fd-foreground);
+}
+
+.mx-tab[data-on='true'] {
   color: var(--color-fd-foreground);
   box-shadow: inset 0 -2px 0 var(--mx-accent);
 }
@@ -660,11 +712,8 @@
   user-select: none;
 }
 
-.mx-code code {
+.mx-code-text {
   white-space: pre;
-  background: none;
-  padding: 0;
-  font-size: inherit;
 }
 
 .mx-code .tok-component { color: var(--mx-accent); }

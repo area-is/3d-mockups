@@ -504,14 +504,12 @@ function StageSlot({
   index,
   anim,
   tumble,
-  live,
   color,
 }: {
   entry: Entry
   index: number
   anim: RefObject<number>
   tumble: RefObject<Tumble>
-  live: boolean
   color: string
 }) {
   const group = useRef<Group>(null)
@@ -558,15 +556,14 @@ function StageSlot({
       {entry.render({
         color,
         /*
-         * The whole visible ring carries live DOM, not just the centred
-         * device: a screen that only arrived once its device stopped left the
-         * ones travelling past it blank, which read as the mockups being
-         * inert. Slots outside the ring keep the painted screen, so the DOM
-         * layer is created out at the faded edge and fades in as it comes.
+         * Every staged slot carries its screen for as long as it exists -
+         * including the two waiting off-stage. Mounting them as a device
+         * reached the middle meant a fast run through the carousel was a
+         * stream of screens arriving and leaving; now the DOM is created out
+         * past the fade and simply travels with its device.
          */
-        screen: live ? screenFor(entry.id) : null,
-        surface: live ? undefined : ROW_SURFACE,
-        surfaceStyle: live ? { animation: 'screen-fade-in 320ms ease both' } : undefined,
+        screen: screenFor(entry.id),
+        surfaceStyle: { animation: 'screen-fade-in 320ms ease both' },
       })}
     </group>
   )
@@ -850,7 +847,6 @@ export default function CarouselScene() {
                 index={i}
                 anim={anim}
                 tumble={tumble}
-                live={Math.abs(wrapDelta(i - active)) <= 1}
                 color={colorOf(dev)}
               />
             ) : null
@@ -874,7 +870,15 @@ export default function CarouselScene() {
       {/* Lights the half you are hovering, so the drag-to-browse region is
           visible rather than merely implied by the cursor. */}
       <div className="carousel-edges" aria-hidden>
-        <span className="carousel-centre" />
+        <span className="carousel-centre">
+          <span className="carousel-rotate-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+              <path d="M21 3v6h-6" />
+            </svg>
+            Drag to rotate
+          </span>
+        </span>
         <span className="carousel-edge" data-side="left">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -918,6 +922,10 @@ export default function CarouselScene() {
                 onClick={() => {
                   stop()
                   setFinish((f) => ({ ...f, [entry.id]: c.id }))
+                  // One full turn, queued into the same buffer a flick uses -
+                  // so the finish is seen from every side, and it decelerates
+                  // into place instead of stopping dead.
+                  tumble.current.pendingYaw += 2 * Math.PI
                 }}
               />
             ))}

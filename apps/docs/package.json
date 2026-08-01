@@ -4,9 +4,9 @@
   "private": true,
   "description": "Docs & demos site for area-3d-mockups.",
   "scripts": {
-    "dev": "node scripts/extract-demo-sources.mjs && next dev",
+    "dev": "node scripts/extract-demo-sources.mjs && node scripts/extract-prop-tables.mjs && next dev",
     "build": "opennextjs-cloudflare build",
-    "build:next": "node scripts/extract-demo-sources.mjs && next build",
+    "build:next": "node scripts/extract-demo-sources.mjs && node scripts/extract-prop-tables.mjs && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "postinstall": "fumadocs-mdx",

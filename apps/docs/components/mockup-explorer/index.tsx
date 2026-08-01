@@ -1,7 +1,10 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LiveCounter } from '../screens/live-counter'
+import { SurfaceArt } from '../screens/surface-art'
+import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
+import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
 import { EXPLORERS, type ExplorerSpec } from './registry'
 
 /**
@@ -82,18 +85,53 @@ const initialState = (spec: ExplorerSpec, lockedVariant?: string): PropState => 
   zoom: true,
 })
 
-/** Artwork for a print/packaging surface, labelled with the region it fills. */
-function SurfaceArt({ label }: { label: string }) {
-  return (
-    <div className="mx-surface-art">
-      <span className="mx-surface-art-label">{label}</span>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="mx-surface-art-mark" src="/assets/area_ag_white.svg" alt="area" />
-    </div>
-  )
+/**
+ * Everything a component accepts, from the API docs' own tables, minus the
+ * props the inspector already gives a control for. Listing the remainder
+ * read-only is what makes the panel a complete answer to "what can I pass?"
+ * rather than only "what can I click?".
+ */
+function codeOnlyProps(spec: ExplorerSpec, driven: Set<string>): PropDoc[] {
+  const rows = [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]
+  const seen = new Set<string>()
+  return rows.filter((row) => {
+    if (driven.has(row.name) || seen.has(row.name)) return false
+    seen.add(row.name)
+    return true
+  })
 }
 
+/** How long the finish-change spin takes, and the turntable speed that fits. */
+const SPIN_MS = 900
+const SPIN_SPEED = 60 / (SPIN_MS / 1000)
+
 const REGION_LABEL = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
+/** `coverInner` -> `cover-inner.tsx`, the name the tab carries. */
+const REGION_FILE = (name: string) => `${name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}.tsx`
+/** `top` -> `Top`, the slot component on the mockup. */
+const SLOT_NAME = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
+
+/**
+ * The source behind one surface: the component that fills it, headed by the
+ * slot it is mounted through and the size that slot gives it. Every surface of
+ * an object shares one component, so the header is what distinguishes the
+ * panel you are looking at.
+ */
+function surfaceSource(
+  spec: ExplorerSpec,
+  region: string,
+  screen: string,
+  px?: { width: number; height: number }
+): Line[] {
+  const size = px ? ` - ${px.width} x ${px.height} px` : ''
+  const header = [
+    { text: `// <${spec.name}.${SLOT_NAME(region)}>${size}` },
+    { text: `//   <${screen} label="${REGION_LABEL(region)}" />` },
+    { text: '' },
+  ]
+  const body = (SCREEN_SOURCES[screen] ?? '').split('\n').map((text) => ({ text }))
+  return [...header, ...body]
+}
 
 /* ------------------------------------------------------------------ */
 /*  Controls                                                           */
@@ -292,11 +330,30 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   const spec = EXPLORERS[component]
   const [p, setP] = useState<PropState>(() => initialState(spec, variant))
   const [inspectorOpen, setInspectorOpen] = useState(true)
+  /*
+   * A colour change spins the object once so the finish reads from every
+   * side. `autoRotate` is the library's own turntable - one revolution per
+   * minute at speed 1 - so SPIN_SPEED is chosen to complete exactly one turn
+   * in SPIN_MS. It is layered over the user's own stage props rather than
+   * written into them, so the code panel still prints what you set.
+   */
+  const [spinning, setSpinning] = useState(false)
+  const firstColour = useRef(true)
   const [view, setView] = useState<string>('3d')
   const [copied, setCopied] = useState(false)
 
   const set = <K extends keyof PropState>(key: K, value: PropState[K]) =>
     setP((prev) => ({ ...prev, [key]: value }))
+
+  useEffect(() => {
+    if (firstColour.current) {
+      firstColour.current = false
+      return
+    }
+    setSpinning(true)
+    const t = setTimeout(() => setSpinning(false), SPIN_MS)
+    return () => clearTimeout(t)
+  }, [p.color, p.frameColor])
 
   const base = useMemo(() => initialState(spec, variant), [spec, variant])
   const modified = useMemo(
@@ -328,6 +385,27 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     return (first as { px?: { width: number; height: number } } | undefined)?.px
   }
 
+  const driven = new Set<string>([
+    'color',
+    'float',
+    'surfaceBackground',
+    'resolution',
+    'controls',
+    'autoRotate',
+    'autoRotateSpeed',
+    'zoom',
+    'fullscreen',
+    'shadows',
+    'background',
+    'children',
+    ...(spec.variants ? ['variant'] : []),
+    ...(spec.frameColor ? ['frameColor'] : []),
+    ...(spec.orientation ? ['orientation'] : []),
+    ...(spec.openable ? ['open'] : []),
+    ...(spec.coverage ? ['coverage'] : []),
+  ])
+  const alsoAccepts = codeOnlyProps(spec, driven)
+
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
   const screenName = spec.print ? 'SurfaceArt' : 'LiveCounter'
   const content = (label: string) =>
@@ -350,16 +428,27 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     ...(p.background ? { background: p.background } : {}),
     ...(spec.fixed ?? {}),
     float: p.float,
-    controls: p.controls,
-    autoRotate: p.autoRotate,
-    autoRotateSpeed: p.autoRotateSpeed,
+    // TumbleControls - and with it the turntable - only exists while controls
+    // are on, so the spin borrows them for its duration.
+    controls: p.controls || spinning,
+    autoRotate: p.autoRotate || spinning,
+    autoRotateSpeed: spinning ? SPIN_SPEED : p.autoRotateSpeed,
     zoom: p.zoom,
     fullscreen: p.fullscreen,
     shadows: p.shadows,
   }
 
-  const source = buildSource(spec, p, stageHeight, screenName)
   const flatPx = view === '3d' ? undefined : pxOf(view)
+  /*
+   * One tab per surface next to demo.tsx, and the same `view` drives both -
+   * so picking a panel's source shows that panel on the stage, and picking a
+   * panel on the stage opens its source. There is no second piece of state to
+   * fall out of step.
+   */
+  const source =
+    view === '3d'
+      ? buildSource(spec, p, stageHeight, screenName)
+      : surfaceSource(spec, view, screenName, flatPx)
 
   return (
     <div className="mx" data-inspector={inspectorOpen}>
@@ -596,15 +685,43 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 />
               </span>
             </div>
+            {alsoAccepts.length ? (
+              <>
+                <p className="mx-group">
+                  Also accepts
+                  <span className="mx-group-note">code only</span>
+                </p>
+                {alsoAccepts.map((prop) => (
+                  <div className="mx-row mx-row-doc" key={prop.name} title={prop.description}>
+                    <span className="mx-prop">
+                      <span className="mx-dot" aria-hidden />
+                      {prop.name}
+                    </span>
+                    <span className="mx-doc-type">{prop.type}</span>
+                  </div>
+                ))}
+              </>
+            ) : null}
           </aside>
         ) : null}
       </div>
 
       <div className="mx-code">
         <div className="mx-tabs">
-          <span className="mx-tab" data-on>
+          <button type="button" className="mx-tab" data-on={view === '3d'} onClick={() => setView('3d')}>
             demo.tsx
-          </span>
+          </button>
+          {regions.map((region) => (
+            <button
+              key={region.name}
+              type="button"
+              className="mx-tab"
+              data-on={view === region.name}
+              onClick={() => setView(region.name)}
+            >
+              {REGION_FILE(region.name)}
+            </button>
+          ))}
           <button
             type="button"
             className="mx-copy"
@@ -621,9 +738,9 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
           {source.map((line, i) => (
             <span key={i} className="mx-line" data-set={line.set}>
               <span className="mx-gutter">{i + 1}</span>
-              <code>
+              <span className="mx-code-text">
                 <Code text={line.text} />
-              </code>
+              </span>
             </span>
           ))}
         </pre>
