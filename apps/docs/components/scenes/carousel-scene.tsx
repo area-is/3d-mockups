@@ -506,7 +506,6 @@ function StageSlot({
   tumble,
   live,
   color,
-  onSelect,
 }: {
   entry: Entry
   index: number
@@ -514,7 +513,6 @@ function StageSlot({
   tumble: RefObject<Tumble>
   live: boolean
   color: string
-  onSelect: () => void
 }) {
   const group = useRef<Group>(null)
   const hovered = useRef(false)
@@ -550,7 +548,6 @@ function StageSlot({
   return (
     <group
       ref={group}
-      onClick={onSelect}
       onPointerOver={() => {
         hovered.current = true
       }}
@@ -670,6 +667,7 @@ export default function CarouselScene() {
     x0: number
     x: number
     y: number
+    zone: Zone
     orbiting: boolean
     moved: boolean
     /** Ring position when the gesture started, for direct-manipulation scroll. */
@@ -681,15 +679,23 @@ export default function CarouselScene() {
     at: number
   } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const moved = useRef(false)
 
-  /** True over the staged device, where a drag spins instead of navigating. */
-  const overDevice = (clientX: number, clientY: number) => {
+  /**
+   * Where a pointer is, in the terms the gestures care about.
+   *
+   * `device` spins the staged object, `left`/`right` browse, and `row` is the
+   * strip - whose taps belong to r3f's raycaster, since which thumbnail you
+   * hit is the whole point there.
+   */
+  type Zone = 'device' | 'left' | 'right' | 'row'
+
+  const zoneAt = (clientX: number, clientY: number): Zone => {
     const r = stageRef.current?.getBoundingClientRect()
-    if (!r) return false
-    return (
-      Math.abs(clientX - (r.left + r.width / 2)) < r.width * 0.17 &&
-      clientY < r.top + r.height * 0.66
-    )
+    if (!r) return 'row'
+    if (clientY > r.top + r.height * 0.7) return 'row'
+    if (Math.abs(clientX - (r.left + r.width / 2)) < r.width * 0.17) return 'device'
+    return clientX < r.left + r.width / 2 ? 'left' : 'right'
   }
 
   /**
@@ -711,22 +717,21 @@ export default function CarouselScene() {
    */
   const setZone = (clientX: number, clientY: number) => {
     const el = stageRef.current
-    if (!el) return
-    if (overDevice(clientX, clientY)) {
-      el.dataset.zone = 'device'
-      return
-    }
-    const r = el.getBoundingClientRect()
-    el.dataset.zone = clientX < r.left + r.width / 2 ? 'left' : 'right'
+    if (el) el.dataset.zone = zoneAt(clientX, clientY)
   }
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const orbiting = overDevice(e.clientX, e.clientY)
+    const zone = zoneAt(e.clientX, e.clientY)
+    // r3f fires its click AFTER pointerup, by which time `drag` is cleared -
+    // so whether the gesture moved has to outlive it, or a nudge on the staged
+    // device reads as a tap and resets the very rotation it just started.
+    moved.current = false
     drag.current = {
       x0: e.clientX,
       x: e.clientX,
       y: e.clientY,
-      orbiting,
+      zone,
+      orbiting: zone === 'device',
       moved: false,
       from: anim.current,
       perPx: slotsPerPixel(),
@@ -743,7 +748,10 @@ export default function CarouselScene() {
       setZone(e.clientX, e.clientY)
       return
     }
-    if (Math.abs(e.clientX - d.x) > 4 || Math.abs(e.clientY - d.y) > 4) d.moved = true
+    if (Math.abs(e.clientX - d.x0) > 4 || Math.abs(e.clientY - d.y) > 4) {
+      d.moved = true
+      moved.current = true
+    }
 
     if (d.orbiting) {
       const height = stageRef.current?.clientHeight || 1
@@ -770,7 +778,18 @@ export default function CarouselScene() {
     const d = drag.current
     drag.current = null
     if (stageRef.current) stageRef.current.dataset.dragging = 'false'
-    if (!d || d.orbiting) return
+    if (!d) return
+    if (!d.moved) {
+      // A click, not a drag. Either half of the stage steps one slot towards
+      // the side you clicked - the side device, the chevron and the empty
+      // space around them all do the same thing, every time. The strip is left
+      // alone so its taps can pick out a specific thumbnail, and a click on
+      // the staged device does nothing rather than resetting its pose.
+      if (d.zone === 'left') step(-1)
+      else if (d.zone === 'right') step(1)
+      return
+    }
+    if (d.orbiting) return
     // Carry the flick a little past where the finger stopped, then settle on
     // whichever slot that lands nearest.
     const flick = Math.max(-1.2, Math.min(1.2, -d.vx * d.perPx * 220))
@@ -779,9 +798,9 @@ export default function CarouselScene() {
     syncActive(((Math.round(target.current) % N) + N) % N)
   }
 
-  /** A tap on an object only counts when the gesture did not become a drag. */
+  /** A tap on a thumbnail only counts when the gesture did not become a drag. */
   const select = (i: number) => () => {
-    if (drag.current?.moved) return
+    if (moved.current) return
     go(i)
   }
 
@@ -833,7 +852,6 @@ export default function CarouselScene() {
                 tumble={tumble}
                 live={Math.abs(wrapDelta(i - active)) <= 1}
                 color={colorOf(dev)}
-                onSelect={select(i)}
               />
             ) : null
           )}
@@ -856,6 +874,7 @@ export default function CarouselScene() {
       {/* Lights the half you are hovering, so the drag-to-browse region is
           visible rather than merely implied by the cursor. */}
       <div className="carousel-edges" aria-hidden>
+        <span className="carousel-centre" />
         <span className="carousel-edge" data-side="left">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />

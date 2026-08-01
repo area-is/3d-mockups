@@ -465,12 +465,44 @@ code {
 /* Every zone is a drag; only what it moves differs. */
 .carousel-stage[data-zone='device'],
 .carousel-stage[data-zone='left'],
-.carousel-stage[data-zone='right'] {
+.carousel-stage[data-zone='right'],
+.carousel-stage[data-zone='row'] {
   cursor: grab;
 }
 
 .carousel-stage[data-dragging='true'][data-zone] {
   cursor: grabbing;
+}
+
+/*
+ * The rotate region, lit on hover.
+ *
+ * Same idea as the edges and deliberately fainter: it only has to say "this
+ * part is the device" without competing with the device itself. Its width is
+ * the hit region, so the feedback teaches where the boundary actually is.
+ */
+.carousel-centre {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 26%;
+  width: 34%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: radial-gradient(
+    58% 52% at 50% 46%,
+    rgba(255, 255, 255, 0.055),
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 76%
+  );
+  --centre-fade: linear-gradient(180deg, transparent, #000 18%, #000 66%, transparent);
+  -webkit-mask-image: var(--centre-fade);
+  mask-image: var(--centre-fade);
+}
+
+.carousel-stage[data-zone='device'] ~ .carousel-edges .carousel-centre {
+  opacity: 1;
 }
 
 /* ---- the navigable halves, lit on hover ---- */
