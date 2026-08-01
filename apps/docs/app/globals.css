@@ -409,6 +409,7 @@ code {
 .carousel {
   position: relative;
   --carousel-fit: 1;
+  --carousel-stage-h: clamp(560px, 76vw, 700px);
 }
 
 @media (max-width: 900px) {
@@ -426,7 +427,7 @@ code {
 .carousel-glow {
   position: absolute;
   left: 50%;
-  top: calc(clamp(560px, 76vw, 700px) - 210px);
+  top: calc(var(--carousel-stage-h) - 210px);
   transform: translateX(-50%);
   width: 760px;
   height: 260px;
@@ -446,7 +447,7 @@ code {
  */
 .carousel-stage {
   position: relative;
-  height: clamp(560px, 76vw, 700px);
+  height: var(--carousel-stage-h);
   touch-action: pan-y;
   --carousel-fade: linear-gradient(
     90deg,
@@ -461,17 +462,59 @@ code {
   mask-image: var(--carousel-fade);
 }
 
-/* Which gesture you are about to get, before you commit to it. */
-.carousel-stage[data-zone='device'] {
+/* Every zone is a drag; only what it moves differs. */
+.carousel-stage[data-zone='device'],
+.carousel-stage[data-zone='left'],
+.carousel-stage[data-zone='right'] {
   cursor: grab;
 }
 
-.carousel-stage[data-zone='browse'] {
-  cursor: ew-resize;
+.carousel-stage[data-dragging='true'][data-zone] {
+  cursor: grabbing;
 }
 
-.carousel-stage[data-zone='device'][data-dragging='true'] {
-  cursor: grabbing;
+/* ---- the navigable halves, lit on hover ---- */
+
+.carousel-edges {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--carousel-stage-h);
+  pointer-events: none;
+}
+
+.carousel-edge {
+  position: absolute;
+  top: 0;
+  bottom: 26%;
+  width: 30%;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  /* Fade the wash out vertically too, or it ends on a hard horizontal line. */
+  --edge-fade: linear-gradient(180deg, transparent, #000 22%, #000 62%, transparent);
+  -webkit-mask-image: var(--edge-fade);
+  mask-image: var(--edge-fade);
+}
+
+.carousel-edge[data-side='left'] {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: clamp(12px, 3vw, 40px);
+  background: linear-gradient(90deg, rgba(49, 211, 34, 0.11), transparent 72%);
+}
+
+.carousel-edge[data-side='right'] {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: clamp(12px, 3vw, 40px);
+  background: linear-gradient(270deg, rgba(49, 211, 34, 0.11), transparent 72%);
+}
+
+.carousel-stage[data-zone='left'] ~ .carousel-edges .carousel-edge[data-side='left'],
+.carousel-stage[data-zone='right'] ~ .carousel-edges .carousel-edge[data-side='right'] {
+  opacity: 1;
 }
 
 .carousel-hint {

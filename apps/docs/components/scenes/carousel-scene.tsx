@@ -38,6 +38,7 @@ import {
   type MockupKind,
 } from 'area-3d-mockups'
 import {
+  DEFAULT_CAMERA_FOV,
   DEFAULT_CAMERA_POSITION,
   ORBIT,
   FLIP_FRAMING,
@@ -482,25 +483,17 @@ function Ticker({
   anim,
   target,
   tumble,
-  onSettled,
 }: {
   anim: RefObject<number>
   target: RefObject<number>
   tumble: RefObject<Tumble>
-  onSettled: (settled: boolean) => void
 }) {
-  const settled = useRef(true)
   // Priority -2: the ring position and the tumble are inputs to every slot's
   // own -1 pass, which in turn has to land before drei's default-priority
   // <Html> sync (see StageSlot).
   useFrame((_, delta) => {
     anim.current += (target.current - anim.current) * (1 - Math.exp(-6 * delta))
     advanceTumble(tumble.current)
-    const atRest = Math.abs(target.current - anim.current) < 0.004
-    if (atRest !== settled.current) {
-      settled.current = atRest
-      onSettled(atRest)
-    }
   }, -2)
   return null
 }
@@ -567,12 +560,16 @@ function StageSlot({
     >
       {entry.render({
         color,
-        // Only the device on stage carries live DOM; the ones sliding past
-        // wear a painted screen, which costs no DOM layer and cannot flash
-        // as it mounts mid-transition.
+        /*
+         * The whole visible ring carries live DOM, not just the centred
+         * device: a screen that only arrived once its device stopped left the
+         * ones travelling past it blank, which read as the mockups being
+         * inert. Slots outside the ring keep the painted screen, so the DOM
+         * layer is created out at the faded edge and fades in as it comes.
+         */
         screen: live ? screenFor(entry.id) : null,
         surface: live ? undefined : ROW_SURFACE,
-        surfaceStyle: live ? { animation: 'screen-fade-in 260ms ease both' } : undefined,
+        surfaceStyle: live ? { animation: 'screen-fade-in 320ms ease both' } : undefined,
       })}
     </group>
   )
@@ -636,17 +633,23 @@ export default function CarouselScene() {
   const anim = useRef(0)
   const activeRef = useRef(0)
   const tumble = useRef<Tumble>(restingTumble())
-  // The live screen only mounts once the slide has come to rest, so DOM never
-  // rides a moving object in the first place.
-  const [settled, setSettled] = useState(true)
 
-  const goTo = useCallback((next: number) => {
-    const to = ((next % N) + N) % N
-    target.current += wrapDelta(to - activeRef.current)
+  /** Move the readout and the render window without disturbing the ring. */
+  const syncActive = useCallback((to: number) => {
+    if (to === activeRef.current) return
     activeRef.current = to
-    tumble.current = restingTumble()
     setActive(to)
   }, [])
+
+  const goTo = useCallback(
+    (next: number) => {
+      const to = ((next % N) + N) % N
+      target.current += wrapDelta(to - activeRef.current)
+      tumble.current = restingTumble()
+      syncActive(to)
+    },
+    [syncActive]
+  )
 
   const step = useCallback((dir: number) => goTo(activeRef.current + dir), [goTo])
 
@@ -662,15 +665,23 @@ export default function CarouselScene() {
     goTo(i)
   }
 
-  const drag = useRef<{ x: number; y: number; orbiting: boolean; moved: boolean } | null>(null)
+  const drag = useRef<{
+    /** Where the gesture started; `x` tracks the latest move for velocity. */
+    x0: number
+    x: number
+    y: number
+    orbiting: boolean
+    moved: boolean
+    /** Ring position when the gesture started, for direct-manipulation scroll. */
+    from: number
+    /** Slots per pixel at the stage's scale. */
+    perPx: number
+    /** Most recent horizontal speed, in px/ms, for the flick. */
+    vx: number
+    at: number
+  } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
 
-  /**
-   * One canvas means the gesture is split by where it starts rather than by
-   * which element it lands on: the middle of the upper stage belongs to the
-   * device (drag to spin it), and everywhere else a horizontal swipe steps the
-   * carousel. Taps on an object are handled in the scene by r3f's raycaster.
-   */
   /** True over the staged device, where a drag spins instead of navigating. */
   const overDevice = (clientX: number, clientY: number) => {
     const r = stageRef.current?.getBoundingClientRect()
@@ -682,21 +693,48 @@ export default function CarouselScene() {
   }
 
   /**
-   * The cursor is the affordance: which half of the gesture you get is a
-   * matter of where you are, and nothing on screen says so otherwise. Written
-   * straight to the element rather than through state - this fires on every
-   * pointer move.
+   * How far one slot is on screen. The stage's height covers a known slice of
+   * the world at the camera's distance and fov, which converts world units to
+   * pixels - so a browse drag can move the ring by exactly as much as the
+   * cursor moved, and the device under the pointer stays under it.
+   */
+  const slotsPerPixel = () => {
+    const height = stageRef.current?.clientHeight || 1
+    const worldPerPx = (2 * CAMERA_Z * Math.tan((DEFAULT_CAMERA_FOV * Math.PI) / 360)) / height
+    return worldPerPx / SPACING
+  }
+
+  /**
+   * Which gesture the pointer is over, written straight to the element rather
+   * than through state - this fires on every move. `left`/`right` also light
+   * the matching edge, so the navigable region is visible before you commit.
    */
   const setZone = (clientX: number, clientY: number) => {
     const el = stageRef.current
-    if (el) el.dataset.zone = overDevice(clientX, clientY) ? 'device' : 'browse'
+    if (!el) return
+    if (overDevice(clientX, clientY)) {
+      el.dataset.zone = 'device'
+      return
+    }
+    const r = el.getBoundingClientRect()
+    el.dataset.zone = clientX < r.left + r.width / 2 ? 'left' : 'right'
   }
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const orbiting = overDevice(e.clientX, e.clientY)
-    drag.current = { x: e.clientX, y: e.clientY, orbiting, moved: false }
+    drag.current = {
+      x0: e.clientX,
+      x: e.clientX,
+      y: e.clientY,
+      orbiting,
+      moved: false,
+      from: anim.current,
+      perPx: slotsPerPixel(),
+      vx: 0,
+      at: performance.now(),
+    }
     if (stageRef.current) stageRef.current.dataset.dragging = 'true'
-    if (orbiting) stop()
+    stop()
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -706,12 +744,26 @@ export default function CarouselScene() {
       return
     }
     if (Math.abs(e.clientX - d.x) > 4 || Math.abs(e.clientY - d.y) > 4) d.moved = true
-    if (!d.orbiting) return
-    const height = stageRef.current?.clientHeight || 1
-    tumble.current.pendingYaw += (2 * Math.PI * (e.clientX - d.x)) / height
-    tumble.current.pendingPitch += (2 * Math.PI * (e.clientY - d.y)) / height
+
+    if (d.orbiting) {
+      const height = stageRef.current?.clientHeight || 1
+      tumble.current.pendingYaw += (2 * Math.PI * (e.clientX - d.x)) / height
+      tumble.current.pendingPitch += (2 * Math.PI * (e.clientY - d.y)) / height
+      d.x = e.clientX
+      d.y = e.clientY
+      return
+    }
+
+    // Browse drag: the ring follows the cursor one-for-one. `anim` is set with
+    // `target` so the easing has nothing to catch up on mid-gesture - it takes
+    // over only once the drag ends and the ring snaps to a slot.
+    const now = performance.now()
+    d.vx = (e.clientX - d.x) / Math.max(1, now - d.at)
+    d.at = now
     d.x = e.clientX
-    d.y = e.clientY
+    target.current = d.from - (e.clientX - d.x0) * d.perPx
+    anim.current = target.current
+    syncActive(((Math.round(anim.current) % N) + N) % N)
   }
 
   const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -719,9 +771,12 @@ export default function CarouselScene() {
     drag.current = null
     if (stageRef.current) stageRef.current.dataset.dragging = 'false'
     if (!d || d.orbiting) return
-    const dx = e.clientX - d.x
-    const dy = e.clientY - d.y
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(activeRef.current + (dx < 0 ? 1 : -1))
+    // Carry the flick a little past where the finger stopped, then settle on
+    // whichever slot that lands nearest.
+    const flick = Math.max(-1.2, Math.min(1.2, -d.vx * d.perPx * 220))
+    target.current = Math.round(anim.current + flick)
+    tumble.current = restingTumble()
+    syncActive(((Math.round(target.current) % N) + N) % N)
   }
 
   /** A tap on an object only counts when the gesture did not become a drag. */
@@ -764,9 +819,9 @@ export default function CarouselScene() {
         <MockupCanvas
           controls={false}
           shadows={false}
-          camera={{ position: [0, 0, CAMERA_Z], fov: 40 }}
+          camera={{ position: [0, 0, CAMERA_Z], fov: DEFAULT_CAMERA_FOV }}
         >
-          <Ticker anim={anim} target={target} tumble={tumble} onSettled={setSettled} />
+          <Ticker anim={anim} target={target} tumble={tumble} />
 
           {DEVICES.map((dev, i) =>
             inWindow(i, 2) ? (
@@ -776,7 +831,7 @@ export default function CarouselScene() {
                 index={i}
                 anim={anim}
                 tumble={tumble}
-                live={settled && i === active}
+                live={Math.abs(wrapDelta(i - active)) <= 1}
                 color={colorOf(dev)}
                 onSelect={select(i)}
               />
@@ -796,6 +851,21 @@ export default function CarouselScene() {
             ) : null
           )}
         </MockupCanvas>
+      </div>
+
+      {/* Lights the half you are hovering, so the drag-to-browse region is
+          visible rather than merely implied by the cursor. */}
+      <div className="carousel-edges" aria-hidden>
+        <span className="carousel-edge" data-side="left">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </span>
+        <span className="carousel-edge" data-side="right">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </span>
       </div>
 
       <div className="carousel-bar">
