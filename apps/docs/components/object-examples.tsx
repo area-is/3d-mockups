@@ -268,39 +268,39 @@ function MiniCover({ title, from, to }: { title: string; from: string; to: strin
 const DEMOS: Record<string, React.ReactNode> = {
   // ---- Galaxy (Galaxy) -----------------------------------------------------
   'galaxy-basic': (
-    <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+    <GalaxyMockup color="#15171d" rotation={[0, -0.25, 0]}>
       <LiveCounter />
     </GalaxyMockup>
   ),
   'galaxy-lock': (
-    <GalaxyMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
+    <GalaxyMockup autoRotate float color="silvershadow" surfaceBackground="#000">
       <LockScreen />
     </GalaxyMockup>
   ),
   'galaxy-landscape': (
-    <GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
+    <GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238">
       <MusicPlayer />
     </GalaxyMockup>
   ),
   'galaxy-s26': (
-    <GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
+    <GalaxyMockup variant="s26" color="cobaltviolet" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
     </GalaxyMockup>
   ),
   'galaxy-s26ultra': (
-    <GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
+    <GalaxyMockup variant="s26ultra" color="titaniumsilverblue" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
     </GalaxyMockup>
   ),
 
   // ---- Fold (Galaxy Z Fold 7) ---------------------------------------------
   'fold-open': (
-    <FoldMockup color="#c9ccce" frameColor="#b9bcbe" rotation={[0, -0.3, 0]}>
+    <FoldMockup color="silvershadow" rotation={[0, -0.3, 0]}>
       <DesktopScreen />
     </FoldMockup>
   ),
   'fold-closed': (
-    <FoldMockup open={false} autoRotate float color="#3a3d42" frameColor="#54585f" surfaceBackground="#000">
+    <FoldMockup open={false} autoRotate float color="#3a3d42" surfaceBackground="#000">
       <LockScreen />
     </FoldMockup>
   ),
@@ -312,12 +312,12 @@ const DEMOS: Record<string, React.ReactNode> = {
 
   // ---- Flip (Galaxy Z Flip 7) -----------------------------------------------
   'flip-open': (
-    <FlipMockup color="#e5502e" frameColor="#f06a45" rotation={[0, -0.3, 0]}>
+    <FlipMockup color="coralred" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
     </FlipMockup>
   ),
   'flip-closed': (
-    <FlipMockup open={false} autoRotate float color="#e5502e" frameColor="#f06a45" surfaceBackground="#000">
+    <FlipMockup open={false} autoRotate float color="coralred" surfaceBackground="#000">
       <LockScreen />
     </FlipMockup>
   ),
@@ -329,31 +329,31 @@ const DEMOS: Record<string, React.ReactNode> = {
 
   // ---- IPhone ---------------------------------------------------------------
   'iphone-17': (
-    <IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3" rotation={[0, -0.3, 0]}>
+    <IPhoneMockup variant="17" color="lavender" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
     </IPhoneMockup>
   ),
   'iphone-pro': (
-    <IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, 0.25, 0]}>
+    <IPhoneMockup variant="pro" color="cosmicorange" rotation={[0, 0.25, 0]}>
       <MusicPlayer />
     </IPhoneMockup>
   ),
   'iphone-promax': (
-    <IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b" rotation={[0, -0.3, 0]}>
+    <IPhoneMockup variant="promax" color="deepblue" rotation={[0, -0.3, 0]}>
       <MusicPlayer />
     </IPhoneMockup>
   ),
   'iphone-air': (
-    <IPhoneMockup variant="air" autoRotate float color="#bfd4e6" frameColor="#a9c0d4" surfaceBackground="#000">
+    <IPhoneMockup variant="air" autoRotate float color="skyblue" surfaceBackground="#000">
       <LockScreen />
     </IPhoneMockup>
   ),
   'phone-duo': (
     <MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-      <Galaxy variant="s26ultra" color="#2e3238" frameColor="#565b64" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
+      <Galaxy variant="s26ultra" color="#2e3238" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
         <LiveCounter />
       </Galaxy>
-      <IPhone variant="promax" color="#2b3a55" frameColor="#3d4d6b" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
+      <IPhone variant="promax" color="deepblue" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
         <MusicPlayer />
       </IPhone>
     </MockupCanvas>

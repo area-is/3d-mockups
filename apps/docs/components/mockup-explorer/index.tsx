@@ -36,7 +36,6 @@ export interface MockupExplorerProps {
 interface PropState {
   variant: string
   color: string
-  frameColor: string
   orientation: 'portrait' | 'landscape'
   open: boolean
   coverage: 'panel' | 'full' | 'perforated'
@@ -66,7 +65,6 @@ interface PropState {
 const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
-  frameColor: '',
   orientation: 'portrait',
   open: true,
   coverage: 'panel',
@@ -122,10 +120,9 @@ interface PanelProps {
 /**
  * The props this component's own API page lists.
  *
- * The inspector hand-writes rows for `color` and `frameColor`, and neither is
- * universal: a magazine is stock and ink, so it takes `pageColor` and
- * `backColor` and no `color` at all, and only the four phones paint a separate
- * metal frame. Asking the table is what keeps the panel from offering a
+ * The inspector hand-writes a row for `color`, and it is not universal: a
+ * magazine is stock and ink, so it takes `pageColor` and `backColor` and no
+ * `color` at all. Asking the table is what keeps the panel from offering a
  * control the component would ignore, and the snippet from printing a prop
  * that would not compile.
  */
@@ -203,7 +200,6 @@ function buildSource(
 
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
   if (documents.has('color') && p.color) add(`color="${p.color}"`)
-  if (documents.has('frameColor') && p.frameColor) add(`frameColor="${p.frameColor}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
   if (spec.openable && !p.open) add('open={false}')
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
@@ -315,7 +311,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     setSpinning(true)
     const t = setTimeout(() => setSpinning(false), SPIN_MS)
     return () => clearTimeout(t)
-  }, [p.color, p.frameColor])
+  }, [p.color])
 
   const base = useMemo(() => initialState(spec, variant), [spec, variant])
   const modified = useMemo(() => {
@@ -332,7 +328,6 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
 
   const documents = documented(spec)
   const hasColor = documents.has('color')
-  const hasFrameColor = documents.has('frameColor')
 
   const driven = new Set<string>([
     'float',
@@ -347,7 +342,6 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     'background',
     'children',
     ...(hasColor ? ['color'] : []),
-    ...(hasFrameColor ? ['frameColor'] : []),
     ...(spec.variants ? ['variant'] : []),
     ...(spec.orientation ? ['orientation'] : []),
     ...(spec.openable ? ['open'] : []),
@@ -411,7 +405,6 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   const mockupProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(hasColor && p.color ? { color: p.color } : {}),
-    ...(hasFrameColor && p.frameColor ? { frameColor: p.frameColor } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
     ...(spec.openable ? { open: p.open } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
@@ -535,7 +528,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                   className="mx-select"
                   aria-label="variant"
                   value={p.variant}
-                  onChange={(e) => setP((prev) => ({ ...prev, variant: e.target.value, color: '', frameColor: '' }))}
+                  onChange={(e) => setP((prev) => ({ ...prev, variant: e.target.value, color: '' }))}
                 >
                   {spec.variants.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -557,13 +550,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                     aria-label={c.name}
                     data-on={p.color === c.color}
                     style={{ background: c.color }}
-                    onClick={() =>
-                      setP((prev) => ({
-                        ...prev,
-                        color: c.color,
-                        frameColor: c.frameColor ?? prev.frameColor,
-                      }))
-                    }
+                    onClick={() => set('color', c.color)}
                   />
                 ))}
               </div>
@@ -571,14 +558,6 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
 
             {hasColor ? (
               <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
-            ) : null}
-            {hasFrameColor ? (
-              <ColorRow
-                label="frameColor"
-                value={p.frameColor}
-                fallback="#4a4f59"
-                onChange={(v) => set('frameColor', v)}
-              />
             ) : null}
             {spec.orientation ? (
               <Segmented

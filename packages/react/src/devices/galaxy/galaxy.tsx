@@ -6,6 +6,7 @@ import {
   GALAXY_VARIANTS,
   GALAXY_DEFAULT_VARIANT,
   findColorway,
+  railColor,
   SCREEN_REGIONS,
   type GalaxyVariant,
   roundedRectShape,
@@ -45,14 +46,13 @@ export interface GalaxyProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    */
   orientation?: 'portrait' | 'landscape'
   /**
-   * Back panel color. Takes a retail colorway id from `GALAXY_COLORWAYS`
-   * (`'icyblue'`, `'mint'`…), which also presets `frameColor`, or any CSS
-   * color for a custom finish. A colorway id wins over a CSS color of the
-   * same name - pass hex if you meant the CSS one.
+   * Back panel color, and the whole finish: the metal frame, buttons and
+   * camera rings follow from it. A retail colorway id from `GALAXY_COLORWAYS`
+   * (`'icyblue'`, `'mint'`…) gets that model's measured rail; any other CSS
+   * color gets one derived from it (see `railColor`). A colorway id wins over
+   * a CSS color of the same name - pass hex if you meant the CSS one.
    */
   color?: string
-  /** Metal frame, buttons and camera-ring color. */
-  frameColor?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution -
@@ -76,7 +76,6 @@ function GalaxyImpl({
   variant = GALAXY_DEFAULT_VARIANT,
   orientation = 'portrait',
   color: colorProp,
-  frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
   surfaceStyle,
@@ -89,7 +88,7 @@ function GalaxyImpl({
   // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(GALAXY_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#101216'
-  const frameColor = frameColorProp ?? retail?.frameColor ?? '#4a4f59'
+  const frameColor = retail?.frameColor ?? railColor(color)
   const { body, glass, display, punchHole: hole, rearCamera, buttons, buttonProfile } = spec
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width

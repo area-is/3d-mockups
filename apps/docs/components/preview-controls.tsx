@@ -203,7 +203,7 @@ const MODELS = new Map<unknown, ModelControls>([
         { value: 's26ultra', label: 'Galaxy S26 Ultra' },
       ],
       catalogs: GALAXY_COLORWAYS as Record<string, Colorway[]>,
-      controls: [swatch('frameColor', 'frame'), ORIENTATION, toggle('punchHole', 'punch hole', true)],
+      controls: [ORIENTATION, toggle('punchHole', 'punch hole', true)],
     },
   ],
   [
@@ -216,7 +216,7 @@ const MODELS = new Map<unknown, ModelControls>([
         { value: 'promax', label: 'iPhone 17 Pro Max' },
       ],
       catalogs: IPHONE_COLORWAYS as Record<string, Colorway[]>,
-      controls: [swatch('frameColor', 'frame'), ORIENTATION, toggle('dynamicIsland', 'dynamic island', true)],
+      controls: [ORIENTATION, toggle('dynamicIsland', 'dynamic island', true)],
     },
   ],
   [
@@ -263,7 +263,6 @@ const MODELS = new Map<unknown, ModelControls>([
     {
       catalog: FOLD_COLORWAYS.fold7,
       controls: [
-        swatch('frameColor', 'frame'),
         ORIENTATION,
         OPEN,
         openAngle(0, 180, 180),
@@ -276,7 +275,6 @@ const MODELS = new Map<unknown, ModelControls>([
     {
       catalog: FLIP_COLORWAYS.flip7,
       controls: [
-        swatch('frameColor', 'frame'),
         ORIENTATION,
         OPEN,
         openAngle(0, 180, 180),
@@ -738,11 +736,11 @@ function useMockupControls(children: React.ReactNode) {
         return { ...prev, variant: next, color: kept || custom ? prev.color : undefined }
       }
       if (prop === 'color') {
-        // Selecting from the catalog presets frameColor/bandColor; clear any
-        // explicit ones so the retail finish shows as authored.
+        // Selecting from the catalog brings its own band; clear an explicit
+        // one so the retail finish shows as authored.
         const isCatalogId = catalog?.some((c) => c.id === next)
         return isCatalogId
-          ? { ...prev, color: next || undefined, frameColor: undefined, bandColor: undefined }
+          ? { ...prev, color: next || undefined, bandColor: undefined }
           : { ...prev, color: next || undefined }
       }
       if (prop === 'openAngle') return { ...prev, openAngle: next, open: undefined }

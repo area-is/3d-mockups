@@ -52,9 +52,9 @@ import {
  *
  * Regions come off the component itself (`Mockup.regions`) and measurements
  * from `Mockup.info()`, so areas and resolutions can never drift from the
- * library; `color` and `frameColor` come off the component's prop table. Only
- * the things neither of those answers live here: the shapes of the props whose
- * controls are hand-written, and the retail colorways.
+ * library; `color` comes off the component's own prop table. Only the things
+ * neither of those answers live here: the shapes of the props whose controls
+ * are hand-written, and the retail colorways.
  */
 export interface ExplorerSpec {
   /** The mockup component, with its slots and measurement statics. */

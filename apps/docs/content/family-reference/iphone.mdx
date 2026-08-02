@@ -7,7 +7,7 @@ single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 <ObjectDemo demo="iphone-pro" checker />
 
 ```tsx
-<IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, 0.25, 0]}>
+<IPhoneMockup variant="pro" color="cosmicorange" rotation={[0, 0.25, 0]}>
   <MusicPlayer />
 </IPhoneMockup>
 ```
@@ -21,8 +21,7 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 | `variant` | `'17' \| 'air' \| 'pro' \| 'promax'` | `'17'` | Which iPhone 17 family device: 17 (two-lens pill), air (ultra-thin, single-lens bar), pro and promax (full-width plateau, flash + LiDAR). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content. |
 | `resolution` | `number` | per variant | Defaults to the variant's point grid: 402×874 (17, pro), 420×912 (air), 440×956 (promax). |
-| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` - which also presets `frameColor`, or any CSS color. |
-| `frameColor` | `string` | `'#3f434b'` | Chassis rail, buttons, and camera rings - the metal, separate from the back glass. A retail colorway presets it; set it yourself for a custom two-tone finish. |
+| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` - which brings that model's measured chassis rail with it, or any CSS color - the rail is then derived from it. |
 
 ## Colorways
 
@@ -40,7 +39,7 @@ screen.
 <ObjectDemo demo="iphone-17" />
 
 ```tsx
-<IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3">
+<IPhoneMockup variant="17" color="lavender">
   <MusicPlayer />
 </IPhoneMockup>
 ```
@@ -52,7 +51,7 @@ The Air's ultra-thin profile and single-lens bar show off on the orbit.
 <ObjectDemo demo="iphone-air" />
 
 ```tsx
-<IPhoneMockup variant="air" autoRotate float color="#bfd4e6" frameColor="#a9c0d4">
+<IPhoneMockup variant="air" autoRotate float color="skyblue">
   <LockScreen />
 </IPhoneMockup>
 ```
@@ -65,7 +64,7 @@ The biggest body in the family - full-width plateau, top-edge RF window, and a
 <ObjectDemo demo="iphone-promax" />
 
 ```tsx
-<IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b">
+<IPhoneMockup variant="promax" color="deepblue">
   <MusicPlayer />
 </IPhoneMockup>
 ```

@@ -132,8 +132,7 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Screen content |
-| `color` | `string` | `'#101216'` | Back panel. A retail colorway id from `GALAXY_COLORWAYS` (`'icyblue'`…) - which also presets `frameColor` - or any CSS color |
-| `frameColor` | `string` | `'#4a4f59'` | Frame, buttons, camera rings |
+| `color` | `string` | `'#101216'` | Back panel, and the whole finish - the frame, buttons and camera rings follow from it. A retail colorway id from `GALAXY_COLORWAYS` (`'icyblue'`…) brings that model's measured metal; any other CSS color gets metal derived from it |
 | `surfaceBackground` | `string` | `'#000000'` | CSS background behind your content |
 | `variant` | `'s26' \| 's26ultra'` | `'s26'` | Which Galaxy S26-family device (true relative sizes + per-model cameras) |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |

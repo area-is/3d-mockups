@@ -20,7 +20,6 @@ export default function HeroPhoneScene() {
       camera={{ position: [0, 0.1, 8.25], fov: 38 }}
       shadows={false}
       color="#12151c"
-      frameColor="#565b64"
       surfaceBackground="#070a0f"
       rotation={[0, -0.3, 0]}
     >

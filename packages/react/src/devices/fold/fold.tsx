@@ -4,6 +4,7 @@ import type { ThreeElements } from '@react-three/fiber'
 import {
   FOLD_COLORWAYS,
   findColorway,
+  railColor,
   FOLD_VARIANTS,
   FOLD_DEFAULT_VARIANT,
   SCREEN_REGIONS,
@@ -61,14 +62,13 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    */
   orientation?: 'portrait' | 'landscape'
   /**
-   * Back panel color. Takes a retail colorway id from `FOLD_COLORWAYS`,
-   * which also presets `frameColor`, or any CSS color for a custom finish.
-   * A colorway id wins over a CSS color of the same name - pass hex if you
-   * meant the CSS one.
+   * Back panel color, and the whole finish: the metal frame, buttons, hinge
+   * and camera rings follow from it. A retail colorway id from
+   * `FOLD_COLORWAYS` gets that model's measured rail; any other CSS color gets
+   * one derived from it (see `railColor`). A colorway id wins over a CSS color
+   * of the same name - pass hex if you meant the CSS one.
    */
   color?: string
-  /** Metal frame, buttons and camera-ring color. */
-  frameColor?: string
   /**
    * CSS pixel width of the active display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution for
@@ -109,7 +109,6 @@ function FoldImpl({
   openAngle,
   orientation = 'portrait',
   color: colorProp,
-  frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
   surfaceStyle,
@@ -122,7 +121,7 @@ function FoldImpl({
   // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(FOLD_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#3a3d42'
-  const frameColor = frameColorProp ?? retail?.frameColor ?? '#54585f'
+  const frameColor = retail?.frameColor ?? railColor(color)
   // Resolve the pose: an explicit fold angle wins over the boolean; the
   // extremes snap to the dedicated flat-open / folded-shut paths so the
   // default renders are pixel-identical to before. The flex rig pivots on
