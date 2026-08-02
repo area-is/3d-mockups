@@ -9,12 +9,20 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  Showroom accent                                                    */
+/*  Showroom accent and paper                                          */
 /*                                                                     */
-/*  Only the accent moves; every neutral surface and text color stays  */
-/*  on fumadocs' own neutral theme, so the docs read exactly as they   */
-/*  did before. Light uses the darker #1C9D14 ramp so accent text      */
-/*  passes contrast on white; dark uses #31D322.                       */
+/*  The accent moves, and light mode's paper goes to pure white.       */
+/*  Light uses the darker #1C9D14 ramp so accent text passes contrast  */
+/*  on white; dark uses #31D322 and keeps fumadocs' own neutrals.      */
+/*                                                                     */
+/*  Fumadocs' light theme paints the page hsl(0 0% 96%) and its cards  */
+/*  hsl(0 0% 94.7%) - a grey sheet the mockups then sit on. White is   */
+/*  what a product shot is composited onto, and it is what the         */
+/*  transparency checkerboard behind every preview is standing in for, */
+/*  so the shell, the sidebar and the preview surfaces all take it.    */
+/*  Everything else - muted, secondary, accent, borders - stays on     */
+/*  fumadocs' ramp, which is what still separates a code block, an     */
+/*  active sidebar row or a table header from the page.                */
 /* ------------------------------------------------------------------ */
 
 :root {
@@ -27,6 +35,17 @@
   --color-fd-primary: #31d322;
   --color-fd-primary-foreground: #08240b;
   --color-fd-ring: #31d322;
+}
+
+/*
+ * Light only, and written as `:not(.dark)` rather than a plain `:root` on
+ * purpose: fumadocs declares its dark ramp in a `.dark` block of the same
+ * specificity, and anything this file adds to `:root` comes later in the
+ * cascade - which would hand dark mode a white page too.
+ */
+:root:not(.dark) {
+  --color-fd-background: #ffffff;
+  --color-fd-card: #ffffff;
 }
 
 /* ------------------------------------------------------------------ */

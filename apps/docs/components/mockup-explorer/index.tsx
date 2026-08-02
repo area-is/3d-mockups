@@ -119,6 +119,19 @@ interface PanelProps {
   readOnly: PropDoc[]
 }
 
+/**
+ * The props this component's own API page lists.
+ *
+ * The inspector hand-writes rows for `color` and `frameColor`, and neither is
+ * universal: a magazine is stock and ink, so it takes `pageColor` and
+ * `backColor` and no `color` at all, and only the four phones paint a separate
+ * metal frame. Asking the table is what keeps the panel from offering a
+ * control the component would ignore, and the snippet from printing a prop
+ * that would not compile.
+ */
+const documented = (spec: ExplorerSpec) =>
+  new Set((COMPONENT_PROPS[spec.name] ?? []).map((doc) => doc.name))
+
 function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
   const out: PanelProps = { object: [], transform: [], readOnly: [] }
   const seen = new Set(driven)
@@ -184,12 +197,13 @@ function buildSource(
   extras: EditableProp[]
 ): Line[] {
   const base = libraryDefaults(spec)
+  const documents = documented(spec)
   const props: string[] = []
   const add = (text: string) => props.push(text)
 
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
-  if (p.color) add(`color="${p.color}"`)
-  if (spec.frameColor && p.frameColor) add(`frameColor="${p.frameColor}"`)
+  if (documents.has('color') && p.color) add(`color="${p.color}"`)
+  if (documents.has('frameColor') && p.frameColor) add(`frameColor="${p.frameColor}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
   if (spec.openable && !p.open) add('open={false}')
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
@@ -316,8 +330,11 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   if (!spec) return null
   const { Component } = spec
 
+  const documents = documented(spec)
+  const hasColor = documents.has('color')
+  const hasFrameColor = documents.has('frameColor')
+
   const driven = new Set<string>([
-    'color',
     'float',
     'surfaceBackground',
     'resolution',
@@ -329,8 +346,9 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     'shadows',
     'background',
     'children',
+    ...(hasColor ? ['color'] : []),
+    ...(hasFrameColor ? ['frameColor'] : []),
     ...(spec.variants ? ['variant'] : []),
-    ...(spec.frameColor ? ['frameColor'] : []),
     ...(spec.orientation ? ['orientation'] : []),
     ...(spec.openable ? ['open'] : []),
     ...(spec.coverage ? ['coverage'] : []),
@@ -392,8 +410,8 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
 
   const mockupProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
-    ...(p.color ? { color: p.color } : {}),
-    ...(spec.frameColor && p.frameColor ? { frameColor: p.frameColor } : {}),
+    ...(hasColor && p.color ? { color: p.color } : {}),
+    ...(hasFrameColor && p.frameColor ? { frameColor: p.frameColor } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
     ...(spec.openable ? { open: p.open } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
@@ -551,8 +569,10 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
               </div>
             ) : null}
 
-            <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
-            {spec.frameColor ? (
+            {hasColor ? (
+              <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
+            ) : null}
+            {hasFrameColor ? (
               <ColorRow
                 label="frameColor"
                 value={p.frameColor}

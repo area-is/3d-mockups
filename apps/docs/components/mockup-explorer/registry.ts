@@ -52,8 +52,9 @@ import {
  *
  * Regions come off the component itself (`Mockup.regions`) and measurements
  * from `Mockup.info()`, so areas and resolutions can never drift from the
- * library. Only the things that are not introspectable live here: which props
- * this family actually accepts, and its retail colorways.
+ * library; `color` and `frameColor` come off the component's prop table. Only
+ * the things neither of those answers live here: the shapes of the props whose
+ * controls are hand-written, and the retail colorways.
  */
 export interface ExplorerSpec {
   /** The mockup component, with its slots and measurement statics. */
@@ -69,8 +70,6 @@ export interface ExplorerSpec {
   variants?: { id: string; label: string }[]
   /** Retail colorways per variant id (`''` for families without variants). */
   colorways?: Record<string, Colorway[]>
-  /** Does the object paint a separate metal frame? */
-  frameColor?: boolean
   /** Does it accept `orientation`? */
   orientation?: boolean
   /** Foldables: `open`. */
@@ -96,7 +95,6 @@ const DEVICES: Record<string, ExplorerSpec> = {
       { id: 's26ultra', label: 'Galaxy S26 Ultra' },
     ],
     colorways: GALAXY_COLORWAYS,
-    frameColor: true,
     orientation: true,
   },
   IPhoneMockup: {
@@ -111,7 +109,6 @@ const DEVICES: Record<string, ExplorerSpec> = {
       { id: 'promax', label: 'iPhone 17 Pro Max' },
     ],
     colorways: IPHONE_COLORWAYS,
-    frameColor: true,
     orientation: true,
   },
   FoldMockup: {
@@ -120,7 +117,6 @@ const DEVICES: Record<string, ExplorerSpec> = {
     kind: 'fold',
     label: 'Galaxy Z Fold 7',
     colorways: { '': FOLD_COLORWAYS.fold7 },
-    frameColor: true,
     orientation: true,
     openable: true,
   },
@@ -130,7 +126,6 @@ const DEVICES: Record<string, ExplorerSpec> = {
     kind: 'flip',
     label: 'Galaxy Z Flip 7',
     colorways: { '': FLIP_COLORWAYS.flip7 },
-    frameColor: true,
     orientation: true,
     openable: true,
   },

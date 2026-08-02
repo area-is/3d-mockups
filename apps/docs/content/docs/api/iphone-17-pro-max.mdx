@@ -32,6 +32,7 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content. |
 | `resolution` | `number` | per variant | Defaults to the variant's point grid: 402×874 (17, pro), 420×912 (air), 440×956 (promax). |
 | `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` - which also presets `frameColor`, or any CSS color. |
+| `frameColor` | `string` | `'#3f434b'` | Chassis rail, buttons, and camera rings - the metal, separate from the back glass. A retail colorway presets it; set it yourself for a custom two-tone finish. |
 
 ## Colorways
 

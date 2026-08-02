@@ -47,6 +47,7 @@ export const COMPONENT_PROPS: Record<string, PropDoc[]> = {
     {"name":"orientation","type":"'portrait' | 'landscape'","default":"'portrait'","description":"Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content."},
     {"name":"resolution","type":"number","default":"per variant","description":"Defaults to the variant's point grid: 402×874 (17, pro), 420×912 (air), 440×956 (promax)."},
     {"name":"color","type":"string","default":"'#1a1c20'","description":"Back glass. Takes a retail colorway id from IPHONE_COLORWAYS - 17 black, white, lavender, mistblue, sage; Air spaceblack, cloudwhite, lightgold, skyblue; Pro/Pro Max silver, cosmicorange, deepblue - which also presets frameColor, or any CSS color."},
+    {"name":"frameColor","type":"string","default":"'#3f434b'","description":"Chassis rail, buttons, and camera rings - the metal, separate from the back glass. A retail colorway presets it; set it yourself for a custom two-tone finish."},
   ],
   "FoldMockup": [
     {"name":"open","type":"boolean","default":"true","description":"Unfolded tablet (content on the big inner display, with a center crease) versus the folded candy-bar (content on the tall cover display, rear triple camera showing)."},
@@ -95,7 +96,10 @@ export const COMPONENT_PROPS: Record<string, PropDoc[]> = {
     {"name":"bandOpen","type":"boolean","default":"false","description":"Lay the band out unbuckled and flat instead of wearing it."},
     {"name":"resolution","type":"number","default":"240","description":"Virtual display width - 240 is the watch's own dp grid, and the display is round, so give your face a border-radius: 50% root (or design edge-to-edge and let the crystal mask it)."},
   ],
-  "StudioDisplayMockup": [],
+  "StudioDisplayMockup": [
+    {"name":"color","type":"string","default":"'#c8cbd0'","description":"Aluminum enclosure and stand. Takes a retail colorway id from STUDIO_DISPLAY_COLORWAYS (silver) or any CSS color for a custom finish."},
+    {"name":"resolution","type":"number","default":"2560","description":"CSS pixel width of the virtual display; height follows the 16:9 panel. The default is the display's own logical grid - 2560×1440, which is 5120×2880 at 2x - so desktop breakpoints apply."},
+  ],
   "BookMockup": [
     {"name":"size","type":"{ width?, height?, thickness? }","default":"156×234×27","description":"Physical trim in mm - e.g. { width: 216, height: 279 } for a letter-size art book, { thickness: 45 } for a fat novel."},
     {"name":"color","type":"string","default":"'#1f3a5f'","description":"Cloth color: spine, back board, and board edges."},

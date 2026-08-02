@@ -1,10 +1,73 @@
-The Studio Display rendered in WebGL, with a live React tree on its surfaces. Change
-anything in the inspector and the `demo.tsx` panel rewrites itself to exactly
-what is being passed.
+`<StudioDisplay>` renders the monitor; `<StudioDisplayMockup>` is the
+all-in-one version. It is the 27″ 5K Studio Display (2026 generation, the 2022
+enclosure carried over): 623 × 478 × 168 mm on its tilt stand, an all-glass
+front where the glass itself paints the uniform black bezel over only a
+hairline of aluminum, and the barely-there centered camera dot.
 
-<MockupExplorer component="StudioDisplayMockup" />
+The back carries its real hardware: the gloss-black Apple mark, the tight rear
+row of four upright port slots (2× Thunderbolt 5 + 2× USB-C, the bolt above
+each Thunderbolt one and the host dot below the innermost), the captive power
+cord's circular inlet, and - faithfully - no power button. The stand is the
+thin-sheet arm hanging from its hinge with the machined pivot caps on its
+sides, leaning back over a long thin foot plate, with the cable-routing hole
+punched clean through where it straddles the enclosure's bottom edge.
 
-## Full API
+Every number is measured off Apple's own imagery rather than eyeballed: the
+side-view illustration from the stand-adjustment support guide for the profile,
+and the 2026 product shots for everything on the back.
 
-Every prop, region and colorway this family accepts is documented on the
-[`StudioDisplayMockup` reference](/docs/api/studio-display).
+<ObjectDemo demo="studio-display-basic" checker />
+
+```tsx
+<StudioDisplayMockup rotation={[0, -0.25, 0]}>
+  <YourDesktopApp />
+</StudioDisplayMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `color` | `string` | `'#c8cbd0'` | Aluminum enclosure and stand. Takes a retail colorway id from `STUDIO_DISPLAY_COLORWAYS` (`silver`) or any CSS color for a custom finish. |
+| `resolution` | `number` | `2560` | CSS pixel width of the virtual display; height follows the 16:9 panel. The default is the display's own logical grid - 2560×1440, which is 5120×2880 at 2x - so desktop breakpoints apply. |
+
+There is no `variant`, no `orientation` and no `frameColor` prop: one model,
+one pose, and the enclosure and stand are the same aluminum.
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<StudioDisplayMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`.
+
+## Colorways
+
+Silver `#c8cbd0` is the only retail finish. Any CSS color works for a custom
+one - `color="#e2e4e8"` reads as a brighter studio aluminum, something near
+`#3a3d42` as a space-black concept.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the prop that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-studio-display" />
+
+## More examples
+
+### A custom finish, on the turntable
+
+The 27″ panel is the widest virtual display in the library, so it is the one
+that behaves most like a real desktop breakpoint.
+
+<ObjectDemo demo="studio-display-silver" />
+
+```tsx
+<StudioDisplayMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
+  <YourDesktopApp />
+</StudioDisplayMockup>
+```
