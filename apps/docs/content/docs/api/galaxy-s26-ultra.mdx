@@ -1,0 +1,110 @@
+---
+title: Galaxy S26 Ultra
+description: The Galaxy S26 Ultra in WebGL, with a live prop explorer and the full GalaxyMockup reference.
+---
+
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. The explorer is pinned to `variant="s26ultra"`; everything below applies to the whole family.
+
+<MockupExplorer component="GalaxyMockup" variant="s26ultra" />
+
+`<Galaxy>` renders a Galaxy device; `<GalaxyMockup>` is the all-in-one version.
+Both variants keep true relative sizes and per-model camera architecture - the
+6.3″ Galaxy S26 and the 6.9″ Galaxy S26 Ultra, with detail geometry (button
+pills, camera island, port cutouts, antenna seams) measured from scans of the
+retail hardware.
+
+<ObjectDemo demo="galaxy-basic" checker />
+
+```tsx
+<GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+  <LiveCounter />
+</GalaxyMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'s26' \| 's26ultra'` | `'s26'` | Which Galaxy device: true relative sizes, per-model cameras (S26 triple-lens pill island, Ultra large proud rings + tele column and S Pen silo), and logical resolutions. |
+| `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 780×360 on the S26) with upright content. |
+| `color` | `string` | `'#101216'` | Back panel. Takes a retail colorway id from `GALAXY_COLORWAYS` - S26 `navy`, `cobaltviolet`, `icyblue`, `mint`, `silvershadow`; Ultra `titaniumsilverblue`, `titaniumblack`, `titaniumgray`, `titaniumwhitesilver` - which also presets `frameColor`, or any CSS color for a custom finish. |
+| `frameColor` | `string` | `'#4a4f59'` | Metal frame, buttons, and camera rings. |
+| `resolution` | `number` | per variant | CSS pixel width of the virtual display; height follows the panel aspect (360 gives 360×780 on the S26). |
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<GalaxyMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`.
+
+## Colorways
+
+Try Icy Blue `#c9d6e8`, Navy `#2c3344`, Mint `#c8e6d2`, or Marble Gray
+`#d3d6dd` with `frameColor="#b6bac4"`. The Ultra's Titanium Silverblue is
+`color="#a9bdce"` with `frameColor="#c2ccd7"`.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the prop that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-galaxy" />
+
+## More examples
+
+Every example is live: drag to spin it, and the screens really work.
+
+### Colorways with float and auto-orbit
+
+<ObjectDemo demo="galaxy-lock" />
+
+```tsx
+<GalaxyMockup autoRotate float color="#d3d6dd" frameColor="#b6bac4" surfaceBackground="#000">
+  <LockScreen />
+</GalaxyMockup>
+```
+
+### Landscape, at the Ultra's real resolution
+
+`orientation="landscape"` swaps the virtual display to 832×384 on the
+S26 Ultra - your responsive layout reacts exactly like on the device.
+
+<ObjectDemo demo="galaxy-landscape" />
+
+```tsx
+<GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238" frameColor="#565b64">
+  <MusicPlayer />
+</GalaxyMockup>
+```
+
+### Galaxy S26 - the vertical pill camera island
+
+`variant="s26"` renders the 6.3″ design: the three lenses live in a single
+vertical pill island with the flash on the flat back beside it.
+
+<ObjectDemo demo="galaxy-s26" />
+
+```tsx
+<GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478">
+  <MusicPlayer />
+</GalaxyMockup>
+```
+
+### Galaxy S26 Ultra
+
+`variant="s26ultra"` renders the 6.9″ flagship: boxier corners, three proud
+rings on the pill island with the tele column beside it, the S Pen silo, and a
+384×832 virtual screen.
+
+<ObjectDemo demo="galaxy-s26ultra" />
+
+```tsx
+<GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7">
+  <MusicPlayer />
+</GalaxyMockup>
+```

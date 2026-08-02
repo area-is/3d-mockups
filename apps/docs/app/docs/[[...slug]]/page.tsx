@@ -4,6 +4,16 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layo
 import { createRelativeLink } from 'fumadocs-ui/mdx'
 import { source } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
+import { DEVICES, OBJECTS } from '@/lib/mockup-catalog.mjs'
+
+/**
+ * Mockup pages hide the table of contents: their live prop explorer wants
+ * every pixel of width it can get, and the headings they carry are few enough
+ * that the sidebar grid is the real navigation.
+ */
+const MOCKUP_PAGES = new Set<string>(
+  [...DEVICES, ...OBJECTS].map((e: { href: string }) => e.href)
+)
 
 interface PageParams {
   params: Promise<{ slug?: string[] }>
@@ -15,9 +25,15 @@ export default async function Page(props: PageParams) {
   if (!page) notFound()
 
   const MDX = page.data.body
+  const isMockupPage = MOCKUP_PAGES.has(page.url)
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      tableOfContent={{ enabled: !isMockupPage }}
+      tableOfContentPopover={{ enabled: !isMockupPage }}
+    >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>

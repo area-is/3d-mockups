@@ -1,64 +1,20 @@
 ---
-title: Studio Display (27″ 5K)
-description: A 27 inch 5K monitor on its tilt stand with a 2560x1440 live desktop.
+title: Studio Display
+description: The Studio Display in WebGL, with a live prop explorer and the full StudioDisplayMockup reference.
 ---
 
-`<StudioDisplay>` and `<StudioDisplayMockup>` render an Apple Studio Display style 27"
-monitor (the March 2026 second generation - the 2022 enclosure carried over
-unchanged), proportioned from the official product photography: ~19.5 mm
-all-aluminum slab with an edge-to-edge glass front (uniform ~13 mm black
-bezel, hairline aluminum rim), the barely-there centered camera, the
-gloss-black Apple mark on the upper back, the tight rear cluster of
-2× Thunderbolt 5 + 2× USB-C slots, the captive power cord's circular recess
-centered low on the back, speaker perforations along the bottom edge, and
-the signature tilt stand - a ~148 mm thin-sheet blade curling over its
-hinge barrel (polished pivot caps on the sides) with the single vertical
-stadium cutout punched clean through: the round power inlet shows through
-its upper half and the captive cord's open drop through the lower - plus
-(faithfully) no power button. The mockup grounds the stand on a virtual
-desk plane.
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. Everything below applies to this component.
 
-<ObjectDemo demo="studio-display-basic" checker />
+<MockupExplorer component="StudioDisplayMockup" />
 
-```tsx
-<StudioDisplayMockup rotation={[0, -0.25, 0]}>
-  <YourDesktopApp />
-</StudioDisplayMockup>
-```
+The Studio Display rendered in WebGL, with a live React tree on its surfaces. Change
+anything in the inspector and the `demo.tsx` panel rewrites itself to exactly
+what is being passed.
 
-## Props
+<MockupExplorer component="StudioDisplayMockup" />
 
-Beyond the [shared screen props](/docs/screen-content):
+## Full API
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `color` | `string` | `'#c8cbd0'` | Aluminum enclosure and stand. Takes a retail colorway id from `STUDIO_DISPLAY_COLORWAYS` or any CSS color. |
-| `resolution` | `number` | `2560` | Virtual display width; 2560 gives 2560×1440, the Studio Display's logical desktop, so real desktop layouts apply. |
-
-There is no `orientation` prop; it lives on a desk.
-
-## Regions
-
-One region: the display (bare children). Use the explicit
-`<StudioDisplayMockup.Screen>` slot when you want per-surface overrides -
-`surfaceBackground`, `resolution`, `surfaceStyle`.
-
-## Mockup-able areas
-
-Every live surface filled with chroma green, labeled with the prop that
-feeds it - the fastest way to see exactly where your content lands and
-what stays 3D hardware.
-
-<ObjectDemo demo="chroma-studio-display" />
-
-## More examples
-
-### Silver, slow orbit
-
-<ObjectDemo demo="studio-display-silver" />
-
-```tsx
-<StudioDisplayMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
-  <YourDesktopApp />
-</StudioDisplayMockup>
-```
+Every prop, region and colorway this family accepts is documented on the
+[`StudioDisplayMockup` reference](/docs/api/studio-display).

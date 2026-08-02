@@ -1,0 +1,104 @@
+---
+title: MacBook Air 13″
+description: The MacBook Air 13″ in WebGL, with a live prop explorer and the full LaptopMockup reference.
+---
+
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. The explorer is pinned to `variant="air13"`; everything below applies to the whole family.
+
+<MockupExplorer component="LaptopMockup" variant="air13" />
+
+`<Laptop>` and `<LaptopMockup>` render an Apple-style laptop: unibody deck
+with the real 78-key Magic Keyboard layout (printed legends, instanced
+keycaps), trackpad, hinge band, ports, and a notched display. Four variants at
+true relative size: MacBook Air 13" / 15" and MacBook Pro 14" / 16" (M5) - the
+Pro adds its scan-accurate port array (MagSafe, 2× Thunderbolt and headphone
+jack left; HDMI, Thunderbolt and SDXC right), the black keyboard tray the Air
+does without, perforated speaker strips flanking the keyboard, bigger feet,
+the lid badge and the embossed underside wordmark.
+
+The window on screen is real DOM, not a texture - drag anywhere to orbit. The
+keyboard and palm rest occlude it per-pixel, so the screen's reflection ends
+exactly where the hardware begins.
+
+<ObjectDemo demo="laptop-basic" checker />
+
+```tsx
+<LaptopMockup color="#aec6d9" rotation={[0, -0.35, 0]}>
+  <YourDesktopApp />
+</LaptopMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'air13' \| 'air15' \| 'pro14' \| 'pro16'` | `'air13'` | MacBook Air 13"/15" or MacBook Pro 14"/16" - true relative sizes, per-model ports, feet, speaker grilles and notch. |
+| `color` | `string` | `'#e3e4e6'` | Aluminum finish. Takes a retail colorway id from `LAPTOP_COLORWAYS` - Airs `silver`, `starlight`, `midnight`, `skyblue`; Pros `spaceblack`, `silver` - or any CSS color. |
+| `openAngle` | `number` | `110` | Lid angle in degrees between deck and screen (90 is upright). |
+| `resolution` | `number` | per variant | Virtual display width - each variant defaults to its real scaled desktop: 1280×832 (air13), 1440×932 (air15), 1512×982 (pro14), 1728×1117 (pro16) - so desktop breakpoints apply. |
+
+There is no `orientation` prop; laptops only have one pose.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-laptop" />
+
+## More examples
+
+### MacBook Pro 14" in Space Black
+
+`variant="pro14"`: deeper body, HDMI + SDXC on the right flank, speaker
+grilles beside the keyboard, and the 1512×982 point grid.
+
+<ObjectDemo demo="laptop-pro14" />
+
+```tsx
+<LaptopMockup variant="pro14" color="#4a484b">
+  <YourDesktopApp />
+</LaptopMockup>
+```
+
+### MacBook Air 15" in Sky Blue
+
+`variant="air15"`: the 15.3" Air - same thin slab and clean deck as the
+13", scaled to its true 340×238 mm footprint and 1440×932 point grid.
+
+<ObjectDemo demo="laptop-air15" />
+
+```tsx
+<LaptopMockup variant="air15" color="skyblue">
+  <YourDesktopApp />
+</LaptopMockup>
+```
+
+### MacBook Pro 16" in Space Black
+
+`variant="pro16"`: the biggest MacBook - wider speaker grilles, larger
+trackpad and the 1728×1117 point grid.
+
+<ObjectDemo demo="laptop-pro16" />
+
+```tsx
+<LaptopMockup variant="pro16" color="spaceblack">
+  <YourDesktopApp />
+</LaptopMockup>
+```
+
+### Midnight, tighter lid angle
+
+`openAngle` poses the hinge; 100° reads more "working", 110° more "display".
+
+<ObjectDemo demo="laptop-midnight" />
+
+```tsx
+<LaptopMockup color="#2e3642" openAngle={100} float>
+  <YourDesktopApp />
+</LaptopMockup>
+```

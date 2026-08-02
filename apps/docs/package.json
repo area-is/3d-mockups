@@ -4,16 +4,18 @@
   "private": true,
   "description": "Docs & demos site for area-3d-mockups.",
   "scripts": {
-    "dev": "node scripts/extract-demo-sources.mjs && next dev",
+    "dev": "node scripts/extract-demo-sources.mjs && node scripts/extract-prop-tables.mjs && next dev",
     "build": "opennextjs-cloudflare build",
-    "build:next": "node scripts/extract-demo-sources.mjs && next build",
+    "build:next": "node scripts/extract-demo-sources.mjs && node scripts/extract-prop-tables.mjs && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "visual": "node scripts/visual-check.mjs",
+    "thumbs": "node scripts/generate-thumbs.mjs",
     "preview": "npm run build && opennextjs-cloudflare preview",
     "deploy": "npm run build && npx wrangler deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "docs:variants": "node scripts/generate-variant-pages.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

@@ -1,0 +1,60 @@
+---
+title: Galaxy Tab S11
+description: The Galaxy Tab S11 in WebGL, with a live prop explorer and the full GalaxyTabMockup reference.
+---
+
+Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
+exactly what is being passed. The explorer is pinned to `variant="tabs11"`; everything below applies to the whole family.
+
+<MockupExplorer component="GalaxyTabMockup" variant="tabs11" />
+
+`<GalaxyTab>` and `<GalaxyTabMockup>` render the Samsung Galaxy Tab S11 family
+at true relative sizes - the 11" S11 and the 14.6" S11 Ultra. Each gets its
+real hardware: the protruding camera rings and flash floating straight on the
+back panel (two rings on the Ultra, one on the S11), the volume rocker and
+power key on the long edge, the magnetic S Pen side-mount, the keyboard pogo
+column, milled speaker slots near all four corners, USB-C on the edge adjacent
+to the camera corner, and the SAMSUNG wordmark set for the landscape hold - so
+it lies along the edge in portrait, exactly like the print on the hardware.
+The Ultra adds the front camera's U-shaped display notch, which rides the right
+edge in portrait and the top center in landscape, just like the physical panel.
+
+<ObjectDemo demo="galaxy-tab-s11" checker />
+
+```tsx
+<GalaxyTabMockup color="gray" rotation={[0, -0.3, 0]}>
+  <YourApp />
+</GalaxyTabMockup>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'tabs11' \| 'tabs11ultra'` | `'tabs11'` | Tab S11 (single camera ring) or Tab S11 Ultra (dual rings, 14.6" panel with the U-shaped notch). |
+| `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display with upright content. |
+| `resolution` | `number` | per variant | Defaults to the variant's logical grid: 800×1280 (tabs11), 924×1480 (tabs11ultra). |
+| `color` | `string` | per variant | Body color. Takes a retail colorway id from `GALAXY_TAB_COLORWAYS` (`gray`, `silver`) or any CSS color. |
+
+## Galaxy Tab S11 Ultra in portrait
+
+The U-shaped notch sits on the right edge in portrait, exactly like the
+hardware; spin it to catch the dual camera rings and the wordmark.
+
+<ObjectDemo demo="galaxy-tab-ultra" />
+
+```tsx
+<GalaxyTabMockup variant="tabs11ultra" color="gray" float>
+  <YourApp />
+</GalaxyTabMockup>
+```
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<ObjectDemo demo="chroma-galaxy-tab" />
