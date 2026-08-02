@@ -5,6 +5,8 @@ import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
 import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
 import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
+import { ColorRow, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
+import { editableProp, propAttribute, same, type EditableProp } from './prop-controls'
 import { EXPLORERS, type ExplorerSpec } from './registry'
 
 /**
@@ -48,6 +50,12 @@ interface PropState {
   fullscreen: boolean
   shadows: boolean
   background: string
+  /**
+   * Everything else the component documents, keyed by prop name. Only props
+   * the user actually set live here - the rest are simply absent, which is
+   * what the mockup sees and what the snippet prints.
+   */
+  extra: Record<string, unknown>
 }
 
 /**
@@ -72,33 +80,58 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   fullscreen: false,
   shadows: true,
   background: '',
+  extra: {},
 })
 
 /**
  * Where the explorer starts. Zoom is on so the stage is immediately
  * scroll/pinch-zoomable and MockupCanvas draws its zoom overlay - the
  * "modified" count and the reset action measure against this, so an untouched
- * explorer still reads as unmodified.
+ * explorer still reads as unmodified. `spec.fixed` seeds the same way: a
+ * required prop (a custom panel's `size`) has to be passed from the first
+ * frame, and starting there means it doesn't read as a modification either.
  */
 const initialState = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
   ...libraryDefaults(spec, lockedVariant),
   zoom: true,
+  extra: { ...spec.fixed },
 })
 
 /**
  * Everything a component accepts, from the API docs' own tables, minus the
- * props the inspector already gives a control for. Listing the remainder
- * read-only is what makes the panel a complete answer to "what can I pass?"
- * rather than only "what can I click?".
+ * props the inspector already hand-writes a control for - sorted into where
+ * each belongs in the panel.
+ *
+ * The rest used to be a read-only list. They are now driven too, from the type
+ * their prop table states, so the panel answers "what can I pass?" and "what
+ * can I click?" with the same list. What is left over - `surfaceStyle`,
+ * `className`, `style` - is documented, but there is nothing for a live demo
+ * to do with it.
  */
-function codeOnlyProps(spec: ExplorerSpec, driven: Set<string>): PropDoc[] {
-  const rows = [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]
-  const seen = new Set<string>()
-  return rows.filter((row) => {
-    if (driven.has(row.name) || seen.has(row.name)) return false
-    seen.add(row.name)
-    return true
-  })
+interface PanelProps {
+  /** The component's own props, in the order its API page lists them. */
+  object: EditableProp[]
+  /** `position` / `rotation` / `scale`. */
+  transform: EditableProp[]
+  /** The stage camera, which belongs with the other stage props. */
+  camera?: EditableProp
+  /** Documented, but not something a live demo can drive. */
+  readOnly: PropDoc[]
+}
+
+function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
+  const out: PanelProps = { object: [], transform: [], readOnly: [] }
+  const seen = new Set(driven)
+  for (const doc of [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]) {
+    if (seen.has(doc.name)) continue
+    seen.add(doc.name)
+    const prop = editableProp(doc)
+    if (!prop) out.readOnly.push(doc)
+    else if (prop.control.kind === 'camera') out.camera = prop
+    else if (prop.control.kind === 'vector') out.transform.push(prop)
+    else out.object.push(prop)
+  }
+  return out
 }
 
 /** How long the finish-change spin takes, and the turntable speed that fits. */
@@ -134,109 +167,6 @@ function surfaceSource(
 }
 
 /* ------------------------------------------------------------------ */
-/*  Controls                                                           */
-/* ------------------------------------------------------------------ */
-
-function Switch({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean
-  onChange: (v: boolean) => void
-  label: string
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        className="mx-switch"
-        data-on={checked}
-        onClick={() => onChange(!checked)}
-      >
-        <span className="mx-switch-knob" />
-      </button>
-    </div>
-  )
-}
-
-function ColorRow({
-  label,
-  value,
-  fallback,
-  onChange,
-}: {
-  label: string
-  value: string
-  fallback: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <span className="mx-row-controls">
-        <span className="mx-hex">{value || fallback}</span>
-        <input
-          type="color"
-          aria-label={label}
-          className="mx-color"
-          value={value || fallback}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        {value ? (
-          <button type="button" className="mx-clear" aria-label={`Reset ${label}`} onClick={() => onChange('')}>
-            <ResetGlyph />
-          </button>
-        ) : null}
-      </span>
-    </div>
-  )
-}
-
-function ResetGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-      <path d="M3 3v6h6" />
-      <path d="M3.6 15.2A9 9 0 1 0 5.9 5.7L3 9" />
-    </svg>
-  )
-}
-
-function Segmented<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: T
-  options: readonly T[]
-  onChange: (v: T) => void
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <span className="mx-segmented">
-        {options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            data-on={option === value}
-            onClick={() => onChange(option)}
-          >
-            {option}
-          </button>
-        ))}
-      </span>
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
 /*  Code generation                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -246,7 +176,13 @@ interface Line {
 }
 
 /** The snippet for the current props - only what differs from the defaults. */
-function buildSource(spec: ExplorerSpec, p: PropState, stageHeight: number, screen: string): Line[] {
+function buildSource(
+  spec: ExplorerSpec,
+  p: PropState,
+  stageHeight: number,
+  screen: string,
+  extras: EditableProp[]
+): Line[] {
   const base = libraryDefaults(spec)
   const props: string[] = []
   const add = (text: string) => props.push(text)
@@ -267,7 +203,11 @@ function buildSource(spec: ExplorerSpec, p: PropState, stageHeight: number, scre
   if (p.fullscreen) add('fullscreen')
   if (!p.shadows) add('shadows={false}')
   if (p.background) add(`background="${p.background}"`)
-  if (spec.fixed?.size) add(`size={${JSON.stringify(spec.fixed.size).replace(/"/g, '')}}`)
+  // Anything still in `extra` is there because it differs from what the
+  // component does on its own, so every one of them earns a line.
+  for (const prop of extras) {
+    if (prop.name in p.extra) add(propAttribute(prop, p.extra[prop.name]))
+  }
 
   const lines: Line[] = [
     { text: `'use client'` },
@@ -345,6 +285,14 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   const set = <K extends keyof PropState>(key: K, value: PropState[K]) =>
     setP((prev) => ({ ...prev, [key]: value }))
 
+  const writeExtra = (name: string, value: unknown | undefined) =>
+    setP((prev) => {
+      const extra = { ...prev.extra }
+      if (value === undefined) delete extra[name]
+      else extra[name] = value
+      return { ...prev, extra }
+    })
+
   useEffect(() => {
     if (firstColour.current) {
       firstColour.current = false
@@ -356,34 +304,17 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   }, [p.color, p.frameColor])
 
   const base = useMemo(() => initialState(spec, variant), [spec, variant])
-  const modified = useMemo(
-    () => (Object.keys(base) as (keyof PropState)[]).filter((k) => p[k] !== base[k]).length,
-    [p, base]
-  )
+  const modified = useMemo(() => {
+    const keys = (Object.keys(base) as (keyof PropState)[]).filter((k) => k !== 'extra')
+    const names = new Set([...Object.keys(p.extra), ...Object.keys(base.extra)])
+    return (
+      keys.filter((k) => p[k] !== base[k]).length +
+      [...names].filter((name) => !same(p.extra[name], base.extra[name])).length
+    )
+  }, [p, base])
 
   if (!spec) return null
   const { Component } = spec
-
-  // Regions and measurements come straight off the component.
-  const regions: { name: string; label?: string }[] = Component.regions ?? []
-  const infoProps: Record<string, unknown> = {
-    ...(spec.variants ? { variant: p.variant } : {}),
-    ...(spec.orientation ? { orientation: p.orientation } : {}),
-    ...(spec.openable ? { open: p.open } : {}),
-    ...(spec.coverage ? { coverage: p.coverage } : {}),
-    ...(spec.fixed ?? {}),
-  }
-  let measured: Record<string, { px?: { width: number; height: number } }> = {}
-  try {
-    measured = (Component.info?.(infoProps)?.regions ?? {}) as typeof measured
-  } catch {
-    measured = {}
-  }
-  const pxOf = (name: string) => {
-    const entry = measured[name] as unknown
-    const first = Array.isArray(entry) ? entry[0] : entry
-    return (first as { px?: { width: number; height: number } } | undefined)?.px
-  }
 
   const driven = new Set<string>([
     'color',
@@ -404,7 +335,50 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     ...(spec.openable ? ['open'] : []),
     ...(spec.coverage ? ['coverage'] : []),
   ])
-  const alsoAccepts = codeOnlyProps(spec, driven)
+  const panel = panelProps(spec, driven)
+  const editable = [...panel.object, ...panel.transform, ...(panel.camera ? [panel.camera] : [])]
+
+  /** What a row shows: the value in play, whether it moved, and how to move it. */
+  const rowProps = (prop: EditableProp) => ({
+    prop,
+    value: prop.name in p.extra ? p.extra[prop.name] : prop.seed,
+    set: !same(p.extra[prop.name], base.extra[prop.name]),
+    onChange: (value: unknown) =>
+      // Landing back on the documented default is the same as never having
+      // passed the prop - unless the explorer had to seed it (`spec.fixed`),
+      // in which case there is no "not passed" to go back to.
+      writeExtra(
+        prop.name,
+        base.extra[prop.name] === undefined && same(value, prop.fallback) ? undefined : value
+      ),
+    onReset: () => writeExtra(prop.name, base.extra[prop.name]),
+  })
+
+  // Regions and measurements come straight off the component. Only the object's
+  // own props reach `info()` - a transform or a camera moves the mockup on the
+  // stage without changing a millimetre of what it measures.
+  const regions: { name: string; label?: string }[] = Component.regions ?? []
+  const geometry = Object.fromEntries(
+    panel.object.filter((prop) => prop.name in p.extra).map((prop) => [prop.name, p.extra[prop.name]])
+  )
+  const infoProps: Record<string, unknown> = {
+    ...(spec.variants ? { variant: p.variant } : {}),
+    ...(spec.orientation ? { orientation: p.orientation } : {}),
+    ...(spec.openable ? { open: p.open } : {}),
+    ...(spec.coverage ? { coverage: p.coverage } : {}),
+    ...geometry,
+  }
+  let measured: Record<string, { px?: { width: number; height: number } }> = {}
+  try {
+    measured = (Component.info?.(infoProps)?.regions ?? {}) as typeof measured
+  } catch {
+    measured = {}
+  }
+  const pxOf = (name: string) => {
+    const entry = measured[name] as unknown
+    const first = Array.isArray(entry) ? entry[0] : entry
+    return (first as { px?: { width: number; height: number } } | undefined)?.px
+  }
 
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
   const screenName = spec.print ? 'SurfaceArt' : 'LiveCounter'
@@ -426,7 +400,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     ...(p.surfaceBackground ? { surfaceBackground: p.surfaceBackground } : {}),
     ...(p.resolution ? { resolution: p.resolution } : {}),
     ...(p.background ? { background: p.background } : {}),
-    ...(spec.fixed ?? {}),
+    ...p.extra,
     float: p.float,
     // TumbleControls - and with it the turntable - only exists while controls
     // are on, so the spin borrows them for its duration.
@@ -447,7 +421,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
    */
   const source =
     view === '3d'
-      ? buildSource(spec, p, stageHeight, screenName)
+      ? buildSource(spec, p, stageHeight, screenName, editable)
       : surfaceSource(spec, view, screenName, flatPx)
 
   return (
@@ -470,8 +444,11 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
           type="button"
           className="mx-props-btn"
           data-on={inspectorOpen}
+          aria-expanded={inspectorOpen}
+          title={inspectorOpen ? 'Hide the props panel' : 'Show the props panel'}
           onClick={() => setInspectorOpen((o) => !o)}
         >
+          <PanelGlyph open={inspectorOpen} />
           Props
           {modified > 0 ? <span className="mx-badge">{modified}</span> : null}
         </button>
@@ -599,8 +576,22 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 onChange={(v) => set('coverage', v)}
               />
             ) : null}
-            {spec.openable ? <Switch label="open" checked={p.open} onChange={(v) => set('open', v)} /> : null}
+            {spec.openable ? (
+              <Switch
+                label="open"
+                checked={p.open}
+                onChange={(v) => set('open', v)}
+                // A foldable's `openAngle` is the finer control of the same
+                // hinge, and the library lets it win - so say so rather than
+                // leaving a switch that looks broken.
+                dim={'openAngle' in p.extra}
+                note={'openAngle' in p.extra ? 'Overridden by openAngle' : undefined}
+              />
+            ) : null}
             <Switch label="float" checked={p.float} onChange={(v) => set('float', v)} />
+            {panel.object.map((prop) => (
+              <PropRow key={prop.name} {...rowProps(prop)} />
+            ))}
 
             <p className="mx-group">Surface</p>
             <div className="mx-row">
@@ -685,13 +676,27 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 />
               </span>
             </div>
-            {alsoAccepts.length ? (
+            {panel.camera ? <PropRow {...rowProps(panel.camera)} /> : null}
+
+            {panel.transform.length ? (
+              <>
+                <p className="mx-group">
+                  Transform
+                  <span className="mx-group-note">r3f group props</span>
+                </p>
+                {panel.transform.map((prop) => (
+                  <PropRow key={prop.name} {...rowProps(prop)} />
+                ))}
+              </>
+            ) : null}
+
+            {panel.readOnly.length ? (
               <>
                 <p className="mx-group">
                   Also accepts
                   <span className="mx-group-note">code only</span>
                 </p>
-                {alsoAccepts.map((prop) => (
+                {panel.readOnly.map((prop) => (
                   <div className="mx-row mx-row-doc" key={prop.name} title={prop.description}>
                     <span className="mx-prop">
                       <span className="mx-dot" aria-hidden />

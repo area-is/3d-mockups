@@ -39,6 +39,32 @@ const plain = (cell) =>
     .trim()
 
 /**
+ * Split one markdown table row into its cells.
+ *
+ * A union type is written `'s26' \| 's26ultra'` - the pipe is escaped so the
+ * table survives, and unescaping it here is what keeps `'s26' | 's26ultra'`
+ * in one cell instead of shearing the row into `'s26'`, `'s26ultra'`, and a
+ * description that lands three columns to the left.
+ */
+function rowCells(line) {
+  const out = []
+  let cell = ''
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '\\' && line[i + 1] === '|') {
+      cell += '|'
+      i++
+    } else if (line[i] === '|') {
+      out.push(cell)
+      cell = ''
+    } else {
+      cell += line[i]
+    }
+  }
+  out.push(cell)
+  return out.slice(1, -1)
+}
+
+/**
  * The first `| Prop | Type | Default | Description |` table in a document.
  * Rows whose prop cell lists several names (`position` / `rotation` / `scale`)
  * are split, so each lands as its own row.
@@ -51,7 +77,7 @@ function propTable(markdown) {
   for (let i = start + 2; i < lines.length; i++) {
     const line = lines[i]
     if (!line.startsWith('|')) break
-    const cells = line.split('|').slice(1, -1)
+    const cells = rowCells(line)
     if (cells.length < 3) break
     const [name, type, def, description = ''] = cells
     for (const one of plain(name).split(/[/,]/)) {
@@ -74,10 +100,16 @@ const read = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : '')
  * Props every mockup takes, gathered from where each is documented: the
  * shared-props table, the screen-surface table, and MockupCanvas - whose
  * stage props a mockup forwards wholesale. `children` appears in more than
- * one, and `shadowY` is machinery the wrappers compute, so both are settled
- * here.
+ * one, so it is settled here.
+ *
+ * Three rows of the MockupCanvas table are NOT part of that forwarded set:
+ * `freeRotation`, `shadowY` and `dpr` tune the rendering machinery rather than
+ * the picture, and Components overview says so in as many words - a mockup
+ * does not advertise them, and `MockupProps` leaves them off the type. Listing
+ * them as props of a mockup would send a reader to code that does not compile;
+ * they belong to MockupCanvas, and the MockupCanvas page documents them.
  */
-const CANVAS_ONLY_MACHINERY = new Set(['shadowY'])
+const CANVAS_ONLY_MACHINERY = new Set(['freeRotation', 'shadowY', 'dpr'])
 
 const shared = []
 const seen = new Set()

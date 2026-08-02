@@ -50,6 +50,26 @@
   background: transparent;
 }
 
+/*
+ * Pages that hide the table of contents - the per-mockup API pages, whose
+ * navigation is the sidebar grid - get the column it would have taken. The
+ * article is otherwise capped at 900px however wide the window is, which on
+ * those pages leaves the prop explorer, the live demos and the four-column
+ * prop tables squeezed while a third of the screen sits empty.
+ *
+ * Only the blocks that gain from the width take it. Running text keeps a
+ * reading measure, because a paragraph set 150 characters wide is harder to
+ * read than the same paragraph at 900px, not easier.
+ */
+#nd-page[data-wide='true'] {
+  max-width: min(100%, 1400px);
+}
+
+#nd-page[data-wide='true'] > .prose > :is(p, ul, ol, blockquote),
+#nd-page[data-wide='true'] > p {
+  max-width: 78ch;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Sidebar mockup grids (Devices / Objects)                           */
 /* ------------------------------------------------------------------ */
@@ -286,6 +306,8 @@
 .mx-inspector-head {
   position: sticky;
   top: 0;
+  /* Rows scroll under it, including the number fields a composite prop opens. */
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -353,6 +375,9 @@
   justify-content: space-between;
   gap: 10px;
   min-height: 30px;
+  /* A slider, its readout and a reset can outgrow the column on the longest
+     prop names; wrapping is better than a clipped control. */
+  flex-wrap: wrap;
 }
 
 .mx-row[data-dim='true'] {
@@ -487,6 +512,68 @@
 .mx-range {
   width: 74px;
   accent-color: var(--mx-accent);
+}
+
+/* Composite props (a transform, a millimetre size, the camera): a summary row
+   that folds open onto its number fields. */
+
+.mx-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-inline-start: -2px;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+.mx-disclosure:hover .mx-prop {
+  color: var(--color-fd-foreground);
+}
+
+.mx-chevron {
+  flex: none;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+
+.mx-chevron[data-on='true'] {
+  transform: rotate(90deg);
+  opacity: 0.9;
+}
+
+.mx-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 2px 0 8px 16px;
+}
+
+.mx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mx-field > span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-fd-muted-foreground);
+  opacity: 0.8;
+}
+
+.mx-field em {
+  font-style: normal;
+  opacity: 0.7;
+  margin-inline-start: 2px;
+}
+
+.mx-field .mx-number {
+  width: 100%;
 }
 
 .mx-chips {

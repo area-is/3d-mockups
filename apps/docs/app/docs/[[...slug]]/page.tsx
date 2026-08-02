@@ -33,6 +33,9 @@ export default async function Page(props: PageParams) {
       full={page.data.full}
       tableOfContent={{ enabled: !isMockupPage }}
       tableOfContentPopover={{ enabled: !isMockupPage }}
+      // Hands the column the missing table of contents would have taken back
+      // to the article - see `#nd-page[data-wide]` in docs.css.
+      data-wide={isMockupPage || undefined}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
