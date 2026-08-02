@@ -84,18 +84,13 @@ export function Switch({
   checked,
   onChange,
   label,
-  dim,
-  note,
 }: {
   checked: boolean
   onChange: (v: boolean) => void
   label: string
-  /** Documented, driven, but overridden by another prop right now. */
-  dim?: boolean
-  note?: string
 }) {
   return (
-    <div className="mx-row" data-dim={dim} title={note}>
+    <div className="mx-row">
       <span className="mx-prop">{label}</span>
       <button
         type="button"
@@ -206,6 +201,42 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
             className="mx-switch"
             data-on={Boolean(value)}
             onClick={() => onChange(!value)}
+          >
+            <span className="mx-switch-knob" />
+          </button>
+        </span>
+      </div>
+    )
+  }
+
+  if (control.kind === 'switchColor') {
+    const on = value !== false
+    const hex = typeof value === 'string' ? value : control.on
+    return (
+      <div className="mx-row" title={doc.description}>
+        <span className="mx-prop">{name}</span>
+        <span className="mx-row-controls">
+          {on ? <span className="mx-hex">{hex}</span> : null}
+          {on ? (
+            <input
+              type="color"
+              aria-label={`${name} color`}
+              className="mx-color"
+              value={hex}
+              onChange={(e) => onChange(e.target.value)}
+            />
+          ) : null}
+          {reset}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={on}
+            aria-label={name}
+            className="mx-switch"
+            data-on={on}
+            // Off is always `false`; on goes back to the plain boolean, so the
+            // snippet reads `mat` until a color is actually picked.
+            onClick={() => onChange(on ? false : true)}
           >
             <span className="mx-switch-knob" />
           </button>

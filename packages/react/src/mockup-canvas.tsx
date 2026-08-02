@@ -67,9 +67,12 @@ export interface MockupCanvasProps {
   children: React.ReactNode
   /** Drag-to-rotate controls, axis at the stage center. */
   controls?: boolean
-  /** Slowly orbit the camera around the device. */
-  autoRotate?: boolean
-  autoRotateSpeed?: number
+  /**
+   * Slowly orbit the camera around the device: `true` for one revolution a
+   * minute, or a number for that many times the base speed
+   * (`autoRotate={2}` is twice as fast, `autoRotate={0.5}` half).
+   */
+  autoRotate?: boolean | number
   /**
    * Allow the camera to rotate a full 360° vertically - straight over the top
    * and bottom of the device. Off by default: vertical rotation stays within
@@ -119,7 +122,6 @@ export function MockupCanvas({
   children,
   controls = true,
   autoRotate = false,
-  autoRotateSpeed = 1,
   freeRotation = false,
   zoom = false,
   fullscreen = false,
@@ -220,7 +222,6 @@ export function MockupCanvas({
           ref={controlsRef}
           zoom={zoom}
           autoRotate={autoRotate}
-          autoRotateSpeed={autoRotateSpeed}
           freeRotation={freeRotation}
           minDistance={orbitRange.min}
           maxDistance={orbitRange.max}

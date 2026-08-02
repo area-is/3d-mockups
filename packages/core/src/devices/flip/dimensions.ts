@@ -20,6 +20,7 @@
 
 import type { Orientation } from '../../orientation'
 import type { MockupFraming, MockupMetrics } from '../../regions'
+import { foldOpenAngle } from '../../regions'
 
 export interface FlipSpec {
   /** Unfolded tall phone. */
@@ -153,7 +154,7 @@ export const FLIP_METRICS = {
   mmPerUnit: FLIP_MM_PER_UNIT,
   regions: ({ variant, open, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const { display, resolution } = open === false ? spec.closed : spec.open
+    const { display, resolution } = foldOpenAngle(open) < 0.5 ? spec.closed : spec.open
     const landscape = orientation === 'landscape'
     return {
       screen: {
@@ -164,14 +165,13 @@ export const FLIP_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ variant?: FlipVariant; open?: boolean; orientation?: Orientation }>
+} as const satisfies MockupMetrics<{ variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }>
 
 export const FLIP_FRAMING = {
   contactGap: 0.05,
-  extent: ({ variant, open, openAngle, orientation }) => {
+  extent: ({ variant, open, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const angle =
-      openAngle === undefined ? ((open ?? true) ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
+    const angle = foldOpenAngle(open)
     const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
     const extent =
       orientation === 'landscape'
@@ -187,7 +187,6 @@ export const FLIP_FRAMING = {
   },
 } as const satisfies MockupFraming<{
   variant?: FlipVariant
-  open?: boolean
-  openAngle?: number
+  open?: boolean | number
   orientation?: Orientation
 }>

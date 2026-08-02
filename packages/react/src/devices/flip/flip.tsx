@@ -5,6 +5,7 @@ import type { ThreeElements } from '@react-three/fiber'
 import {
   FLIP_COLORWAYS,
   findColorway,
+  foldOpenAngle,
   railColor,
   FLIP_VARIANTS,
   FLIP_DEFAULT_VARIANT,
@@ -38,25 +39,25 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   /** Which Galaxy Z Flip device to render. */
   variant?: FlipVariant
   /**
+   * How far the clamshell is open, as a boolean for the two poses or a number
+   * of degrees for anything between.
+   *
    * `true` (default) renders the unfolded tall phone - your content fills the
    * 6.85" main display. `false` renders the folded compact - your content
    * fills the nearly-square cover display, with the two lens rings and
    * flash sitting on the glass beside it.
+   *
+   * A number (0 = shut, 180 = flat) renders the real Flex Mode pose: the halves
+   * pivot around the Armor FlexHinge while its glossy curved housing rolls into
+   * the gap between them, and your content bends across the fold - e.g.
+   * `open={100}` for the classic half-open standing pose. The pose is
+   * continuous from nearly shut to nearly flat; only ~0° snaps to the dedicated
+   * folded pose and ~177°+ to the flat-open one. At intermediate angles the
+   * display is composited from two planes that depth-blend against the chassis,
+   * so content there is display-only and stateful screen content is best kept
+   * simple.
    */
-  open?: boolean
-  /**
-   * Degree of openness between the two halves (0 = folded shut, 180 = flat
-   * open), overriding `open` when set. Intermediate angles render the real
-   * Flex Mode pose: the halves pivot around the hinge line while the spine's
-   * curved housing rolls into the gap between them, and your content bends
-   * across the fold - e.g. `openAngle={100}` for the classic half-open
-   * standing pose. The pose is continuous from nearly shut to nearly flat;
-   * only ~0° snaps to the dedicated folded pose and ~177°+ to the
-   * flat-open one. At intermediate angles the display is composited from two
-   * planes that depth-blend against the chassis, so content there is
-   * display-only and stateful screen content is best kept simple.
-   */
-  openAngle?: number
+  open?: boolean | number
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content - exactly like rotating the real device.
@@ -120,7 +121,6 @@ function FlipImpl({
   children,
   variant = FLIP_DEFAULT_VARIANT,
   open = true,
-  openAngle,
   orientation = 'portrait',
   color: colorProp,
   surfaceBackground = '#000000',
@@ -141,7 +141,7 @@ function FlipImpl({
   // default renders are pixel-identical to before. The flex rig pivots on
   // the display surface, so the pose is continuous all the way down -
   // only ~0° itself snaps to the dedicated folded pose.
-  const angle = openAngle === undefined ? (open ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
+  const angle = foldOpenAngle(open)
   const mode: 'open' | 'closed' | 'flex' = angle >= 177 ? 'open' : angle < 0.5 ? 'closed' : 'flex'
   const isOpenFace = mode !== 'closed'
   const state = isOpenFace ? spec.open : spec.closed

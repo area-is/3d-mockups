@@ -34,6 +34,8 @@ export interface Axis {
 export type Control =
   | { kind: 'color' }
   | { kind: 'switch' }
+  /** `boolean | string`: on/off, and when on, in what color. */
+  | { kind: 'switchColor'; on: string }
   | { kind: 'number'; min: number; max: number; step: number; unit?: string }
   | { kind: 'enum'; options: string[] }
   | { kind: 'vector'; axes: Axis[]; min: number; max: number; step: number }
@@ -152,11 +154,20 @@ export function editableProp(doc: PropDoc): EditableProp | null {
     return of({ kind: 'switch' }, stated === 'true')
   }
 
+  // `boolean | string` is one prop answering two questions - is this on, and
+  // what color is it - so it gets one row carrying both: a poster frame's
+  // `mat`, which is `true` for the default board or a color for the stock.
+  if (/^boolean \| string$/.test(type)) {
+    // The row needs the color the prop takes when it is merely `true`, which
+    // the description states - it is the first hex in the sentence.
+    return of({ kind: 'switchColor', on: hex(doc.description) ?? '#8a8f98' }, stated === 'true')
+  }
+
   if (type === 'number') {
     const fallback = stated === undefined ? undefined : firstNumber(stated)
     const bounds = range(doc.name, fallback)
-    // No documented default (a foldable's `openAngle`) starts mid-travel, so
-    // the slider has somewhere to go in both directions.
+    // A number with no documented default starts mid-travel, so the slider has
+    // somewhere to go in both directions.
     return of(
       { kind: 'number', ...bounds },
       fallback,
@@ -228,6 +239,9 @@ export function propAttribute(prop: EditableProp, value: unknown): string {
   switch (control.kind) {
     case 'switch':
       return value ? name : `${name}={false}`
+    case 'switchColor':
+      if (value === false) return `${name}={false}`
+      return value === true ? name : `${name}="${String(value)}"`
     case 'number':
       return `${name}={${num(Number(value))}}`
     case 'color':

@@ -37,7 +37,8 @@ interface PropState {
   variant: string
   color: string
   orientation: 'portrait' | 'landscape'
-  open: boolean
+  /** Hinge angle in degrees - 180 flat, 0 shut, anything between is Flex Mode. */
+  open: number
   coverage: 'panel' | 'full' | 'perforated'
   float: boolean
   surfaceBackground: string
@@ -66,7 +67,7 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
   orientation: 'portrait',
-  open: true,
+  open: 180,
   coverage: 'panel',
   float: false,
   surfaceBackground: '',
@@ -201,14 +202,15 @@ function buildSource(
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
   if (documents.has('color') && p.color) add(`color="${p.color}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
-  if (spec.openable && !p.open) add('open={false}')
+  if (spec.openable && p.open !== 180) add(p.open === 0 ? 'open={false}' : `open={${p.open}}`)
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
   if (p.float) add('float')
   if (p.surfaceBackground) add(`surfaceBackground="${p.surfaceBackground}"`)
   if (p.resolution) add(`resolution={${p.resolution}}`)
   if (!p.controls) add('controls={false}')
-  if (p.autoRotate) add('autoRotate')
-  if (p.autoRotate && p.autoRotateSpeed !== 1) add(`autoRotateSpeed={${p.autoRotateSpeed}}`)
+  // The switch and the speed slider drive one prop: bare when it spins at the
+  // library's own rate, a multiplier when it doesn't.
+  if (p.autoRotate) add(p.autoRotateSpeed === 1 ? 'autoRotate' : `autoRotate={${p.autoRotateSpeed}}`)
   if (p.zoom) add('zoom')
   if (p.fullscreen) add('fullscreen')
   if (!p.shadows) add('shadows={false}')
@@ -335,7 +337,6 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     'resolution',
     'controls',
     'autoRotate',
-    'autoRotateSpeed',
     'zoom',
     'fullscreen',
     'shadows',
@@ -416,14 +417,23 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     // TumbleControls - and with it the turntable - only exists while controls
     // are on, so the spin borrows them for its duration.
     controls: p.controls || spinning,
-    autoRotate: p.autoRotate || spinning,
-    autoRotateSpeed: spinning ? SPIN_SPEED : p.autoRotateSpeed,
+    autoRotate: spinning ? SPIN_SPEED : p.autoRotate && p.autoRotateSpeed,
     zoom: p.zoom,
     fullscreen: p.fullscreen,
     shadows: p.shadows,
   }
 
   const flatPx = view === '3d' ? undefined : pxOf(view)
+  /** The surface at true size, the factor that fits it, and the box that lands. */
+  const flatSize = (() => {
+    const px = { width: flatPx?.width ?? 320, height: flatPx?.height ?? 200 }
+    const scale = Math.min(
+      (stageHeight - 120) / px.height,
+      (inspectorOpen ? 320 : 640) / px.width,
+      1
+    )
+    return { px, scale, width: px.width * scale, height: px.height * scale }
+  })()
   /*
    * One tab per surface next to demo.tsx, and the same `view` drives both -
    * so picking a panel's source shows that panel on the stage, and picking a
@@ -478,19 +488,23 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
             </Component>
           ) : (
             <div className="mx-flat">
-              <div className="mx-flat-frame">
+              {/* The frame is sized from the SCALED surface, not the surface.
+                  `transform` only changes what a box looks like, never how much
+                  room it takes, so a frame wrapped around the untransformed
+                  element would be drawn at the full 360x780 - metres wide of the
+                  shrunken screen, and tall enough for the stage to clip its top
+                  and bottom off. Reserving the scaled box here is what makes the
+                  dashes actually hug the surface they are measuring. */}
+              <div className="mx-flat-frame" style={{ width: flatSize.width, height: flatSize.height }}>
                 <div
                   className="mx-flat-inner"
                   style={{
-                    width: flatPx?.width ?? 320,
-                    height: flatPx?.height ?? 200,
+                    width: flatSize.px.width,
+                    height: flatSize.px.height,
                     background: p.surfaceBackground || undefined,
-                    // Scale the true CSS-pixel surface down to fit the stage.
-                    transform: `scale(${Math.min(
-                      (stageHeight - 120) / (flatPx?.height ?? 200),
-                      (inspectorOpen ? 320 : 640) / (flatPx?.width ?? 320),
-                      1
-                    )})`,
+                    // Content still lays out at true CSS pixel size - that is the
+                    // whole point of the view - and only the picture is scaled.
+                    transform: `scale(${flatSize.scale})`,
                   }}
                 >
                   {content(REGION_LABEL(view))}
@@ -576,16 +590,22 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
               />
             ) : null}
             {spec.openable ? (
-              <Switch
-                label="open"
-                checked={p.open}
-                onChange={(v) => set('open', v)}
-                // A foldable's `openAngle` is the finer control of the same
-                // hinge, and the library lets it win - so say so rather than
-                // leaving a switch that looks broken.
-                dim={'openAngle' in p.extra}
-                note={'openAngle' in p.extra ? 'Overridden by openAngle' : undefined}
-              />
+              <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
+                <span className="mx-prop">open</span>
+                <span className="mx-row-controls">
+                  <input
+                    type="range"
+                    className="mx-range"
+                    aria-label="open"
+                    min={0}
+                    max={180}
+                    step={1}
+                    value={p.open}
+                    onChange={(e) => set('open', Number(e.target.value))}
+                  />
+                  <span className="mx-hex">{p.open === 180 ? 'flat' : p.open === 0 ? 'shut' : `${p.open}°`}</span>
+                </span>
+              </div>
             ) : null}
             <Switch label="float" checked={p.float} onChange={(v) => set('float', v)} />
             {panel.object.map((prop) => (

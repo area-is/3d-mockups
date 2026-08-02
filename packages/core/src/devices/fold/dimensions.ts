@@ -22,6 +22,7 @@
 
 import type { Orientation } from '../../orientation'
 import type { MockupFraming, MockupMetrics } from '../../regions'
+import { foldOpenAngle } from '../../regions'
 
 /** The rear camera cluster in one pose's own back-face coordinates. */
 interface FoldRearCamera {
@@ -193,7 +194,7 @@ export const FOLD_METRICS = {
   mmPerUnit: FOLD_MM_PER_UNIT,
   regions: ({ variant, open, orientation }) => {
     const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
-    const { display, resolution } = open === false ? spec.closed : spec.open
+    const { display, resolution } = foldOpenAngle(open) < 0.5 ? spec.closed : spec.open
     const landscape = orientation === 'landscape'
     return {
       screen: {
@@ -204,14 +205,13 @@ export const FOLD_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ variant?: FoldVariant; open?: boolean; orientation?: Orientation }>
+} as const satisfies MockupMetrics<{ variant?: FoldVariant; open?: boolean | number; orientation?: Orientation }>
 
 export const FOLD_FRAMING = {
   contactGap: 0.05,
-  extent: ({ variant, open, openAngle, orientation }) => {
+  extent: ({ variant, open, orientation }) => {
     const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
-    const angle =
-      openAngle === undefined ? ((open ?? true) ? 180 : 0) : Math.max(0, Math.min(180, openAngle))
+    const angle = foldOpenAngle(open)
     const state = angle > 3 ? spec.open : spec.closed
     const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
     const extent =
@@ -224,7 +224,6 @@ export const FOLD_FRAMING = {
   },
 } as const satisfies MockupFraming<{
   variant?: FoldVariant
-  open?: boolean
-  openAngle?: number
+  open?: boolean | number
   orientation?: Orientation
 }>

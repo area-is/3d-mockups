@@ -670,18 +670,26 @@
   justify-content: center;
 }
 
+/*
+ * The frame carries the scaled surface size as its CONTENT box, so the 9px
+ * breathing room and the dashes sit outside it rather than eating into it.
+ */
 .mx-flat-frame {
+  box-sizing: content-box;
   border: 1px dashed color-mix(in oklab, var(--mx-accent) 45%, transparent);
   border-radius: 12px;
   padding: 9px;
-  display: flex;
 }
 
+/*
+ * Scaled from the top left, because that is the corner the frame's content box
+ * starts at - scaling about the center would leave the picture half a surface
+ * off from the box reserved for it.
+ */
 .mx-flat-inner {
   border-radius: 6px;
   overflow: hidden;
-  transform-origin: center;
-  flex: none;
+  transform-origin: top left;
 }
 
 .mx-readout {

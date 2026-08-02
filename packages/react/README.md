@@ -104,7 +104,7 @@ names come from each object's spec in the core, so every future binding shares t
 ### `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>` - all-in-one
 
 Every device appearance prop, plus `float` (idle floating animation) and the staging
-props from `<MockupCanvas>`: `controls`, `autoRotate`, `autoRotateSpeed`, `zoom`,
+props from `<MockupCanvas>`: `controls`, `autoRotate`, `zoom`,
 `fullscreen`, `shadows`, `background`, `camera`, `className`, `style`. The three canvas
 props marked *canvas only* below tune the renderer rather than the picture and stay on
 `<MockupCanvas>`. Transforms are first-class: `position`, `rotation` and `scale` flow
@@ -116,8 +116,7 @@ straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 | --- | --- | --- | --- |
 | `controls` | `boolean` | `true` | Drag-to-orbit controls |
 | `freeRotation` | `boolean` | `false` | Allow full 360° vertical rotation (straight over the top); off = classic clamped orbit. Canvas only |
-| `autoRotate` | `boolean` | `false` | Slowly orbit the camera |
-| `autoRotateSpeed` | `number` | `1` | Orbit speed |
+| `autoRotate` | `boolean \| number` | `false` | Slowly orbit the camera. `true` is one revolution a minute; a number multiplies that (`autoRotate={2}` twice as fast) |
 | `zoom` | `boolean` | `false` | Scroll/pinch zoom (off so pages don't lose scroll) |
 | `shadows` | `boolean` | `true` | Soft contact shadow |
 | `shadowY` | `number` | `-2.05` | Y of the shadow plane (grounds the device). Canvas only - a mockup derives it from the object's framing |

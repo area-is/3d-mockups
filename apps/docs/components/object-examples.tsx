@@ -305,7 +305,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FoldMockup>
   ),
   'fold-flex': (
-    <FoldMockup openAngle={110} color="blueshadow" rotation={[0, -0.35, 0]}>
+    <FoldMockup open={110} color="blueshadow" rotation={[0, -0.35, 0]}>
       <DesktopScreen />
     </FoldMockup>
   ),
@@ -322,7 +322,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FlipMockup>
   ),
   'flip-flex': (
-    <FlipMockup openAngle={100} color="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
+    <FlipMockup open={100} color="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
       <MusicPlayer />
     </FlipMockup>
   ),
@@ -425,7 +425,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </StudioDisplayMockup>
   ),
   'studio-display-silver': (
-    <StudioDisplayMockup color="#e2e4e8" autoRotate autoRotateSpeed={0.8}>
+    <StudioDisplayMockup color="#e2e4e8" autoRotate={0.8}>
       <DesktopScreen />
     </StudioDisplayMockup>
   ),
@@ -442,7 +442,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BookMockup>
   ),
   'book-full': (
-    <BookMockup autoRotate autoRotateSpeed={1.1} color="#16324a">
+    <BookMockup autoRotate={1.1} color="#16324a">
       <BookCoverArt />
       <BookMockup.Back><BookBackArt /></BookMockup.Back>
       <BookMockup.Spine><BookSpineArt /></BookMockup.Spine>
@@ -469,7 +469,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </MagazineMockup>
   ),
   'magazine-back': (
-    <MagazineMockup autoRotate autoRotateSpeed={1.2} rotation={[0, 2.6, 0]}>
+    <MagazineMockup autoRotate={1.2} rotation={[0, 2.6, 0]}>
       <MagazineCoverArt />
       <MagazineMockup.Back><MagazineBackArt /></MagazineMockup.Back>
     </MagazineMockup>
@@ -508,7 +508,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BrochureMockup>
   ),
   'brochure-both-sides': (
-    <BrochureMockup autoRotate autoRotateSpeed={0.8}>
+    <BrochureMockup autoRotate={0.8}>
       <BrochureMockup.FrontLeft><BrochureFrontArt /></BrochureMockup.FrontLeft>
       <BrochureMockup.FrontCenter><BrochureTrailsArt /></BrochureMockup.FrontCenter>
       <BrochureMockup.FrontRight><BrochureVisitArt /></BrochureMockup.FrontRight>
@@ -525,7 +525,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusinessCardMockup>
   ),
   'card-back': (
-    <BusinessCardMockup autoRotate autoRotateSpeed={2}>
+    <BusinessCardMockup autoRotate={2}>
       <CardFrontArt />
       <BusinessCardMockup.Back><CardBackArt /></BusinessCardMockup.Back>
     </BusinessCardMockup>
@@ -633,7 +633,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </IDCardMockup>
   ),
   'idcard-back': (
-    <IDCardMockup autoRotate autoRotateSpeed={2} lanyardColor="#1d4ed8">
+    <IDCardMockup autoRotate={2} lanyardColor="#1d4ed8">
       <BadgeFrontArt />
       <IDCardMockup.Back><BadgeBackArt /></IDCardMockup.Back>
     </IDCardMockup>
@@ -671,7 +671,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusMockup>
   ),
   'bus-livery': (
-    <BusMockup color="#1d4433" surfaceBackground="#f4c534" autoRotate autoRotateSpeed={0.6}>
+    <BusMockup color="#1d4433" surfaceBackground="#f4c534" autoRotate={0.6}>
       <BusAdArt />
       <BusMockup.DestinationSign>42 GREENWAY · NEXT STOP CANAL ST · EXACT FARE PLEASE</BusMockup.DestinationSign>
     </BusMockup>
@@ -686,7 +686,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </ProductBoxMockup>
   ),
   'box-full': (
-    <ProductBoxMockup autoRotate autoRotateSpeed={1.1}>
+    <ProductBoxMockup autoRotate={1.1}>
       <BoxFrontArt />
       <ProductBoxMockup.Right><BoxSideArt /></ProductBoxMockup.Right>
       <ProductBoxMockup.Left><BoxSideArt /></ProductBoxMockup.Left>
@@ -696,7 +696,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </ProductBoxMockup>
   ),
   'box-kraft': (
-    <ProductBoxMockup color="#c9a877" float autoRotate autoRotateSpeed={1.2}>
+    <ProductBoxMockup color="#c9a877" float autoRotate={1.2}>
       <BoxFrontArt />
     </ProductBoxMockup>
   ),
@@ -745,7 +745,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </GreetingCardMockup>
   ),
   'greeting-inside': (
-    <GreetingCardMockup autoRotate autoRotateSpeed={1.4}>
+    <GreetingCardMockup autoRotate={1.4}>
       <GreetingCoverArt />
       <GreetingCardMockup.InsideLeft><GreetingInsideArt /></GreetingCardMockup.InsideLeft>
       <GreetingCardMockup.InsideRight><GreetingInsideArt /></GreetingCardMockup.InsideRight>
@@ -761,7 +761,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </VinylRecordMockup>
   ),
   'vinyl-full': (
-    <VinylRecordMockup autoRotate autoRotateSpeed={1.1}>
+    <VinylRecordMockup autoRotate={1.1}>
       <VinylCoverArt />
       <VinylRecordMockup.Back><VinylBackArt /></VinylRecordMockup.Back>
       <VinylRecordMockup.Label><VinylLabelArt /></VinylRecordMockup.Label>
@@ -799,7 +799,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </AFrameSignMockup>
   ),
   'aframe-back': (
-    <AFrameSignMockup autoRotate autoRotateSpeed={1.2} color="#31404f" surfaceBackground="#1c2733">
+    <AFrameSignMockup autoRotate={1.2} color="#31404f" surfaceBackground="#1c2733">
       <ChalkMenuArt />
       <AFrameSignMockup.Back><ChalkMenuArt /></AFrameSignMockup.Back>
     </AFrameSignMockup>
@@ -829,7 +829,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </StorefrontMockup>
   ),
   'storefront-around': (
-    <StorefrontMockup autoRotate autoRotateSpeed={1.2}>
+    <StorefrontMockup autoRotate={1.2}>
       <StoreSignArt />
       <StorefrontMockup.FrontLeft><StorePosterArt /></StorefrontMockup.FrontLeft>
       <StorefrontMockup.FrontRight><StorePosterArt /></StorefrontMockup.FrontRight>
@@ -850,7 +850,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </SemiTrailerMockup>
   ),
   'trailer-rear': (
-    <SemiTrailerMockup autoRotate autoRotateSpeed={1.2}>
+    <SemiTrailerMockup autoRotate={1.2}>
       <TrailerWrapArt />
       <SemiTrailerMockup.StreetSide><TrailerWrapArt /></SemiTrailerMockup.StreetSide>
       <SemiTrailerMockup.Rear><TrailerRearArt /></SemiTrailerMockup.Rear>
@@ -865,7 +865,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </MailerBoxMockup>
   ),
   'mailer-full': (
-    <MailerBoxMockup autoRotate autoRotateSpeed={1.1} rotation={[0, 0.5, 0]}>
+    <MailerBoxMockup autoRotate={1.1} rotation={[0, 0.5, 0]}>
       <BoxLidArt />
       <MailerBoxMockup.Front><BoxPanelArt /></MailerBoxMockup.Front>
       <MailerBoxMockup.Back><BoxPanelArt /></MailerBoxMockup.Back>
@@ -891,7 +891,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </ShoppingBagMockup>
   ),
   'bag-dark': (
-    <ShoppingBagMockup autoRotate autoRotateSpeed={1.4} color="#1e2126" handleColor="#d8d4cc">
+    <ShoppingBagMockup autoRotate={1.4} color="#1e2126" handleColor="#d8d4cc">
       <BagArt />
       <ShoppingBagMockup.Back><BagArt /></ShoppingBagMockup.Back>
     </ShoppingBagMockup>
@@ -1009,21 +1009,21 @@ const DEMOS: Record<string, React.ReactNode> = {
     </TVSetMockup>
   ),
   'chroma-book': (
-    <BookMockup autoRotate autoRotateSpeed={0.8}>
+    <BookMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <BookMockup.Back><ChromaSurface label=".Back" /></BookMockup.Back>
       <BookMockup.Spine><ChromaSurface label=".Spine" /></BookMockup.Spine>
     </BookMockup>
   ),
   'chroma-magazine': (
-    <MagazineMockup autoRotate autoRotateSpeed={0.8}>
+    <MagazineMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <MagazineMockup.Back><ChromaSurface label=".Back" /></MagazineMockup.Back>
       <MagazineMockup.Spine><ChromaSurface label=".Spine" /></MagazineMockup.Spine>
     </MagazineMockup>
   ),
   'chroma-brochure': (
-    <BrochureMockup autoRotate autoRotateSpeed={0.8}>
+    <BrochureMockup autoRotate={0.8}>
       <BrochureMockup.FrontLeft><ChromaSurface label=".FrontLeft" /></BrochureMockup.FrontLeft>
       <BrochureMockup.FrontCenter><ChromaSurface label=".FrontCenter" /></BrochureMockup.FrontCenter>
       <BrochureMockup.FrontRight><ChromaSurface label=".FrontRight" /></BrochureMockup.FrontRight>
@@ -1033,7 +1033,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BrochureMockup>
   ),
   'chroma-card': (
-    <BusinessCardMockup autoRotate autoRotateSpeed={0.8}>
+    <BusinessCardMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <BusinessCardMockup.Back><ChromaSurface label=".Back" /></BusinessCardMockup.Back>
     </BusinessCardMockup>
@@ -1049,7 +1049,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BillboardMockup>
   ),
   'chroma-van': (
-    <VanMockup coverage="full" autoRotate autoRotateSpeed={0.6}>
+    <VanMockup coverage="full" autoRotate={0.6}>
       <ChromaSurface label="children (curbSide)" />
       <VanMockup.StreetSide><ChromaSurface label=".StreetSide" /></VanMockup.StreetSide>
       <VanMockup.Rear><ChromaSurface label=".Rear" /></VanMockup.Rear>
@@ -1057,13 +1057,13 @@ const DEMOS: Record<string, React.ReactNode> = {
     </VanMockup>
   ),
   'chroma-id-card': (
-    <IDCardMockup autoRotate autoRotateSpeed={0.8}>
+    <IDCardMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <IDCardMockup.Back><ChromaSurface label=".Back" /></IDCardMockup.Back>
     </IDCardMockup>
   ),
   'chroma-bus': (
-    <BusMockup coverage="perforated" autoRotate autoRotateSpeed={0.6}>
+    <BusMockup coverage="perforated" autoRotate={0.6}>
       <ChromaSurface label="children (curbSide)" />
       <BusMockup.StreetSide><ChromaSurface label=".StreetSide" /></BusMockup.StreetSide>
       <BusMockup.Rear><ChromaSurface label=".Rear" /></BusMockup.Rear>
@@ -1071,7 +1071,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusMockup>
   ),
   'chroma-box': (
-    <ProductBoxMockup autoRotate autoRotateSpeed={0.8}>
+    <ProductBoxMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <ProductBoxMockup.Right><ChromaSurface label=".Right" /></ProductBoxMockup.Right>
       <ProductBoxMockup.Left><ChromaSurface label=".Left" /></ProductBoxMockup.Left>
@@ -1094,7 +1094,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </BusShelterMockup>
   ),
   'chroma-greeting': (
-    <GreetingCardMockup autoRotate autoRotateSpeed={0.8}>
+    <GreetingCardMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <GreetingCardMockup.Back><ChromaSurface label=".Back" /></GreetingCardMockup.Back>
       <GreetingCardMockup.InsideLeft><ChromaSurface label=".InsideLeft" /></GreetingCardMockup.InsideLeft>
@@ -1102,7 +1102,7 @@ const DEMOS: Record<string, React.ReactNode> = {
     </GreetingCardMockup>
   ),
   'chroma-vinyl': (
-    <VinylRecordMockup autoRotate autoRotateSpeed={0.8}>
+    <VinylRecordMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <VinylRecordMockup.Back><ChromaSurface label=".Back" /></VinylRecordMockup.Back>
       <VinylRecordMockup.Label><ChromaSurface label=".Label" /></VinylRecordMockup.Label>
@@ -1110,19 +1110,19 @@ const DEMOS: Record<string, React.ReactNode> = {
     </VinylRecordMockup>
   ),
   'chroma-a-frame': (
-    <AFrameSignMockup autoRotate autoRotateSpeed={0.8}>
+    <AFrameSignMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <AFrameSignMockup.Back><ChromaSurface label=".Back" /></AFrameSignMockup.Back>
     </AFrameSignMockup>
   ),
   'chroma-dooh': (
-    <DOOHTotemMockup autoRotate autoRotateSpeed={0.7}>
+    <DOOHTotemMockup autoRotate={0.7}>
       <ChromaSurface label="children" />
       <DOOHTotemMockup.Back><ChromaSurface label=".Back" /></DOOHTotemMockup.Back>
     </DOOHTotemMockup>
   ),
   'chroma-storefront': (
-    <StorefrontMockup autoRotate autoRotateSpeed={0.7}>
+    <StorefrontMockup autoRotate={0.7}>
       <ChromaSurface label="children (fascia)" />
       <StorefrontMockup.FrontLeft><ChromaSurface label=".FrontLeft" /></StorefrontMockup.FrontLeft>
       <StorefrontMockup.FrontRight><ChromaSurface label=".FrontRight" /></StorefrontMockup.FrontRight>
@@ -1136,14 +1136,14 @@ const DEMOS: Record<string, React.ReactNode> = {
     </StorefrontMockup>
   ),
   'chroma-semi': (
-    <SemiTrailerMockup autoRotate autoRotateSpeed={0.6}>
+    <SemiTrailerMockup autoRotate={0.6}>
       <ChromaSurface label="children (curbSide)" />
       <SemiTrailerMockup.StreetSide><ChromaSurface label=".StreetSide" /></SemiTrailerMockup.StreetSide>
       <SemiTrailerMockup.Rear><ChromaSurface label=".Rear" /></SemiTrailerMockup.Rear>
     </SemiTrailerMockup>
   ),
   'chroma-mailer': (
-    <MailerBoxMockup autoRotate autoRotateSpeed={0.8}>
+    <MailerBoxMockup autoRotate={0.8}>
       <ChromaSurface label="children (top)" />
       <MailerBoxMockup.Front><ChromaSurface label=".Front" /></MailerBoxMockup.Front>
       <MailerBoxMockup.Back><ChromaSurface label=".Back" /></MailerBoxMockup.Back>
@@ -1153,19 +1153,19 @@ const DEMOS: Record<string, React.ReactNode> = {
     </MailerBoxMockup>
   ),
   'chroma-bag': (
-    <ShoppingBagMockup autoRotate autoRotateSpeed={0.8}>
+    <ShoppingBagMockup autoRotate={0.8}>
       <ChromaSurface label="children" />
       <ShoppingBagMockup.Back><ChromaSurface label=".Back" /></ShoppingBagMockup.Back>
     </ShoppingBagMockup>
   ),
   'chroma-custom-panel': (
-    <CustomPanelMockup size={{ width: 600, height: 400 }} autoRotate autoRotateSpeed={0.8}>
+    <CustomPanelMockup size={{ width: 600, height: 400 }} autoRotate={0.8}>
       <ChromaSurface label="children" />
       <CustomPanelMockup.Back><ChromaSurface label=".Back" /></CustomPanelMockup.Back>
     </CustomPanelMockup>
   ),
   'chroma-custom-box': (
-    <CustomBoxMockup size={{ width: 300, height: 220, depth: 160 }} autoRotate autoRotateSpeed={0.8}>
+    <CustomBoxMockup size={{ width: 300, height: 220, depth: 160 }} autoRotate={0.8}>
       <ChromaSurface label="children" />
       <CustomBoxMockup.Back><ChromaSurface label=".Back" /></CustomBoxMockup.Back>
       <CustomBoxMockup.Left><ChromaSurface label=".Left" /></CustomBoxMockup.Left>

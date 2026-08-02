@@ -19,8 +19,7 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `open` | `boolean` | `true` | Unfolded tablet (content on the big inner display, with a center crease) versus the folded candy-bar (content on the tall cover display, rear triple camera showing). |
-| `openAngle` | `number` | – | Degree of openness (0 = shut, 180 = flat), overriding `open`. Intermediate angles render the real Flex Mode book pose: the panels pivot around the Armor FlexHinge while its rounded spine (with the SAMSUNG engraving) stays tangent to both back shells, wrapping the fold at every angle, and your content bends across the crease on two composited planes. The pose is continuous from nearly shut to nearly flat - only ~0° snaps to the dedicated folded pose, ~177°+ to the flat-open one. |
+| `open` | `boolean \| number` | `true` | How far the book is open. `true` is the unfolded tablet (content on the big inner display, with a center crease), `false` the folded candy-bar (content on the tall cover display, rear triple camera showing). A number is degrees (0 = shut, 180 = flat) and renders the real Flex Mode book pose: the panels pivot around the Armor FlexHinge while its rounded spine (with the SAMSUNG engraving) stays tangent to both back shells, wrapping the fold at every angle, and your content bends across the crease on two composited planes. The pose is continuous from nearly shut to nearly flat - only ~0° snaps to the dedicated folded pose, ~177°+ to the flat-open one. |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display with upright content. |
 | `color` | `string` | `'#3a3d42'` | Back panel. Takes a retail colorway id from `FOLD_COLORWAYS`, which brings that model's measured frame and hinge with it, or any CSS color - the metal is then derived from it. |
 | `resolution` | `number` | per state | CSS pixel width of the active display; height follows the panel aspect. Defaults to the inner display when open (820×910) and the cover display when closed (360×835). |
@@ -41,14 +40,14 @@ single prop:
 
 ## Any angle in between
 
-`openAngle` poses the book at any degree of openness - the half-open standing
+`open` takes a number of degrees to pose the book at any openness - the half-open standing
 pose with the rounded spine wrapping the fold and your content bending across
 the crease:
 
 <ObjectDemo demo="fold-flex" />
 
 ```tsx
-<FoldMockup openAngle={110} color="blueshadow">
+<FoldMockup open={110} color="blueshadow">
   <YourApp />
 </FoldMockup>
 ```

@@ -104,8 +104,8 @@ export interface MockupPropsMap {
   appleWatch: { variant?: AppleWatchVariant }
   galaxyWatch: { variant?: GalaxyWatchVariant }
   studioDisplay: Record<string, never>
-  fold: { variant?: FoldVariant; open?: boolean; orientation?: Orientation }
-  flip: { variant?: FlipVariant; open?: boolean; orientation?: Orientation }
+  fold: { variant?: FoldVariant; open?: boolean | number; orientation?: Orientation }
+  flip: { variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }
   book: { size?: BookSize }
   magazine: { size?: MagazineSize }
   brochure: { size?: BrochureSize; panels?: number }
