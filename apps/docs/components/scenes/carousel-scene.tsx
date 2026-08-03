@@ -77,6 +77,8 @@ import { WatchFace, GalaxyWatchFace } from '../screens/watch-face'
 
 /** Shared camera distance; every object is scaled relative to it. */
 const CAMERA_Z = 9
+/** Rig scale to fall back on before the stylesheet has been measured. */
+const DEFAULT_FIT = 1
 /** How much of the frame the staged device fills, leaving room for the row. */
 const STAGE_FILL = 0.74
 /** World-space gap between the staged device and each flanking one. */
@@ -87,6 +89,17 @@ const SIDE_SCALE = 0.5
 const ROW_Y = -2.2
 const ROW_SCALE = 0.17
 const ROW_SPACING = 1.25
+/**
+ * How much of the rig's vertical shrink to give back as a drop.
+ *
+ * Scaling the rig scales its layout too, so the strip - which is placed below
+ * the stage in world units - creeps up toward the middle and leaves the bottom
+ * of the frame empty. Sliding the whole rig back down by a fraction of what it
+ * lost keeps the strip near the foot of the stage while leaving the staged
+ * device close enough to centred. Fully compensating would nail the strip in
+ * place but hang the device high in an empty frame; 0.6 is the balance.
+ */
+const RIG_DROP = 0.6
 /** Painted screen for the picker row, matching the sidebar thumbnails. */
 const ROW_SURFACE =
   'radial-gradient(120% 90% at 30% 18%, rgba(80,224,66,0.55) 0%, rgba(49,211,34,0.22) 45%, transparent 78%), #0d1016'
@@ -472,6 +485,38 @@ function screenFor(id: string): ReactNode {
 }
 
 /**
+ * The rig scale the stylesheet is asking for, tracked across resizes.
+ *
+ * `--carousel-fit` is declared on `.carousel` with breakpoints (see
+ * globals.css) rather than being computed here, so the carousel's proportions
+ * stay next to the rest of the page's responsive design. Reading a custom
+ * property is the only way to get it: media queries do not exist in the scene
+ * graph, and the canvas element's own size does not tell us which breakpoint
+ * the page thinks it is at.
+ */
+function useCarouselFit(ref: RefObject<HTMLElement | null>): number {
+  const [fit, setFit] = useState(DEFAULT_FIT)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const read = () => {
+      const raw = getComputedStyle(el).getPropertyValue('--carousel-fit')
+      const value = Number.parseFloat(raw)
+      if (Number.isFinite(value) && value > 0) setFit(value)
+    }
+    read()
+    // Breakpoints are width-driven, and the element is full-bleed, so its own
+    // box changing is exactly when the value can have changed.
+    const observer = new ResizeObserver(read)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref])
+
+  return fit
+}
+
+/**
  * Eases the ring position toward its target once per frame.
  *
  * Every slot in both rows reads this one number, so the stage and the strip
@@ -659,9 +704,13 @@ export default function CarouselScene() {
     goTo(i)
   }
 
+  const sectionRef = useRef<HTMLElement>(null)
+  const fit = useCarouselFit(sectionRef)
+
   const drag = useRef<{
-    /** Where the gesture started; `x` tracks the latest move for velocity. */
+    /** Where the gesture started; `x`/`y` track the latest move. */
     x0: number
+    y0: number
     x: number
     y: number
     zone: Zone
@@ -676,7 +725,6 @@ export default function CarouselScene() {
     at: number
   } | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  const sectionRef = useRef<HTMLElement>(null)
   const moved = useRef(false)
 
   /**
@@ -705,7 +753,10 @@ export default function CarouselScene() {
   const slotsPerPixel = () => {
     const height = stageRef.current?.clientHeight || 1
     const worldPerPx = (2 * CAMERA_Z * Math.tan((DEFAULT_CAMERA_FOV * Math.PI) / 360)) / height
-    return worldPerPx / SPACING
+    // A slot is `SPACING` world units at the rig's scale, so a scaled-down rig
+    // means a shorter drag per slot - which is what keeps the device under the
+    // finger on a phone, where the rig is smallest.
+    return worldPerPx / (SPACING * fit)
   }
 
   /**
@@ -726,6 +777,7 @@ export default function CarouselScene() {
     moved.current = false
     drag.current = {
       x0: e.clientX,
+      y0: e.clientY,
       x: e.clientX,
       y: e.clientY,
       zone,
@@ -737,6 +789,9 @@ export default function CarouselScene() {
       at: performance.now(),
     }
     if (sectionRef.current) sectionRef.current.dataset.dragging = 'true'
+    // Touch has no hover, so this is the first chance to say which gesture the
+    // finger is on: without it the edge under a tap never lights up.
+    setZone(e.clientX, e.clientY)
     stop()
   }
 
@@ -746,7 +801,7 @@ export default function CarouselScene() {
       setZone(e.clientX, e.clientY)
       return
     }
-    if (Math.abs(e.clientX - d.x0) > 4 || Math.abs(e.clientY - d.y) > 4) {
+    if (Math.abs(e.clientX - d.x0) > 4 || Math.abs(e.clientY - d.y0) > 4) {
       d.moved = true
       moved.current = true
     }
@@ -759,6 +814,17 @@ export default function CarouselScene() {
       d.y = e.clientY
       return
     }
+
+    /*
+     * Not a browse drag until the gesture has actually travelled. A touch tap
+     * is not one pointerdown and one pointerup: the browser fits a stationary
+     * pointermove between them, and taking that as a drag pinned `anim` to
+     * `target` mid-slide - freezing whatever was in flight, then re-reading the
+     * active slot from wherever it froze. A tap on the left half would step
+     * back from THAT slot rather than the one on stage, so on a phone the
+     * carousel looked like it ignored every tap.
+     */
+    if (!d.moved) return
 
     // Browse drag: the ring follows the cursor one-for-one. `anim` is set with
     // `target` so the easing has nothing to catch up on mid-gesture - it takes
@@ -852,31 +918,36 @@ export default function CarouselScene() {
         >
           <Ticker anim={anim} target={target} tumble={tumble} />
 
-          {DEVICES.map((dev, i) =>
-            inWindow(i, 2) ? (
-              <StageSlot
-                key={dev.id}
-                entry={dev}
-                index={i}
-                anim={anim}
-                tumble={tumble}
-                color={colorOf(dev)}
-              />
-            ) : null
-          )}
+          {/* One group for the whole rig: the staged devices, the gap between
+              them and the strip below all shrink together, so a narrow canvas
+              gets the same composition rather than a cropped one. */}
+          <group scale={fit} position-y={ROW_Y * RIG_DROP * (1 - fit)}>
+            {DEVICES.map((dev, i) =>
+              inWindow(i, 2) ? (
+                <StageSlot
+                  key={dev.id}
+                  entry={dev}
+                  index={i}
+                  anim={anim}
+                  tumble={tumble}
+                  color={colorOf(dev)}
+                />
+              ) : null
+            )}
 
-          {DEVICES.map((dev, i) =>
-            inWindow(i, 3) ? (
-              <RowSlot
-                key={`row-${dev.id}`}
-                entry={dev}
-                index={i}
-                anim={anim}
-                color={colorOf(dev)}
-                onSelect={select(i)}
-              />
-            ) : null
-          )}
+            {DEVICES.map((dev, i) =>
+              inWindow(i, 3) ? (
+                <RowSlot
+                  key={`row-${dev.id}`}
+                  entry={dev}
+                  index={i}
+                  anim={anim}
+                  color={colorOf(dev)}
+                  onSelect={select(i)}
+                />
+              ) : null
+            )}
+          </group>
         </MockupCanvas>
       </div>
 

@@ -105,6 +105,30 @@ function codeOnlyProps(spec: ExplorerSpec, driven: Set<string>): PropDoc[] {
 const SPIN_MS = 900
 const SPIN_SPEED = 60 / (SPIN_MS / 1000)
 
+/**
+ * Below this the explorer stacks (see the matching breakpoint in docs.css) and
+ * the inspector no longer sits beside the stage but under it - so it starts
+ * collapsed, or the reader lands on a wall of controls with the mockup they
+ * came for pushed off the screen.
+ */
+const STACK_BREAKPOINT = 860
+
+/** The stage's own box, for anything that has to be sized against it. */
+function useStageSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const box = entry?.contentRect
+      if (box) setSize({ width: box.width, height: box.height })
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref])
+  return size
+}
+
 const REGION_LABEL = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
 /** `coverInner` -> `cover-inner.tsx`, the name the tab carries. */
 const REGION_FILE = (name: string) => `${name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}.tsx`
@@ -329,7 +353,11 @@ function Code({ text }: { text: string }) {
 export function MockupExplorer({ component, variant, stageHeight = 460 }: MockupExplorerProps) {
   const spec = EXPLORERS[component]
   const [p, setP] = useState<PropState>(() => initialState(spec, variant))
+  // Open on a wide screen, collapsed once the layout stacks. Resolved after
+  // mount so the server and the first client render agree.
   const [inspectorOpen, setInspectorOpen] = useState(true)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const stageSize = useStageSize(stageRef)
   /*
    * A colour change spins the object once so the finish reads from every
    * side. `autoRotate` is the library's own turntable - one revolution per
@@ -354,6 +382,12 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     const t = setTimeout(() => setSpinning(false), SPIN_MS)
     return () => clearTimeout(t)
   }, [p.color, p.frameColor])
+
+  // Only the initial state follows the breakpoint: once the reader has opened
+  // or closed the panel, a rotation should not overrule them.
+  useEffect(() => {
+    if (window.innerWidth <= STACK_BREAKPOINT) setInspectorOpen(false)
+  }, [])
 
   const base = useMemo(() => initialState(spec, variant), [spec, variant])
   const modified = useMemo(
@@ -480,7 +514,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
       {/* The row owns the height so the inspector scrolls inside it rather
           than stretching the stage past the device. */}
       <div className="mx-body" style={{ height: stageHeight }}>
-        <div className="mx-stage" style={{ background: p.background || undefined }}>
+        <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
             <Component {...mockupProps}>
               {content(regions[0]?.name ?? 'screen')}
@@ -497,10 +531,17 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                     width: flatPx?.width ?? 320,
                     height: flatPx?.height ?? 200,
                     background: p.surfaceBackground || undefined,
-                    // Scale the true CSS-pixel surface down to fit the stage.
+                    /*
+                     * Scale the true CSS-pixel surface down to fit the stage,
+                     * measured rather than assumed: the stage is a different
+                     * box with the inspector open, closed, or stacked under it
+                     * on a phone, and guessing at those widths left the
+                     * surface overflowing its own frame on small screens. The
+                     * insets leave room for the dashed frame and the readout.
+                     */
                     transform: `scale(${Math.min(
-                      (stageHeight - 120) / (flatPx?.height ?? 200),
-                      (inspectorOpen ? 320 : 640) / (flatPx?.width ?? 320),
+                      ((stageSize.height || stageHeight) - 100) / (flatPx?.height ?? 200),
+                      ((stageSize.width || 640) - 60) / (flatPx?.width ?? 320),
                       1
                     )})`,
                   }}
