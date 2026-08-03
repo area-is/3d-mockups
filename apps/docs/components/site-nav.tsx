@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ExamplesMenu } from './examples-menu'
+import { SITE_EXAMPLES } from './site-examples'
 
 const GITHUB_URL = 'https://github.com/area-is/3d-mockups'
 
@@ -112,12 +113,11 @@ export function SiteNav() {
         <Link href="/demos" className="nav-sheet-link">
           Demos
         </Link>
-        <Link href="/examples/hero-phone" className="nav-sheet-link">
-          Hero Phone example
-        </Link>
-        <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="nav-sheet-link">
-          GitHub ↗
-        </a>
+        {SITE_EXAMPLES.map((example) => (
+          <Link key={example.href} href={example.href} className="nav-sheet-link">
+            {example.title} example
+          </Link>
+        ))}
       </div>
     </nav>
   )
