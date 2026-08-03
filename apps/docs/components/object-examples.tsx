@@ -44,6 +44,7 @@ import {
   VinylRecordMockup,
   FlipMockup,
 } from 'area-3d-mockups'
+import { ChromaSurface } from './screens/chroma-surface'
 import { PreviewStage } from './preview-controls'
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
 import { DEMO_SOURCES } from '../lib/demo-sources.generated'
@@ -197,41 +198,6 @@ function BusTailLivery() {
       <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>ZERO EMISSION</div>
       <div style={{ fontSize: 18, fontWeight: 600, opacity: 0.85 }}>transit.example/electric</div>
       <div style={{ width: '52%', height: 8, background: '#7fe3d2', borderRadius: 4 }} />
-    </div>
-  )
-}
-
-/**
- * Chroma-key fill for the "mockup-able areas" example on each API page:
- * broadcast green with the surface's prop name printed across it, so users
- * can see exactly where each prop's content lands (and what stays 3D).
- */
-function ChromaSurface({ label }: { label: string }) {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: '#00b140',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        containerType: 'size',
-        overflow: 'hidden',
-      }}
-    >
-      <span
-        style={{
-          fontFamily: 'ui-monospace, monospace',
-          fontWeight: 700,
-          fontSize: 'min(11cqw, 34cqh)',
-          color: '#063d1e',
-          letterSpacing: '0.05em',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {label}
-      </span>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ChromaSurface } from '../screens/chroma-surface'
 import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
 import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
@@ -38,6 +39,14 @@ export interface MockupExplorerProps {
    * passed.
    */
   props?: Record<string, unknown>
+  /**
+   * What fills every surface. `auto` picks the screen that suits the object -
+   * a running app for a device, artwork for a print surface. `chroma` fills
+   * them all with broadcast green labelled by slot, which is the
+   * "mockup-able areas" view: the same live explorer, showing where content
+   * lands rather than what it could look like.
+   */
+  screen?: 'auto' | 'chroma'
   /** Stage height in px. */
   stageHeight?: number
 }
@@ -182,6 +191,9 @@ const SPIN_SPEED = 60 / (SPIN_MS / 1000)
 const REGION_LABEL = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
 /** `coverInner` -> `cover-inner.tsx`, the name the tab carries. */
 const REGION_FILE = (name: string) => `${name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}.tsx`
+/** `ChromaSurface` -> `chroma-surface`, the module the snippet imports from. */
+const KEBAB = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+
 /** `top` -> `Top`, the slot component on the mockup. */
 const SLOT_NAME = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
 
@@ -255,7 +267,7 @@ function buildSource(
     { text: `'use client'` },
     { text: '' },
     { text: `import { ${spec.name} } from 'area-3d-mockups'` },
-    { text: `import { ${screen} } from './${screen === 'LiveCounter' ? 'live-counter' : 'surface-art'}'` },
+    { text: `import { ${screen} } from './${KEBAB(screen)}'` },
     { text: '' },
     { text: 'export function Demo() {' },
     { text: '  return (' },
@@ -312,6 +324,7 @@ export function MockupExplorer({
   component,
   variant,
   props: seed,
+  screen = 'auto',
   stageHeight = 460,
 }: MockupExplorerProps) {
   const spec = EXPLORERS[component]
@@ -431,9 +444,10 @@ export function MockupExplorer({
   }
 
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
-  const screenName = spec.print ? 'SurfaceArt' : 'LiveCounter'
+  const chroma = screen === 'chroma'
+  const screenName = chroma ? 'ChromaSurface' : spec.print ? 'SurfaceArt' : 'LiveCounter'
   const content = (label: string) =>
-    spec.print ? <SurfaceArt label={label} /> : <LiveCounter />
+    chroma ? <ChromaSurface label={label} /> : spec.print ? <SurfaceArt label={label} /> : <LiveCounter />
 
   // Slots are the capitalized components the mockup carries, one per region.
   const slots = Object.entries(Component).filter(

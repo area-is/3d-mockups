@@ -77,15 +77,20 @@ function forVariant(reference, variant) {
       .join('\n')
       // Every remaining example is about THIS device.
       .replace(/<MockupExplorer\n  component="(\w+)"\n/g, `<MockupExplorer\n  component="$1"\n  variant="${variant}"\n`)
-      .replace(/<MockupExplorer component="(\w+)" \/>/g, `<MockupExplorer component="$1" variant="${variant}" />`)
+      .replace(
+        /<MockupExplorer component="(\w+)"((?: \w+="[^"]*")*) \/>/g,
+        `<MockupExplorer component="$1" variant="${variant}"$2 />`
+      )
       // ...so restating it in their props is noise, and would fight the attribute.
       .replace(/props=\{\{ variant: '[^']+', /g, 'props={{ ')
       .replace(/\n  props=\{\{ variant: '[^']+' \}\}\n/g, '\n')
       // The reference opens with its own hero example, which is the explorer
       // this page already renders above - and seeded for whichever variant the
       // family leads with, which on every other page is the wrong device.
-      .replace(/^<MockupExplorer\n(?:  [^\n]*\n)*?\/>\n\n/m, '')
-      .replace(/^<MockupExplorer [^\n]*\/>\n\n/m, '')
+      // Exactly the FIRST one, in whichever form it is written: running both a
+      // multi-line and a single-line pattern over the text would take the first
+      // of each, and the second of those is somebody else's example.
+      .replace(/<MockupExplorer(?:\n(?:  [^\n]*\n)*?\/>|[^\n]*\/>)\n\n/, '')
       .replace(/\n{3,}/g, '\n\n')
   )
 }

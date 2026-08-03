@@ -17,6 +17,7 @@ const ART_FILES = [
   'components/screens/watch-face.tsx',
   'components/screens/live-counter.tsx',
   'components/screens/surface-art.tsx',
+  'components/screens/chroma-surface.tsx',
   'components/screens/lock-screen.tsx',
   'components/screens/desktop-screen.tsx',
   'components/screens/music-player.tsx',
