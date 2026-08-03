@@ -882,10 +882,27 @@
 .dark .mx-code .tok-keyword { color: #a5b4fc; }
 .dark .mx-code .tok-attr { color: #7dd3fc; }
 
+/*
+ * Stacked explorer.
+ *
+ * `.mx-body` carries the stage height inline, which only makes sense while the
+ * stage and the inspector are side by side; stacked, the row has to grow to
+ * whatever the inspector needs, so the inline height is dropped. That leaves
+ * the stage - a `flex: 1` item in a column with no height of its own - free to
+ * collapse to nothing, which is exactly what it did: every live mockup in the
+ * docs was zero pixels tall on a phone and the page opened straight onto the
+ * inspector. So the stage takes an explicit height here, sized off the
+ * viewport rather than the (now meaningless) row.
+ */
 @media (max-width: 860px) {
   .mx-body {
     flex-direction: column;
     height: auto !important;
+  }
+
+  .mx-stage {
+    flex: none;
+    height: clamp(280px, 92vw, 460px);
   }
 
   .mx-inspector {
@@ -893,5 +910,38 @@
     height: auto;
     border-left: 0;
     border-top: 1px solid var(--color-fd-border);
+    /* Stacked, the inspector is in page flow: it scrolls with the page rather
+       than trapping a scroll inside a panel the reader cannot see the end of. */
+    overflow-y: visible;
+  }
+
+  .mx-inspector-head {
+    /* Sticking to the top of a panel that no longer scrolls would pin the
+       heading over the page instead. */
+    position: static;
+  }
+}
+
+/* Fine print in the header and inspector gets cramped at phone widths. */
+@media (max-width: 520px) {
+  .mx-header {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .mx-views button {
+    padding: 5px 8px;
+  }
+
+  .mx-inspector {
+    padding: 0 12px 18px;
+  }
+
+  .mx-doc-type {
+    max-width: 52%;
+  }
+
+  .mx-range {
+    width: 60px;
   }
 }

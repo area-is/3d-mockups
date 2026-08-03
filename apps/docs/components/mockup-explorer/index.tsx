@@ -188,6 +188,30 @@ function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
 const SPIN_MS = 900
 const SPIN_SPEED = 60 / (SPIN_MS / 1000)
 
+/**
+ * Below this the explorer stacks (see the matching breakpoint in docs.css) and
+ * the inspector no longer sits beside the stage but under it - so it starts
+ * collapsed, or the reader lands on a wall of controls with the mockup they
+ * came for pushed off the screen.
+ */
+const STACK_BREAKPOINT = 860
+
+/** The stage's own box, for anything that has to be sized against it. */
+function useStageSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const box = entry?.contentRect
+      if (box) setSize({ width: box.width, height: box.height })
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref])
+  return size
+}
+
 const REGION_LABEL = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
 /** `coverInner` -> `cover-inner.tsx`, the name the tab carries. */
 const REGION_FILE = (name: string) => `${name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}.tsx`
@@ -329,7 +353,11 @@ export function MockupExplorer({
 }: MockupExplorerProps) {
   const spec = EXPLORERS[component]
   const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
+  // Open on a wide screen, collapsed once the layout stacks. Resolved after
+  // mount so the server and the first client render agree.
   const [inspectorOpen, setInspectorOpen] = useState(true)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const stageSize = useStageSize(stageRef)
   /*
    * A colour change spins the object once so the finish reads from every
    * side. `autoRotate` is the library's own turntable - one revolution per
@@ -362,6 +390,12 @@ export function MockupExplorer({
     const t = setTimeout(() => setSpinning(false), SPIN_MS)
     return () => clearTimeout(t)
   }, [p.color])
+
+  // Only the initial state follows the breakpoint: once the reader has opened
+  // or closed the panel, a rotation should not overrule them.
+  useEffect(() => {
+    if (window.innerWidth <= STACK_BREAKPOINT) setInspectorOpen(false)
+  }, [])
 
   const seedKey = JSON.stringify(seed ?? null)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -475,12 +509,19 @@ export function MockupExplorer({
   }
 
   const flatPx = view === '3d' ? undefined : pxOf(view)
-  /** The surface at true size, the factor that fits it, and the box that lands. */
+  /**
+   * The surface at true size, the factor that fits it, and the box that lands.
+   *
+   * Measured rather than assumed: the stage is a different box with the
+   * inspector open, closed, or stacked under it on a phone, and the hard-coded
+   * widths this used to carry were wrong on a phone and slightly wrong on
+   * desktop too. The insets leave room for the dashed frame and the readout.
+   */
   const flatSize = (() => {
     const px = { width: flatPx?.width ?? 320, height: flatPx?.height ?? 200 }
     const scale = Math.min(
-      (stageHeight - 120) / px.height,
-      (inspectorOpen ? 320 : 640) / px.width,
+      ((stageSize.height || stageHeight) - 100) / px.height,
+      ((stageSize.width || 640) - 60) / px.width,
       1
     )
     return { px, scale, width: px.width * scale, height: px.height * scale }
@@ -529,7 +570,7 @@ export function MockupExplorer({
       {/* The row owns the height so the inspector scrolls inside it rather
           than stretching the stage past the device. */}
       <div className="mx-body" style={{ height: stageHeight }}>
-        <div className="mx-stage" style={{ background: p.background || undefined }}>
+        <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
             <LazyScene>
               <Component {...mockupProps}>

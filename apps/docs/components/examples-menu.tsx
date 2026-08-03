@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { SITE_EXAMPLES } from './site-examples'
 
 /** "Examples" header dropdown: one entry today, room for more. */
 export function ExamplesMenu() {
@@ -30,17 +31,18 @@ export function ExamplesMenu() {
       </button>
       {open ? (
         <span className="nav-menu-pop" role="menu">
-          <Link
-            href="/examples/hero-phone"
-            className="nav-menu-item"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-          >
-            <span className="nav-menu-item-title">Hero Phone</span>
-            <span className="nav-menu-item-desc">
-              Product hero with a giant, draggable phone
-            </span>
-          </Link>
+          {SITE_EXAMPLES.map((example) => (
+            <Link
+              key={example.href}
+              href={example.href}
+              className="nav-menu-item"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+            >
+              <span className="nav-menu-item-title">{example.title}</span>
+              <span className="nav-menu-item-desc">{example.description}</span>
+            </Link>
+          ))}
           <span className="nav-menu-note">More examples soon</span>
         </span>
       ) : null}

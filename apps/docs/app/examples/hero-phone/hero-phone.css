@@ -222,12 +222,59 @@
     padding-bottom: 0;
   }
 
+  /*
+   * The bleed is what stops the canvas edge ever cropping the device, and side
+   * by side there is empty gutter for it to spill into. Stacked there is not:
+   * the copy is directly above, so a fixed -16vh overhang put the phone
+   * straight over the hint line. Proportional bleed, and a top margin larger
+   * than it, so the device starts below the copy however tall the viewport is.
+   */
+  .xh-phone-bleed {
+    inset: -10vh -12vw;
+  }
+
   .xh-phone {
     position: relative;
     top: auto;
     right: auto;
     width: min(96vw, 460px);
     height: 100vh;
-    margin: 8px auto -34vh;
+    margin: 12vh auto -34vh;
+  }
+}
+
+/* Phone widths: the top bar's two items stop fitting side by side, and the
+   type is set for a column two or three times this wide. */
+@media (max-width: 760px) {
+  .xh-top {
+    padding: 18px 20px 0;
+  }
+
+  .xh-badge {
+    /* Long enough to wrap awkwardly against the wordmark; it is a caption, and
+       the page says the same thing in the link under the buttons. */
+    display: none;
+  }
+
+  .xh-copy {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 40px;
+  }
+
+  .xh-copy h1 {
+    font-size: clamp(34px, 10vw, 48px);
+  }
+
+  .xh-lede {
+    font-size: 16.5px;
+  }
+
+  .xh-phone {
+    width: min(100vw, 420px);
+    height: 92vh;
+    /* Cropped a little less deeply than on a tablet, so the device still reads
+       as a phone rather than as a screen. */
+    margin: 12vh auto -24vh;
   }
 }
