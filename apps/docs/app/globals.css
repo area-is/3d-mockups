@@ -162,13 +162,76 @@ code {
   font-weight: 500;
 }
 
-.site-nav > a {
+.site-nav-wide {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.5vw, 28px);
+}
+
+.site-nav a {
   color: var(--muted);
   transition: color 0.15s ease;
 }
 
-.site-nav > a:hover {
+.site-nav a:hover {
   color: var(--text);
+}
+
+/* The disclosure button and its sheet only exist on narrow screens. */
+.nav-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.nav-burger:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/*
+ * Full-width sheet under the header rather than a floating popover: it is the
+ * whole navigation on a phone, so it gets the whole width and touch-sized rows.
+ */
+.nav-sheet {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px clamp(16px, 4vw, 48px) 14px;
+  /* Opaque, unlike the header it hangs from: this one covers page content
+     rather than sitting over the top of it, and a blur behind text the reader
+     is choosing between is noise. */
+  background: var(--bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+.nav-sheet[hidden] {
+  display: none;
+}
+
+.nav-sheet-link {
+  padding: 13px 2px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-sheet-link:last-child {
+  border-bottom: 0;
 }
 
 .nav-icon-btn {
@@ -406,30 +469,60 @@ code {
 /*  Device carousel                                                    */
 /* ------------------------------------------------------------------ */
 
+/*
+ * `--carousel-fit` scales the whole rig - the staged device, the gap to its
+ * neighbours and the picker strip together - and CarouselScene reads it off
+ * this element (see `useCarouselFit`). It has to be a rig scale rather than a
+ * media query in the scene, because what makes the carousel narrow is the
+ * canvas ASPECT: the camera's fov fixes the world height whatever the element
+ * measures, so a tall, narrow phone stage sees barely half the world width a
+ * desktop one does, and at full scale the flanking devices and most of the
+ * strip fall outside it entirely. The stage also gets squarer as it narrows,
+ * which buys back some of that width and keeps the composition from being one
+ * device in a tall empty column.
+ */
 .carousel {
   position: relative;
+  /* The glow and the canvas both bleed past this box on purpose; clipping the
+     bleed here keeps it from widening the page on a narrow screen, where
+     there is no margin for it to spill into. */
+  overflow-x: clip;
   --carousel-fit: 1;
   --carousel-stage-h: clamp(560px, 76vw, 700px);
 }
 
 @media (max-width: 900px) {
   .carousel {
-    --carousel-fit: 0.8;
+    --carousel-fit: 0.85;
+    --carousel-stage-h: clamp(500px, 72vw, 640px);
   }
 }
 
+/*
+ * Phones get the rig back at full scale. Shrinking it is what brings the
+ * flanking devices into a narrow frame, but here the frame is too narrow for
+ * that trade to pay: the world width a 390px stage sees is about four device
+ * widths, so a scale small enough to seat the neighbours leaves the staged
+ * device barely wider than a thumbnail. Instead the stage just gets shorter -
+ * it was claiming two thirds of the viewport for one device - which costs a
+ * little size and buys back both the dead space and a longer strip.
+ */
 @media (max-width: 620px) {
   .carousel {
-    --carousel-fit: 0.62;
+    --carousel-fit: 1;
+    --carousel-stage-h: clamp(420px, 118vw, 560px);
   }
 }
 
 .carousel-glow {
   position: absolute;
   left: 50%;
-  top: calc(var(--carousel-stage-h) - 210px);
+  /* Sits under the strip, which is placed in world units - so the offset is a
+     fraction of the stage rather than a fixed pixel drop that would slide off
+     a shorter one. */
+  top: calc(var(--carousel-stage-h) * 0.7);
   transform: translateX(-50%);
-  width: 760px;
+  width: min(760px, 150%);
   height: 260px;
   border-radius: 50%;
   background: radial-gradient(50% 50% at 50% 50%, rgba(49, 211, 34, 0.12) 0%, transparent 70%);
@@ -597,6 +690,19 @@ code {
   opacity: 1;
 }
 
+/*
+ * Touch has no hover, so every one of those affordances - the chevrons, the
+ * edge washes, the rotate badge - would only ever appear mid-gesture, i.e.
+ * after you already guessed. On a coarse pointer they are simply on, dimmed
+ * enough to sit under the device rather than compete with it.
+ */
+@media (hover: none) {
+  .carousel-chevron,
+  .carousel-rotate-badge {
+    opacity: 0.55;
+  }
+}
+
 .carousel-hint {
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -643,7 +749,9 @@ code {
 .carousel-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: clamp(12px, 3vw, 26px);
+  width: 100%;
 }
 
 .carousel-arrow {
@@ -665,6 +773,11 @@ code {
   border-color: rgba(255, 255, 255, 0.36);
 }
 
+/*
+ * A fixed min-width stops the arrows jumping about as the name changes length.
+ * It is a *min*, not a width: below it the readout takes what the row has left
+ * and wraps onto a second line rather than pushing the arrows off the edge.
+ */
 .carousel-readout {
   font-family: var(--font-mono);
   font-size: clamp(10.5px, 1.6vw, 12px);
@@ -672,7 +785,10 @@ code {
   color: var(--muted);
   margin: 0;
   min-width: min(360px, 58vw);
+  max-width: 100%;
+  flex: 1 1 auto;
   text-align: center;
+  text-wrap: balance;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1109,6 +1225,7 @@ code {
 @media (max-width: 1020px) {
   .demo-grid {
     grid-template-columns: 1fr;
+    gap: 44px 48px;
   }
 
   .demo-viewport {
@@ -1116,8 +1233,49 @@ code {
   }
 }
 
-@media (max-width: 620px) {
-  .site-nav .nav-plain {
+/*
+ * Below this the header's link row stops fitting next to the wordmark, so the
+ * links move into the sheet and the burger takes their place. Everything the
+ * row offered is in the sheet - including the one entry the Examples dropdown
+ * carried, which would otherwise be the only item with no mobile home.
+ */
+@media (max-width: 760px) {
+  .site-nav-wide {
     display: none;
+  }
+
+  .nav-burger {
+    display: inline-flex;
+  }
+}
+
+/*
+ * Below three columns the band stacks. `auto-fit` would drop it to two and
+ * leave the third stat alone in a half-empty row, and either way the dividers
+ * have to turn: a `border-right` on a full-width row is a stray line down the
+ * side of the page rather than a rule between two stats.
+ */
+@media (max-width: 700px) {
+  .stat-band-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .stat {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .demo-viewport {
+    height: min(74vh, 480px);
+  }
+
+  .demo-grid {
+    gap: 36px;
   }
 }
