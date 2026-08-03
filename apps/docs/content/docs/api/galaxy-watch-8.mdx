@@ -26,13 +26,10 @@ rises through one of the adjustment holes punched clean through the long strap,
 with a keeper holding the tail down. The lengths come from the retail fit range
 rather than being eyeballed.
 
-<ObjectDemo demo="galaxy-watch" checker />
-
-```tsx
-<GalaxyWatchMockup float color="#33363c" bandColor="#23252a">
-  <YourRoundFace />
-</GalaxyWatchMockup>
-```
+<MockupExplorer
+  component="GalaxyWatchMockup"
+  props={{ color: '#33363c', bandColor: '#23252a', float: true, rotation: [0, 0.3, 0] }}
+/>
 
 ## Props
 
@@ -66,10 +63,9 @@ both straps straight out from the case instead, so the hole row, the buckle and
 the BioActive sensor back all face the viewer, the way a band is photographed
 off-wrist. The mockup backs the camera off to frame the full length.
 
-<ObjectDemo demo="galaxy-watch-open" />
+<MockupExplorer
+  component="GalaxyWatchMockup"
+  props={{ bandOpen: true, color: '#33363c', bandColor: '#23252a', rotation: [0, 3.14, 0] }}
+/>
 
-```tsx
-<GalaxyWatchMockup bandOpen color="#33363c" bandColor="#23252a" rotation={[0, Math.PI, 0]}>
-  <YourRoundFace />
-</GalaxyWatchMockup>
-```
+<DeviceDisclaimer brands="Samsung" />

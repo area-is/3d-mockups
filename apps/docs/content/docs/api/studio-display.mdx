@@ -26,13 +26,10 @@ Every number is measured off Apple's own imagery rather than eyeballed: the
 side-view illustration from the stand-adjustment support guide for the profile,
 and the 2026 product shots for everything on the back.
 
-<ObjectDemo demo="studio-display-basic" checker />
-
-```tsx
-<StudioDisplayMockup rotation={[0, -0.25, 0]}>
-  <YourDesktopApp />
-</StudioDisplayMockup>
-```
+<MockupExplorer
+  component="StudioDisplayMockup"
+  props={{ rotation: [0, -0.25, 0] }}
+/>
 
 ## Props
 
@@ -73,10 +70,9 @@ what stays 3D hardware.
 The 27″ panel is the widest virtual display in the library, so it is the one
 that behaves most like a real desktop breakpoint.
 
-<ObjectDemo demo="studio-display-silver" />
+<MockupExplorer
+  component="StudioDisplayMockup"
+  props={{ color: '#e2e4e8', autoRotate: 0.8 }}
+/>
 
-```tsx
-<StudioDisplayMockup color="#e2e4e8" autoRotate={0.8}>
-  <YourDesktopApp />
-</StudioDisplayMockup>
-```
+<DeviceDisclaimer brands="Apple" />

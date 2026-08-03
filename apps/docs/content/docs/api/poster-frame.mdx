@@ -10,15 +10,10 @@ front lip, a soft acrylic glazing sheen over the art, an optional 2.5"
 gallery matboard, and a kraft dust cover on the back. The visible opening is
 a live 540×721 DOM surface.
 
-<MockupExplorer component="PosterFrameMockup" />
-
-<ObjectDemo demo="poster-basic" checker />
-
-```tsx
-<PosterFrameMockup rotation={[0, 0.25, 0]}>
-  <YourPosterArt />
-</PosterFrameMockup>
-```
+<MockupExplorer
+  component="PosterFrameMockup"
+  props={{ rotation: [0, 0.25, 0] }}
+/>
 
 ## Props
 
@@ -53,13 +48,10 @@ what stays 3D hardware.
 
 `color` takes any CSS color - wood tones work as well as gallery black.
 
-<ObjectDemo demo="poster-oak" />
-
-```tsx
-<PosterFrameMockup color="#b98d5f" surfaceBackground="#f7f2e8" float>
-  <YourPosterArt />
-</PosterFrameMockup>
-```
+<MockupExplorer
+  component="PosterFrameMockup"
+  props={{ color: '#b98d5f', surfaceBackground: '#f7f2e8', float: true, rotation: [0, -0.25, 0] }}
+/>
 
 ### A gallery wall pair
 

@@ -7,6 +7,7 @@ import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
 import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
 import { ColorRow, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
 import { editableProp, propAttribute, same, type EditableProp } from './prop-controls'
+import { LazyScene } from '../lazy-scene'
 import { EXPLORERS, type ExplorerSpec } from './registry'
 
 /**
@@ -29,6 +30,14 @@ export interface MockupExplorerProps {
   component: string
   /** Lock the explorer to one variant (used by the per-variant pages). */
   variant?: string
+  /**
+   * Props to open on, so a page can show a configured example that is still
+   * live. These are where the explorer STARTS, not a floor: every one of them
+   * has its own control, the reset takes you back here rather than to bare
+   * defaults, and the snippet prints them because they really are being
+   * passed.
+   */
+  props?: Record<string, unknown>
   /** Stage height in px. */
   stageHeight?: number
 }
@@ -90,11 +99,32 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
  * required prop (a custom panel's `size`) has to be passed from the first
  * frame, and starting there means it doesn't read as a modification either.
  */
-const initialState = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
-  ...libraryDefaults(spec, lockedVariant),
-  zoom: true,
-  extra: { ...spec.fixed },
-})
+const initialState = (
+  spec: ExplorerSpec,
+  lockedVariant?: string,
+  seed?: Record<string, unknown>
+): PropState => {
+  const state: PropState = {
+    ...libraryDefaults(spec, lockedVariant),
+    zoom: true,
+    extra: { ...spec.fixed },
+  }
+  for (const [name, value] of Object.entries(seed ?? {})) {
+    if (name === 'autoRotate') {
+      // One prop, two pieces of UI state: the switch and the speed slider.
+      state.autoRotate = value !== false && value !== 0
+      if (typeof value === 'number') state.autoRotateSpeed = value
+    } else if (name === 'open') {
+      state.open = typeof value === 'number' ? value : value === false ? 0 : 180
+    } else if (name in state) {
+      // A hand-written control owns it; the rest are inferred rows in `extra`.
+      ;(state as unknown as Record<string, unknown>)[name] = value
+    } else {
+      state.extra[name] = value
+    }
+  }
+  return state
+}
 
 /**
  * Everything a component accepts, from the API docs' own tables, minus the
@@ -278,9 +308,14 @@ function Code({ text }: { text: string }) {
 /*  The explorer                                                       */
 /* ------------------------------------------------------------------ */
 
-export function MockupExplorer({ component, variant, stageHeight = 460 }: MockupExplorerProps) {
+export function MockupExplorer({
+  component,
+  variant,
+  props: seed,
+  stageHeight = 460,
+}: MockupExplorerProps) {
   const spec = EXPLORERS[component]
-  const [p, setP] = useState<PropState>(() => initialState(spec, variant))
+  const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
   const [inspectorOpen, setInspectorOpen] = useState(true)
   /*
    * A colour change spins the object once so the finish reads from every
@@ -315,7 +350,9 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     return () => clearTimeout(t)
   }, [p.color])
 
-  const base = useMemo(() => initialState(spec, variant), [spec, variant])
+  const seedKey = JSON.stringify(seed ?? null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const base = useMemo(() => initialState(spec, variant, seed), [spec, variant, seedKey])
   const modified = useMemo(() => {
     const keys = (Object.keys(base) as (keyof PropState)[]).filter((k) => k !== 'extra')
     const names = new Set([...Object.keys(p.extra), ...Object.keys(base.extra)])
@@ -480,12 +517,14 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
       <div className="mx-body" style={{ height: stageHeight }}>
         <div className="mx-stage" style={{ background: p.background || undefined }}>
           {view === '3d' ? (
-            <Component {...mockupProps}>
-              {content(regions[0]?.name ?? 'screen')}
-              {slots.map(([name, Slot]) => (
-                <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
-              ))}
-            </Component>
+            <LazyScene>
+              <Component {...mockupProps}>
+                {content(regions[0]?.name ?? 'screen')}
+                {slots.map(([name, Slot]) => (
+                  <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
+                ))}
+              </Component>
+            </LazyScene>
           ) : (
             <div className="mx-flat">
               {/* The frame is sized from the SCALED surface, not the surface.
@@ -528,7 +567,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 type="button"
                 className="mx-reset"
                 style={{ visibility: modified ? 'visible' : 'hidden' }}
-                onClick={() => setP(initialState(spec, variant))}
+                onClick={() => setP(initialState(spec, variant, seed))}
               >
                 reset {modified} <ResetGlyph />
               </button>

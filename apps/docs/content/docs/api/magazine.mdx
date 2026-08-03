@@ -14,15 +14,10 @@ diagonal sheen.
 
 Real editorial CSS lays out exactly as it would in a browser at 480×620.
 
-<MockupExplorer component="MagazineMockup" />
-
-<ObjectDemo demo="magazine-basic" checker />
-
-```tsx
-<MagazineMockup rotation={[0, -0.3, 0]}>
-  <YourCoverArt />
-</MagazineMockup>
-```
+<MockupExplorer
+  component="MagazineMockup"
+  props={{ rotation: [0, -0.3, 0] }}
+/>
 
 ## Props
 
@@ -100,10 +95,7 @@ the strip, reading top-to-bottom like a real shelf spine.
 `pageColor` tints the trimmed page edges. Dark issues look best when all
 three agree.
 
-<ObjectDemo demo="magazine-stock" />
-
-```tsx
-<MagazineMockup pageColor="#efeadd" backColor="#101319" float>
-  <YourCoverArt />
-</MagazineMockup>
-```
+<MockupExplorer
+  component="MagazineMockup"
+  props={{ pageColor: '#efeadd', backColor: '#101319', float: true, rotation: [0, 0.3, 0] }}
+/>

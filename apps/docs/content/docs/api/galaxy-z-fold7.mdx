@@ -14,13 +14,10 @@ large, nearly square inner display - a faint crease runs down its center - and
 **closed** (`open={false}`) folds to the tall cover display with the rear
 triple camera on the back.
 
-<ObjectDemo demo="fold-open" checker />
-
-```tsx
-<FoldMockup color="silvershadow">
-  <YourApp /> {/* fills the big inner display */}
-</FoldMockup>
-```
+<MockupExplorer
+  component="FoldMockup"
+  props={{ color: 'silvershadow', rotation: [0, -0.3, 0] }}
+/>
 
 ## Props
 
@@ -40,13 +37,10 @@ The active display is whichever screen is showing, so your content maps onto
 the inner display when open and the cover display when closed. Switch with a
 single prop:
 
-<ObjectDemo demo="fold-closed" />
-
-```tsx
-<FoldMockup open={false} autoRotate float color="#3a3d42" surfaceBackground="#000">
-  <LockScreen /> {/* now on the tall cover screen */}
-</FoldMockup>
-```
+<MockupExplorer
+  component="FoldMockup"
+  props={{ open: false, autoRotate: true, float: true, color: '#3a3d42', surfaceBackground: '#000' }}
+/>
 
 ## Any angle in between
 
@@ -54,13 +48,10 @@ single prop:
 pose with the rounded spine wrapping the fold and your content bending across
 the crease:
 
-<ObjectDemo demo="fold-flex" />
-
-```tsx
-<FoldMockup open={110} color="blueshadow">
-  <YourApp />
-</FoldMockup>
-```
+<MockupExplorer
+  component="FoldMockup"
+  props={{ open: 110, color: 'blueshadow', rotation: [0, -0.35, 0] }}
+/>
 
 ## Colorways
 
@@ -76,3 +67,5 @@ feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-fold" />
+
+<DeviceDisclaimer brands="Samsung" />

@@ -8,13 +8,10 @@ engraved wordmark) capping the bottom. Detail geometry (button pills, lens
 rings, ports, seams) follows a reference scan of the retail device checked
 against the official product photography.
 
-<ObjectDemo demo="flip-open" checker />
-
-```tsx
-<FlipMockup color="coralred">
-  <YourApp /> {/* fills the tall main display */}
-</FlipMockup>
-```
+<MockupExplorer
+  component="FlipMockup"
+  props={{ color: 'coralred', rotation: [0, -0.3, 0] }}
+/>
 
 ## Props
 
@@ -33,13 +30,10 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 Your content maps onto whichever screen is showing. Folded, the cover screen
 wraps around the cameras exactly like the real FlexWindow:
 
-<ObjectDemo demo="flip-closed" />
-
-```tsx
-<FlipMockup open={false} autoRotate float color="coralred" surfaceBackground="#000">
-  <LockScreen /> {/* now on the square cover screen */}
-</FlipMockup>
-```
+<MockupExplorer
+  component="FlipMockup"
+  props={{ open: false, autoRotate: true, float: true, color: 'coralred', surfaceBackground: '#000' }}
+/>
 
 ## Any angle in between
 

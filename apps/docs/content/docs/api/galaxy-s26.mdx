@@ -14,14 +14,6 @@ Both variants keep true relative sizes and per-model camera architecture - the
 pills, camera island, port cutouts, antenna seams) measured from scans of the
 retail hardware.
 
-<ObjectDemo demo="galaxy-basic" checker />
-
-```tsx
-<GalaxyMockup color="#15171d" rotation={[0, -0.25, 0]}>
-  <LiveCounter />
-</GalaxyMockup>
-```
-
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
@@ -61,50 +53,22 @@ Every example is live: drag to spin it, and the screens really work.
 
 ### Colorways with float and auto-orbit
 
-<ObjectDemo demo="galaxy-lock" />
-
-```tsx
-<GalaxyMockup autoRotate float color="silvershadow" surfaceBackground="#000">
-  <LockScreen />
-</GalaxyMockup>
-```
-
-### Landscape, at the Ultra's real resolution
-
-`orientation="landscape"` swaps the virtual display to 832×384 on the
-S26 Ultra - your responsive layout reacts exactly like on the device.
-
-<ObjectDemo demo="galaxy-landscape" />
-
-```tsx
-<GalaxyMockup variant="s26ultra" orientation="landscape" color="#2e3238">
-  <MusicPlayer />
-</GalaxyMockup>
-```
+<MockupExplorer
+  component="GalaxyMockup"
+  variant="s26"
+  props={{ autoRotate: true, float: true, color: 'silvershadow', surfaceBackground: '#000' }}
+/>
 
 ### Galaxy S26 - the vertical pill camera island
 
 `variant="s26"` renders the 6.3″ design: the three lenses live in a single
 vertical pill island with the flash on the flat back beside it.
 
-<ObjectDemo demo="galaxy-s26" />
+<MockupExplorer
+  component="GalaxyMockup"
+  variant="s26"
+  props={{ color: 'cobaltviolet', rotation: [0, -0.3, 0] }}
+/>
 
-```tsx
-<GalaxyMockup variant="s26" color="cobaltviolet">
-  <MusicPlayer />
-</GalaxyMockup>
-```
 
-### Galaxy S26 Ultra
-
-`variant="s26ultra"` renders the 6.9″ flagship: boxier corners, three proud
-rings on the pill island with the tele column beside it, the S Pen silo, and a
-384×832 virtual screen.
-
-<ObjectDemo demo="galaxy-s26ultra" />
-
-```tsx
-<GalaxyMockup variant="s26ultra" color="titaniumsilverblue">
-  <MusicPlayer />
-</GalaxyMockup>
-```
+<DeviceDisclaimer brands="Samsung" />

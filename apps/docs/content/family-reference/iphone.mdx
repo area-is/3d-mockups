@@ -4,13 +4,10 @@ camera architecture follows the real devices: two-lens pill (17), ultra-thin
 single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 (Pro and Pro Max).
 
-<ObjectDemo demo="iphone-pro" checker />
-
-```tsx
-<IPhoneMockup variant="pro" color="cosmicorange" rotation={[0, 0.25, 0]}>
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'pro', color: 'cosmicorange', rotation: [0, 0.25, 0] }}
+/>
 
 ## Props
 
@@ -29,45 +26,36 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 `#bfd4e6`, Light Gold `#e6d9c0`. Pro: Cosmic Orange `#c96b34`, Deep Blue
 `#2b3a55`, Silver `#dfe0e2`.
 
-## All variants
+## This model
 
 ### iPhone 17
 
 The baseline model: two-lens vertical pill, Lavender colorway, 402×874 virtual
 screen.
 
-<ObjectDemo demo="iphone-17" />
-
-```tsx
-<IPhoneMockup variant="17" color="lavender">
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: '17', color: 'lavender', rotation: [0, -0.3, 0] }}
+/>
 
 ### iPhone 17 Air, floating
 
 The Air's ultra-thin profile and single-lens bar show off on the orbit.
 
-<ObjectDemo demo="iphone-air" />
-
-```tsx
-<IPhoneMockup variant="air" autoRotate float color="skyblue">
-  <LockScreen />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'air', autoRotate: true, float: true, color: 'skyblue', surfaceBackground: '#000' }}
+/>
 
 ### iPhone 17 Pro Max
 
 The biggest body in the family - full-width plateau, top-edge RF window, and a
 440×956 virtual screen.
 
-<ObjectDemo demo="iphone-promax" />
-
-```tsx
-<IPhoneMockup variant="promax" color="deepblue">
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'promax', color: 'deepblue', rotation: [0, -0.3, 0] }}
+/>
 
 ## Mockup-able areas
 
@@ -79,21 +67,3 @@ what stays 3D hardware.
 
 ## More examples
 
-### Galaxy and iPhone side by side
-
-Bare `<Galaxy>` and `<IPhone>` objects share one
-[`MockupCanvas`](/docs/api/mockup-canvas) - both families use the same world
-scale, so relative sizes are true.
-
-<ObjectDemo demo="phone-duo" />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-  <Galaxy variant="s26ultra" color="#2e3238" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
-    <YourAndroidApp />
-  </Galaxy>
-  <IPhone variant="promax" color="#2b3a55" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
-    <YourIOSApp />
-  </IPhone>
-</MockupCanvas>
-```

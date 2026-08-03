@@ -14,15 +14,10 @@ scales with the diagonal, while the bezels, cabinet depth, ports and stand
 keep hardware dimensions - feet hold a near-constant inset from the panel
 ends and grow only mildly across the range.
 
-<MockupExplorer component="TVSetMockup" />
-
-<ObjectDemo demo="tv-basic" checker />
-
-```tsx
-<TVSetMockup rotation={[0, -0.22, 0]}>
-  <YourShowreel />
-</TVSetMockup>
-```
+<MockupExplorer
+  component="TVSetMockup"
+  props={{ rotation: [0, -0.22, 0] }}
+/>
 
 ## Props
 
@@ -57,13 +52,10 @@ the set fit furniture far narrower than itself. Samsung publishes that
 plate at four diagonals (55": 263.9 × 247.4 mm → 85": 375.4 × 366.5 mm),
 so `size` interpolates between them instead of scaling one footprint.
 
-<ObjectDemo demo="tv-pedestal" />
-
-```tsx
-<TVSetMockup variant="pedestal" rotation={[0, -0.25, 0]}>
-  <YourShowreel />
-</TVSetMockup>
-```
+<MockupExplorer
+  component="TVSetMockup"
+  props={{ variant: 'pedestal', rotation: [0, -0.25, 0] }}
+/>
 
 ### `frame` - the picture-frame set
 
@@ -75,13 +67,10 @@ Fit Wall Mount and hangs flush, so it stands on nothing - the panel meets
 the surface directly. Set `color` to one of the bezel finishes -
 `#1b1c1e` black, `#e8e4dd` white, `#a9825a` teak, `#6d5341` brown.
 
-<ObjectDemo demo="tv-frame" />
-
-```tsx
-<TVSetMockup variant="frame" color="#a9825a" rotation={[0, -0.22, 0]}>
-  <YourArtwork />
-</TVSetMockup>
-```
+<MockupExplorer
+  component="TVSetMockup"
+  props={{ variant: 'frame', color: '#a9825a', rotation: [0, -0.22, 0] }}
+/>
 
 ## Mockup-able areas
 

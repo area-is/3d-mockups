@@ -110,10 +110,7 @@ the full 11" spread it prints as.
 `children` is shorthand for `FrontLeft`; the rest show bare `color`
 stock - a work-in-progress state that reads clearly in reviews.
 
-<ObjectDemo demo="brochure-single" />
-
-```tsx
-<BrochureMockup color="#e9e4d8" float>
-  <Front />
-</BrochureMockup>
-```
+<MockupExplorer
+  component="BrochureMockup"
+  props={{ color: '#e9e4d8', float: true, rotation: [0, 0.25, 0] }}
+/>

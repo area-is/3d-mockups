@@ -201,6 +201,38 @@
 }
 
 /* ------------------------------------------------------------------ */
+/*  Device disclaimer                                                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Quiet on purpose. It has to be read once and findable later, not shout over
+ * the mockup it follows - so it reads as a footnote rule rather than a warning
+ * callout, which is the treatment reserved for things that break your build.
+ */
+.device-disclaimer {
+  margin: 2rem 0 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--color-fd-border);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-fd-muted-foreground);
+  max-width: 78ch;
+}
+
+.device-disclaimer p {
+  margin: 0 0 0.6rem;
+}
+
+.device-disclaimer p:last-child {
+  margin-bottom: 0;
+}
+
+.device-disclaimer strong {
+  color: var(--color-fd-foreground);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Prop explorer (components/mockup-explorer)                         */
 /* ------------------------------------------------------------------ */
 
@@ -692,25 +724,33 @@
   transform-origin: top left;
 }
 
+/*
+ * The surface's true pixel size. It is the one number this view exists to
+ * tell you, so it reads as a label on the accent rather than another chip in
+ * the chrome - no border, white on green, at both ends of the theme.
+ */
 .mx-readout {
   position: absolute;
   left: 12px;
   bottom: 12px;
-  border: 1px solid var(--color-fd-border);
+  border: 0;
   border-radius: 7px;
-  padding: 4px 8px;
-  background: var(--color-fd-card);
+  padding: 5px 9px;
+  background: var(--mx-accent);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 600;
   line-height: 1;
-  color: var(--color-fd-muted-foreground);
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
   pointer-events: none;
 }
 
 .mx-readout span {
-  opacity: 0.55;
+  opacity: 0.7;
   margin: 0 2px;
+  font-weight: 400;
 }
 
 /* Generic artwork for a print / packaging surface */

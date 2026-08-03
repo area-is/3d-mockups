@@ -12,15 +12,10 @@ the backbone crown.
 Any React node fills the front board, full bleed. Match `color` to the
 jacket's palette so the spine and back board feel like the same book.
 
-<MockupExplorer component="BookMockup" />
-
-<ObjectDemo demo="book-basic" checker />
-
-```tsx
-<BookMockup color="#16324a" rotation={[0, 0.35, 0]}>
-  <YourCoverArt />
-</BookMockup>
-```
+<MockupExplorer
+  component="BookMockup"
+  props={{ color: '#16324a', rotation: [0, 0.35, 0] }}
+/>
 
 ## Props
 
@@ -83,13 +78,10 @@ as it turns.
 The same idle animations every device mockup has. `pageColor` warms up the
 page block for an older, cream-paper look.
 
-<ObjectDemo demo="book-float" />
-
-```tsx
-<BookMockup color="#3d2352" pageColor="#efe8db" autoRotate float>
-  <YourCoverArt />
-</BookMockup>
-```
+<MockupExplorer
+  component="BookMockup"
+  props={{ color: '#3d2352', pageColor: '#efe8db', autoRotate: true, float: true }}
+/>
 
 ### A row of books - composing bare objects
 

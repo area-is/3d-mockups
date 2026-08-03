@@ -26,13 +26,10 @@ hardware anywhere on it - it just flares into the lug slots at both ends. That
 is why this component has no `bandOpen` prop; nothing on it unfastens. For a
 band that lays open, see [Galaxy Watch](/docs/api/galaxy-watch).
 
-<ObjectDemo demo="apple-watch" checker />
-
-```tsx
-<AppleWatchMockup float color="#1c1d21" bandColor="#33415c">
-  <YourWatchFace />
-</AppleWatchMockup>
-```
+<MockupExplorer
+  component="AppleWatchMockup"
+  props={{ float: true, color: '#1c1d21', bandColor: '#33415c', rotation: [0, -0.35, 0] }}
+/>
 
 ## Props
 
@@ -54,3 +51,5 @@ feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <ObjectDemo demo="chroma-apple-watch" />
+
+<DeviceDisclaimer brands="Apple" />
