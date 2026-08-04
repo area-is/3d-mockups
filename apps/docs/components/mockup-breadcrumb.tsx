@@ -45,7 +45,7 @@ export function MockupBreadcrumb() {
       ? { name: 'Objects', url: '/docs/objects' }
       : null
 
-  const items = [{ name: 'API', url: '/docs/api' }, ...(group ? [group] : [])]
+  const items = [{ name: 'Components', url: '/docs/api' }, ...(group ? [group] : [])]
 
   return (
     <div className="flex items-center gap-1.5 text-sm text-fd-muted-foreground">

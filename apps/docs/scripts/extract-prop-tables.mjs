@@ -104,7 +104,7 @@ const read = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : '')
  *
  * Three rows of the MockupCanvas table are NOT part of that forwarded set:
  * `freeRotation`, `shadowY` and `dpr` tune the rendering machinery rather than
- * the picture, and Components overview says so in as many words - a mockup
+ * the picture, and the Components overview says so in as many words - a mockup
  * does not advertise them, and `MockupProps` leaves them off the type. Listing
  * them as props of a mockup would send a reader to code that does not compile;
  * they belong to MockupCanvas, and the MockupCanvas page documents them.
