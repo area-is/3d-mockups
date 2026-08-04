@@ -9,13 +9,10 @@ it lies along the edge in portrait, exactly like the print on the hardware.
 The Ultra adds the front camera's U-shaped display notch, which rides the right
 edge in portrait and the top center in landscape, just like the physical panel.
 
-<ObjectDemo demo="galaxy-tab-s11" checker />
-
-```tsx
-<GalaxyTabMockup color="gray" rotation={[0, -0.3, 0]}>
-  <YourApp />
-</GalaxyTabMockup>
-```
+<MockupExplorer
+  component="GalaxyTabMockup"
+  props={{ variant: 'tabs11', color: 'gray', rotation: [0, -0.3, 0] }}
+/>
 
 ## Props
 
@@ -33,13 +30,10 @@ Beyond the [shared screen props](/docs/screen-content):
 The U-shaped notch sits on the right edge in portrait, exactly like the
 hardware; spin it to catch the dual camera rings and the wordmark.
 
-<ObjectDemo demo="galaxy-tab-ultra" />
-
-```tsx
-<GalaxyTabMockup variant="tabs11ultra" color="gray" float>
-  <YourApp />
-</GalaxyTabMockup>
-```
+<MockupExplorer
+  component="GalaxyTabMockup"
+  props={{ variant: 'tabs11ultra', color: 'gray', float: true, rotation: [0, 0.3, 0] }}
+/>
 
 ## Mockup-able areas
 
@@ -47,4 +41,4 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-galaxy-tab" />
+<MockupExplorer component="GalaxyTabMockup" screen="chroma" />

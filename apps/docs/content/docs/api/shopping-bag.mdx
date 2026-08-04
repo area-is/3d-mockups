@@ -12,15 +12,10 @@ reinforcement patches inside. The front and back faces are live, full bleed
 to the top edge. Pass `size` (in millimeters) for a carrier of any other
 dimensions.
 
-<MockupExplorer component="ShoppingBagMockup" />
-
-<ObjectDemo demo="bag-basic" checker />
-
-```tsx
-<ShoppingBagMockup rotation={[0, 0.35, 0]}>
-  <YourBagFace />
-</ShoppingBagMockup>
-```
+<MockupExplorer
+  component="ShoppingBagMockup"
+  props={{ rotation: [0, 0.35, 0] }}
+/>
 
 ## Props
 
@@ -51,7 +46,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-bag" />
+<MockupExplorer component="ShoppingBagMockup" screen="chroma" />
 
 ## More examples
 

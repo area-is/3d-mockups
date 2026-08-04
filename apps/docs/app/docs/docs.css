@@ -9,12 +9,20 @@
 }
 
 /* ------------------------------------------------------------------ */
-/*  Showroom accent                                                    */
+/*  Showroom accent and paper                                          */
 /*                                                                     */
-/*  Only the accent moves; every neutral surface and text color stays  */
-/*  on fumadocs' own neutral theme, so the docs read exactly as they   */
-/*  did before. Light uses the darker #1C9D14 ramp so accent text      */
-/*  passes contrast on white; dark uses #31D322.                       */
+/*  The accent moves, and light mode's paper goes to pure white.       */
+/*  Light uses the darker #1C9D14 ramp so accent text passes contrast  */
+/*  on white; dark uses #31D322 and keeps fumadocs' own neutrals.      */
+/*                                                                     */
+/*  Fumadocs' light theme paints the page hsl(0 0% 96%) and its cards  */
+/*  hsl(0 0% 94.7%) - a grey sheet the mockups then sit on. White is   */
+/*  what a product shot is composited onto, and it is what the         */
+/*  transparency checkerboard behind every preview is standing in for, */
+/*  so the shell, the sidebar and the preview surfaces all take it.    */
+/*  Everything else - muted, secondary, accent, borders - stays on     */
+/*  fumadocs' ramp, which is what still separates a code block, an     */
+/*  active sidebar row or a table header from the page.                */
 /* ------------------------------------------------------------------ */
 
 :root {
@@ -27,6 +35,17 @@
   --color-fd-primary: #31d322;
   --color-fd-primary-foreground: #08240b;
   --color-fd-ring: #31d322;
+}
+
+/*
+ * Light only, and written as `:not(.dark)` rather than a plain `:root` on
+ * purpose: fumadocs declares its dark ramp in a `.dark` block of the same
+ * specificity, and anything this file adds to `:root` comes later in the
+ * cascade - which would hand dark mode a white page too.
+ */
+:root:not(.dark) {
+  --color-fd-background: #ffffff;
+  --color-fd-card: #ffffff;
 }
 
 /* ------------------------------------------------------------------ */
@@ -48,6 +67,26 @@
 /* The sidebar reads as part of the page, not as a tinted panel. */
 #nd-sidebar {
   background: transparent;
+}
+
+/*
+ * Pages that hide the table of contents - the per-mockup API pages, whose
+ * navigation is the sidebar grid - get the column it would have taken. The
+ * article is otherwise capped at 900px however wide the window is, which on
+ * those pages leaves the prop explorer, the live demos and the four-column
+ * prop tables squeezed while a third of the screen sits empty.
+ *
+ * Only the blocks that gain from the width take it. Running text keeps a
+ * reading measure, because a paragraph set 150 characters wide is harder to
+ * read than the same paragraph at 900px, not easier.
+ */
+#nd-page[data-wide='true'] {
+  max-width: min(100%, 1400px);
+}
+
+#nd-page[data-wide='true'] > .prose > :is(p, ul, ol, blockquote),
+#nd-page[data-wide='true'] > p {
+  max-width: 78ch;
 }
 
 /* ------------------------------------------------------------------ */
@@ -159,6 +198,38 @@
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--color-fd-muted-foreground);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Device disclaimer                                                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Quiet on purpose. It has to be read once and findable later, not shout over
+ * the mockup it follows - so it reads as a footnote rule rather than a warning
+ * callout, which is the treatment reserved for things that break your build.
+ */
+.device-disclaimer {
+  margin: 2rem 0 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--color-fd-border);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-fd-muted-foreground);
+  max-width: 78ch;
+}
+
+.device-disclaimer p {
+  margin: 0 0 0.6rem;
+}
+
+.device-disclaimer p:last-child {
+  margin-bottom: 0;
+}
+
+.device-disclaimer strong {
+  color: var(--color-fd-foreground);
+  font-weight: 600;
 }
 
 /* ------------------------------------------------------------------ */
@@ -286,6 +357,8 @@
 .mx-inspector-head {
   position: sticky;
   top: 0;
+  /* Rows scroll under it, including the number fields a composite prop opens. */
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -353,6 +426,9 @@
   justify-content: space-between;
   gap: 10px;
   min-height: 30px;
+  /* A slider, its readout and a reset can outgrow the column on the longest
+     prop names; wrapping is better than a clipped control. */
+  flex-wrap: wrap;
 }
 
 .mx-row[data-dim='true'] {
@@ -489,6 +565,68 @@
   accent-color: var(--mx-accent);
 }
 
+/* Composite props (a transform, a millimetre size, the camera): a summary row
+   that folds open onto its number fields. */
+
+.mx-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-inline-start: -2px;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+.mx-disclosure:hover .mx-prop {
+  color: var(--color-fd-foreground);
+}
+
+.mx-chevron {
+  flex: none;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+
+.mx-chevron[data-on='true'] {
+  transform: rotate(90deg);
+  opacity: 0.9;
+}
+
+.mx-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 2px 0 8px 16px;
+}
+
+.mx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mx-field > span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-fd-muted-foreground);
+  opacity: 0.8;
+}
+
+.mx-field em {
+  font-style: normal;
+  opacity: 0.7;
+  margin-inline-start: 2px;
+}
+
+.mx-field .mx-number {
+  width: 100%;
+}
+
 .mx-chips {
   display: flex;
   flex-wrap: wrap;
@@ -564,39 +702,55 @@
   justify-content: center;
 }
 
+/*
+ * The frame carries the scaled surface size as its CONTENT box, so the 9px
+ * breathing room and the dashes sit outside it rather than eating into it.
+ */
 .mx-flat-frame {
+  box-sizing: content-box;
   border: 1px dashed color-mix(in oklab, var(--mx-accent) 45%, transparent);
   border-radius: 12px;
   padding: 9px;
-  display: flex;
 }
 
+/*
+ * Scaled from the top left, because that is the corner the frame's content box
+ * starts at - scaling about the center would leave the picture half a surface
+ * off from the box reserved for it.
+ */
 .mx-flat-inner {
   border-radius: 6px;
   overflow: hidden;
-  transform-origin: center;
-  flex: none;
+  transform-origin: top left;
 }
 
+/*
+ * The surface's true pixel size. It is the one number this view exists to
+ * tell you, so it reads as a label on the accent rather than another chip in
+ * the chrome - no border, white on green, at both ends of the theme.
+ */
 .mx-readout {
   position: absolute;
   left: 12px;
   bottom: 12px;
-  border: 1px solid var(--color-fd-border);
+  border: 0;
   border-radius: 7px;
-  padding: 4px 8px;
-  background: var(--color-fd-card);
+  padding: 5px 9px;
+  background: var(--mx-accent);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 600;
   line-height: 1;
-  color: var(--color-fd-muted-foreground);
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
   pointer-events: none;
 }
 
 .mx-readout span {
-  opacity: 0.55;
+  opacity: 0.7;
   margin: 0 2px;
+  font-weight: 400;
 }
 
 /* Generic artwork for a print / packaging surface */

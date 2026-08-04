@@ -62,7 +62,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-van" />
+<MockupExplorer component="VanMockup" screen="chroma" />
 
 ## More examples
 
@@ -108,10 +108,7 @@ clusters, street-side wrap beyond.
 Match `color` and `surfaceBackground` for a fully-wrapped look - the paint
 carries across the cab, nose and roof that the panel doesn't cover.
 
-<ObjectDemo demo="van-paint" />
-
-```tsx
-<VanMockup color="#1d4433" surfaceBackground="#1d4433" autoRotate>
-  <YourLivery />
-</VanMockup>
-```
+<MockupExplorer
+  component="VanMockup"
+  props={{ color: '#1d4433', surfaceBackground: '#1d4433', autoRotate: true, rotation: [0, 0.6, 0] }}
+/>

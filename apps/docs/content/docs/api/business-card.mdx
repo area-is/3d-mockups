@@ -8,15 +8,10 @@ business card on premium 32 pt stock: square die-cut corners (the standard
 for thick stock), an optional painted edge, and a live 520×298 DOM surface
 on the front - and, optionally, the back.
 
-<MockupExplorer component="BusinessCardMockup" />
-
-<ObjectDemo demo="card-basic" checker />
-
-```tsx
-<BusinessCardMockup float rotation={[-0.1, -0.35, 0]}>
-  <CardFront />
-</BusinessCardMockup>
-```
+<MockupExplorer
+  component="BusinessCardMockup"
+  props={{ float: true, rotation: [-0.1, -0.35, 0] }}
+/>
 
 ## Props
 
@@ -46,7 +41,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-card" />
+<MockupExplorer component="BusinessCardMockup" screen="chroma" />
 
 ## More examples
 
@@ -57,7 +52,7 @@ Add a `<BusinessCardMockup.Back>` and let it orbit - both faces are live DOM.
 <ObjectDemo demo="card-back" />
 
 ```tsx
-<BusinessCardMockup autoRotate autoRotateSpeed={2}>
+<BusinessCardMockup autoRotate={2}>
   <CardFront />
   <BusinessCardMockup.Back>
     <CardBack />

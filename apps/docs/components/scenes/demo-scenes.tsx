@@ -113,7 +113,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyMockup color="#15171d" frameColor="#4d5260" rotation={[0, -0.25, 0]}>
+        <GalaxyMockup color="#15171d" rotation={[0, -0.25, 0]}>
           <LiveCounter />
         </GalaxyMockup>
       </DemoCard>
@@ -130,8 +130,7 @@ export default function DemoScenes() {
         <GalaxyMockup
           autoRotate
           float
-          color="#d3d6dd"
-          frameColor="#b6bac4"
+          color="silvershadow"
           surfaceBackground="#000"
         >
           <LockScreen />
@@ -147,7 +146,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyMockup color="#221d31" frameColor="#453a5c" rotation={[0, 0.25, 0]}>
+        <GalaxyMockup color="#221d31" rotation={[0, 0.25, 0]}>
           <iframe
             src="/embedded"
             title="Embedded page"
@@ -193,7 +192,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyMockup variant="s26" color="#6f6791" frameColor="#5a5478" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26" color="cobaltviolet" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </GalaxyMockup>
       </DemoCard>
@@ -208,7 +207,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <GalaxyMockup variant="s26ultra" color="#a9bdce" frameColor="#c2ccd7" rotation={[0, -0.3, 0]}>
+        <GalaxyMockup variant="s26ultra" color="titaniumsilverblue" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </GalaxyMockup>
       </DemoCard>
@@ -223,7 +222,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FoldMockup color="#c9ccce" frameColor="#b9bcbe" rotation={[0, -0.3, 0]}>
+        <FoldMockup color="silvershadow" rotation={[0, -0.3, 0]}>
           <DesktopScreen />
         </FoldMockup>
       </DemoCard>
@@ -237,7 +236,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FlipMockup open={false} color="#e5502e" frameColor="#f06a45" rotation={[0, -0.3, 0]}>
+        <FlipMockup open={false} color="coralred" rotation={[0, -0.3, 0]}>
           <LockScreen />
         </FlipMockup>
       </DemoCard>
@@ -251,7 +250,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FoldMockup open={false} color="#c9ccce" frameColor="#b9bcbe" rotation={[0, -0.3, 0]}>
+        <FoldMockup open={false} color="silvershadow" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </FoldMockup>
       </DemoCard>
@@ -265,7 +264,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3" rotation={[0, -0.3, 0]}>
+        <IPhoneMockup variant="17" color="lavender" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -279,7 +278,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="air" color="#bfd4e6" frameColor="#a9c0d4" rotation={[0, -0.3, 0]}>
+        <IPhoneMockup variant="air" color="skyblue" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -293,7 +292,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, -0.3, 0]}>
+        <IPhoneMockup variant="pro" color="cosmicorange" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -307,7 +306,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b" rotation={[0, -0.3, 0]}>
+        <IPhoneMockup variant="promax" color="deepblue" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </IPhoneMockup>
       </DemoCard>
@@ -825,7 +824,7 @@ export default function DemoScenes() {
         }
       >
         <div className="alpha-checker">
-          <GalaxyMockup float color="#15171d" frameColor="#4d5260" rotation={[0, 0.3, 0]}>
+          <GalaxyMockup float color="#15171d" rotation={[0, 0.3, 0]}>
             <div className="aurora-screen">
               <p>alpha</p>
             </div>

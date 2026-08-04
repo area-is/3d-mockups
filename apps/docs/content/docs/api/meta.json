@@ -1,10 +1,11 @@
 {
-  "title": "API reference",
+  "title": "Components",
   "pages": [
     "index",
     "mockup-canvas",
     "mockup-info",
     "---Devices---",
+    "...",
     "---Objects---",
     "book",
     "magazine",

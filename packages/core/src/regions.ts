@@ -114,6 +114,20 @@ export interface MockupFraming<P = Record<string, never>> {
 }
 
 /**
+ * A foldable's hinge angle in degrees, from its `open` prop.
+ *
+ * `open` is one prop with two readings: the booleans are the two poses a
+ * foldable is normally photographed in (`true` flat, `false` shut), and a
+ * number is any angle between. Everything that has to agree on the pose - the
+ * scene component, the region metrics, the shadow's ground line - resolves it
+ * through here, so they cannot drift.
+ */
+export function foldOpenAngle(open: boolean | number | undefined): number {
+  if (typeof open === 'number') return Math.max(0, Math.min(180, open))
+  return open === false ? 0 : 180
+}
+
+/**
  * The contact-shadow plane's Y for a framed object: just under the object's
  * lowest point when grounded, a visible hover gap below it when floating.
  */

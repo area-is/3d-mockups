@@ -10,15 +10,10 @@ two-rail guardrail, gooseneck floodlights along the top edge, and a
 foundation collar at grade. The face is a live 1200×350 DOM surface. The
 mockup grounds the pole on a virtual ground plane.
 
-<MockupExplorer component="BillboardMockup" />
-
-<ObjectDemo demo="billboard-basic" checker />
-
-```tsx
-<BillboardMockup rotation={[0, -0.18, 0]}>
-  <YourCreative />
-</BillboardMockup>
-```
+<MockupExplorer
+  component="BillboardMockup"
+  props={{ rotation: [0, -0.18, 0] }}
+/>
 
 ## Props
 
@@ -45,7 +40,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-billboard" />
+<MockupExplorer component="BillboardMockup" screen="chroma" />
 
 ## More examples
 

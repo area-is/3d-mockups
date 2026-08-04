@@ -4,6 +4,7 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layo
 import { createRelativeLink } from 'fumadocs-ui/mdx'
 import { source } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
+import { MockupBreadcrumb } from '@/components/mockup-breadcrumb'
 import { DEVICES, OBJECTS } from '@/lib/mockup-catalog.mjs'
 
 /**
@@ -33,6 +34,12 @@ export default async function Page(props: PageParams) {
       full={page.data.full}
       tableOfContent={{ enabled: !isMockupPage }}
       tableOfContentPopover={{ enabled: !isMockupPage }}
+      // The mockup pages are not in the sidebar tree, so the stock breadcrumb
+      // comes up empty for them - see components/mockup-breadcrumb.tsx.
+      slots={isMockupPage ? { breadcrumb: MockupBreadcrumb } : undefined}
+      // Hands the column the missing table of contents would have taken back
+      // to the article - see `#nd-page[data-wide]` in docs.css.
+      data-wide={isMockupPage || undefined}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>

@@ -27,10 +27,12 @@ export interface PosterFrameProps extends Omit<GroupProps, 'children' | 'color'>
   size?: PosterFrameSize
   /** Frame molding color. */
   color?: string
-  /** Mount the art behind a 2.5" gallery matboard instead of full bleed. */
-  mat?: boolean
-  /** Matboard color (when `mat` is set). */
-  matColor?: string
+  /**
+   * Mount the art behind a 2.5" gallery matboard instead of full bleed:
+   * `true` for the default off-white board, or a CSS color for the board in
+   * that stock (`mat="#1d1f24"` for a dark mount).
+   */
+  mat?: boolean | string
   /** Simulated glazing: a soft acrylic sheen over the art. */
   glazing?: boolean
 }
@@ -55,7 +57,6 @@ function PosterFrameImpl({
   size,
   color = '#22262e',
   mat = false,
-  matColor = '#f6f3ec',
   glazing = true,
   surfaceBackground = '#ffffff',
   resolution = POSTER_FRAME.resolution,
@@ -70,8 +71,14 @@ function PosterFrameImpl({
 
   const outerWidth = poster.width + frame.width * 2
   const outerHeight = poster.height + frame.width * 2
+  // `mat` answers both questions the board raises - whether there is one, and
+  // what stock it is cut from - so the boolean and the color come off it here
+  // and nothing downstream has to know it was ever one prop or two.
+  const matted = mat !== false
+  const matColor = typeof mat === 'string' ? mat : '#f6f3ec'
+
   // with a mat, the live art shrinks to the mat window
-  const art = mat
+  const art = matted
     ? { width: opening.width - matWidth * 2, height: opening.height - matWidth * 2 }
     : { width: opening.width, height: opening.height }
 
@@ -102,11 +109,11 @@ function PosterFrameImpl({
   )
 
   const matGeometry = React.useMemo(() => {
-    if (!mat) return null
+    if (!matted) return null
     const shape = roundedRectShape(poster.width - 0.01, poster.height - 0.01, poster.radius)
     shape.holes.push(roundedRectShape(art.width, art.height, 0.002))
     return new THREE.ShapeGeometry(shape, 8)
-  }, [mat, poster, art.width, art.height])
+  }, [matted, poster, art.width, art.height])
 
   const dustCoverGeometry = React.useMemo(
     () =>
@@ -180,7 +187,7 @@ function PosterFrameImpl({
       <DeviceScreen
         width={art.width}
         height={art.height}
-        radius={mat ? 0.002 : opening.radius}
+        radius={matted ? 0.002 : opening.radius}
         position={[0, 0, sheetZ]}
         {...resolveSurface(posterSlot, {
           surfaceBackground,

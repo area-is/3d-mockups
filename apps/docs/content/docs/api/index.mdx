@@ -1,6 +1,6 @@
 ---
-title: Components overview
-description: How the pieces fit together, and the props every mockup shares.
+title: Overview
+description: How the components fit together, and the props every mockup shares.
 ---
 
 The library has two layers:
@@ -40,7 +40,7 @@ These come from [`MockupCanvas`](/docs/api/mockup-canvas) and work on every
 mockup - the ones that change what the mockup looks like on your page, or what
 a visitor can do with it:
 
-`controls` · `autoRotate` · `autoRotateSpeed` · `zoom` · `fullscreen` ·
+`controls` · `autoRotate` · `zoom` · `fullscreen` ·
 `shadows` · `background` · `camera` · `className` · `style`
 
 `MockupCanvas` has a few more (`freeRotation`, `shadowY`, `dpr`) that tune the
@@ -54,7 +54,7 @@ and the remaining defaults are chosen to look right. Compose
 Bare children always fill a mockup's **primary region** - a phone's screen, a
 book's front cover. Objects with more printable surfaces expose each extra
 region as a compound slot on the component (`<AFrameSignMockup.Back>`,
-`<BookMockup.Spine>`); each API page lists its mockup's slots in a Regions
+`<BookMockup.Spine>`); each mockup's page lists its slots in a Regions
 section. Every slot takes per-surface overrides - `surfaceBackground`,
 `resolution`, `surfaceStyle` - over the mockup-level defaults.
 

@@ -141,16 +141,8 @@ const ORIENTATION: Control = {
   title: 'Rotate the device into landscape',
 }
 
-const OPEN: Control = {
-  prop: 'open',
-  label: 'open',
-  kind: 'toggle',
-  preset: true,
-  title: 'Flat open (off folds it shut) - the shorthand for openAngle 180 / 0',
-}
-
-const openAngle = (min: number, max: number, preset: number): Control => ({
-  prop: 'openAngle',
+const openAngle = (min: number, max: number, preset: number, prop = 'openAngle'): Control => ({
+  prop,
   label: 'angle',
   kind: 'range',
   min,
@@ -203,7 +195,7 @@ const MODELS = new Map<unknown, ModelControls>([
         { value: 's26ultra', label: 'Galaxy S26 Ultra' },
       ],
       catalogs: GALAXY_COLORWAYS as Record<string, Colorway[]>,
-      controls: [swatch('frameColor', 'frame'), ORIENTATION, toggle('punchHole', 'punch hole', true)],
+      controls: [ORIENTATION, toggle('punchHole', 'punch hole', true)],
     },
   ],
   [
@@ -216,7 +208,7 @@ const MODELS = new Map<unknown, ModelControls>([
         { value: 'promax', label: 'iPhone 17 Pro Max' },
       ],
       catalogs: IPHONE_COLORWAYS as Record<string, Colorway[]>,
-      controls: [swatch('frameColor', 'frame'), ORIENTATION, toggle('dynamicIsland', 'dynamic island', true)],
+      controls: [ORIENTATION, toggle('dynamicIsland', 'dynamic island', true)],
     },
   ],
   [
@@ -263,10 +255,8 @@ const MODELS = new Map<unknown, ModelControls>([
     {
       catalog: FOLD_COLORWAYS.fold7,
       controls: [
-        swatch('frameColor', 'frame'),
         ORIENTATION,
-        OPEN,
-        openAngle(0, 180, 180),
+        openAngle(0, 180, 180, 'open'),
         toggle('punchHole', 'punch hole', true),
       ],
     },
@@ -276,10 +266,8 @@ const MODELS = new Map<unknown, ModelControls>([
     {
       catalog: FLIP_COLORWAYS.flip7,
       controls: [
-        swatch('frameColor', 'frame'),
         ORIENTATION,
-        OPEN,
-        openAngle(0, 180, 180),
+        openAngle(0, 180, 180, 'open'),
         toggle('punchHole', 'punch hole', true),
       ],
     },
@@ -362,8 +350,7 @@ const MODELS = new Map<unknown, ModelControls>([
     {
       controls: [
         size('sheet mm', [['width', 457], ['height', 610]]),
-        toggle('mat', 'mat', false),
-        swatch('matColor', 'mat color'),
+        swatch('mat', 'mat'),
         toggle('glazing', 'glazing', true),
       ],
     },
@@ -431,8 +418,7 @@ const AUTO_ROTATE = toggle('autoRotate', 'spin', false, 'Slow auto-orbit')
 /** The stage props from `MockupCanvas`, valid on every mockup. */
 const STAGE_CONTROLS: Control[] = [
   toggle('controls', 'controls', true, 'Drag-to-rotate orbit controls'),
-  AUTO_ROTATE,
-  { prop: 'autoRotateSpeed', label: 'spin speed', kind: 'range', min: 0.2, max: 6, step: 0.2, preset: 1 },
+  { prop: 'autoRotate', label: 'spin', kind: 'range', min: 0, max: 6, step: 0.2, preset: 0 },
   toggle('zoom', 'zoom', false, 'Pinch / wheel zoom plus overlay +/− buttons'),
   toggle('fullscreen', 'fullscreen', false, 'Overlay button that fills the screen'),
   toggle('shadows', 'shadow', true, 'Soft contact shadow under the model'),
@@ -723,10 +709,8 @@ function useMockupControls(children: React.ReactNode) {
   rows.push({ label: 'stage', controls: STAGE_CONTROLS })
 
   /**
-   * Set one prop. A few props supersede each other in the library, so the bar
-   * keeps them consistent: a retail colorway id drops the explicit frame/band
-   * colors it presets, and `openAngle` and the `open` shorthand each clear the
-   * other.
+   * Set one prop. The only cross-talk left is the colorway catalog: a retail id
+   * brings its own band, so an explicit one is dropped when you pick a finish.
    */
   const change = (prop: string, next: unknown) =>
     setValues((prev) => {
@@ -738,15 +722,13 @@ function useMockupControls(children: React.ReactNode) {
         return { ...prev, variant: next, color: kept || custom ? prev.color : undefined }
       }
       if (prop === 'color') {
-        // Selecting from the catalog presets frameColor/bandColor; clear any
-        // explicit ones so the retail finish shows as authored.
+        // Selecting from the catalog brings its own band; clear an explicit
+        // one so the retail finish shows as authored.
         const isCatalogId = catalog?.some((c) => c.id === next)
         return isCatalogId
-          ? { ...prev, color: next || undefined, frameColor: undefined, bandColor: undefined }
+          ? { ...prev, color: next || undefined, bandColor: undefined }
           : { ...prev, color: next || undefined }
       }
-      if (prop === 'openAngle') return { ...prev, openAngle: next, open: undefined }
-      if (prop === 'open') return { ...prev, open: next, openAngle: undefined }
       return { ...prev, [prop]: next }
     })
 

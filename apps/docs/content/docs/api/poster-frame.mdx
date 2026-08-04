@@ -10,15 +10,10 @@ front lip, a soft acrylic glazing sheen over the art, an optional 2.5"
 gallery matboard, and a kraft dust cover on the back. The visible opening is
 a live 540×721 DOM surface.
 
-<MockupExplorer component="PosterFrameMockup" />
-
-<ObjectDemo demo="poster-basic" checker />
-
-```tsx
-<PosterFrameMockup rotation={[0, 0.25, 0]}>
-  <YourPosterArt />
-</PosterFrameMockup>
-```
+<MockupExplorer
+  component="PosterFrameMockup"
+  props={{ rotation: [0, 0.25, 0] }}
+/>
 
 ## Props
 
@@ -28,8 +23,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | --- | --- | --- | --- |
 | `size` | `{ width?, height? }` | `457×610` | Physical sheet in mm - e.g. `{ width: 610, height: 914 }` for 24"×36", `{ width: 594, height: 841 }` for A1. |
 | `color` | `string` | `'#22262e'` | Frame molding color. |
-| `mat` | `boolean` | `false` | Mount the art behind a 2.5" gallery matboard. |
-| `matColor` | `string` | `'#f6f3ec'` | Matboard color. |
+| `mat` | `boolean \| string` | `false` | Mount the art behind a 2.5" gallery matboard. `true` cuts it from the default `#f6f3ec` museum board; a CSS color cuts it from that stock instead, so `mat="#1d1f24"` is a dark mount. |
 | `glazing` | `boolean` | `true` | Soft acrylic sheen over the art. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind your poster content. |
 | `resolution` | `number` | `540` | Virtual art width in CSS px; height follows its aspect. |
@@ -46,7 +40,7 @@ Every live surface filled with chroma green, labeled with the prop that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-poster" />
+<MockupExplorer component="PosterFrameMockup" screen="chroma" />
 
 ## More examples
 
@@ -54,13 +48,10 @@ what stays 3D hardware.
 
 `color` takes any CSS color - wood tones work as well as gallery black.
 
-<ObjectDemo demo="poster-oak" />
-
-```tsx
-<PosterFrameMockup color="#b98d5f" surfaceBackground="#f7f2e8" float>
-  <YourPosterArt />
-</PosterFrameMockup>
-```
+<MockupExplorer
+  component="PosterFrameMockup"
+  props={{ color: '#b98d5f', surfaceBackground: '#f7f2e8', float: true, rotation: [0, -0.25, 0] }}
+/>
 
 ### A gallery wall pair
 

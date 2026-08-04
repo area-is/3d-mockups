@@ -17,15 +17,10 @@ edge-to-edge badge print. The slot punch is carved out of the live area
 with the same stadium outline as the 3D hole, so your design wraps
 around a real opening.
 
-<MockupExplorer component="IDCardMockup" />
-
-<ObjectDemo demo="idcard-basic" checker />
-
-```tsx
-<IDCardMockup float rotation={[0, -0.25, 0.04]}>
-  <BadgeFront />
-</IDCardMockup>
-```
+<MockupExplorer
+  component="IDCardMockup"
+  props={{ float: true, rotation: [0, -0.25, 0.04] }}
+/>
 
 ## Props
 
@@ -55,7 +50,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-id-card" />
+<MockupExplorer component="IDCardMockup" screen="chroma" />
 
 ## More examples
 
@@ -68,7 +63,7 @@ guest network…
 <ObjectDemo demo="idcard-back" />
 
 ```tsx
-<IDCardMockup autoRotate autoRotateSpeed={2} lanyardColor="#1d4ed8">
+<IDCardMockup autoRotate={2} lanyardColor="#1d4ed8">
   <BadgeFront />
   <IDCardMockup.Back>
     <BadgeBack />

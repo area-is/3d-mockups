@@ -34,7 +34,6 @@ type CanvasOnlyProps = Omit<MockupCanvasProps, 'children'>
 const CANVAS_KEYS: ReadonlySet<string> = new Set([
   'controls',
   'autoRotate',
-  'autoRotateSpeed',
   'freeRotation',
   'zoom',
   'fullscreen',
@@ -62,7 +61,6 @@ type MockupStageProps = Pick<
   CanvasOnlyProps,
   | 'controls'
   | 'autoRotate'
-  | 'autoRotateSpeed'
   | 'zoom'
   | 'fullscreen'
   | 'shadows'

@@ -5,6 +5,7 @@ import type { ThreeElements } from '@react-three/fiber'
 import {
   IPHONE_COLORWAYS,
   findColorway,
+  railColor,
   IPHONE_VARIANTS,
   IPHONE_DEFAULT_VARIANT,
   SCREEN_REGIONS,
@@ -46,14 +47,14 @@ export interface IPhoneProps extends Omit<GroupProps, 'children' | 'color'>, Sur
    */
   orientation?: 'portrait' | 'landscape'
   /**
-   * Back glass color. Takes a retail colorway id from `IPHONE_COLORWAYS`
-   * (`'black'`, `'mistblue'`, `'cosmicorange'`…), which also presets
-   * `frameColor`, or any CSS color for a custom finish. A colorway id wins
-   * over a CSS color of the same name - pass hex if you meant the CSS one.
+   * Back glass color, and the whole finish: the chassis rail, buttons and
+   * camera rings follow from it. A retail colorway id from `IPHONE_COLORWAYS`
+   * (`'black'`, `'mistblue'`, `'cosmicorange'`…) gets that model's measured
+   * rail; any other CSS color gets one derived from it (see `railColor`). A
+   * colorway id wins over a CSS color of the same name - pass hex if you meant
+   * the CSS one.
    */
   color?: string
-  /** Frame, buttons and camera-ring color. */
-  frameColor?: string
   /**
    * CSS pixel width of the virtual display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical point grid -
@@ -77,7 +78,6 @@ function IPhoneImpl({
   variant = IPHONE_DEFAULT_VARIANT,
   orientation = 'portrait',
   color: colorProp,
-  frameColor: frameColorProp,
   surfaceBackground = '#000000',
   resolution,
   surfaceStyle,
@@ -90,7 +90,7 @@ function IPhoneImpl({
   // color. Ids win over same-named CSS colors - pass hex for those.
   const retail = findColorway(IPHONE_COLORWAYS[variant], colorProp)
   const color = retail?.color ?? colorProp ?? '#1a1c20'
-  const frameColor = frameColorProp ?? retail?.frameColor ?? '#3f434b'
+  const frameColor = retail?.frameColor ?? railColor(color)
   const { body, glass, display, island, rearCamera, backWindow, buttons, buttonProfile } = spec
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width

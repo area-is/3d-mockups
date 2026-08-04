@@ -12,9 +12,11 @@ export interface TumbleControlsProps {
   enabled?: boolean
   /** Wheel / pinch zoom. */
   zoom?: boolean
-  /** Slowly spin the stage. */
-  autoRotate?: boolean
-  autoRotateSpeed?: number
+  /**
+   * Slowly spin the stage: `true` for one revolution a minute, or a number for
+   * that many times the base speed (`autoRotate={2}` is twice as fast).
+   */
+  autoRotate?: boolean | number
   /**
    * Allow the camera to tumble a full 360° vertically - straight over the top
    * and bottom of the stage. Off by default: vertical rotation stays within
@@ -43,7 +45,6 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
       enabled = true,
       zoom = false,
       autoRotate = false,
-      autoRotateSpeed = 1,
       freeRotation = false,
       minDistance,
       maxDistance,
@@ -164,7 +165,8 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
     // WebGL body by one frame during fast drags.
     const lastDistance = React.useRef(0)
     useFrame((_, delta) => {
-      const step = autoRotate ? tumbleAutoRotateStep(delta, autoRotateSpeed) : 0
+      const speed = typeof autoRotate === 'number' ? autoRotate : autoRotate ? 1 : 0
+      const step = speed ? tumbleAutoRotateStep(delta, speed) : 0
       orbit.update(camera, step)
       if (onDistanceChange) {
         // The orbit keeps the stage center as its target, so the camera's

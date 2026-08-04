@@ -20,14 +20,6 @@ clusters in both short edges, and the front camera in the landscape-top bezel.
 The virtual display swaps to 1376×1032 in landscape - real desktop-class
 layouts apply.
 
-<ObjectDemo demo="ipad-landscape" checker />
-
-```tsx
-<IPadMockup orientation="landscape" rotation={[0, -0.3, 0]}>
-  <YourApp />
-</IPadMockup>
-```
-
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):
@@ -39,45 +31,18 @@ Beyond the [shared screen props](/docs/screen-content):
 | `resolution` | `number` | per variant | Defaults to the variant's logical grid: 1032×1376 (ipadpro13), 834×1210 (ipadpro11), 1024×1366 (ipadair13), 820×1180 (ipadair11, ipad11). |
 | `color` | `string` | per variant | Body color. Takes a retail colorway id from `IPAD_COLORWAYS` - Pro `spaceblack`/`silver`, Air `spacegray`/`starlight`/`purple`/`blue`, iPad `silver`/`blue`/`pink`/`yellow` - or any CSS color. |
 
-## All variants
+## This model
 
 ### iPad Air 13″
 
 The M4 Air: bare single 12 MP lens with its polished ring, Touch ID top
 button, Smart Connector dots on the back - in Starlight.
 
-<ObjectDemo demo="ipad-air13" />
-
-```tsx
-<IPadMockup variant="ipadair13" color="starlight">
-  <YourApp />
-</IPadMockup>
-```
-
-### iPad (A16)
-
-The standard iPad in its punchy Blue, with the crisper chamfered rails and
-the edge-mounted Smart Connector of the 10th-gen chassis.
-
-<ObjectDemo demo="ipad-a16" />
-
-```tsx
-<IPadMockup variant="ipad11" color="blue">
-  <YourApp />
-</IPadMockup>
-```
-
-### iPad Pro 11″
-
-The same Pro design language at the smaller true relative size, in Silver.
-
-<ObjectDemo demo="ipad-pro11" />
-
-```tsx
-<IPadMockup variant="ipadpro11" color="silver">
-  <YourApp />
-</IPadMockup>
-```
+<MockupExplorer
+  component="IPadMockup"
+  variant="ipadair13"
+  props={{ color: 'starlight', rotation: [0, -0.3, 0] }}
+/>
 
 ## Mockup-able areas
 
@@ -85,4 +50,6 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-ipad" />
+<MockupExplorer component="IPadMockup" variant="ipadair13" screen="chroma" />
+
+<DeviceDisclaimer brands="Apple" />

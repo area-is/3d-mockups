@@ -11,13 +11,10 @@ The window on screen is real DOM, not a texture - drag anywhere to orbit. The
 keyboard and palm rest occlude it per-pixel, so the screen's reflection ends
 exactly where the hardware begins.
 
-<ObjectDemo demo="laptop-basic" checker />
-
-```tsx
-<LaptopMockup color="#aec6d9" rotation={[0, -0.35, 0]}>
-  <YourDesktopApp />
-</LaptopMockup>
-```
+<MockupExplorer
+  component="LaptopMockup"
+  props={{ color: '#aec6d9', rotation: [0, -0.35, 0] }}
+/>
 
 ## Props
 
@@ -38,7 +35,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-laptop" />
+<MockupExplorer component="LaptopMockup" screen="chroma" />
 
 ## More examples
 
@@ -47,48 +44,36 @@ what stays 3D hardware.
 `variant="pro14"`: deeper body, HDMI + SDXC on the right flank, speaker
 grilles beside the keyboard, and the 1512×982 point grid.
 
-<ObjectDemo demo="laptop-pro14" />
-
-```tsx
-<LaptopMockup variant="pro14" color="#4a484b">
-  <YourDesktopApp />
-</LaptopMockup>
-```
+<MockupExplorer
+  component="LaptopMockup"
+  props={{ variant: 'pro14', color: '#4a484b', rotation: [0, -0.35, 0] }}
+/>
 
 ### MacBook Air 15" in Sky Blue
 
 `variant="air15"`: the 15.3" Air - same thin slab and clean deck as the
 13", scaled to its true 340×238 mm footprint and 1440×932 point grid.
 
-<ObjectDemo demo="laptop-air15" />
-
-```tsx
-<LaptopMockup variant="air15" color="skyblue">
-  <YourDesktopApp />
-</LaptopMockup>
-```
+<MockupExplorer
+  component="LaptopMockup"
+  props={{ variant: 'air15', color: 'skyblue', rotation: [0, 0.3, 0] }}
+/>
 
 ### MacBook Pro 16" in Space Black
 
 `variant="pro16"`: the biggest MacBook - wider speaker grilles, larger
 trackpad and the 1728×1117 point grid.
 
-<ObjectDemo demo="laptop-pro16" />
-
-```tsx
-<LaptopMockup variant="pro16" color="spaceblack">
-  <YourDesktopApp />
-</LaptopMockup>
-```
+<MockupExplorer
+  component="LaptopMockup"
+  props={{ variant: 'pro16', color: 'spaceblack', rotation: [0, -0.35, 0] }}
+/>
 
 ### Midnight, tighter lid angle
 
 `openAngle` poses the hinge; 100° reads more "working", 110° more "display".
 
-<ObjectDemo demo="laptop-midnight" />
-
-```tsx
-<LaptopMockup color="#2e3642" openAngle={100} float>
-  <YourDesktopApp />
-</LaptopMockup>
-```
+<MockupExplorer
+  component="LaptopMockup"
+  props={{ color: '#2e3642', openAngle: 100, float: true, rotation: [0, 0.3, 0] }}
+/>

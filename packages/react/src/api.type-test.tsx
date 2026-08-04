@@ -82,14 +82,15 @@ type _noFreeRotation = Expect<Not<Has<'freeRotation', AFrameSignMockupProps>>>
 type _noShadowY = Expect<Not<Has<'shadowY', AFrameSignMockupProps>>>
 type _noDpr = Expect<Not<Has<'dpr', AFrameSignMockupProps>>>
 type _canvasKeepsThem = Expect<Has<'freeRotation', MockupCanvasProps>>
-type _mockupKeepsSpeed = Expect<Has<'autoRotateSpeed', AFrameSignMockupProps>>
+// One prop carries the turntable, so there is no separate speed to advertise.
+type _noSeparateSpeed = Expect<Not<Has<'autoRotateSpeed', AFrameSignMockupProps>>>
 // ---- studio lighting is not optional -------------------------------------------------
 type _noEnvironment = Expect<Not<Has<'environment', MockupCanvasProps>>>
 
 // ---- compound slots exist on both the mockup and the raw scene component -------------
 const _slotsUsage = (
   <>
-    <AFrameSignMockup autoRotate autoRotateSpeed={0.8} rotation={[0, 0.25, 0]}>
+    <AFrameSignMockup autoRotate={0.8} rotation={[0, 0.25, 0]}>
       <AFrameSignMockup.Front surfaceBackground="#20241f">
         <div />
       </AFrameSignMockup.Front>

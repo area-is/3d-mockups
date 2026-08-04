@@ -57,7 +57,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-box" />
+<MockupExplorer component="ProductBoxMockup" screen="chroma" />
 
 ## More examples
 
@@ -83,10 +83,7 @@ back, the roast-date stamp underneath. Drag it anywhere; it stays designed.
 
 Unprinted faces show the stock - `color` turns it into kraft board.
 
-<ObjectDemo demo="box-kraft" />
-
-```tsx
-<ProductBoxMockup color="#c9a877" float autoRotate>
-  <FrontPanel />
-</ProductBoxMockup>
-```
+<MockupExplorer
+  component="ProductBoxMockup"
+  props={{ color: '#c9a877', float: true, autoRotate: 1.2 }}
+/>

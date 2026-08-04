@@ -19,6 +19,7 @@ export {
   FLOAT_SHADOW_GAP,
   CONTACT_SHADOW_GAP,
   framedShadowY,
+  foldOpenAngle,
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
@@ -111,7 +112,8 @@ export {
   EXIT_FULLSCREEN_ICON_PATH,
 } from './stage/overlay'
 
-// Retail colorway catalogs (pure data) + the `colorway` prop resolver.
+// Retail colorway catalogs (pure data), the `color` prop resolver, and the
+// metal a custom body color implies.
 export {
   type Colorway,
   GALAXY_COLORWAYS,
@@ -125,6 +127,7 @@ export {
   GALAXY_WATCH_COLORWAYS,
   STUDIO_DISPLAY_COLORWAYS,
   findColorway,
+  railColor,
 } from './colorways'
 
 // Device specs (physical dimensions, cameras, displays - pure data).

@@ -9,15 +9,10 @@ dual wheels and mudflaps, side skirts, ICC bumper, lock-rod rear doors, amber
 front markers and DOT reflective tape along the bottom rails. The biggest
 canvas in the library - both 15.2×2.6 m sides plus the rear doors are live.
 
-<MockupExplorer component="SemiTrailerMockup" />
-
-<ObjectDemo demo="trailer-basic" checker />
-
-```tsx
-<SemiTrailerMockup rotation={[0, -0.35, 0]}>
-  <YourWrap />
-</SemiTrailerMockup>
-```
+<MockupExplorer
+  component="SemiTrailerMockup"
+  props={{ rotation: [0, -0.35, 0] }}
+/>
 
 ## Props
 
@@ -51,7 +46,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-semi" />
+<MockupExplorer component="SemiTrailerMockup" screen="chroma" />
 
 ## More examples
 

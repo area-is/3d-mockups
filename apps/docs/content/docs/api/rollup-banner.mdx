@@ -10,15 +10,10 @@ slim top clamp rail, with the support pole hidden behind. The graphic is a
 live 420×988 DOM surface. The mockup grounds the cassette on a virtual
 floor.
 
-<MockupExplorer component="RollupBannerMockup" />
-
-<ObjectDemo demo="banner-basic" checker />
-
-```tsx
-<RollupBannerMockup rotation={[0, 0.18, 0]}>
-  <YourBannerArt />
-</RollupBannerMockup>
-```
+<MockupExplorer
+  component="RollupBannerMockup"
+  props={{ rotation: [0, 0.18, 0] }}
+/>
 
 ## Props
 
@@ -43,7 +38,7 @@ Every live surface filled with chroma green, labeled with the prop that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-banner" />
+<MockupExplorer component="RollupBannerMockup" screen="chroma" />
 
 ## More examples
 

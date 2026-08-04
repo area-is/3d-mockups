@@ -4,13 +4,10 @@ camera architecture follows the real devices: two-lens pill (17), ultra-thin
 single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 (Pro and Pro Max).
 
-<ObjectDemo demo="iphone-pro" checker />
-
-```tsx
-<IPhoneMockup variant="pro" color="#c96b34" frameColor="#b25c2a" rotation={[0, 0.25, 0]}>
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'pro', color: 'cosmicorange', rotation: [0, 0.25, 0] }}
+/>
 
 ## Props
 
@@ -21,7 +18,7 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 | `variant` | `'17' \| 'air' \| 'pro' \| 'promax'` | `'17'` | Which iPhone 17 family device: 17 (two-lens pill), air (ultra-thin, single-lens bar), pro and promax (full-width plateau, flash + LiDAR). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content. |
 | `resolution` | `number` | per variant | Defaults to the variant's point grid: 402×874 (17, pro), 420×912 (air), 440×956 (promax). |
-| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` - which also presets `frameColor`, or any CSS color. |
+| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; Pro/Pro Max `silver`, `cosmicorange`, `deepblue` - which brings that model's measured chassis rail with it, or any CSS color - the rail is then derived from it. |
 
 ## Colorways
 
@@ -29,45 +26,36 @@ Same API as [`Galaxy`](/docs/api/galaxy), except:
 `#bfd4e6`, Light Gold `#e6d9c0`. Pro: Cosmic Orange `#c96b34`, Deep Blue
 `#2b3a55`, Silver `#dfe0e2`.
 
-## All variants
+## This model
 
 ### iPhone 17
 
 The baseline model: two-lens vertical pill, Lavender colorway, 402×874 virtual
 screen.
 
-<ObjectDemo demo="iphone-17" />
-
-```tsx
-<IPhoneMockup variant="17" color="#cfc4e6" frameColor="#b9aed3">
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: '17', color: 'lavender', rotation: [0, -0.3, 0] }}
+/>
 
 ### iPhone 17 Air, floating
 
 The Air's ultra-thin profile and single-lens bar show off on the orbit.
 
-<ObjectDemo demo="iphone-air" />
-
-```tsx
-<IPhoneMockup variant="air" autoRotate float color="#bfd4e6" frameColor="#a9c0d4">
-  <LockScreen />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'air', autoRotate: true, float: true, color: 'skyblue', surfaceBackground: '#000' }}
+/>
 
 ### iPhone 17 Pro Max
 
 The biggest body in the family - full-width plateau, top-edge RF window, and a
 440×956 virtual screen.
 
-<ObjectDemo demo="iphone-promax" />
-
-```tsx
-<IPhoneMockup variant="promax" color="#2b3a55" frameColor="#3d4d6b">
-  <MusicPlayer />
-</IPhoneMockup>
-```
+<MockupExplorer
+  component="IPhoneMockup"
+  props={{ variant: 'promax', color: 'deepblue', rotation: [0, -0.3, 0] }}
+/>
 
 ## Mockup-able areas
 
@@ -75,25 +63,7 @@ Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
-<ObjectDemo demo="chroma-iphone" />
+<MockupExplorer component="IPhoneMockup" screen="chroma" />
 
 ## More examples
 
-### Galaxy and iPhone side by side
-
-Bare `<Galaxy>` and `<IPhone>` objects share one
-[`MockupCanvas`](/docs/api/mockup-canvas) - both families use the same world
-scale, so relative sizes are true.
-
-<ObjectDemo demo="phone-duo" />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-  <Galaxy variant="s26ultra" color="#2e3238" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
-    <YourAndroidApp />
-  </Galaxy>
-  <IPhone variant="promax" color="#2b3a55" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
-    <YourIOSApp />
-  </IPhone>
-</MockupCanvas>
-```

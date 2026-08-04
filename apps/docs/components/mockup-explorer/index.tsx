@@ -1,10 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ChromaSurface } from '../screens/chroma-surface'
 import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
 import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
 import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
+import { ColorRow, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
+import { editableProp, propAttribute, same, type EditableProp } from './prop-controls'
+import { LazyScene } from '../lazy-scene'
 import { EXPLORERS, type ExplorerSpec } from './registry'
 
 /**
@@ -27,6 +31,22 @@ export interface MockupExplorerProps {
   component: string
   /** Lock the explorer to one variant (used by the per-variant pages). */
   variant?: string
+  /**
+   * Props to open on, so a page can show a configured example that is still
+   * live. These are where the explorer STARTS, not a floor: every one of them
+   * has its own control, the reset takes you back here rather than to bare
+   * defaults, and the snippet prints them because they really are being
+   * passed.
+   */
+  props?: Record<string, unknown>
+  /**
+   * What fills every surface. `auto` picks the screen that suits the object -
+   * a running app for a device, artwork for a print surface. `chroma` fills
+   * them all with broadcast green labelled by slot, which is the
+   * "mockup-able areas" view: the same live explorer, showing where content
+   * lands rather than what it could look like.
+   */
+  screen?: 'auto' | 'chroma'
   /** Stage height in px. */
   stageHeight?: number
 }
@@ -34,9 +54,9 @@ export interface MockupExplorerProps {
 interface PropState {
   variant: string
   color: string
-  frameColor: string
   orientation: 'portrait' | 'landscape'
-  open: boolean
+  /** Hinge angle in degrees - 180 flat, 0 shut, anything between is Flex Mode. */
+  open: number
   coverage: 'panel' | 'full' | 'perforated'
   float: boolean
   surfaceBackground: string
@@ -48,6 +68,12 @@ interface PropState {
   fullscreen: boolean
   shadows: boolean
   background: string
+  /**
+   * Everything else the component documents, keyed by prop name. Only props
+   * the user actually set live here - the rest are simply absent, which is
+   * what the mockup sees and what the snippet prints.
+   */
+  extra: Record<string, unknown>
 }
 
 /**
@@ -58,9 +84,8 @@ interface PropState {
 const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
-  frameColor: '',
   orientation: 'portrait',
-  open: true,
+  open: 180,
   coverage: 'panel',
   float: false,
   surfaceBackground: '',
@@ -72,33 +97,91 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   fullscreen: false,
   shadows: true,
   background: '',
+  extra: {},
 })
 
 /**
  * Where the explorer starts. Zoom is on so the stage is immediately
  * scroll/pinch-zoomable and MockupCanvas draws its zoom overlay - the
  * "modified" count and the reset action measure against this, so an untouched
- * explorer still reads as unmodified.
+ * explorer still reads as unmodified. `spec.fixed` seeds the same way: a
+ * required prop (a custom panel's `size`) has to be passed from the first
+ * frame, and starting there means it doesn't read as a modification either.
  */
-const initialState = (spec: ExplorerSpec, lockedVariant?: string): PropState => ({
-  ...libraryDefaults(spec, lockedVariant),
-  zoom: true,
-})
+const initialState = (
+  spec: ExplorerSpec,
+  lockedVariant?: string,
+  seed?: Record<string, unknown>
+): PropState => {
+  const state: PropState = {
+    ...libraryDefaults(spec, lockedVariant),
+    zoom: true,
+    extra: { ...spec.fixed },
+  }
+  for (const [name, value] of Object.entries(seed ?? {})) {
+    if (name === 'autoRotate') {
+      // One prop, two pieces of UI state: the switch and the speed slider.
+      state.autoRotate = value !== false && value !== 0
+      if (typeof value === 'number') state.autoRotateSpeed = value
+    } else if (name === 'open') {
+      state.open = typeof value === 'number' ? value : value === false ? 0 : 180
+    } else if (name in state) {
+      // A hand-written control owns it; the rest are inferred rows in `extra`.
+      ;(state as unknown as Record<string, unknown>)[name] = value
+    } else {
+      state.extra[name] = value
+    }
+  }
+  return state
+}
 
 /**
  * Everything a component accepts, from the API docs' own tables, minus the
- * props the inspector already gives a control for. Listing the remainder
- * read-only is what makes the panel a complete answer to "what can I pass?"
- * rather than only "what can I click?".
+ * props the inspector already hand-writes a control for - sorted into where
+ * each belongs in the panel.
+ *
+ * The rest used to be a read-only list. They are now driven too, from the type
+ * their prop table states, so the panel answers "what can I pass?" and "what
+ * can I click?" with the same list. What is left over - `surfaceStyle`,
+ * `className`, `style` - is documented, but there is nothing for a live demo
+ * to do with it.
  */
-function codeOnlyProps(spec: ExplorerSpec, driven: Set<string>): PropDoc[] {
-  const rows = [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]
-  const seen = new Set<string>()
-  return rows.filter((row) => {
-    if (driven.has(row.name) || seen.has(row.name)) return false
-    seen.add(row.name)
-    return true
-  })
+interface PanelProps {
+  /** The component's own props, in the order its API page lists them. */
+  object: EditableProp[]
+  /** `position` / `rotation` / `scale`. */
+  transform: EditableProp[]
+  /** The stage camera, which belongs with the other stage props. */
+  camera?: EditableProp
+  /** Documented, but not something a live demo can drive. */
+  readOnly: PropDoc[]
+}
+
+/**
+ * The props this component's own API page lists.
+ *
+ * The inspector hand-writes a row for `color`, and it is not universal: a
+ * magazine is stock and ink, so it takes `pageColor` and `backColor` and no
+ * `color` at all. Asking the table is what keeps the panel from offering a
+ * control the component would ignore, and the snippet from printing a prop
+ * that would not compile.
+ */
+const documented = (spec: ExplorerSpec) =>
+  new Set((COMPONENT_PROPS[spec.name] ?? []).map((doc) => doc.name))
+
+function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
+  const out: PanelProps = { object: [], transform: [], readOnly: [] }
+  const seen = new Set(driven)
+  for (const doc of [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]) {
+    if (seen.has(doc.name)) continue
+    seen.add(doc.name)
+    const prop = editableProp(doc)
+    if (!prop) out.readOnly.push(doc)
+    else if (prop.control.kind === 'camera') out.camera = prop
+    else if (prop.control.kind === 'vector') out.transform.push(prop)
+    else out.object.push(prop)
+  }
+  return out
 }
 
 /** How long the finish-change spin takes, and the turntable speed that fits. */
@@ -132,6 +215,9 @@ function useStageSize(ref: React.RefObject<HTMLElement | null>) {
 const REGION_LABEL = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
 /** `coverInner` -> `cover-inner.tsx`, the name the tab carries. */
 const REGION_FILE = (name: string) => `${name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}.tsx`
+/** `ChromaSurface` -> `chroma-surface`, the module the snippet imports from. */
+const KEBAB = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+
 /** `top` -> `Top`, the slot component on the mockup. */
 const SLOT_NAME = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
 
@@ -158,109 +244,6 @@ function surfaceSource(
 }
 
 /* ------------------------------------------------------------------ */
-/*  Controls                                                           */
-/* ------------------------------------------------------------------ */
-
-function Switch({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean
-  onChange: (v: boolean) => void
-  label: string
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        className="mx-switch"
-        data-on={checked}
-        onClick={() => onChange(!checked)}
-      >
-        <span className="mx-switch-knob" />
-      </button>
-    </div>
-  )
-}
-
-function ColorRow({
-  label,
-  value,
-  fallback,
-  onChange,
-}: {
-  label: string
-  value: string
-  fallback: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <span className="mx-row-controls">
-        <span className="mx-hex">{value || fallback}</span>
-        <input
-          type="color"
-          aria-label={label}
-          className="mx-color"
-          value={value || fallback}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        {value ? (
-          <button type="button" className="mx-clear" aria-label={`Reset ${label}`} onClick={() => onChange('')}>
-            <ResetGlyph />
-          </button>
-        ) : null}
-      </span>
-    </div>
-  )
-}
-
-function ResetGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-      <path d="M3 3v6h6" />
-      <path d="M3.6 15.2A9 9 0 1 0 5.9 5.7L3 9" />
-    </svg>
-  )
-}
-
-function Segmented<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: T
-  options: readonly T[]
-  onChange: (v: T) => void
-}) {
-  return (
-    <div className="mx-row">
-      <span className="mx-prop">{label}</span>
-      <span className="mx-segmented">
-        {options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            data-on={option === value}
-            onClick={() => onChange(option)}
-          >
-            {option}
-          </button>
-        ))}
-      </span>
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
 /*  Code generation                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -270,34 +253,45 @@ interface Line {
 }
 
 /** The snippet for the current props - only what differs from the defaults. */
-function buildSource(spec: ExplorerSpec, p: PropState, stageHeight: number, screen: string): Line[] {
+function buildSource(
+  spec: ExplorerSpec,
+  p: PropState,
+  stageHeight: number,
+  screen: string,
+  extras: EditableProp[]
+): Line[] {
   const base = libraryDefaults(spec)
+  const documents = documented(spec)
   const props: string[] = []
   const add = (text: string) => props.push(text)
 
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
-  if (p.color) add(`color="${p.color}"`)
-  if (spec.frameColor && p.frameColor) add(`frameColor="${p.frameColor}"`)
+  if (documents.has('color') && p.color) add(`color="${p.color}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
-  if (spec.openable && !p.open) add('open={false}')
+  if (spec.openable && p.open !== 180) add(p.open === 0 ? 'open={false}' : `open={${p.open}}`)
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
   if (p.float) add('float')
   if (p.surfaceBackground) add(`surfaceBackground="${p.surfaceBackground}"`)
   if (p.resolution) add(`resolution={${p.resolution}}`)
   if (!p.controls) add('controls={false}')
-  if (p.autoRotate) add('autoRotate')
-  if (p.autoRotate && p.autoRotateSpeed !== 1) add(`autoRotateSpeed={${p.autoRotateSpeed}}`)
+  // The switch and the speed slider drive one prop: bare when it spins at the
+  // library's own rate, a multiplier when it doesn't.
+  if (p.autoRotate) add(p.autoRotateSpeed === 1 ? 'autoRotate' : `autoRotate={${p.autoRotateSpeed}}`)
   if (p.zoom) add('zoom')
   if (p.fullscreen) add('fullscreen')
   if (!p.shadows) add('shadows={false}')
   if (p.background) add(`background="${p.background}"`)
-  if (spec.fixed?.size) add(`size={${JSON.stringify(spec.fixed.size).replace(/"/g, '')}}`)
+  // Anything still in `extra` is there because it differs from what the
+  // component does on its own, so every one of them earns a line.
+  for (const prop of extras) {
+    if (prop.name in p.extra) add(propAttribute(prop, p.extra[prop.name]))
+  }
 
   const lines: Line[] = [
     { text: `'use client'` },
     { text: '' },
     { text: `import { ${spec.name} } from 'area-3d-mockups'` },
-    { text: `import { ${screen} } from './${screen === 'LiveCounter' ? 'live-counter' : 'surface-art'}'` },
+    { text: `import { ${screen} } from './${KEBAB(screen)}'` },
     { text: '' },
     { text: 'export function Demo() {' },
     { text: '  return (' },
@@ -350,9 +344,15 @@ function Code({ text }: { text: string }) {
 /*  The explorer                                                       */
 /* ------------------------------------------------------------------ */
 
-export function MockupExplorer({ component, variant, stageHeight = 460 }: MockupExplorerProps) {
+export function MockupExplorer({
+  component,
+  variant,
+  props: seed,
+  screen = 'auto',
+  stageHeight = 460,
+}: MockupExplorerProps) {
   const spec = EXPLORERS[component]
-  const [p, setP] = useState<PropState>(() => initialState(spec, variant))
+  const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
   // Open on a wide screen, collapsed once the layout stacks. Resolved after
   // mount so the server and the first client render agree.
   const [inspectorOpen, setInspectorOpen] = useState(true)
@@ -373,6 +373,14 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
   const set = <K extends keyof PropState>(key: K, value: PropState[K]) =>
     setP((prev) => ({ ...prev, [key]: value }))
 
+  const writeExtra = (name: string, value: unknown | undefined) =>
+    setP((prev) => {
+      const extra = { ...prev.extra }
+      if (value === undefined) delete extra[name]
+      else extra[name] = value
+      return { ...prev, extra }
+    })
+
   useEffect(() => {
     if (firstColour.current) {
       firstColour.current = false
@@ -381,7 +389,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     setSpinning(true)
     const t = setTimeout(() => setSpinning(false), SPIN_MS)
     return () => clearTimeout(t)
-  }, [p.color, p.frameColor])
+  }, [p.color])
 
   // Only the initial state follows the breakpoint: once the reader has opened
   // or closed the panel, a rotation should not overrule them.
@@ -389,23 +397,73 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     if (window.innerWidth <= STACK_BREAKPOINT) setInspectorOpen(false)
   }, [])
 
-  const base = useMemo(() => initialState(spec, variant), [spec, variant])
-  const modified = useMemo(
-    () => (Object.keys(base) as (keyof PropState)[]).filter((k) => p[k] !== base[k]).length,
-    [p, base]
-  )
+  const seedKey = JSON.stringify(seed ?? null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const base = useMemo(() => initialState(spec, variant, seed), [spec, variant, seedKey])
+  const modified = useMemo(() => {
+    const keys = (Object.keys(base) as (keyof PropState)[]).filter((k) => k !== 'extra')
+    const names = new Set([...Object.keys(p.extra), ...Object.keys(base.extra)])
+    return (
+      keys.filter((k) => p[k] !== base[k]).length +
+      [...names].filter((name) => !same(p.extra[name], base.extra[name])).length
+    )
+  }, [p, base])
 
   if (!spec) return null
   const { Component } = spec
 
-  // Regions and measurements come straight off the component.
+  const documents = documented(spec)
+  const hasColor = documents.has('color')
+
+  const driven = new Set<string>([
+    'float',
+    'surfaceBackground',
+    'resolution',
+    'controls',
+    'autoRotate',
+    'zoom',
+    'fullscreen',
+    'shadows',
+    'background',
+    'children',
+    ...(hasColor ? ['color'] : []),
+    ...(spec.variants ? ['variant'] : []),
+    ...(spec.orientation ? ['orientation'] : []),
+    ...(spec.openable ? ['open'] : []),
+    ...(spec.coverage ? ['coverage'] : []),
+  ])
+  const panel = panelProps(spec, driven)
+  const editable = [...panel.object, ...panel.transform, ...(panel.camera ? [panel.camera] : [])]
+
+  /** What a row shows: the value in play, whether it moved, and how to move it. */
+  const rowProps = (prop: EditableProp) => ({
+    prop,
+    value: prop.name in p.extra ? p.extra[prop.name] : prop.seed,
+    set: !same(p.extra[prop.name], base.extra[prop.name]),
+    onChange: (value: unknown) =>
+      // Landing back on the documented default is the same as never having
+      // passed the prop - unless the explorer had to seed it (`spec.fixed`),
+      // in which case there is no "not passed" to go back to.
+      writeExtra(
+        prop.name,
+        base.extra[prop.name] === undefined && same(value, prop.fallback) ? undefined : value
+      ),
+    onReset: () => writeExtra(prop.name, base.extra[prop.name]),
+  })
+
+  // Regions and measurements come straight off the component. Only the object's
+  // own props reach `info()` - a transform or a camera moves the mockup on the
+  // stage without changing a millimetre of what it measures.
   const regions: { name: string; label?: string }[] = Component.regions ?? []
+  const geometry = Object.fromEntries(
+    panel.object.filter((prop) => prop.name in p.extra).map((prop) => [prop.name, p.extra[prop.name]])
+  )
   const infoProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
     ...(spec.openable ? { open: p.open } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
-    ...(spec.fixed ?? {}),
+    ...geometry,
   }
   let measured: Record<string, { px?: { width: number; height: number } }> = {}
   try {
@@ -419,31 +477,11 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
     return (first as { px?: { width: number; height: number } } | undefined)?.px
   }
 
-  const driven = new Set<string>([
-    'color',
-    'float',
-    'surfaceBackground',
-    'resolution',
-    'controls',
-    'autoRotate',
-    'autoRotateSpeed',
-    'zoom',
-    'fullscreen',
-    'shadows',
-    'background',
-    'children',
-    ...(spec.variants ? ['variant'] : []),
-    ...(spec.frameColor ? ['frameColor'] : []),
-    ...(spec.orientation ? ['orientation'] : []),
-    ...(spec.openable ? ['open'] : []),
-    ...(spec.coverage ? ['coverage'] : []),
-  ])
-  const alsoAccepts = codeOnlyProps(spec, driven)
-
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
-  const screenName = spec.print ? 'SurfaceArt' : 'LiveCounter'
+  const chroma = screen === 'chroma'
+  const screenName = chroma ? 'ChromaSurface' : spec.print ? 'SurfaceArt' : 'LiveCounter'
   const content = (label: string) =>
-    spec.print ? <SurfaceArt label={label} /> : <LiveCounter />
+    chroma ? <ChromaSurface label={label} /> : spec.print ? <SurfaceArt label={label} /> : <LiveCounter />
 
   // Slots are the capitalized components the mockup carries, one per region.
   const slots = Object.entries(Component).filter(
@@ -452,27 +490,42 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
 
   const mockupProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
-    ...(p.color ? { color: p.color } : {}),
-    ...(spec.frameColor && p.frameColor ? { frameColor: p.frameColor } : {}),
+    ...(hasColor && p.color ? { color: p.color } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
     ...(spec.openable ? { open: p.open } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...(p.surfaceBackground ? { surfaceBackground: p.surfaceBackground } : {}),
     ...(p.resolution ? { resolution: p.resolution } : {}),
     ...(p.background ? { background: p.background } : {}),
-    ...(spec.fixed ?? {}),
+    ...p.extra,
     float: p.float,
     // TumbleControls - and with it the turntable - only exists while controls
     // are on, so the spin borrows them for its duration.
     controls: p.controls || spinning,
-    autoRotate: p.autoRotate || spinning,
-    autoRotateSpeed: spinning ? SPIN_SPEED : p.autoRotateSpeed,
+    autoRotate: spinning ? SPIN_SPEED : p.autoRotate && p.autoRotateSpeed,
     zoom: p.zoom,
     fullscreen: p.fullscreen,
     shadows: p.shadows,
   }
 
   const flatPx = view === '3d' ? undefined : pxOf(view)
+  /**
+   * The surface at true size, the factor that fits it, and the box that lands.
+   *
+   * Measured rather than assumed: the stage is a different box with the
+   * inspector open, closed, or stacked under it on a phone, and the hard-coded
+   * widths this used to carry were wrong on a phone and slightly wrong on
+   * desktop too. The insets leave room for the dashed frame and the readout.
+   */
+  const flatSize = (() => {
+    const px = { width: flatPx?.width ?? 320, height: flatPx?.height ?? 200 }
+    const scale = Math.min(
+      ((stageSize.height || stageHeight) - 100) / px.height,
+      ((stageSize.width || 640) - 60) / px.width,
+      1
+    )
+    return { px, scale, width: px.width * scale, height: px.height * scale }
+  })()
   /*
    * One tab per surface next to demo.tsx, and the same `view` drives both -
    * so picking a panel's source shows that panel on the stage, and picking a
@@ -481,7 +534,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
    */
   const source =
     view === '3d'
-      ? buildSource(spec, p, stageHeight, screenName)
+      ? buildSource(spec, p, stageHeight, screenName, editable)
       : surfaceSource(spec, view, screenName, flatPx)
 
   return (
@@ -504,8 +557,11 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
           type="button"
           className="mx-props-btn"
           data-on={inspectorOpen}
+          aria-expanded={inspectorOpen}
+          title={inspectorOpen ? 'Hide the props panel' : 'Show the props panel'}
           onClick={() => setInspectorOpen((o) => !o)}
         >
+          <PanelGlyph open={inspectorOpen} />
           Props
           {modified > 0 ? <span className="mx-badge">{modified}</span> : null}
         </button>
@@ -516,34 +572,33 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
       <div className="mx-body" style={{ height: stageHeight }}>
         <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
-            <Component {...mockupProps}>
-              {content(regions[0]?.name ?? 'screen')}
-              {slots.map(([name, Slot]) => (
-                <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
-              ))}
-            </Component>
+            <LazyScene>
+              <Component {...mockupProps}>
+                {content(regions[0]?.name ?? 'screen')}
+                {slots.map(([name, Slot]) => (
+                  <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
+                ))}
+              </Component>
+            </LazyScene>
           ) : (
             <div className="mx-flat">
-              <div className="mx-flat-frame">
+              {/* The frame is sized from the SCALED surface, not the surface.
+                  `transform` only changes what a box looks like, never how much
+                  room it takes, so a frame wrapped around the untransformed
+                  element would be drawn at the full 360x780 - metres wide of the
+                  shrunken screen, and tall enough for the stage to clip its top
+                  and bottom off. Reserving the scaled box here is what makes the
+                  dashes actually hug the surface they are measuring. */}
+              <div className="mx-flat-frame" style={{ width: flatSize.width, height: flatSize.height }}>
                 <div
                   className="mx-flat-inner"
                   style={{
-                    width: flatPx?.width ?? 320,
-                    height: flatPx?.height ?? 200,
+                    width: flatSize.px.width,
+                    height: flatSize.px.height,
                     background: p.surfaceBackground || undefined,
-                    /*
-                     * Scale the true CSS-pixel surface down to fit the stage,
-                     * measured rather than assumed: the stage is a different
-                     * box with the inspector open, closed, or stacked under it
-                     * on a phone, and guessing at those widths left the
-                     * surface overflowing its own frame on small screens. The
-                     * insets leave room for the dashed frame and the readout.
-                     */
-                    transform: `scale(${Math.min(
-                      ((stageSize.height || stageHeight) - 100) / (flatPx?.height ?? 200),
-                      ((stageSize.width || 640) - 60) / (flatPx?.width ?? 320),
-                      1
-                    )})`,
+                    // Content still lays out at true CSS pixel size - that is the
+                    // whole point of the view - and only the picture is scaled.
+                    transform: `scale(${flatSize.scale})`,
                   }}
                 >
                   {content(REGION_LABEL(view))}
@@ -567,7 +622,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 type="button"
                 className="mx-reset"
                 style={{ visibility: modified ? 'visible' : 'hidden' }}
-                onClick={() => setP(initialState(spec, variant))}
+                onClick={() => setP(initialState(spec, variant, seed))}
               >
                 reset {modified} <ResetGlyph />
               </button>
@@ -581,7 +636,7 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                   className="mx-select"
                   aria-label="variant"
                   value={p.variant}
-                  onChange={(e) => setP((prev) => ({ ...prev, variant: e.target.value, color: '', frameColor: '' }))}
+                  onChange={(e) => setP((prev) => ({ ...prev, variant: e.target.value, color: '' }))}
                 >
                   {spec.variants.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -603,26 +658,14 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                     aria-label={c.name}
                     data-on={p.color === c.color}
                     style={{ background: c.color }}
-                    onClick={() =>
-                      setP((prev) => ({
-                        ...prev,
-                        color: c.color,
-                        frameColor: c.frameColor ?? prev.frameColor,
-                      }))
-                    }
+                    onClick={() => set('color', c.color)}
                   />
                 ))}
               </div>
             ) : null}
 
-            <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
-            {spec.frameColor ? (
-              <ColorRow
-                label="frameColor"
-                value={p.frameColor}
-                fallback="#4a4f59"
-                onChange={(v) => set('frameColor', v)}
-              />
+            {hasColor ? (
+              <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
             ) : null}
             {spec.orientation ? (
               <Segmented
@@ -640,8 +683,28 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 onChange={(v) => set('coverage', v)}
               />
             ) : null}
-            {spec.openable ? <Switch label="open" checked={p.open} onChange={(v) => set('open', v)} /> : null}
+            {spec.openable ? (
+              <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
+                <span className="mx-prop">open</span>
+                <span className="mx-row-controls">
+                  <input
+                    type="range"
+                    className="mx-range"
+                    aria-label="open"
+                    min={0}
+                    max={180}
+                    step={1}
+                    value={p.open}
+                    onChange={(e) => set('open', Number(e.target.value))}
+                  />
+                  <span className="mx-hex">{p.open === 180 ? 'flat' : p.open === 0 ? 'shut' : `${p.open}°`}</span>
+                </span>
+              </div>
+            ) : null}
             <Switch label="float" checked={p.float} onChange={(v) => set('float', v)} />
+            {panel.object.map((prop) => (
+              <PropRow key={prop.name} {...rowProps(prop)} />
+            ))}
 
             <p className="mx-group">Surface</p>
             <div className="mx-row">
@@ -726,13 +789,27 @@ export function MockupExplorer({ component, variant, stageHeight = 460 }: Mockup
                 />
               </span>
             </div>
-            {alsoAccepts.length ? (
+            {panel.camera ? <PropRow {...rowProps(panel.camera)} /> : null}
+
+            {panel.transform.length ? (
+              <>
+                <p className="mx-group">
+                  Transform
+                  <span className="mx-group-note">r3f group props</span>
+                </p>
+                {panel.transform.map((prop) => (
+                  <PropRow key={prop.name} {...rowProps(prop)} />
+                ))}
+              </>
+            ) : null}
+
+            {panel.readOnly.length ? (
               <>
                 <p className="mx-group">
                   Also accepts
                   <span className="mx-group-note">code only</span>
                 </p>
-                {alsoAccepts.map((prop) => (
+                {panel.readOnly.map((prop) => (
                   <div className="mx-row mx-row-doc" key={prop.name} title={prop.description}>
                     <span className="mx-prop">
                       <span className="mx-dot" aria-hidden />
