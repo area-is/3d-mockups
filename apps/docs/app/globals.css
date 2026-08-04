@@ -703,6 +703,23 @@ code {
   }
 }
 
+/*
+ * On a phone the chevrons stop being a hint and become the signage for the
+ * browse gesture, so they are simply on, at full strength.
+ *
+ * Keyed off width rather than `hover`, and deliberately not folded into the
+ * rule above: that one is a guess about the input device, and it guesses wrong
+ * often enough to matter - a phone browser or a tablet that reports
+ * `hover: hover` (a paired trackpad, a stylus, desktop-mode emulation) leaves
+ * them at zero on exactly the screens with the least room to discover the
+ * gesture by accident. Width is the thing we actually know.
+ */
+@media (max-width: 620px) {
+  .carousel-chevron {
+    opacity: 1;
+  }
+}
+
 .carousel-hint {
   font-family: var(--font-mono);
   font-size: 10.5px;
