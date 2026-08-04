@@ -8,7 +8,9 @@ import {
   SCREEN_LAYER_CSS,
   createBackfaceCuller,
   roundedRectShapeCorners,
+  screenCssHeight,
   screenDistanceFactor,
+  screenRasterScale,
   screenSurfaceStyle,
   type ScreenRadius,
 } from '@area-3d-mockups/core'
@@ -183,6 +185,32 @@ export function DeviceScreen({
   children,
 }: DeviceScreenProps) {
   const gl = useThree((state) => state.gl)
+  // Canvas size in CSS px. Not read for itself - it is what changes when the
+  // drawing buffer or the display density does, so it is the dependency that
+  // re-derives the raster scale below.
+  const size = useThree((state) => state.size)
+
+  /*
+   * How much of the declared display to paint (see `screenRasterScale`). The
+   * content still LAYS OUT at `resolution`; only the pixels the compositor
+   * rasterizes are capped, to what the canvas could ever show. Without it a
+   * high-DPI phone rasterizes every screen at full resolution x dpr, blows the
+   * tile budget, and the tiles that lose composite as blank rectangles over
+   * the glass.
+   */
+  const cssHeight = screenCssHeight(resolution, width, height)
+  const rasterScale = React.useMemo(() => {
+    const canvas = gl.domElement
+    return screenRasterScale({
+      layerPx: Math.max(resolution, cssHeight),
+      // Drawing-buffer pixels: the most of the screen the canvas can ever show.
+      canvasPx: Math.max(canvas.width, canvas.height),
+      // The compositor's own fallback density, not r3f's clamped `dpr` - it is
+      // what Chromium rasterizes a perspective-transformed layer at.
+      devicePixelRatio: typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1,
+      // `size` is the signal that either of those may have changed.
+    })
+  }, [gl, size, resolution, cssHeight])
 
   // The depth mask that makes the canvas transparent over the screen so the
   // DOM beneath shows through. drei's default is a plain rectangle, which on
@@ -285,13 +313,58 @@ export function DeviceScreen({
     cullBackface(anchorRef.current, content, camera)
   })
 
+  /*
+   * The surface: `resolution` CSS px of live DOM, carrying the display's own
+   * background, rounding and whatever the device layered on through
+   * `screenStyle` - clip paths that punch a spindle hole or a lanyard slot are
+   * authored in these pixels, so this box keeps its declared size whatever the
+   * screen is painted at.
+   */
+  const surface = (
+    <div
+      ref={rasterScale === 1 ? contentRef : undefined}
+      style={{
+        ...screenSurfaceStyle({ width, height, radius, resolution, background }),
+        ...screenStyle,
+        ...(rasterScale === 1
+          ? null
+          : {
+              // Drawn into the shrunken box below. The scale leads so a
+              // transform the device passed still composes in the screen's own
+              // coordinates, and backface-visibility moves OUT to that box:
+              // left here it composites this element on its own, at its full
+              // size, and the shrink would never reach the rasterizer.
+              transform: `scale(${rasterScale})${screenStyle?.transform ? ` ${screenStyle.transform}` : ''}`,
+              transformOrigin: '0 0',
+              backfaceVisibility: 'visible',
+              WebkitBackfaceVisibility: 'visible',
+            }),
+      }}
+    >
+      <SurfaceProvider
+        region={region}
+        width={width}
+        height={height}
+        radius={radius}
+        resolution={resolution}
+        background={background}
+      >
+        {children}
+      </SurfaceProvider>
+      {overlay}
+    </div>
+  )
+
   return (
     <group ref={anchorRef} position={position} rotation={rotation}>
       <Html
         transform
         occlude="blending"
         geometry={blendGeometry ? <primitive object={blendGeometry} attach="geometry" /> : undefined}
-        distanceFactor={screenDistanceFactor(width, resolution)}
+        // The bridge scales its OUTERMOST child onto the glass, which is the
+        // shrunken box whenever one is in play - so the screen covers the same
+        // world units however few pixels it is painted at.
+        distanceFactor={screenDistanceFactor(width, resolution * rasterScale)}
         zIndexRange={SCREEN_Z_RANGE}
         wrapperClass={SCREEN_LAYER_CLASS}
         // Keep drei's inner transform div from hit-testing. It spans the
@@ -300,25 +373,31 @@ export function DeviceScreen({
         pointerEvents="none"
       >
         <style>{SCREEN_LAYER_CSS}</style>
-        <div
-          ref={contentRef}
-          style={{
-            ...screenSurfaceStyle({ width, height, radius, resolution, background }),
-            ...screenStyle,
-          }}
-        >
-          <SurfaceProvider
-            region={region}
-            width={width}
-            height={height}
-            radius={radius}
-            resolution={resolution}
-            background={background}
+        {rasterScale === 1 ? (
+          surface
+        ) : (
+          /*
+           * The painted box. The surface still LAYS OUT at full size and only
+           * draws smaller, so this is sized to the drawn result and clips to
+           * it - and it is this element, not the surface, that the compositor
+           * promotes, which is what holds the rasterized layer to these bounds
+           * instead of the surface's own.
+           */
+          <div
+            ref={contentRef}
+            style={{
+              position: 'relative',
+              width: resolution * rasterScale,
+              height: cssHeight * rasterScale,
+              overflow: 'hidden',
+              pointerEvents: 'none',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
           >
-            {children}
-          </SurfaceProvider>
-          {overlay}
-        </div>
+            {surface}
+          </div>
+        )}
       </Html>
     </group>
   )
