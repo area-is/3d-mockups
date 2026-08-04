@@ -608,7 +608,15 @@ function StageSlot({
          * past the fade and simply travels with its device.
          */
         screen: screenFor(entry.id),
-        surfaceStyle: { animation: 'screen-fade-in 320ms ease both' },
+        /*
+         * No fill mode. The animation ends on opacity 1, which is where the
+         * screen sits anyway, so filling buys nothing - and a filled animation
+         * stays "in effect" forever, which keeps Chromium compositing every
+         * screen on its own full-resolution layer for the life of the page.
+         * On a high-DPI phone that is what tips the tile budget over and
+         * leaves blank rectangles across the glass.
+         */
+        surfaceStyle: { animation: 'screen-fade-in 320ms ease' },
       })}
     </group>
   )
