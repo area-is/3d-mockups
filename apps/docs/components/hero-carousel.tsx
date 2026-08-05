@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { SceneBoundary } from './scene-boundary'
 
 // WebGL only exists in the browser, so skip SSR for the carousel scene.
 const CarouselScene = dynamic(() => import('./scenes/carousel-scene'), {
@@ -13,5 +14,9 @@ const CarouselScene = dynamic(() => import('./scenes/carousel-scene'), {
 })
 
 export function HeroCarousel() {
-  return <CarouselScene />
+  return (
+    <SceneBoundary>
+      <CarouselScene />
+    </SceneBoundary>
+  )
 }

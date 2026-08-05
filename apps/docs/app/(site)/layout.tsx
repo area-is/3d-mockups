@@ -3,13 +3,19 @@ import Link from 'next/link'
 import { Logo } from '@/components/logo'
 import { SiteNav } from '@/components/site-nav'
 import { inter, jetbrainsMono } from '@/lib/fonts'
+import { SITE_URL, socialMetadata } from '@/lib/site'
 import '../globals.css'
 import '../screens.css'
 
+const SITE_TITLE = 'area-3d-mockups: 3D device mockups for React'
+const SITE_DESCRIPTION =
+  'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live - real DOM, not a texture.'
+
 export const metadata: Metadata = {
-  title: 'area-3d-mockups: 3D device mockups for React',
-  description:
-    'GPU-accelerated 3D device mockups for React, built on three.js. Drop any content onto the screen of a 3D device and it renders live - real DOM, not a texture.',
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: '%s | area-3d-mockups' },
+  description: SITE_DESCRIPTION,
+  ...socialMetadata({ title: SITE_TITLE, description: SITE_DESCRIPTION }),
 }
 
 // Root layout for the marketing site (home, demos). The docs and embedded

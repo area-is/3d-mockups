@@ -344,14 +344,30 @@ function Code({ text }: { text: string }) {
 /*  The explorer                                                       */
 /* ------------------------------------------------------------------ */
 
-export function MockupExplorer({
+/**
+ * Resolves the component name before any hook runs.
+ *
+ * A typo in MDX used to reach `initialState(undefined)` from a `useState`
+ * initializer and throw a bare TypeError out of the first render - the
+ * `if (!spec)` guard inside the body could never run, because the hooks above
+ * it crashed first. Splitting the lookup out keeps the guard reachable and the
+ * hook order fixed.
+ */
+export function MockupExplorer(props: MockupExplorerProps) {
+  if (!EXPLORERS[props.component]) {
+    return <p className="mx-unknown">Unknown mockup component: {props.component}</p>
+  }
+  return <MockupExplorerImpl {...props} />
+}
+
+function MockupExplorerImpl({
   component,
   variant,
   props: seed,
   screen = 'auto',
   stageHeight = 460,
 }: MockupExplorerProps) {
-  const spec = EXPLORERS[component]
+  const spec = EXPLORERS[component]!
   const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
   // Open on a wide screen, collapsed once the layout stacks. Resolved after
   // mount so the server and the first client render agree.
@@ -409,7 +425,6 @@ export function MockupExplorer({
     )
   }, [p, base])
 
-  if (!spec) return null
   const { Component } = spec
 
   const documents = documented(spec)
@@ -573,8 +588,14 @@ export function MockupExplorer({
         <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
             <LazyScene>
+              {/*
+                Every surface through its own named slot, including the
+                primary one. Passing bare children *and* the primary slot is
+                the one combination the library rejects - it warned on every
+                device page and dropped the bare children - and naming all of
+                them also means each surface gets its own region label.
+              */}
               <Component {...mockupProps}>
-                {content(regions[0]?.name ?? 'screen')}
                 {slots.map(([name, Slot]) => (
                   <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
                 ))}

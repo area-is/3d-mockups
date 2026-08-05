@@ -34,6 +34,7 @@ import {
   GALAXY_WATCH_COLORWAYS,
   STUDIO_DISPLAY_COLORWAYS,
   mockupInfo,
+  usePrefersReducedMotion,
   type Colorway,
   type MockupKind,
 } from 'area-3d-mockups'
@@ -700,11 +701,20 @@ export default function CarouselScene() {
 
   const step = useCallback((dir: number) => goTo(activeRef.current + dir), [goTo])
 
+  /*
+   * Auto-advance is motion nobody asked for, on a timer nobody can predict -
+   * WCAG 2.2.2 wants a way to stop it, and a reduced-motion preference is a
+   * standing request to. `playing` covers both: the button toggles it, and
+   * the preference forces it off.
+   */
+  const reducedMotion = usePrefersReducedMotion()
+  const playing = auto && !reducedMotion
+
   useEffect(() => {
-    if (!auto) return
+    if (!playing) return
     const t = setInterval(() => step(1), 6000)
     return () => clearInterval(t)
-  }, [auto, step])
+  }, [playing, step])
 
   const stop = () => setAuto(false)
   const go = (i: number) => {
@@ -988,7 +998,14 @@ export default function CarouselScene() {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <p className="carousel-readout" style={{ textTransform: 'uppercase' }}>
+          {/* Announced politely: the strip is WebGL geometry, so without this
+              a screen-reader user pressing the arrows hears nothing change. */}
+          <p
+            className="carousel-readout"
+            style={{ textTransform: 'uppercase' }}
+            aria-live="polite"
+            aria-atomic="true"
+          >
             <span className="dim">{counter}</span> · {entry.name} · {entry.res}
           </p>
           <button type="button" className="carousel-arrow" aria-label="Next device" onClick={() => go(active + 1)}>
@@ -1027,6 +1044,18 @@ export default function CarouselScene() {
         <p className="carousel-hint">
           Drag the device to spin it · drag either side to browse
         </p>
+        {/* Hidden when the visitor's system already asked for less motion -
+            the carousel is stopped, so a "pause" control would be a lie. */}
+        {reducedMotion ? null : (
+          <button
+            type="button"
+            className="carousel-playstate"
+            aria-pressed={!playing}
+            onClick={() => setAuto((a) => !a)}
+          >
+            {playing ? 'Pause the carousel' : 'Resume the carousel'}
+          </button>
+        )}
         {/* The strip is geometry in the canvas, so keyboard and screen-reader
             users get the same jumps from real buttons here. */}
         <div className="sr-only">

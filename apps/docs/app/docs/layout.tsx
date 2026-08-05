@@ -7,15 +7,20 @@ import { baseOptions } from '@/lib/layout.shared'
 import { DocsSidebarSeparator } from '@/components/docs-sidebar'
 import { hideGridPages } from '@/lib/sidebar-tree'
 import { inter, jetbrainsMono } from '@/lib/fonts'
+import { SITE_URL, socialMetadata } from '@/lib/site'
 import './docs.css'
 import '../screens.css'
 
+const DOCS_DESCRIPTION = 'Installation, usage guides and API reference for area-3d-mockups.'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     template: '%s | area-3d-mockups',
     default: 'Documentation | area-3d-mockups',
   },
-  description: 'Installation, usage guides and API reference for area-3d-mockups.',
+  description: DOCS_DESCRIPTION,
+  ...socialMetadata({ title: 'area-3d-mockups documentation', description: DOCS_DESCRIPTION }),
 }
 
 // Root layout for the documentation. It is deliberately separate from the

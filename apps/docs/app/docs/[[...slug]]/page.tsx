@@ -6,6 +6,7 @@ import { source } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
 import { MockupBreadcrumb } from '@/components/mockup-breadcrumb'
 import { DEVICES, OBJECTS } from '@/lib/mockup-catalog.mjs'
+import { socialMetadata } from '@/lib/site'
 
 /**
  * Mockup pages hide the table of contents: their live prop explorer wants
@@ -63,8 +64,14 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const page = source.getPage(params.slug)
   if (!page) notFound()
 
+  const title = page.data.title
+  const description = page.data.description ?? ''
   return {
-    title: page.data.title,
-    description: page.data.description,
+    title,
+    description,
+    // Every docs page is reachable at exactly one URL; saying so keeps the
+    // per-variant mockup pages from reading as near-duplicates of each other.
+    alternates: { canonical: page.url },
+    ...socialMetadata({ title: `${title} | area-3d-mockups`, description }),
   }
 }

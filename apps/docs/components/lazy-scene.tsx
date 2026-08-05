@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { SceneBoundary } from './scene-boundary'
 
 /**
  * Mounts its children only while the wrapper is near the viewport, and
@@ -36,7 +37,7 @@ export function LazyScene({ children }: { children: React.ReactNode }) {
 
   return (
     <div ref={ref} style={{ width: '100%', height: '100%' }}>
-      {visible ? children : null}
+      {visible ? <SceneBoundary>{children}</SceneBoundary> : null}
     </div>
   )
 }

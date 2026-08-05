@@ -1296,3 +1296,122 @@ code {
     gap: 36px;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  404                                                                */
+/* ------------------------------------------------------------------ */
+
+.notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(56px, 12vw, 140px) clamp(16px, 4vw, 48px);
+}
+
+.notfound h1 {
+  font-size: clamp(30px, 6vw, 46px);
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+}
+
+.notfound .lede {
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------------------------ */
+/*  WebGL unavailable                                                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Shown instead of a scene when the browser cannot give us a WebGL context
+ * (hardware acceleration off, a locked-down enterprise profile, an old
+ * device). Previously those visitors got a permanent "Warming up the GPU…"
+ * or an uncaught throw, with nothing saying why.
+ */
+.scene-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 180px;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+
+.scene-fallback strong {
+  color: var(--text-high, #fff);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Reduced motion                                                     */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Everything that moves on its own stops; nothing that responds to a gesture
+ * does. The 3D scenes make the same call in JS (the library's
+ * `usePrefersReducedMotion`), because a WebGL turntable is not reachable from
+ * CSS.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Touch targets                                                      */
+/* ------------------------------------------------------------------ */
+
+/*
+ * WCAG 2.5.8 asks for 24x24 CSS px minimum; these swatches were 24px on the
+ * carousel and 18-19px in the docs. The visual dot is unchanged - the box
+ * around it grows instead, which is what a finger actually hits.
+ */
+.carousel-swatch {
+  position: relative;
+}
+
+.carousel-swatch::after {
+  content: '';
+  position: absolute;
+  /* Grows the hit area to 44px without moving the dot or the row. */
+  inset: -10px;
+}
+
+/* The carousel's play/pause control (WCAG 2.2.2 - moving content needs a stop). */
+.carousel-playstate {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+  padding: 7px 16px;
+  text-transform: uppercase;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.carousel-playstate:hover,
+.carousel-playstate:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}

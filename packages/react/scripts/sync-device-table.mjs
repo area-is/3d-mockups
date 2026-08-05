@@ -133,6 +133,59 @@ for (const row of rows) {
 
 console.log(`\n${mismatches.length} mismatch(es).\n`)
 
+/*
+ * The independent half of the check.
+ *
+ * Everything above compares the render against the Portrait/Landscape columns
+ * - which `--write` rewrites FROM the render, so on its own it converges to
+ * "no mismatches" whatever the geometry says. The Panel column is different:
+ * it is hand-maintained hardware fact that this script never touches, so
+ * comparing the modelled rect's aspect against the panel's pixel aspect is the
+ * one comparison that cannot be satisfied by syncing.
+ *
+ * Small deviations are expected and legitimate: the specs are measured off
+ * hardware in millimetres, and a manufacturer's rounded point grid does not
+ * always land on the same aspect (the S26 Ultra's 2.169 measured vs 2.167
+ * grid is a real, documented difference). This reports every one of them and
+ * only fails past a threshold wide enough to clear that noise.
+ */
+const ASPECT_TOLERANCE_PCT = 1
+const aspectDrift = []
+for (const row of rows) {
+  const entry = ROWS[row.key]
+  if (!entry || !row.panel) continue
+  const [kind, baseProps] = entry
+  const props = kind === 'laptop' || kind === 'studioDisplay' ? baseProps : { ...baseProps, orientation: 'portrait' }
+  const info = mockupInfo(kind, props).primary
+  // Panel grids are quoted long-edge-first; compare like with like.
+  const [pa, pb] = row.panel
+  const panelAspect = Math.max(pa, pb) / Math.min(pa, pb)
+  const modelledAspect =
+    Math.max(info.units.width, info.units.height) / Math.min(info.units.width, info.units.height)
+  const offPct = 100 * (modelledAspect / panelAspect - 1)
+  if (Math.abs(offPct) > 0.001) {
+    aspectDrift.push({ row, offPct, panelAspect, modelledAspect })
+  }
+}
+
+if (aspectDrift.length) {
+  console.log('Modelled aspect vs the hand-maintained Panel column:')
+  for (const d of aspectDrift.sort((x, y) => Math.abs(y.offPct) - Math.abs(x.offPct))) {
+    const over = Math.abs(d.offPct) > ASPECT_TOLERANCE_PCT
+    console.log(
+      `  ${over ? 'DRIFT' : 'note '} ${d.row.key.padEnd(16)} panel ${round(d.panelAspect, 4)}` +
+        `  modelled ${round(d.modelledAspect, 4)}  (${d.offPct >= 0 ? '+' : ''}${round(d.offPct, 3)}%)`
+    )
+  }
+  const over = aspectDrift.filter((d) => Math.abs(d.offPct) > ASPECT_TOLERANCE_PCT)
+  console.log(
+    over.length
+      ? `\n${over.length} past the ${ASPECT_TOLERANCE_PCT}% tolerance - the modelled rect, not the table, is what needs the edit.\n`
+      : `\nAll within the ${ASPECT_TOLERANCE_PCT}% tolerance.\n`
+  )
+  if (over.length && !WRITE) process.exitCode = 1
+}
+
 if (WRITE) {
   // Rewrite only the last two cells of each spec row; every other column is
   // hardware fact this script has no business touching.
