@@ -77,7 +77,7 @@ import { ROLLUP_BANNER_METRICS, ROLLUP_BANNER_REGIONS, type RollupBannerSize } f
 import { BUS_SHELTER_METRICS, BUS_SHELTER_REGIONS } from './objects/bus-shelter/dimensions'
 import { GREETING_CARD_METRICS, GREETING_CARD_REGIONS } from './objects/greeting-card/dimensions'
 import { VINYL_RECORD_METRICS, VINYL_RECORD_REGIONS } from './objects/vinyl-record/dimensions'
-import { TV_METRICS } from './objects/tv/dimensions'
+import { TV_METRICS, type TVVariant } from './objects/tv/dimensions'
 import { A_FRAME_SIGN_METRICS, A_FRAME_SIGN_REGIONS } from './objects/a-frame-sign/dimensions'
 import { DOOH_TOTEM_METRICS, DOOH_TOTEM_REGIONS, type DoohTotemSize } from './objects/dooh-totem/dimensions'
 import { SEMI_TRAILER_METRICS, SEMI_TRAILER_REGIONS } from './objects/semi-trailer/dimensions'
@@ -104,13 +104,15 @@ export interface MockupPropsMap {
   appleWatch: { variant?: AppleWatchVariant }
   galaxyWatch: { variant?: GalaxyWatchVariant }
   studioDisplay: Record<string, never>
-  fold: { variant?: FoldVariant; open?: boolean | number; orientation?: Orientation }
-  flip: { variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }
+  fold: { variant?: FoldVariant; openAngle?: boolean | number; orientation?: Orientation }
+  flip: { variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation }
   book: { size?: BookSize }
   magazine: { size?: MagazineSize }
-  brochure: { size?: BrochureSize; panels?: number }
+  brochure: { size?: BrochureSize }
   businessCard: Record<string, never>
-  posterFrame: { size?: PosterFrameSize; mat?: boolean }
+  // `mat` takes a color string as well as a flag - both mount the art behind
+  // a matboard, and both shrink the measured opening.
+  posterFrame: { size?: PosterFrameSize; mat?: boolean | string }
   billboard: Record<string, never>
   idCard: Record<string, never>
   bus: { coverage?: BusCoverage }
@@ -121,7 +123,7 @@ export interface MockupPropsMap {
   busShelter: Record<string, never>
   greetingCard: Record<string, never>
   vinylRecord: Record<string, never>
-  tv: { inches?: number }
+  tv: { size?: number; variant?: TVVariant }
   aFrameSign: Record<string, never>
   doohTotem: { size?: DoohTotemSize }
   semiTrailer: Record<string, never>
@@ -191,15 +193,41 @@ const REGISTRY: Record<MockupKind, Entry> = {
 export const MOCKUP_KINDS = Object.keys(REGISTRY) as MockupKind[]
 
 /**
+ * The live regions a kind advertises, in slot order (the first is primary).
+ *
+ * The same list `mockupInfo` measures against, reachable without measuring -
+ * which is what a docs generator, a second binding, or a check that every
+ * declared region actually resolves needs. The React binding exposes the same
+ * data per component as `Mockup.regions`.
+ */
+export function mockupRegions(kind: MockupKind): readonly RegionSpec[] {
+  const entry = REGISTRY[kind]
+  if (!entry) {
+    throw new Error(
+      `[area-3d-mockups] mockupRegions: unknown mockup kind "${String(kind)}". Known kinds: ${MOCKUP_KINDS.join(', ')}.`
+    )
+  }
+  return entry.regions
+}
+
+/**
  * Measure a mockup without rendering it.
  *
  * @param kind  Which mockup - `'galaxy'`, `'book'`, `'customBox'`…
  * @param props The geometry-affecting props you would pass the component
- *              (`variant`, `orientation`, `size`, `open`…). Defaults match the
+ *              (`variant`, `orientation`, `size`, `openAngle`…). Defaults match the
  *              component's own defaults, so `mockupInfo('galaxy')` describes
  *              exactly what `<GalaxyMockup />` renders.
  */
-export function mockupInfo<K extends MockupKind>(kind: K, props?: MockupPropsMap[K]): MockupInfo {
+export function mockupInfo<K extends MockupKind>(
+  kind: K,
+  // Required exactly when the kind's props are (customPanel/customBox take a
+  // mandatory `size`). A blanket `props?` type-checked `mockupInfo('customPanel')`
+  // and then threw a raw TypeError out of the scale function.
+  ...[props]: Record<never, never> extends MockupPropsMap[K]
+    ? [props?: MockupPropsMap[K]]
+    : [props: MockupPropsMap[K]]
+): MockupInfo {
   const entry = REGISTRY[kind]
   if (!entry) {
     throw new Error(

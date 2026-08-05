@@ -20,11 +20,18 @@ export {
   CONTACT_SHADOW_GAP,
   framedShadowY,
   foldOpenAngle,
+  FLAT_EPSILON,
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
 export { type Size, type RegionInfo, type MockupInfo, type MeasurableMockup, describeMockup } from './measure'
-export { type MockupPropsMap, type MockupKind, MOCKUP_KINDS, mockupInfo } from './metrics'
+export {
+  type MockupPropsMap,
+  type MockupKind,
+  MOCKUP_KINDS,
+  mockupInfo,
+  mockupRegions,
+} from './metrics'
 
 // Geometry math.
 export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'
@@ -79,6 +86,8 @@ export {
   ledMaskStyle,
   ledMarqueeKeyframes,
   ledCycleKeyframes,
+  ledReducedMotionRule,
+  LED_ANIM_ATTR,
 } from './screen/led-text'
 
 // The shared stage: camera, orbit, shadows, touch, zoom, fullscreen, lights, float.
@@ -105,7 +114,13 @@ export {
   STUDIO_LIGHTFORMERS,
 } from './stage/lights'
 export { TumbleOrbit, tumbleAutoRotateStep } from './stage/tumble'
-export { type FloatPose, floatPose, randomFloatPhase } from './stage/float'
+export {
+  type FloatPose,
+  floatPose,
+  randomFloatPhase,
+  REDUCED_MOTION_QUERY,
+  FLOAT_REST_POSE,
+} from './stage/float'
 export {
   OVERLAY_BUTTON_STYLE,
   OVERLAY_ICON_VIEWBOX,

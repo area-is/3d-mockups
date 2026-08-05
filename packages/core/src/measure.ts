@@ -125,8 +125,24 @@ export interface MeasurableMockup<P> {
  */
 export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P>, props?: P): MockupInfo {
   const args = (props ?? {}) as P
-  const mmPerUnit = typeof metrics.mmPerUnit === 'function' ? metrics.mmPerUnit(args) : metrics.mmPerUnit
-  const resolved = metrics.regions(args)
+  let mmPerUnit: number
+  let resolved: Record<string, RegionMetrics | RegionMetrics[]>
+  try {
+    mmPerUnit = typeof metrics.mmPerUnit === 'function' ? metrics.mmPerUnit(args) : metrics.mmPerUnit
+    resolved = metrics.regions(args)
+  } catch (cause) {
+    /*
+     * The kinds taking a required `size` (customPanel, customBox) blow up deep
+     * inside their scale function when it is missing, with a TypeError naming
+     * neither the mockup nor the prop. The public signature makes that
+     * unreachable from TypeScript; this is what JS callers see instead.
+     */
+    throw new Error(
+      `[area-3d-mockups] describeMockup: "${String(kind)}" could not be measured from these props. ` +
+        `Kinds with a required \`size\` (e.g. customPanel, customBox) must be given one.`,
+      { cause }
+    )
+  }
 
   const byName: Record<string, RegionInfo | RegionInfo[]> = {}
   const list: RegionInfo[] = []

@@ -238,6 +238,10 @@
 
 .mx {
   --mx-accent: var(--color-fd-primary);
+  /* One height for every interactive control in the inspector, and one row
+     height around it - the panel's whole rhythm comes from these two. */
+  --mx-control-h: 26px;
+  --mx-row-h: 32px;
   border: 1px solid var(--color-fd-border);
   border-radius: 16px;
   background: var(--color-fd-card);
@@ -420,14 +424,21 @@
   overflow-wrap: anywhere;
 }
 
+/*
+ * Inspector rows.
+ *
+ * Two cells: the prop name, and everything that drives it. The controls cell
+ * is right-aligned and shares one height with every other row, so the panel
+ * reads as a single column of fields rather than a stack of differently-sized
+ * widgets. It still wraps: a slider, its box and a reset can outgrow the
+ * column on the longest prop names, and wrapping beats clipping.
+ */
 .mx-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 30px;
-  /* A slider, its readout and a reset can outgrow the column on the longest
-     prop names; wrapping is better than a clipped control. */
+  min-height: var(--mx-row-h);
   flex-wrap: wrap;
 }
 
@@ -445,7 +456,9 @@
 .mx-row-controls {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  min-height: var(--mx-control-h);
 }
 
 .mx-hex {
@@ -476,15 +489,73 @@
   color: var(--mx-accent);
 }
 
+/*
+ * Anything you can type into or pick from looks the same: one border, one
+ * radius, one height. Read-only text (a hex, a measurement) stays unboxed on
+ * purpose - the box is what says "this is editable".
+ */
 .mx-select,
-.mx-number {
+.mx-number,
+.mx-numfield {
+  display: inline-flex;
+  align-items: center;
+  /* Explicit, so the declared height is the measured one whether or not a
+     global reset reaches these. Without it the boxed rows sit 2px taller
+     than the switches and segmented controls beside them. */
+  box-sizing: border-box;
+  height: var(--mx-control-h);
   border: 1px solid var(--color-fd-border);
   border-radius: 8px;
   background: var(--color-fd-background);
   color: var(--color-fd-foreground);
-  padding: 4px 6px;
+  padding: 0 7px;
   font-size: 12px;
   font-family: inherit;
+}
+
+.mx-select:focus-visible,
+.mx-number:focus-visible,
+.mx-numfield:focus-within {
+  outline: none;
+  border-color: var(--mx-accent);
+}
+
+/*
+ * The typable half of a slider row. Fixed width so the row does not shuffle
+ * as the number crosses 10 or 100, and the unit rides inside the box so the
+ * reset button beside it never moves.
+ */
+.mx-numfield {
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mx-numfield-input {
+  width: 2.9em;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.mx-numfield-input:focus {
+  outline: none;
+}
+
+/* Spinners would outgrow the row and are redundant beside a slider. */
+.mx-numfield-input::-webkit-outer-spin-button,
+.mx-numfield-input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.mx-numfield-unit {
+  color: var(--color-fd-muted-foreground);
 }
 
 .mx-number {
@@ -510,10 +581,14 @@
   border-radius: 8px;
 }
 
+.mx-segmented {
+  height: var(--mx-control-h);
+}
+
 .mx-segmented button {
   border: 0;
   border-radius: 6px;
-  padding: 4px 9px;
+  padding: 0 9px;
   font-size: 12px;
   background: transparent;
   color: var(--color-fd-muted-foreground);
@@ -564,9 +639,6 @@
   width: 74px;
   accent-color: var(--mx-accent);
 }
-
-/* Composite props (a transform, a millimetre size, the camera): a summary row
-   that folds open onto its number fields. */
 
 .mx-disclosure {
   display: inline-flex;
@@ -651,10 +723,12 @@
 }
 
 .mx-swatches {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   gap: 7px;
-  margin: 6px 0 10px;
+  min-height: var(--mx-control-h);
 }
 
 .mx-swatch {
@@ -667,6 +741,11 @@
 }
 
 .mx-swatch[data-on='true'] {
+  box-shadow: 0 0 0 2px var(--color-fd-card), 0 0 0 3.5px var(--mx-accent);
+}
+
+.mx-swatch:focus-visible {
+  outline: none;
   box-shadow: 0 0 0 2px var(--color-fd-card), 0 0 0 3.5px var(--mx-accent);
 }
 
@@ -732,7 +811,7 @@
 .mx-readout {
   position: absolute;
   left: 12px;
-  bottom: 12px;
+  top: 12px;
   border: 0;
   border-radius: 7px;
   padding: 5px 9px;
@@ -741,7 +820,12 @@
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1;
-  color: #ffffff;
+  /*
+   * The theme's own on-primary colour, not a hardcoded white. White on the
+   * dark theme's #31d322 accent is about 2:1 — nowhere near readable — and
+   * still fails at this size on the light theme's green.
+   */
+  color: var(--color-fd-primary-foreground);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   pointer-events: none;

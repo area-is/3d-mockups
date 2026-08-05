@@ -6,13 +6,14 @@ any angle, videos play, iframes load, React state and effects keep running. Mock
 decorative: you rotate and zoom them, and the hardware masks the screen pixel for pixel
 ([why](#screens-are-display-only)).
 
-- **Seventeen devices** - the Galaxy S26 line (S26, S26 Ultra), the Galaxy Z Fold 7 and
+- **Twenty-two devices** - the Galaxy S26 line (S26, S26 Ultra), the Galaxy Z Fold 7 and
   Z Flip 7 foldables, the full iPhone 17 family (17, 17 Air, 17 Pro, 17 Pro Max), MacBook
-  Air 13" and MacBook Pro 14" (M5), iPad Pro 13"/11" (M5), Galaxy Tab S11 / S11 Ultra, an
-  Apple Watch Series 11 and a Studio Display-style 27" monitor, all procedurally generated
+  Air 13"/15" and MacBook Pro 14"/16" (M5), iPad Pro 13"/11" (M5), iPad Air 13"/11" (M4),
+  iPad (A16), Galaxy Tab S11 / S11 Ultra, an Apple Watch Series 11 and Galaxy Watch 8 on
+  full wristbands, and a Studio Display-style 27" monitor, all procedurally generated
   at runtime. No GLB files, no
-  hosting, no pop-in - importing one mockup costs 6.9–48.1 KB gzipped (the whole
-  library: 96.8 KB), peers excluded. The phone, foldable, and
+  hosting, no pop-in - importing one mockup costs 7.4–48.8 KB gzipped (the whole
+  library: 103.8 KB), peers excluded. The phone, foldable, and
   laptop families carry a small CSG engine that machines their ports and speaker/mic
   holes into the chassis as real cavities; it tree-shakes away for every other mockup.
 - **True-to-device screens** - each virtual display matches the real device's logical
@@ -34,7 +35,8 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
 npm install area-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
-React 18+ (19 recommended). `three`, `@react-three/fiber` and `@react-three/drei` are
+React 19+ (react-three-fiber 9 and drei 10 both require it). `three` 0.179+,
+`@react-three/fiber` and `@react-three/drei` are
 **peer** dependencies rather than bundled ones, because each has to exist exactly once in
 an app - two copies of `three` mean two different `THREE.Mesh` classes, so `instanceof`
 checks and r3f's element catalogue stop matching.
@@ -186,13 +188,15 @@ Every variant's screen defaults to the real device's logical resolution (CSS px)
 | Galaxy S26 | `s26` | 360×780 | 780×360 | 2340×1080 panel at ⅓ (3x) |
 | Galaxy S26 Ultra | `s26ultra` | 384×833 | 833×384 | One UI default FHD+ render @ 450 dpi |
 | Galaxy Z Fold 7 (open / folded) | `fold7` | 820×910 / 360×835 | swapped | inner 2184×1968, cover 2520×1080 |
-| Galaxy Z Flip 7 (open / folded) | `flip7` | 360×838 / 316×353 | swapped | main 2520×1080, cover 948×1048 |
+| Galaxy Z Flip 7 (open / folded) | `flip7` | 360×838 / 316×349 | swapped | main 2520×1080, cover 948×1048 |
 | iPhone 17 | `17` | 402×874 | 874×402 | 2622×1206 @ 3x point grid |
 | iPhone 17 Air | `air` | 420×912 | 912×420 | 2736×1260 @ 3x point grid |
 | iPhone 17 Pro | `pro` | 402×874 | 874×402 | 2622×1206 @ 3x point grid |
 | iPhone 17 Pro Max | `promax` | 440×956 | 956×440 | 2868×1320 @ 3x point grid |
 | MacBook Air 13" (M5) | `air13` | - | 1280×832 | 2560×1664 @ 2x default scaled |
+| MacBook Air 15" (M5) | `air15` | - | 1440×932 | 2880×1864 @ 2x default scaled |
 | MacBook Pro 14" (M5) | `pro14` | - | 1512×982 | 3024×1964 @ 2x default scaled |
+| MacBook Pro 16" (M5) | `pro16` | - | 1728×1117 | 3456×2234 @ 2x default scaled |
 | iPad Pro 13" (M5) | `ipadpro13` | 1032×1376 | 1376×1032 | 2752×2064 @ 2x point grid |
 | iPad Pro 11" (M5) | `ipadpro11` | 834×1210 | 1210×834 | 2420×1668 @ 2x point grid |
 | iPad Air 13" (M4) | `ipadair13` | 1024×1366 | 1366×1024 | 2732×2048 @ 2x point grid |
@@ -200,7 +204,8 @@ Every variant's screen defaults to the real device's logical resolution (CSS px)
 | iPad (A16) | `ipad11` | 820×1180 | 1180×820 | 2360×1640 @ 2x point grid |
 | Galaxy Tab S11 | `tabs11` | 800×1280 | 1280×800 | 2560×1600 panel at ½ (xhdpi) |
 | Galaxy Tab S11 Ultra | `tabs11ultra` | 924×1480 | 1480×924 | 2960×1848 panel at ½ (xhdpi) |
-| Apple Watch Series 11 46mm | - | 208×248 | - | 416×496 @ 2x point grid |
+| Apple Watch Series 11 46mm | `series11` | 208×248 | - | 416×496 @ 2x point grid |
+| Galaxy Watch 8 44mm | `watch8` | 240×240 | - | 480×480 round panel at ½ |
 | Studio Display 27" | - | - | 2560×1440 | 5120×2880 @ 2x point grid |
 
 ### `<IPad>` / `<GalaxyTab>` - the iPad lineup / Galaxy Tab S11 family

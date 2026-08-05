@@ -192,9 +192,9 @@ export const FOLD_MM_PER_UNIT = 36.66
  */
 export const FOLD_METRICS = {
   mmPerUnit: FOLD_MM_PER_UNIT,
-  regions: ({ variant, open, orientation }) => {
+  regions: ({ variant, openAngle, orientation }) => {
     const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
-    const { display, resolution } = foldOpenAngle(open) < 0.5 ? spec.closed : spec.open
+    const { display, resolution } = foldOpenAngle(openAngle) < 0.5 ? spec.closed : spec.open
     const landscape = orientation === 'landscape'
     return {
       screen: {
@@ -205,13 +205,13 @@ export const FOLD_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ variant?: FoldVariant; open?: boolean | number; orientation?: Orientation }>
+} as const satisfies MockupMetrics<{ variant?: FoldVariant; openAngle?: boolean | number; orientation?: Orientation }>
 
 export const FOLD_FRAMING = {
   contactGap: 0.05,
-  extent: ({ variant, open, orientation }) => {
+  extent: ({ variant, openAngle, orientation }) => {
     const spec = FOLD_VARIANTS[variant ?? FOLD_DEFAULT_VARIANT]
-    const angle = foldOpenAngle(open)
+    const angle = foldOpenAngle(openAngle)
     const state = angle > 3 ? spec.open : spec.closed
     const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
     const extent =
@@ -224,6 +224,6 @@ export const FOLD_FRAMING = {
   },
 } as const satisfies MockupFraming<{
   variant?: FoldVariant
-  open?: boolean | number
+  openAngle?: boolean | number
   orientation?: Orientation
 }>

@@ -338,17 +338,33 @@ export const GALAXY_WATCH_METRICS = {
   regions: ({ variant }) => watchRegions(variant ?? GALAXY_WATCH_DEFAULT_VARIANT),
 } as const satisfies MockupMetrics<{ variant?: GalaxyWatchVariant }>
 
-export const WATCH_FRAMING = {
-  camera: { position: [0, 0.4, WORN_DISTANCE], fov: FOV },
-  floatIntensity: 0.6,
-  contactGap: 0.1,
-  extent: ({ variant, bandOpen }) => {
-    const { band } = WATCH_VARIANTS[variant ?? APPLE_WATCH_DEFAULT_VARIANT]
-    // A seamless band has no closure to undo, so `bandOpen` cannot change it.
-    if (bandOpen && band.closure !== 'seamless') return watchOpenExtent(band)
-    return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
-  },
-} as const satisfies MockupFraming<{ variant?: WatchVariant; bandOpen?: boolean }>
+/**
+ * Built per family so an omitted `variant` falls back to the family the
+ * mockup belongs to - see the tablet framings for the same reasoning.
+ */
+const watchFraming = (defaultVariant: WatchVariant) =>
+  ({
+    camera: { position: [0, 0.4, WORN_DISTANCE], fov: FOV },
+    floatIntensity: 0.6,
+    contactGap: 0.1,
+    extent: ({ variant, bandOpen }) => {
+      const { band } = WATCH_VARIANTS[variant ?? defaultVariant]
+      // A seamless band has no closure to undo, so `bandOpen` cannot change it.
+      if (bandOpen && band.closure !== 'seamless') return watchOpenExtent(band)
+      return (band.loop.ryFront + band.loop.ryBack) / 2 + band.thickness / 2 - 0.05
+    },
+  }) as const satisfies MockupFraming<{ variant?: WatchVariant; bandOpen?: boolean }>
+
+export const APPLE_WATCH_FRAMING = watchFraming(APPLE_WATCH_DEFAULT_VARIANT)
+export const GALAXY_WATCH_FRAMING = watchFraming(GALAXY_WATCH_DEFAULT_VARIANT)
+
+/**
+ * The shared watch stage config (camera, float, contact gap).
+ *
+ * Prefer `APPLE_WATCH_FRAMING` / `GALAXY_WATCH_FRAMING` when grounding an
+ * object - this one falls back to the Apple Watch's default variant.
+ */
+export const WATCH_FRAMING = APPLE_WATCH_FRAMING
 
 /**
  * True length of each strap, measured along the wrist loop it wraps. The worn

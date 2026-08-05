@@ -5,6 +5,7 @@ import {
   FOLD_COLORWAYS,
   findColorway,
   foldOpenAngle,
+  FLAT_EPSILON,
   railColor,
   FOLD_VARIANTS,
   FOLD_DEFAULT_VARIANT,
@@ -49,14 +50,14 @@ export interface FoldProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * A number (0 = shut, 180 = flat) renders the real Flex Mode book pose: the
    * panels pivot around the Armor FlexHinge while its rounded spine (with the
    * SAMSUNG engraving) stays tangent to both back shells, wrapping the fold at
-   * every angle, and your content bends across the crease - e.g. `open={110}`
+   * every angle, and your content bends across the crease - e.g. `openAngle={110}`
    * for the half-open standing pose. The pose is continuous from nearly shut to
    * nearly flat; only ~0° snaps to the dedicated folded pose and ~177°+ to the
    * flat-open one. At intermediate angles the display is composited from two
    * planes that depth-blend against the chassis, so content there is
    * display-only and stateful screen content is best kept simple.
    */
-  open?: boolean | number
+  openAngle?: boolean | number
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content - exactly like rotating the real device.
@@ -98,7 +99,7 @@ function slabGeometry(width: number, height: number, radius: number, depth: numb
  * A procedurally built Samsung Galaxy Z Fold 7. One device, two form factors:
  * the unfolded tablet (big inner display) and the folded candy-bar - two
  * stacked slabs with the real crevice of air between them - switched with the
- * `open` prop. No 3D asset files are loaded - the whole device is generated
+ * `openAngle` prop. No 3D asset files are loaded - the whole device is generated
  * from geometry at runtime.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
@@ -106,7 +107,7 @@ function slabGeometry(width: number, height: number, radius: number, depth: numb
 function FoldImpl({
   children,
   variant = FOLD_DEFAULT_VARIANT,
-  open = true,
+  openAngle = true,
   orientation = 'portrait',
   color: colorProp,
   surfaceBackground = '#000000',
@@ -127,8 +128,27 @@ function FoldImpl({
   // default renders are pixel-identical to before. The flex rig pivots on
   // the display surface, so the pose is continuous all the way down -
   // only ~0° itself snaps to the dedicated folded pose.
-  const angle = foldOpenAngle(open)
-  const mode: 'open' | 'closed' | 'flex' = angle >= 177 ? 'open' : angle < 0.5 ? 'closed' : 'flex'
+  const angle = foldOpenAngle(openAngle)
+  /*
+   * Only a genuinely flat hinge takes the single-screen path.
+   *
+   * This used to claim everything from 177 degrees up, and three degrees is
+   * enough to feel: the device snapped fully flat as the slider crossed 177 and
+   * stayed there for the rest of the travel, so dragging near the top read as a
+   * magnet pulling to 180. Worse, each crossing swapped one DeviceScreen for
+   * two (and back), tearing down the live DOM and flashing its content - and
+   * around the boundary a drag crosses it repeatedly.
+   *
+   * The flat path is still worth keeping for flat: splitting the display into
+   * two half-panes leaves a hard seam down the crease, where one continuous
+   * screen draws the soft gradient the real inner display has. So the band is
+   * now narrow enough to be invisible (a twentieth of a degree) rather than
+   * gone: `openAngle` / `openAngle={true}` / `openAngle={180}` all render the seamless flat
+   * pose, and every angle below it renders its own pose through the continuous
+   * flex path with no mode change along the way.
+   */
+  const mode: 'open' | 'closed' | 'flex' =
+    angle < 0.5 ? 'closed' : angle >= FLAT_EPSILON ? 'open' : 'flex'
   const isOpenFace = mode !== 'closed'
   const state = isOpenFace ? spec.open : spec.closed
   const cam = isOpenFace ? spec.rearCamera.open : spec.rearCamera.closed

@@ -16,6 +16,7 @@
     "preview:docs": "npm run preview -w docs",
     "deploy:docs": "npm run deploy -w docs",
     "typecheck": "npm run typecheck -w @area-3d-mockups/core && npm run typecheck -w area-3d-mockups && npm run typecheck -w docs",
+    "test": "npm run test -w @area-3d-mockups/core",
     "visual": "node apps/docs/scripts/visual-check.mjs",
     "devices:check": "node packages/react/scripts/sync-device-table.mjs",
     "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write"

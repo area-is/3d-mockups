@@ -236,7 +236,7 @@ export default function DemoScenes() {
           </>
         }
       >
-        <FlipMockup open={false} color="coralred" rotation={[0, -0.3, 0]}>
+        <FlipMockup openAngle={false} color="coralred" rotation={[0, -0.3, 0]}>
           <LockScreen />
         </FlipMockup>
       </DemoCard>
@@ -245,12 +245,12 @@ export default function DemoScenes() {
         title="Galaxy Z Fold 7 (folded)"
         description={
           <>
-            <code>open={'{'}false{'}'}</code> - the same device folded to the tall cover
+            <code>openAngle={'{'}false{'}'}</code> - the same device folded to the tall cover
             display, with the rear triple camera on the back.
           </>
         }
       >
-        <FoldMockup open={false} color="silvershadow" rotation={[0, -0.3, 0]}>
+        <FoldMockup openAngle={false} color="silvershadow" rotation={[0, -0.3, 0]}>
           <MusicPlayer />
         </FoldMockup>
       </DemoCard>

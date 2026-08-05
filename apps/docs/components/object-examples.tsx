@@ -266,12 +266,12 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FoldMockup>
   ),
   'fold-closed': (
-    <FoldMockup open={false} autoRotate float color="#3a3d42" surfaceBackground="#000">
+    <FoldMockup openAngle={false} autoRotate float color="#3a3d42" surfaceBackground="#000">
       <LockScreen />
     </FoldMockup>
   ),
   'fold-flex': (
-    <FoldMockup open={110} color="blueshadow" rotation={[0, -0.35, 0]}>
+    <FoldMockup openAngle={110} color="blueshadow" rotation={[0, -0.35, 0]}>
       <DesktopScreen />
     </FoldMockup>
   ),
@@ -283,12 +283,12 @@ const DEMOS: Record<string, React.ReactNode> = {
     </FlipMockup>
   ),
   'flip-closed': (
-    <FlipMockup open={false} autoRotate float color="coralred" surfaceBackground="#000">
+    <FlipMockup openAngle={false} autoRotate float color="coralred" surfaceBackground="#000">
       <LockScreen />
     </FlipMockup>
   ),
   'flip-flex': (
-    <FlipMockup open={100} color="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
+    <FlipMockup openAngle={100} color="blueshadow" camera={{ position: [0, 1.6, 7.2], fov: 40 }} rotation={[0, -0.25, 0]}>
       <MusicPlayer />
     </FlipMockup>
   ),

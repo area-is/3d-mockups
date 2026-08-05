@@ -208,13 +208,16 @@ export const TV_MM_PER_UNIT = 1 / TV_MM
 /** Live geometry of the active panel at the requested diagonal. */
 export const TV_METRICS = {
   mmPerUnit: TV_MM_PER_UNIT,
-  regions: ({ inches }) => {
-    const { display, resolution } = tvSpec(inches)
+  // `size`/`variant`, matching the component and TV_FRAMING. This resolver
+  // used to read `inches`, which no component ever passes - so measuring a
+  // resized TV silently reported the 65" default.
+  regions: ({ size, variant }) => {
+    const { display, resolution } = tvSpec(size, variant)
     return {
       screen: { width: display.width, height: display.height, radius: display.radius, resolution },
     }
   },
-} as const satisfies MockupMetrics<{ inches?: number }>
+} as const satisfies MockupMetrics<{ size?: number; variant?: TVVariant }>
 
 export const TV_FRAMING = {
   floatIntensity: 0.5,

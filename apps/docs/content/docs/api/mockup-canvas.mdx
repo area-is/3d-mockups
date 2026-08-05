@@ -40,7 +40,7 @@ One canvas, two bare devices, one shared studio light rig and shadow plane.
 | `children` | `ReactNode` | - | Your scene, typically a device such as `Galaxy`. |
 | `controls` | `boolean` | `true` | Drag-to-rotate controls with the axis fixed at the stage center (pan is always disabled). Vertical rotation stays within the classic orbit clamp by default. |
 | `freeRotation` | `boolean` | `false` | Allow the camera to rotate a full 360° vertically - vertical drags continue straight over the top and bottom of the device instead of clamping. |
-| `autoRotate` | `boolean \| number` | `false` | Slowly spin the camera around the device. `true` is one revolution a minute; a number multiplies that (`autoRotate={2}` twice as fast, `autoRotate={0.5}` half). |
+| `autoRotate` | `boolean \| number` | `false` | Slowly spin the camera around the device. `true` is one revolution a minute; a number multiplies that (`autoRotate={2}` twice as fast, `autoRotate={0.5}` half). Held still under [reduced motion](#reduced-motion). |
 | `zoom` | `boolean` | `false` | Pinch zoom on touch, scroll-wheel zoom on desktop, plus overlay +/− buttons. Off by default so embedded mockups never hijack page scroll; on, the canvas owns two-finger gestures. |
 | `fullscreen` | `boolean` | `false` | Adds an overlay button that expands the mockup to fill the screen via the Fullscreen API (and collapses it back). Off by default. |
 | `shadows` | `boolean` | `true` | Soft contact shadow under the device. |
@@ -76,4 +76,25 @@ it back. It composes with `zoom`, and works on any mockup.
 <BookMockup fullscreen float color="#4a2c3f">
   <YourCoverArt />
 </BookMockup>
+```
+
+## Reduced motion
+
+`autoRotate` and `float` are motion nobody asked for, so both stop for visitors
+whose system is set to **prefers-reduced-motion: reduce**. The mockup still
+renders, and every gesture still works — dragging to orbit, pinching to zoom
+and the `+`/`−` buttons are all the visitor's own request, so none of them are
+gated. The dot-matrix `LEDText` marquees hold on their first frame for the same
+reason.
+
+Nothing is required of you: pass `autoRotate` and `float` as you would
+otherwise, and the preference is respected automatically.
+
+If your page has its own motion to gate, the same hook the library uses is
+exported:
+
+```tsx
+import { usePrefersReducedMotion } from 'area-3d-mockups'
+
+const still = usePrefersReducedMotion()
 ```

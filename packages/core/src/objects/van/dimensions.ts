@@ -128,7 +128,10 @@ export type VanCoverage = 'panel' | 'full' | 'perforated'
 export const VAN_METRICS = {
   mmPerUnit: VAN_MM_PER_UNIT,
   regions: ({ coverage }) => {
-    const full = coverage !== 'panel'
+    // `?? 'panel'` matches the component's own default. Without it an omitted
+    // `coverage` measured the FULL wrap while `<VanMockup/>` rendered the
+    // panel, so mockupInfo handed a print shop the wrong physical size.
+    const full = (coverage ?? 'panel') !== 'panel'
     const side = full
       ? { width: VAN_FULL_WRAP.width, height: VAN_FULL_WRAP.height, radius: 0 }
       : { width: VAN.wrap.width, height: VAN.wrap.height, radius: VAN.wrap.radius }

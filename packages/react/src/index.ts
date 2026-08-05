@@ -10,6 +10,7 @@ export { StudioDisplayMockup, type StudioDisplayMockupProps } from './studio-dis
 export { FoldMockup, type FoldMockupProps } from './fold-mockup'
 export { FlipMockup, type FlipMockupProps } from './flip-mockup'
 export { TumbleControls, type TumbleControlsProps, type TumbleControlsHandle } from './tumble-controls'
+export { usePrefersReducedMotion } from './use-reduced-motion'
 
 // All-in-one 3D object mockups (print, packaging, out-of-home, vehicles).
 export { BookMockup, type BookMockupProps } from './book-mockup'

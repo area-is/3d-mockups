@@ -114,18 +114,30 @@ export interface MockupFraming<P = Record<string, never>> {
 }
 
 /**
- * A foldable's hinge angle in degrees, from its `open` prop.
+ * A foldable's hinge angle in degrees, from its `openAngle` prop.
  *
- * `open` is one prop with two readings: the booleans are the two poses a
+ * `openAngle` is one prop with two readings: the booleans are the two poses a
  * foldable is normally photographed in (`true` flat, `false` shut), and a
  * number is any angle between. Everything that has to agree on the pose - the
  * scene component, the region metrics, the shadow's ground line - resolves it
  * through here, so they cannot drift.
  */
-export function foldOpenAngle(open: boolean | number | undefined): number {
-  if (typeof open === 'number') return Math.max(0, Math.min(180, open))
-  return open === false ? 0 : 180
+export function foldOpenAngle(openAngle: boolean | number | undefined): number {
+  if (typeof openAngle === 'number') return Math.max(0, Math.min(180, openAngle))
+  return openAngle === false ? 0 : 180
 }
+
+/**
+ * At or above this angle a foldable counts as flat.
+ *
+ * A binding renders the flat pose from one continuous screen and every other
+ * angle from two half-panes pivoting at the crease, so this is where it swaps
+ * between them. Deliberately a hair under 180 rather than a comfortable
+ * margin: every degree inside the band renders as fully flat, so a wide band
+ * is a dead zone at the top of any hinge slider - and the swap itself rebuilds
+ * the live screen, which a drag should not keep triggering.
+ */
+export const FLAT_EPSILON = 179.95
 
 /**
  * The contact-shadow plane's Y for a framed object: just under the object's

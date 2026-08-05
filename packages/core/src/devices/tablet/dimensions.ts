@@ -425,16 +425,36 @@ export const GALAXY_TAB_METRICS = {
   regions: ({ variant, orientation }) => tabletRegions(variant ?? GALAXY_TAB_DEFAULT_VARIANT, orientation),
 } as const satisfies MockupMetrics<{ variant?: GalaxyTabVariant; orientation?: Orientation }>
 
-/** Grounded on the bottom edge of the body (its side edge in landscape). */
-export const TABLET_FRAMING = {
-  camera: { position: [0, 0.5, 8.6], fov: 40 },
-  floatIntensity: 0.8,
-  contactGap: 0.05,
-  extent: ({ variant, orientation }) => {
-    const body = TABLET_VARIANTS[variant ?? IPAD_DEFAULT_VARIANT].body
-    return (orientation === 'landscape' ? body.width : body.height) / 2
-  },
-} as const satisfies MockupFraming<{ variant?: TabletVariant; orientation?: Orientation }>
+/**
+ * Grounded on the bottom edge of the body (its side edge in landscape).
+ *
+ * Built per family rather than shared, because the fallback matters: an
+ * omitted `variant` has to resolve to the family the mockup actually belongs
+ * to. One shared framing meant a default `<GalaxyTabMockup/>` grounded its
+ * contact shadow at the iPad Pro 13's extent and floated ~14 mm above it.
+ */
+const tabletFraming = (defaultVariant: TabletVariant) =>
+  ({
+    camera: { position: [0, 0.5, 8.6], fov: 40 },
+    floatIntensity: 0.8,
+    contactGap: 0.05,
+    extent: ({ variant, orientation }) => {
+      const body = TABLET_VARIANTS[variant ?? defaultVariant].body
+      return (orientation === 'landscape' ? body.width : body.height) / 2
+    },
+  }) as const satisfies MockupFraming<{ variant?: TabletVariant; orientation?: Orientation }>
+
+export const IPAD_FRAMING = tabletFraming(IPAD_DEFAULT_VARIANT)
+export const GALAXY_TAB_FRAMING = tabletFraming(GALAXY_TAB_DEFAULT_VARIANT)
+
+/**
+ * The shared tablet stage config (camera, float, contact gap).
+ *
+ * Prefer `IPAD_FRAMING` / `GALAXY_TAB_FRAMING` when grounding an object -
+ * this one falls back to the iPad's default variant, which is only right for
+ * iPads.
+ */
+export const TABLET_FRAMING = IPAD_FRAMING
 
 /** The 14.6" Tab Ultra needs a bit more camera room than the iPads. */
 export const TABLET_ULTRA_CAMERA = {

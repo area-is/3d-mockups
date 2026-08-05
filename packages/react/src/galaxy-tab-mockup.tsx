@@ -1,4 +1,4 @@
-import { TABLET_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS, GALAXY_TAB_METRICS } from '@area-3d-mockups/core'
+import { GALAXY_TAB_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS, GALAXY_TAB_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyTab, tabletSlots, type GalaxyTabProps } from './devices/tablet/tablet'
 
@@ -9,7 +9,7 @@ const GalaxyTabMockupBase = createMockup({
   regions: SCREEN_REGIONS,
   metrics: GALAXY_TAB_METRICS,
   object: GalaxyTab,
-  framing: TABLET_FRAMING,
+  framing: GALAXY_TAB_FRAMING,
   slots: tabletSlots,
 })
 
@@ -52,4 +52,10 @@ function GalaxyTabMockupImpl({ camera, ...props }: GalaxyTabMockupProps) {
 }
 GalaxyTabMockupImpl.displayName = 'GalaxyTabMockup'
 
-export const GalaxyTabMockup = Object.assign(GalaxyTabMockupImpl, tabletSlots)
+export const GalaxyTabMockup = Object.assign(GalaxyTabMockupImpl, tabletSlots, {
+  // The shell replaces the base as the export, so it has to carry the
+  // base's measurement statics too - otherwise `.info()`/`.regions`
+  // silently vanish for this mockup alone.
+  info: GalaxyTabMockupBase.info,
+  regions: GalaxyTabMockupBase.regions,
+})

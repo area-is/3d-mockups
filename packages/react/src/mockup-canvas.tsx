@@ -63,7 +63,7 @@ function OverlayIcon({ path }: { path: string }) {
 }
 
 export interface MockupCanvasProps {
-  /** Your scene - typically a device such as `<Phone>`. */
+  /** Your scene - typically a device such as `<Galaxy>`. */
   children: React.ReactNode
   /** Drag-to-rotate controls, axis at the stage center. */
   controls?: boolean
@@ -113,7 +113,7 @@ export interface MockupCanvasProps {
 /**
  * A ready-made react-three-fiber stage for device mockups: GPU-accelerated
  * WebGL canvas, studio lighting, soft shadows and orbit controls. Compose it
- * with any device model, e.g. `<MockupCanvas><Phone>…</Phone></MockupCanvas>`.
+ * with any device model, e.g. `<MockupCanvas><Galaxy>…</Galaxy></MockupCanvas>`.
  *
  * The stage itself - camera pose, orbit feel, light rig, shadow softness -
  * is defined once in `@area-3d-mockups/core` and shared with every binding.
@@ -136,8 +136,11 @@ export function MockupCanvas({
   // Keep the orbit-zoom range sane for whatever camera the mockup configured:
   // a wide stage (billboard, van) must not snap back to a closer maxDistance
   // on the first drag.
-  const cameraPosition = (camera as { position?: [number, number, number] } | undefined)?.position
-  const orbitRange = orbitDistanceRange(cameraDistance(cameraPosition))
+  // `cameraDistance` validates the shape: r3f's `camera` prop also accepts a
+  // camera instance or a Vector3 position, neither of which indexes as a tuple.
+  const orbitRange = orbitDistanceRange(
+    cameraDistance((camera as { position?: unknown } | undefined)?.position)
+  )
 
   // Full-screen view toggles the overlay wrapper into the browser's Fullscreen
   // API. Track the live state so the button flips its icon and label, and so a

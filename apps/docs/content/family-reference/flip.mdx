@@ -1,6 +1,6 @@
 `<Flip>` renders a Galaxy Z Flip 7; `<FlipMockup>` is the all-in-one version.
 One device, two form factors: **open** (default) fills your content onto the
-tall 6.85″ main display, and **closed** (`open={false}`) folds to the compact
+tall 6.85″ main display, and **closed** (`openAngle={false}`) folds to the compact
 square whose front is nearly all cover screen - with the two separately
 protruding lens rings and flash sitting on the glass (no plate joins them,
 matching the retail hardware), and the hinge band (complete with its
@@ -20,7 +20,7 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `open` | `boolean \| number` | `true` | How far the clamshell is open. `true` is the unfolded tall phone (content on the 360×837 main display), `false` the folded compact (content on the nearly square 316×353 cover display, lens rings overlaid like cutouts). A number is degrees (0 = shut, 180 = flat) and renders the real Flex Mode pose: the halves pivot around the Armor FlexHinge while its glossy spine band (with the SAMSUNG engraving) rolls into the gap, and your content bends across the fold on two composited planes. The pose is continuous from nearly shut to nearly flat - only ~0° snaps to the dedicated folded pose, ~177°+ to the flat-open one. |
+| `openAngle` | `boolean \| number` | `true` | How far the clamshell is open. `true` is the unfolded tall phone (content on the 360×837 main display), `false` the folded compact (content on the nearly square 316×353 cover display, lens rings overlaid like cutouts). A number is degrees (0 = shut, 180 = flat) and renders the real Flex Mode pose: the halves pivot around the Armor FlexHinge while its glossy spine band (with the SAMSUNG engraving) rolls into the gap, and your content bends across the fold on two composited planes. The pose is continuous: every angle renders its own pose, and only the extremes hand over to the dedicated folded (~0°) and flat (180°) poses, which draw the crease as one seamless screen. |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display with upright content. |
 | `color` | `string` | `'#22252b'` | Back glass / cover. Takes a retail colorway id from `FLIP_COLORWAYS`, which brings that model's measured frame and hinge band with it, or any CSS color - the metal is then derived from it. |
 | `resolution` | `number` | per state | CSS pixel width of the active display; height follows the panel aspect. |
@@ -32,19 +32,19 @@ wraps around the cameras exactly like the real FlexWindow:
 
 <MockupExplorer
   component="FlipMockup"
-  props={{ open: false, autoRotate: true, float: true, color: 'coralred', surfaceBackground: '#000' }}
+  props={{ openAngle: false, autoRotate: true, float: true, color: 'coralred', surfaceBackground: '#000' }}
 />
 
 ## Any angle in between
 
-`open` takes a number of degrees to pose the phone at any openness - the classic half-open
+`openAngle` takes a number of degrees to pose the phone at any openness - the classic half-open
 Flex Mode stance, with the hinge spine rolling into the fold and your content
 bending across it:
 
 <ObjectDemo demo="flip-flex" />
 
 ```tsx
-<FlipMockup open={100} color="blueshadow">
+<FlipMockup openAngle={100} color="blueshadow">
   <YourApp />
 </FlipMockup>
 ```

@@ -6,7 +6,7 @@ import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
 import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
 import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
-import { ColorRow, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
+import { ColorRow, NumberField, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
 import { editableProp, propAttribute, same, type EditableProp } from './prop-controls'
 import { LazyScene } from '../lazy-scene'
 import { EXPLORERS, type ExplorerSpec } from './registry'
@@ -56,7 +56,7 @@ interface PropState {
   color: string
   orientation: 'portrait' | 'landscape'
   /** Hinge angle in degrees - 180 flat, 0 shut, anything between is Flex Mode. */
-  open: number
+  openAngle: number
   coverage: 'panel' | 'full' | 'perforated'
   float: boolean
   surfaceBackground: string
@@ -85,7 +85,7 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
   orientation: 'portrait',
-  open: 180,
+  openAngle: 180,
   coverage: 'panel',
   float: false,
   surfaceBackground: '',
@@ -99,6 +99,12 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   background: '',
   extra: {},
 })
+
+/**
+ * Hinge angle a foldable explorer opens on, matching the home-page carousel
+ * and the sidebar thumbnails.
+ */
+const DOCS_OPEN_ANGLE = 150
 
 /**
  * Where the explorer starts. Zoom is on so the stage is immediately
@@ -116,6 +122,11 @@ const initialState = (
   const state: PropState = {
     ...libraryDefaults(spec, lockedVariant),
     zoom: true,
+    // A foldable opens partly folded rather than flat: flat, it is just a slab
+    // and the hinge - the thing the page is about - is edge-on and invisible.
+    // The library's own default is still flat, so the snippet correctly prints
+    // `openAngle={150}` (it diffs against the library, not against this).
+    ...(spec.openable ? { openAngle: DOCS_OPEN_ANGLE } : {}),
     extra: { ...spec.fixed },
   }
   for (const [name, value] of Object.entries(seed ?? {})) {
@@ -123,8 +134,8 @@ const initialState = (
       // One prop, two pieces of UI state: the switch and the speed slider.
       state.autoRotate = value !== false && value !== 0
       if (typeof value === 'number') state.autoRotateSpeed = value
-    } else if (name === 'open') {
-      state.open = typeof value === 'number' ? value : value === false ? 0 : 180
+    } else if (name === 'openAngle') {
+      state.openAngle = typeof value === 'number' ? value : value === false ? 0 : 180
     } else if (name in state) {
       // A hand-written control owns it; the rest are inferred rows in `extra`.
       ;(state as unknown as Record<string, unknown>)[name] = value
@@ -268,7 +279,8 @@ function buildSource(
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
   if (documents.has('color') && p.color) add(`color="${p.color}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
-  if (spec.openable && p.open !== 180) add(p.open === 0 ? 'open={false}' : `open={${p.open}}`)
+  if (spec.openable && p.openAngle !== 180)
+    add(p.openAngle === 0 ? 'openAngle={false}' : `openAngle={${p.openAngle}}`)
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
   if (p.float) add('float')
   if (p.surfaceBackground) add(`surfaceBackground="${p.surfaceBackground}"`)
@@ -344,14 +356,30 @@ function Code({ text }: { text: string }) {
 /*  The explorer                                                       */
 /* ------------------------------------------------------------------ */
 
-export function MockupExplorer({
+/**
+ * Resolves the component name before any hook runs.
+ *
+ * A typo in MDX used to reach `initialState(undefined)` from a `useState`
+ * initializer and throw a bare TypeError out of the first render - the
+ * `if (!spec)` guard inside the body could never run, because the hooks above
+ * it crashed first. Splitting the lookup out keeps the guard reachable and the
+ * hook order fixed.
+ */
+export function MockupExplorer(props: MockupExplorerProps) {
+  if (!EXPLORERS[props.component]) {
+    return <p className="mx-unknown">Unknown mockup component: {props.component}</p>
+  }
+  return <MockupExplorerImpl {...props} />
+}
+
+function MockupExplorerImpl({
   component,
   variant,
   props: seed,
   screen = 'auto',
   stageHeight = 460,
 }: MockupExplorerProps) {
-  const spec = EXPLORERS[component]
+  const spec = EXPLORERS[component]!
   const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
   // Open on a wide screen, collapsed once the layout stacks. Resolved after
   // mount so the server and the first client render agree.
@@ -409,7 +437,6 @@ export function MockupExplorer({
     )
   }, [p, base])
 
-  if (!spec) return null
   const { Component } = spec
 
   const documents = documented(spec)
@@ -429,7 +456,7 @@ export function MockupExplorer({
     ...(hasColor ? ['color'] : []),
     ...(spec.variants ? ['variant'] : []),
     ...(spec.orientation ? ['orientation'] : []),
-    ...(spec.openable ? ['open'] : []),
+    ...(spec.openable ? ['openAngle'] : []),
     ...(spec.coverage ? ['coverage'] : []),
   ])
   const panel = panelProps(spec, driven)
@@ -461,7 +488,7 @@ export function MockupExplorer({
   const infoProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
-    ...(spec.openable ? { open: p.open } : {}),
+    ...(spec.openable ? { openAngle: p.openAngle } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...geometry,
   }
@@ -478,6 +505,12 @@ export function MockupExplorer({
   }
 
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
+  /*
+   * Which retail finish is in play, if any. Matched on id first - that is what
+   * a swatch now stores - and on colour as well, so a page that seeds
+   * `color: '#3a3d42'` still lights up the swatch that shipped in it.
+   */
+  const preset = colorways.find((c) => c.id === p.color || c.color === p.color)
   const chroma = screen === 'chroma'
   const screenName = chroma ? 'ChromaSurface' : spec.print ? 'SurfaceArt' : 'LiveCounter'
   const content = (label: string) =>
@@ -492,7 +525,7 @@ export function MockupExplorer({
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(hasColor && p.color ? { color: p.color } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
-    ...(spec.openable ? { open: p.open } : {}),
+    ...(spec.openable ? { openAngle: p.openAngle } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...(p.surfaceBackground ? { surfaceBackground: p.surfaceBackground } : {}),
     ...(p.resolution ? { resolution: p.resolution } : {}),
@@ -541,13 +574,23 @@ export function MockupExplorer({
     <div className="mx" data-inspector={inspectorOpen}>
       <div className="mx-header">
         <span className="mx-views">
-          <button type="button" data-on={view === '3d'} onClick={() => setView('3d')}>
+          <button
+            type="button"
+            data-on={view === '3d'}
+            aria-pressed={view === '3d'}
+            onClick={() => setView('3d')}
+          >
             {spec.label}
           </button>
           {regions.map((region) => (
             <span key={region.name} className="mx-view-item">
               <span className="mx-divider" aria-hidden />
-              <button type="button" data-on={view === region.name} onClick={() => setView(region.name)}>
+              <button
+                type="button"
+                data-on={view === region.name}
+                aria-pressed={view === region.name}
+                onClick={() => setView(region.name)}
+              >
                 {REGION_LABEL(region.name)}
               </button>
             </span>
@@ -573,8 +616,14 @@ export function MockupExplorer({
         <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
             <LazyScene>
+              {/*
+                Every surface through its own named slot, including the
+                primary one. Passing bare children *and* the primary slot is
+                the one combination the library rejects - it warned on every
+                device page and dropped the bare children - and naming all of
+                them also means each surface gets its own region label.
+              */}
               <Component {...mockupProps}>
-                {content(regions[0]?.name ?? 'screen')}
                 {slots.map(([name, Slot]) => (
                   <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
                 ))}
@@ -648,24 +697,42 @@ export function MockupExplorer({
             ) : null}
 
             {colorways.length ? (
-              <div className="mx-swatches">
-                {colorways.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className="mx-swatch"
-                    title={c.name}
-                    aria-label={c.name}
-                    data-on={p.color === c.color}
-                    style={{ background: c.color }}
-                    onClick={() => set('color', c.color)}
-                  />
-                ))}
+              <div className="mx-row">
+                <span className="mx-prop">preset</span>
+                <span className="mx-swatches">
+                  {colorways.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="mx-swatch"
+                      title={c.name}
+                      aria-label={c.name}
+                      aria-pressed={preset?.id === c.id}
+                      data-on={preset?.id === c.id}
+                      style={{ background: c.color }}
+                      /*
+                       * The id, not the hex. A colorway id brings the finish's
+                       * MEASURED frame and hinge with it; the same colour as a
+                       * raw hex only gets a derived rail, so clicking a retail
+                       * swatch used to render a subtly different device than
+                       * the one it names - and the snippet copied the hex.
+                       */
+                      onClick={() => set('color', c.id)}
+                    />
+                  ))}
+                </span>
               </div>
             ) : null}
 
             {hasColor ? (
-              <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
+              <ColorRow
+                label="color"
+                value={p.color}
+                fallback="#101216"
+                presetName={preset?.name}
+                swatch={preset?.color}
+                onChange={(v) => set('color', v)}
+              />
             ) : null}
             {spec.orientation ? (
               <Segmented
@@ -685,19 +752,17 @@ export function MockupExplorer({
             ) : null}
             {spec.openable ? (
               <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
-                <span className="mx-prop">open</span>
+                <span className="mx-prop">openAngle</span>
                 <span className="mx-row-controls">
-                  <input
-                    type="range"
-                    className="mx-range"
-                    aria-label="open"
+                  <NumberField
+                    label="openAngle"
+                    value={p.openAngle}
                     min={0}
                     max={180}
                     step={1}
-                    value={p.open}
-                    onChange={(e) => set('open', Number(e.target.value))}
+                    unit="°"
+                    onChange={(v) => set('openAngle', v)}
                   />
-                  <span className="mx-hex">{p.open === 180 ? 'flat' : p.open === 0 ? 'shut' : `${p.open}°`}</span>
                 </span>
               </div>
             ) : null}
@@ -826,7 +891,13 @@ export function MockupExplorer({
 
       <div className="mx-code">
         <div className="mx-tabs">
-          <button type="button" className="mx-tab" data-on={view === '3d'} onClick={() => setView('3d')}>
+          <button
+            type="button"
+            className="mx-tab"
+            data-on={view === '3d'}
+            aria-pressed={view === '3d'}
+            onClick={() => setView('3d')}
+          >
             demo.tsx
           </button>
           {regions.map((region) => (
@@ -835,6 +906,7 @@ export function MockupExplorer({
               type="button"
               className="mx-tab"
               data-on={view === region.name}
+              aria-pressed={view === region.name}
               onClick={() => setView(region.name)}
             >
               {REGION_FILE(region.name)}

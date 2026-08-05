@@ -82,9 +82,24 @@ export function ledMaskStyle(
   }
 }
 
+/**
+ * Rule that stops an LED animation for visitors asking for reduced motion.
+ *
+ * The animated elements are inline-styled, so there is no class to hang a
+ * media query on - each one carries `data-led-anim="&lt;name&gt;"` instead, and the
+ * name is already unique per sign. Suppressed rather than hidden: a stopped
+ * marquee still shows the head of its message, which is the readable part.
+ */
+export function ledReducedMotionRule(name: string): string {
+  return `@media (prefers-reduced-motion:reduce){[data-led-anim="${name}"]{animation:none}}`
+}
+
+/** The attribute pairing an animated LED element with its reduced-motion rule. */
+export const LED_ANIM_ATTR = 'data-led-anim'
+
 /** Keyframes for the horizontal marquee (the strip holds two copies; −50% is one copy). */
 export function ledMarqueeKeyframes(name: string): string {
-  return `@keyframes ${name}{from{transform:translateX(0)}to{transform:translateX(-50%)}}`
+  return `@keyframes ${name}{from{transform:translateX(0)}to{transform:translateX(-50%)}}${ledReducedMotionRule(name)}`
 }
 
 /**
@@ -93,5 +108,5 @@ export function ledMarqueeKeyframes(name: string): string {
  * sign flips instantly, like real LED signage).
  */
 export function ledCycleKeyframes(name: string, pages: number): string {
-  return `@keyframes ${name}{from{transform:translateY(0)}to{transform:translateY(-${pages * 100}cqh)}}`
+  return `@keyframes ${name}{from{transform:translateY(0)}to{transform:translateY(-${pages * 100}cqh)}}${ledReducedMotionRule(name)}`
 }

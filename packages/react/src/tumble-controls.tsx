@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { ORBIT, TumbleOrbit, tumbleAutoRotateStep } from '@area-3d-mockups/core'
+import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export interface TumbleControlsHandle {
   /** Multiply the camera distance (used by the overlay +/− buttons). */
@@ -15,6 +16,9 @@ export interface TumbleControlsProps {
   /**
    * Slowly spin the stage: `true` for one revolution a minute, or a number for
    * that many times the base speed (`autoRotate={2}` is twice as fast).
+   *
+   * Held still for visitors whose system asks for reduced motion; dragging
+   * still turns the object, since that is motion they asked for.
    */
   autoRotate?: boolean | number
   /**
@@ -54,6 +58,7 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
   ) {
     const camera = useThree((state) => state.camera)
     const gl = useThree((state) => state.gl)
+    const reducedMotion = usePrefersReducedMotion()
 
     const orbit = React.useMemo(() => new TumbleOrbit(ORBIT.dampingFactor), [])
     React.useEffect(() => {
@@ -165,7 +170,10 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
     // WebGL body by one frame during fast drags.
     const lastDistance = React.useRef(0)
     useFrame((_, delta) => {
-      const speed = typeof autoRotate === 'number' ? autoRotate : autoRotate ? 1 : 0
+      // Unprompted motion only. The drag path below is untouched - damping and
+      // flick still run, because that spin is the visitor's own doing.
+      const requested = typeof autoRotate === 'number' ? autoRotate : autoRotate ? 1 : 0
+      const speed = reducedMotion ? 0 : requested
       const step = speed ? tumbleAutoRotateStep(delta, speed) : 0
       orbit.update(camera, step)
       if (onDistanceChange) {

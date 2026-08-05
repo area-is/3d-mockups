@@ -70,7 +70,8 @@ What that puts in the core today:
 What stays in a binding (React's versions in parentheses):
 
 - The **canvas/stage component** wiring core config into the renderer
-  (`mockup-canvas.tsx` over r3f `<Canvas>`, drei `Environment`/`ContactShadows`/`OrbitControls`).
+  (`mockup-canvas.tsx` over r3f `<Canvas>`, drei `Environment`/`ContactShadows`,
+  and the binding's own `TumbleControls` over the core `TumbleOrbit`).
 - The **HTML screen bridge**: portaling framework content onto the display glass
   (`screen/device-screen.tsx` over drei `<Html transform occlude="blending">`),
   calling the core's backface culler and confining drei's z-index band to the

@@ -130,10 +130,14 @@ const S26: GalaxyPhoneSpec = {
  * rear array moves to the S26 pill language, scaled up: three large rings
  * stacked in a raised stadium island top-left (each ring standing proud of the
  * pill), with the 3x/5x tele pair split into a second column on the flat back
- * beside it, the flash sitting between them. Logical resolution 384x832 (One
- * UI's default FHD+ render at 450 dpi). Detail geometry measured off the
- * official product renders (the 297 px panel scales to the published 78.1 mm,
- * so one pixel is 0.265 mm).
+ * beside it, the flash sitting between them. One UI's default FHD+ render at
+ * 450 dpi is 384x832; the modelled panel is 384x833, because the display rect
+ * below is measured off the hardware (2.169:1) rather than derived from the
+ * 3120x1440 grid (2.167:1), and 384 x 2.169 rounds up. The rendered screen
+ * follows the measured rect - that one pixel is the difference between the two
+ * sources, not drift. Detail geometry measured off the official product
+ * renders (the 297 px panel scales to the published 78.1 mm, so one pixel is
+ * 0.265 mm).
  */
 const S26_ULTRA: GalaxyPhoneSpec = {
   // The 2026 Ultra dropped the S25 Ultra's boxy corners: the silhouette

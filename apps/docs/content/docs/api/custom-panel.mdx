@@ -46,8 +46,13 @@ Every slot takes per-surface overrides - `surfaceBackground`,
 `resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<CustomPanel>`.
 
-`customPanelScale(size)` is exported if you need the world-units-per-mm
-factor (e.g. to position several panels in one scene).
+`customPanelScale(size)` gives the world-units-per-mm factor (e.g. to position
+several panels in one scene). It lives on the `/core` subpath, next to the rest
+of the specs:
+
+```ts
+import { customPanelScale } from 'area-3d-mockups/core'
+```
 
 ## Mockup-able areas
 

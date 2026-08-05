@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group } from 'three'
-import { floatPose, randomFloatPhase } from '@area-3d-mockups/core'
+import { floatPose, randomFloatPhase, FLOAT_REST_POSE } from '@area-3d-mockups/core'
+import { usePrefersReducedMotion } from './use-reduced-motion'
 
 /**
  * Gentle idle float shared by the device mockups. The pose itself is core math
@@ -21,8 +22,13 @@ export function FloatGroup({
   const ref = React.useRef<Group>(null!)
   // Random phase so multiple mockups on one page don't bob in unison.
   const [phase] = React.useState(randomFloatPhase)
+  // Nobody asked for the bob, so it is the first thing to go when the visitor
+  // has asked for less motion. The rest pose still gets written every frame:
+  // switching the preference on mid-session has to settle the object, not
+  // strand it wherever the last animated frame left it.
+  const reduced = usePrefersReducedMotion()
   useFrame(({ clock }) => {
-    const pose = floatPose(clock.elapsedTime, intensity, phase)
+    const pose = reduced ? FLOAT_REST_POSE : floatPose(clock.elapsedTime, intensity, phase)
     const group = ref.current
     group.rotation.x = pose.rotationX
     group.rotation.y = pose.rotationY

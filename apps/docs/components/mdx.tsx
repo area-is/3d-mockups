@@ -3,8 +3,9 @@ import { Card, Cards } from 'fumadocs-ui/components/card'
 import { Callout } from 'fumadocs-ui/components/callout'
 import type { MDXComponents } from 'mdx/types'
 import { DeviceDisclaimer } from './device-disclaimer'
-import { ObjectDemo } from './object-examples'
-import { MockupExplorer } from './mockup-explorer'
+// Both go through `next/dynamic` shells: every docs page gets this map, and a
+// static import here shipped the whole 3D stack to prose-only pages.
+import { ObjectDemo, MockupExplorer } from './lazy-mdx-demos'
 
 // The cast bridges a structural mismatch between fumadocs-ui's component map
 // and @types/mdx under our @types/react version; the shapes agree at runtime.

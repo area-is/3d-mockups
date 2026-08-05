@@ -3,19 +3,35 @@ title: Overview
 description: How the components fit together, and the props every mockup shares.
 ---
 
-The library has two layers:
+The library has two layers, and every model appears in both.
 
-1. **All-in-one mockups**: `GalaxyMockup`, `IPhoneMockup`, `LaptopMockup`,
-   `IPadMockup`, `GalaxyTabMockup`, `AppleWatchMockup`, `GalaxyWatchMockup`, and `StudioDisplayMockup`
-   for the devices, plus `BookMockup`, `MagazineMockup`, `BrochureMockup`,
-   `BusinessCardMockup`, `PosterFrameMockup`, `BillboardMockup`, and
-   `VanMockup` for the [objects](/docs/objects). Each one bundles the stage and
-   a model, ready to drop into a page.
+1. **All-in-one mockups** - a stage and a model in one component, ready to drop
+   into a page. Ten for the devices:
+
+   `GalaxyMockup` · `IPhoneMockup` · `FoldMockup` · `FlipMockup` ·
+   `LaptopMockup` · `IPadMockup` · `GalaxyTabMockup` · `AppleWatchMockup` ·
+   `GalaxyWatchMockup` · `StudioDisplayMockup`
+
+   …and twenty-three for the [objects](/docs/objects):
+
+   `BookMockup` · `MagazineMockup` · `BrochureMockup` · `BusinessCardMockup` ·
+   `IDCardMockup` · `GreetingCardMockup` · `PosterFrameMockup` ·
+   `VinylRecordMockup` · `ProductBoxMockup` · `MailerBoxMockup` ·
+   `ShoppingBagMockup` · `CustomPanelMockup` · `CustomBoxMockup` ·
+   `BillboardMockup` · `BusShelterMockup` · `DOOHTotemMockup` ·
+   `AFrameSignMockup` · `RollupBannerMockup` · `StorefrontMockup` ·
+   `TVSetMockup` · `BusMockup` · `VanMockup` · `SemiTrailerMockup`
+
 2. **Composable parts**: [`MockupCanvas`](/docs/api/mockup-canvas) (the stage)
-   plus the bare models (`Phone`, `IPhone`, `Laptop`, `IPad`, `GalaxyTab`, `AppleWatch`,
-   `GalaxyWatch`, `StudioDisplay`, `Book`, `Magazine`, `Brochure`, `BusinessCard`,
-   `PosterFrame`, `Billboard`, `Van`) for your own react-three-fiber scenes. See
-   [Composing scenes](/docs/composing).
+   plus the bare model behind each mockup, named without the suffix - `Galaxy`,
+   `IPhone`, `Fold`, `Book`, `Van`, `TVSet` and so on - for your own
+   react-three-fiber scenes. See [Composing scenes](/docs/composing).
+
+   [`TumbleControls`](/docs/composing) (the drag-to-orbit camera controls) and
+   `LEDText` (the dot-matrix sign renderer used by the transit models) are
+   exported too, along with the
+   [`createMockup` / `createSlots` factories](/docs/composing) for building a
+   mockup of your own.
 
 Every live example on these pages is a playground: the bar under the canvas has
 an input for **every** prop of the mockup above it, grouped into the model's own

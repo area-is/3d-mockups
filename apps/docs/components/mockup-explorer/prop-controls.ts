@@ -36,7 +36,15 @@ export type Control =
   | { kind: 'switch' }
   /** `boolean | string`: on/off, and when on, in what color. */
   | { kind: 'switchColor'; on: string }
-  | { kind: 'number'; min: number; max: number; step: number; unit?: string }
+  | {
+      kind: 'number'
+      min: number
+      max: number
+      step: number
+      unit?: string
+      /** Pair the slider with a typable box (see `NumberField`). */
+      editable?: boolean
+    }
   | { kind: 'enum'; options: string[] }
   | { kind: 'vector'; axes: Axis[]; min: number; max: number; step: number }
   | { kind: 'dimensions'; axes: Axis[]; unit: string }
@@ -88,8 +96,13 @@ const objectKeys = (type: string): string[] | undefined => {
 }
 
 /** Sliders need bounds the table doesn't carry, so the few that exist live here. */
-const RANGES: Record<string, { min: number; max: number; step: number; unit?: string }> = {
-  openAngle: { min: 0, max: 180, step: 1, unit: '°' },
+const RANGES: Record<
+  string,
+  { min: number; max: number; step: number; unit?: string; editable?: boolean }
+> = {
+  // Editable: an exact hinge angle is something people reach for by name
+  // ("150"), not by dragging until the readout agrees.
+  openAngle: { min: 0, max: 180, step: 1, unit: '°', editable: true },
   foldAngle: { min: 0, max: 90, step: 1, unit: '°' },
   cornerRadius: { min: 0, max: 40, step: 0.5, unit: 'mm' },
   // The only numeric `size`: a TV's diagonal, which its own docs clamp.

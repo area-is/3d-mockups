@@ -95,8 +95,11 @@ const FLIP7: FlipSpec = {
   closed: {
     body: { width: 2.051, height: 2.274, depth: 0.177, radius: 0.201, bevel: 0.014 },
     gap: 0.02,
-    // 70.0 x 78.15 mm cover panel, r 4.8 mm.
-    display: { width: 1.909, height: 2.132, radius: 0.13 },
+    // 70.0 x 77.4 mm cover panel, r 4.8 mm. The height comes from the panel's
+    // own diagonal and grid (4.1", 948x1048 -> 69.86 x 77.23 mm), which is
+    // independent of this model; the 78.15 mm it used to carry made the cover
+    // 1% too tall and rendered a 316x353 screen where the grid says 316x349.
+    display: { width: 1.909, height: 2.11, radius: 0.13 },
     resolution: 316,
   },
   rearCamera: {
@@ -152,9 +155,9 @@ export const FLIP_MM_PER_UNIT = 36.66
  */
 export const FLIP_METRICS = {
   mmPerUnit: FLIP_MM_PER_UNIT,
-  regions: ({ variant, open, orientation }) => {
+  regions: ({ variant, openAngle, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const { display, resolution } = foldOpenAngle(open) < 0.5 ? spec.closed : spec.open
+    const { display, resolution } = foldOpenAngle(openAngle) < 0.5 ? spec.closed : spec.open
     const landscape = orientation === 'landscape'
     return {
       screen: {
@@ -165,13 +168,13 @@ export const FLIP_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }>
+} as const satisfies MockupMetrics<{ variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation }>
 
 export const FLIP_FRAMING = {
   contactGap: 0.05,
-  extent: ({ variant, open, orientation }) => {
+  extent: ({ variant, openAngle, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const angle = foldOpenAngle(open)
+    const angle = foldOpenAngle(openAngle)
     const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
     const extent =
       orientation === 'landscape'
@@ -187,6 +190,6 @@ export const FLIP_FRAMING = {
   },
 } as const satisfies MockupFraming<{
   variant?: FlipVariant
-  open?: boolean | number
+  openAngle?: boolean | number
   orientation?: Orientation
 }>

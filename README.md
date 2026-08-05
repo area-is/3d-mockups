@@ -2,7 +2,17 @@
   <img src="assets/area-a-dual-slant-green.svg" alt="area-3d-mockups" width="128" height="128" />
 </p>
 
-# area-3d-mockups
+<h1 align="center">area-3d-mockups</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/area-3d-mockups"><img src="https://img.shields.io/npm/v/area-3d-mockups.svg" alt="npm version" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license" /></a>
+  <a href="https://github.com/area-is/3d-mockups/actions/workflows/ci.yml"><img src="https://github.com/area-is/3d-mockups/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+</p>
+
+<p align="center">
+  <img src="assets/hero.png" alt="A 3D iPhone mockup with a live music-player UI on its screen, flanked by two more devices" width="820" />
+</p>
 
 GPU-accelerated **3D device mockups for React** - drop any content onto the screen of a
 3D phone and it renders live: real DOM on the glass, vector crisp at any angle, videos
@@ -10,8 +20,11 @@ playing, iframes loading. The mockups are decorative - you rotate and zoom them,
 hardware masks the screen pixel for pixel.
 
 Built on [three.js](https://threejs.org) and
-[react-three-fiber](https://github.com/pmndrs/react-three-fiber). The starter device is a
-procedurally generated Galaxy-style phone - no 3D asset files to load. Beyond devices,
+[react-three-fiber](https://github.com/pmndrs/react-three-fiber). Every model is
+generated procedurally at runtime - **no 3D asset files to load or host**. The device
+lineup is 22 strong: the Galaxy S26 line, the Z Fold 7 and Z Flip 7 foldables, the
+iPhone 17 family, MacBook Air and Pro, the iPad and Galaxy Tab families, an Apple
+Watch and a Galaxy Watch on full wristbands, and a 27" desktop display. Beyond devices,
 the same live-surface API covers everyday objects - books, magazines,
 brochures, cards, packaging (product box, mailer box, shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
@@ -34,6 +47,9 @@ export function Hero() {
 }
 ```
 
+**[Documentation and live demos →](https://area-3d-mockups-docs.workers.dev)**
+Every device and object has its own page with a live prop explorer.
+
 ## Monorepo layout
 
 | Path | npm name | What it is |
@@ -55,18 +71,38 @@ Uses npm workspaces. Node 18.18+ required.
 npm install        # installs all workspaces + builds the package (prepare hook)
 npm run dev        # package in watch mode + docs at http://localhost:3000
 npm run build      # builds the package, then the docs site as a Worker bundle
-npm run typecheck  # typechecks both workspaces
+npm run typecheck  # typechecks all three workspaces
+npm run test       # core unit tests
+npm run visual     # visual regression vs baselines (needs `npm run dev` running)
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for what each check catches — they overlap
+less than they look.
 
 ## Publishing the package
 
+Releases go out from CI, triggered by a tag:
+
 ```bash
-cd packages/react
-npm publish
+npm version patch -w area-3d-mockups   # or minor / major
+git push origin main --follow-tags
 ```
 
-The `prepare` script builds `dist/` automatically before publish. The core is bundled
-into `area-3d-mockups`, so it does not need to be published separately.
+[`.github/workflows/release.yml`](.github/workflows/release.yml) publishes through npm
+Trusted Publishing (OIDC), so there is no npm token in this repo, and it refuses any
+tag that does not match the version in the manifest.
+
+**The very first publish is the exception** and has to be done by hand, because npm
+requires a package to exist before a trusted publisher can be attached to it:
+
+```bash
+cd packages/react
+npm publish --access public
+```
+
+Then attach the publisher once — the command and its caveats are documented at the top
+of `release.yml`. The `prepare` script builds `dist/` automatically before publish,
+and the core is bundled into `area-3d-mockups`, so it is not published separately.
 
 ## Deploying the docs
 
@@ -85,10 +121,14 @@ than Node.
 
 ### CI/CD
 
-CI/CD is [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/),
+**Deploys** are [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/),
 configured in the Cloudflare dashboard rather than in this repo. Cloudflare clones,
 builds and deploys on push, under an API token it generates and holds itself, so there
-are no deploy credentials in GitHub and no workflow file here.
+are no deploy credentials in GitHub and no deploy workflow here.
+
+The workflows that *are* here do everything else: `ci.yml` typechecks, tests and builds
+every pull request, `release.yml` publishes to npm on a tag, and
+`cloudflare-build-pr-comments.yml` reports each Workers build back onto its PR.
 
 Settings live under **Workers & Pages → area-3d-mockups-docs → Settings → Build**:
 

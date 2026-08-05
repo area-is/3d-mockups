@@ -65,6 +65,19 @@ export interface SlotProps extends SurfaceProps {
   children?: React.ReactNode
 }
 
+/**
+ * A slot after collection: what the caller passed, plus the region name
+ * `collectSlots` stamps on.
+ *
+ * Deliberately not part of `SlotProps`. That type is the public surface
+ * vocabulary a caller writes on `<BookMockup.Spine>`, and it is pinned to
+ * exactly `SurfaceProps` + `children` by a type test — `region` is something
+ * the library fills in, never something you pass.
+ */
+export interface CollectedSlot extends SlotProps {
+  region?: string
+}
+
 export type Slot<P extends SlotProps = SlotProps> = React.FC<P>
 
 function warnDev(message: string): void {
@@ -109,7 +122,7 @@ export function createSlots<const R extends readonly RegionSpec[]>(regions: R): 
 
 /** What `collectSlots` returns: per region, the props of the slot that filled it. */
 export type CollectedSlots<R extends readonly RegionSpec[]> = {
-  [K in R[number] as K['name']]?: SlotProps
+  [K in R[number] as K['name']]?: CollectedSlot
 }
 
 function regionOf(type: unknown): string | undefined {
@@ -177,7 +190,30 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
     }
   }
 
-  return out as CollectedSlots<R>
+  /*
+   * Tag every region with its own name on the way out.
+   *
+   * `useSurface().region` is documented as telling content which surface it
+   * landed on, but no scene component ever passed one, so it was `undefined`
+   * for everybody. Naming them here rather than at the ~74 `<DeviceScreen>`
+   * call sites keeps the name and the region it belongs to in one place, and
+   * `resolveSurface` carries it through to the screen.
+   *
+   * Only the regions that were actually filled, never every declared region.
+   * Absence is load-bearing: a scene component renders a face's live surface
+   * only `if (face.slot != null)`, so seeding empty regions would paint a
+   * white DOM screen over all six sides of a box and hide the material
+   * underneath. The visual check catches exactly this.
+   *
+   * Done after collection rather than during it because the duplicate-slot and
+   * bare-children-vs-explicit-slot warnings above test `out[region]` for
+   * presence too.
+   */
+  const named: Record<string, CollectedSlot> = {}
+  for (const [name, props] of Object.entries(out)) {
+    named[name] = { ...props, region: name }
+  }
+  return named as CollectedSlots<R>
 }
 
 /** The resolved per-region settings a `DeviceScreen` consumes. */
@@ -185,6 +221,8 @@ export interface ResolvedSurface {
   background?: string
   resolution: number
   screenStyle?: React.CSSProperties
+  /** Which region this surface is, surfaced to content via `useSurface()`. */
+  region?: string
 }
 
 /**
@@ -193,7 +231,7 @@ export interface ResolvedSurface {
  * survives a slot-level color tweak.
  */
 export function resolveSurface(
-  slot: SlotProps | undefined,
+  slot: CollectedSlot | undefined,
   defaults: SurfaceProps & { resolution: number }
 ): ResolvedSurface {
   const style =
@@ -204,5 +242,8 @@ export function resolveSurface(
     background: slot?.surfaceBackground ?? defaults.surfaceBackground,
     resolution: slot?.resolution ?? defaults.resolution,
     screenStyle: style,
+    // Spread straight onto <DeviceScreen region=…>, so every surface reports
+    // itself without any call site having to name it twice.
+    region: slot?.region,
   }
 }
