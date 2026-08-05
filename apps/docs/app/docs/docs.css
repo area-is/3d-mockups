@@ -741,7 +741,12 @@
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1;
-  color: #ffffff;
+  /*
+   * The theme's own on-primary colour, not a hardcoded white. White on the
+   * dark theme's #31d322 accent is about 2:1 — nowhere near readable — and
+   * still fails at this size on the light theme's green.
+   */
+  color: var(--color-fd-primary-foreground);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   pointer-events: none;

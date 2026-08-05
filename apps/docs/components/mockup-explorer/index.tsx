@@ -556,13 +556,23 @@ function MockupExplorerImpl({
     <div className="mx" data-inspector={inspectorOpen}>
       <div className="mx-header">
         <span className="mx-views">
-          <button type="button" data-on={view === '3d'} onClick={() => setView('3d')}>
+          <button
+            type="button"
+            data-on={view === '3d'}
+            aria-pressed={view === '3d'}
+            onClick={() => setView('3d')}
+          >
             {spec.label}
           </button>
           {regions.map((region) => (
             <span key={region.name} className="mx-view-item">
               <span className="mx-divider" aria-hidden />
-              <button type="button" data-on={view === region.name} onClick={() => setView(region.name)}>
+              <button
+                type="button"
+                data-on={view === region.name}
+                aria-pressed={view === region.name}
+                onClick={() => setView(region.name)}
+              >
                 {REGION_LABEL(region.name)}
               </button>
             </span>
@@ -847,7 +857,13 @@ function MockupExplorerImpl({
 
       <div className="mx-code">
         <div className="mx-tabs">
-          <button type="button" className="mx-tab" data-on={view === '3d'} onClick={() => setView('3d')}>
+          <button
+            type="button"
+            className="mx-tab"
+            data-on={view === '3d'}
+            aria-pressed={view === '3d'}
+            onClick={() => setView('3d')}
+          >
             demo.tsx
           </button>
           {regions.map((region) => (
@@ -856,6 +872,7 @@ function MockupExplorerImpl({
               type="button"
               className="mx-tab"
               data-on={view === region.name}
+              aria-pressed={view === region.name}
               onClick={() => setView(region.name)}
             >
               {REGION_FILE(region.name)}

@@ -152,7 +152,13 @@ export function Segmented<T extends string>({
       <span className="mx-prop">{label}</span>
       <span className="mx-segmented">
         {options.map((option) => (
-          <button key={option} type="button" data-on={option === value} onClick={() => onChange(option)}>
+          <button
+            key={option}
+            type="button"
+            data-on={option === value}
+            aria-pressed={option === value}
+            onClick={() => onChange(option)}
+          >
             {option}
           </button>
         ))}
