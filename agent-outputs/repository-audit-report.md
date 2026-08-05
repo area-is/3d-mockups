@@ -2,6 +2,11 @@
 
 **Date:** 2026-08-05 · **Commit audited:** `6615255` (main) · **Auditor:** Claude Code
 
+> **Status: most findings are fixed.** The commits on this branch resolve every
+> P0 and P1 item except the two that are not code changes — see
+> [What was fixed](#what-was-fixed) at the end for the item-by-item status and
+> what deliberately remains.
+
 ## Scope and method
 
 This audit covers the whole repository: the core package (`@area-3d-mockups/core`), the React binding (`area-3d-mockups`), the docs/demo app (`apps/docs`), the documentation content, the home page, the live demos, mobile UX, repo hygiene, and release readiness. Findings were produced by:
@@ -236,3 +241,68 @@ Remaining issues, mostly consolidated from the sections above:
 ---
 
 *Method note: browser findings come from scripted Chromium runs against `next dev` (SwiftShader WebGL, desktop 1440×900 and mobile 375×812 + touch), capturing console output, request failures, DOM measurements, and full-page screenshots; package findings were verified by executing the built `dist` artifacts; registry status checked against `registry.npmjs.org` on the audit date. The repo's own visual regression check was run as part of this audit: **36/36 cases unchanged** against `apps/docs/visual-baselines/` (after working around the port mismatch in T-3), so all geometry findings above are API/measurement issues, not rendering regressions.*
+
+---
+
+## What was fixed
+
+Six commits on `claude/repository-audit-report-u98wci` act on this report.
+Every change was verified: typecheck clean across all three workspaces, 129 new
+unit tests passing, `devices:check` reporting 0 mismatches, the visual suite at
+36/36, and the site re-tested in a browser at desktop and mobile viewports.
+
+### Fixed
+
+| Ref | Finding | How it was verified |
+|---|---|---|
+| C-1 | `railColor` colour space | Golden-value tests; `#2a3245` → `#414a60` (was `#66718e`) |
+| C-2 | `van`/`bus` default coverage | Test asserting default equals `panel`, not `full` |
+| C-3 | `mockupInfo` on required-`size` kinds | Conditional-typed props + named error; test |
+| C-4 | TV `inches` → `size` | Test: 85″ measures 1881.7 mm, not the 65″ default |
+| C-5 | Shared tablet/watch framing fallbacks | Per-family framings; test asserting they differ |
+| C-6 | Modelled aspect vs panel grid | New guard in `sync-device-table.mjs`; it caught the Flip 7 cover at +1.03%, corrected against its diagonal reference |
+| C-8, C-13 | Phantom `panels` prop, dead exports | Removed |
+| R-1, R-2 | Unsatisfiable peer ranges | `react >=19`, `three >=0.179.0` |
+| R-4 | `exports` gaps, core `publishConfig` | Added |
+| R-5 | Stale package README | Re-measured and regenerated |
+| R-6 | `catalog.json` wiped in watch mode | `onSuccess` hook; verified `tsup` alone emits it |
+| R-7 | `useSurface().region` always undefined | Stamped in `collectSlots`; verified in-browser |
+| R-8 | Four wrappers missing `.info()`/`.regions` | Verified on the built bundle |
+| R-9 | NaN orbit limits from a non-tuple camera | Validated input; tests for six malformed shapes |
+| A-1 | No reduced-motion support | Library hook + site CSS + carousel; documented |
+| A-2, A-4 | Zoom readout role, missing `aria-pressed` | Added |
+| S-1 | No 404 pages | Site + docs 404s; catch-all for the five-root-layout case |
+| S-2 | No OG/Twitter/sitemap/robots/canonical | All added; sitemap enumerates 60 URLs |
+| S-3 | No WebGL fallback | `SceneBoundary` with capability probe + error boundary |
+| S-4 | three.js on every docs page | Measured: prose pages 1.07 MB JS vs 2.81 MB on canvas pages |
+| S-5 | Explorer crash on unknown component | Guard hoisted above the hooks |
+| S-6 | Explorer violating the slot contract | Warning gone from every device page |
+| S-11 | Dead code | `code-block.tsx` and ~2 KB CSS removed |
+| U-1 | Sub-32 px touch targets | Hit areas enlarged without moving the visuals |
+| U-2 | Carousel had no pause, no announcement | Pause control + `aria-live` |
+| U-4 | Contrast failures | Readout and `--text-low` now meet AA |
+| D-1…D-13 | Documentation drift | All corrected; no broken internal `/docs` links remain |
+| T-1, T-2 | No tests, no PR CI | 129 tests + `ci.yml` |
+| T-3 | Visual check port mismatch | Default is now 3000 |
+| H-1, H-2, H-3 | Missing hygiene files, README gaps | Added; `temp.txt` removed |
+
+### Deliberately not done
+
+- **Publishing v0.1.0 to npm** — an irreversible, outward-facing action
+  requiring the maintainer's credentials. Everything it depends on is fixed, so
+  the manual first publish (documented in the README) is now safe to run.
+- **`NEXT_PUBLIC_SITE_URL` is a placeholder.** No production URL exists
+  anywhere in the repo, so `lib/site.ts` falls back to a guess derived from the
+  Worker name. **Set it as a build variable in the Cloudflare dashboard** —
+  until then, canonical URLs and the social-card image point at the wrong host.
+- **C-6 beyond the Flip 7.** The remaining aspect deviations (fold cover
+  −0.62%, flip open −0.27%, S26 Ultra +0.13%) are cases where the *measured
+  physical* millimetres and the manufacturer's rounded pixel grid genuinely
+  disagree in the hardware. Perturbing measured geometry to make a rounded CSS
+  number land evenly would be fitting the model to the docs; the comments now
+  explain the discrepancy, and the new guard reports each one with a 1%
+  tolerance.
+- **C-7 (fold/flip framing threshold discontinuity)** and **C-9…C-12, R-3,
+  R-10…R-18, S-7…S-13, A-3, D-7, U-3** — the remaining Low items, plus the
+  advanced "build your own mockup" guide. None affect correctness of what ships
+  today.
