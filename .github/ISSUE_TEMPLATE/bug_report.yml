@@ -1,0 +1,72 @@
+name: Bug report
+description: Something renders, measures or behaves wrongly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The two things that resolve most issues fastest
+        are a screenshot (this is a visual library) and the versions below.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: >
+        The smallest snippet that shows it — which mockup, which props. A
+        StackBlitz or CodeSandbox link is ideal but not required.
+      render: tsx
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot or recording
+      description: Drag an image in. Skip if the issue is not visual.
+
+  - type: input
+    id: version
+    attributes:
+      label: area-3d-mockups version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: peers
+    attributes:
+      label: three / @react-three/fiber / @react-three/drei / react versions
+      placeholder: three 0.185.1, fiber 9.6.1, drei 10.7.7, react 19.2.7
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Browser, OS and GPU
+      description: >
+        WebGL behaviour varies a lot across these. `chrome://gpu` (or the
+        equivalent) has the details if the issue looks driver-related.
+      placeholder: Chrome 141, macOS 15.2, Apple M2
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: framework
+    attributes:
+      label: Where it happens
+      options:
+        - label: Next.js App Router
+        - label: Next.js Pages Router
+        - label: Vite / CRA / other SPA
+        - label: Only in a production build
+        - label: Only on mobile

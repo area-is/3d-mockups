@@ -1,0 +1,36 @@
+name: Feature request
+description: A new device, object, or capability.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [roadmap](https://github.com/area-is/3d-mockups/blob/main/apps/docs/content/docs/roadmap.mdx)
+        first — it may already be planned.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like to render?
+      description: >
+        For a new device or object, real dimensions and a reference photo or
+        product page help enormously — everything here is modelled from
+        published hardware measurements rather than 3D asset files.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: What are you building with it?
+      description: The use case usually shapes the API more than the feature does.
+
+  - type: checkboxes
+    id: type
+    attributes:
+      label: Kind
+      options:
+        - label: A new device
+        - label: A new object (print, packaging, out-of-home, vehicle)
+        - label: A new prop or capability on an existing mockup
+        - label: Something else

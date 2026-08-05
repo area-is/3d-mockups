@@ -193,6 +193,24 @@ const REGISTRY: Record<MockupKind, Entry> = {
 export const MOCKUP_KINDS = Object.keys(REGISTRY) as MockupKind[]
 
 /**
+ * The live regions a kind advertises, in slot order (the first is primary).
+ *
+ * The same list `mockupInfo` measures against, reachable without measuring -
+ * which is what a docs generator, a second binding, or a check that every
+ * declared region actually resolves needs. The React binding exposes the same
+ * data per component as `Mockup.regions`.
+ */
+export function mockupRegions(kind: MockupKind): readonly RegionSpec[] {
+  const entry = REGISTRY[kind]
+  if (!entry) {
+    throw new Error(
+      `[area-3d-mockups] mockupRegions: unknown mockup kind "${String(kind)}". Known kinds: ${MOCKUP_KINDS.join(', ')}.`
+    )
+  }
+  return entry.regions
+}
+
+/**
  * Measure a mockup without rendering it.
  *
  * @param kind  Which mockup - `'galaxy'`, `'book'`, `'customBox'`…

@@ -24,7 +24,13 @@ export {
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
 export { type Size, type RegionInfo, type MockupInfo, type MeasurableMockup, describeMockup } from './measure'
-export { type MockupPropsMap, type MockupKind, MOCKUP_KINDS, mockupInfo } from './metrics'
+export {
+  type MockupPropsMap,
+  type MockupKind,
+  MOCKUP_KINDS,
+  mockupInfo,
+  mockupRegions,
+} from './metrics'
 
 // Geometry math.
 export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'

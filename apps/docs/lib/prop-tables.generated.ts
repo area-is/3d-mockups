@@ -22,7 +22,7 @@ export const SHARED_PROPS: PropDoc[] = [
     {"name":"surfaceBackground","type":"string","default":"'#000000'","description":"CSS background painted behind your content, under whatever you render. See Surface background."},
     {"name":"surfaceStyle","type":"CSSProperties","default":"-","description":"Extra styles merged onto the screen wrapper (for example a custom fontFamily)."},
     {"name":"controls","type":"boolean","default":"true","description":"Drag-to-rotate controls with the axis fixed at the stage center (pan is always disabled). Vertical rotation stays within the classic orbit clamp by default."},
-    {"name":"autoRotate","type":"boolean | number","default":"false","description":"Slowly spin the camera around the device. true is one revolution a minute; a number multiplies that (autoRotate={2} twice as fast, autoRotate={0.5} half)."},
+    {"name":"autoRotate","type":"boolean | number","default":"false","description":"Slowly spin the camera around the device. true is one revolution a minute; a number multiplies that (autoRotate={2} twice as fast, autoRotate={0.5} half). Held still under reduced motion."},
     {"name":"zoom","type":"boolean","default":"false","description":"Pinch zoom on touch, scroll-wheel zoom on desktop, plus overlay +/− buttons. Off by default so embedded mockups never hijack page scroll; on, the canvas owns two-finger gestures."},
     {"name":"fullscreen","type":"boolean","default":"false","description":"Adds an overlay button that expands the mockup to fill the screen via the Fullscreen API (and collapses it back). Off by default."},
     {"name":"shadows","type":"boolean","default":"true","description":"Soft contact shadow under the device."},
