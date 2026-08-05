@@ -13,7 +13,7 @@ export type FoldMockupProps = MockupProps<FoldProps>
  *   <YourApp />
  * </FoldMockup>
  *
- * <FoldMockup open={false}>
+ * <FoldMockup openAngle={false}>
  *   <CoverUI /> {/* folded: content on the tall cover screen *\/}
  * </FoldMockup>
  * ```

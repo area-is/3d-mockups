@@ -53,10 +53,10 @@ const ROWS = {
   tabs11ultra: ['galaxyTab', { variant: 'tabs11ultra' }],
   series11: ['appleWatch', { variant: 'series11' }],
   watch8: ['galaxyWatch', { variant: 'watch8' }],
-  'fold7-open': ['fold', { variant: 'fold7', open: true }],
-  'fold7-closed': ['fold', { variant: 'fold7', open: false }],
-  'flip7-open': ['flip', { variant: 'flip7', open: true }],
-  'flip7-closed': ['flip', { variant: 'flip7', open: false }],
+  'fold7-open': ['fold', { variant: 'fold7', openAngle: true }],
+  'fold7-closed': ['fold', { variant: 'fold7', openAngle: false }],
+  'flip7-open': ['flip', { variant: 'flip7', openAngle: true }],
+  'flip7-closed': ['flip', { variant: 'flip7', openAngle: false }],
   studiodisplay: ['studioDisplay', {}],
 }
 

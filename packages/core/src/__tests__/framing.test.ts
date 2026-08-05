@@ -13,6 +13,8 @@ import {
 } from '../devices/watch/dimensions'
 import { cameraDistance, DEFAULT_CAMERA_DISTANCE } from '../stage/stage'
 import { floatPose, FLOAT_REST_POSE, REDUCED_MOTION_QUERY } from '../stage/float'
+import { foldOpenAngle, FLAT_EPSILON } from '../regions'
+import { mockupInfo } from '../metrics'
 
 /**
  * A framing shared between two device families has to fall back to the family
@@ -94,5 +96,50 @@ describe('float', () => {
   it('offers a rest pose for suppressed motion', () => {
     expect(FLOAT_REST_POSE).toEqual({ rotationX: 0, rotationY: 0, rotationZ: 0, positionY: 0 })
     expect(REDUCED_MOTION_QUERY).toBe('(prefers-reduced-motion: reduce)')
+  })
+})
+
+/**
+ * The foldables' pose vocabulary.
+ *
+ * `openAngle` reads as a boolean pose or a live hinge angle, and the flat
+ * single-screen path claims only genuinely-flat angles: it used to claim
+ * everything from 177 degrees up, which quantised three degrees of any hinge
+ * slider to "flat" and rebuilt the live screen on each crossing.
+ */
+describe('foldOpenAngle', () => {
+  it('reads the two boolean poses', () => {
+    expect(foldOpenAngle(true)).toBe(180)
+    expect(foldOpenAngle(false)).toBe(0)
+    expect(foldOpenAngle(undefined)).toBe(180)
+  })
+
+  it('passes a number through, clamped to the hinge travel', () => {
+    expect(foldOpenAngle(110)).toBe(110)
+    expect(foldOpenAngle(-20)).toBe(0)
+    expect(foldOpenAngle(500)).toBe(180)
+  })
+
+  it('leaves all but a sliver of the range to the continuous pose', () => {
+    // The dead band at the top has to be too small to see, or a slider feels
+    // magnetised to flat. Anything a degree below flat still poses itself.
+    expect(FLAT_EPSILON).toBeGreaterThan(179)
+    expect(FLAT_EPSILON).toBeLessThanOrEqual(180)
+    expect(foldOpenAngle(179)).toBeLessThan(FLAT_EPSILON)
+    expect(foldOpenAngle(177)).toBeLessThan(FLAT_EPSILON)
+    expect(foldOpenAngle(true)).toBeGreaterThanOrEqual(FLAT_EPSILON)
+    expect(foldOpenAngle(180)).toBeGreaterThanOrEqual(FLAT_EPSILON)
+  })
+})
+
+describe('foldable measurement follows openAngle', () => {
+  it.each(['fold', 'flip'] as const)('%s measures the cover display only when shut', (kind) => {
+    const flat = mockupInfo(kind, { openAngle: true }).primary.px
+    const shut = mockupInfo(kind, { openAngle: false }).primary.px
+    const nearlyFlat = mockupInfo(kind, { openAngle: 179 }).primary.px
+    expect(shut).not.toEqual(flat)
+    // Every angle above the shut threshold shows the inner display.
+    expect(nearlyFlat).toEqual(flat)
+    expect(mockupInfo(kind, { openAngle: 90 }).primary.px).toEqual(flat)
   })
 })

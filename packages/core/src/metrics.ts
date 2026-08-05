@@ -104,8 +104,8 @@ export interface MockupPropsMap {
   appleWatch: { variant?: AppleWatchVariant }
   galaxyWatch: { variant?: GalaxyWatchVariant }
   studioDisplay: Record<string, never>
-  fold: { variant?: FoldVariant; open?: boolean | number; orientation?: Orientation }
-  flip: { variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }
+  fold: { variant?: FoldVariant; openAngle?: boolean | number; orientation?: Orientation }
+  flip: { variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation }
   book: { size?: BookSize }
   magazine: { size?: MagazineSize }
   brochure: { size?: BrochureSize }
@@ -215,7 +215,7 @@ export function mockupRegions(kind: MockupKind): readonly RegionSpec[] {
  *
  * @param kind  Which mockup - `'galaxy'`, `'book'`, `'customBox'`…
  * @param props The geometry-affecting props you would pass the component
- *              (`variant`, `orientation`, `size`, `open`…). Defaults match the
+ *              (`variant`, `orientation`, `size`, `openAngle`…). Defaults match the
  *              component's own defaults, so `mockupInfo('galaxy')` describes
  *              exactly what `<GalaxyMockup />` renders.
  */

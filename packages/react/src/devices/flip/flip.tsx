@@ -6,6 +6,7 @@ import {
   FLIP_COLORWAYS,
   findColorway,
   foldOpenAngle,
+  FLAT_EPSILON,
   railColor,
   FLIP_VARIANTS,
   FLIP_DEFAULT_VARIANT,
@@ -57,7 +58,7 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * so content there is display-only and stateful screen content is best kept
    * simple.
    */
-  open?: boolean | number
+  openAngle?: boolean | number
   /**
    * `landscape` lays the device on its side and swaps the virtual display to
    * H×W with upright content - exactly like rotating the real device.
@@ -110,7 +111,7 @@ function freeEdgeCutters(
 /**
  * A procedurally built Samsung Galaxy Z Flip 7. One device, two form factors:
  * the unfolded tall phone (6.85" main display) and the folded compact whose
- * front is nearly all cover screen, switched with the `open` prop. Detail
+ * front is nearly all cover screen, switched with the `openAngle` prop. Detail
  * geometry (separate protruding lens rings, hinge band with its engraved wordmark, button
  * pills, ports) follows a reference scan of the retail device. No 3D asset
  * files are loaded - everything is generated from geometry at runtime.
@@ -120,7 +121,7 @@ function freeEdgeCutters(
 function FlipImpl({
   children,
   variant = FLIP_DEFAULT_VARIANT,
-  open = true,
+  openAngle = true,
   orientation = 'portrait',
   color: colorProp,
   surfaceBackground = '#000000',
@@ -141,8 +142,27 @@ function FlipImpl({
   // default renders are pixel-identical to before. The flex rig pivots on
   // the display surface, so the pose is continuous all the way down -
   // only ~0° itself snaps to the dedicated folded pose.
-  const angle = foldOpenAngle(open)
-  const mode: 'open' | 'closed' | 'flex' = angle >= 177 ? 'open' : angle < 0.5 ? 'closed' : 'flex'
+  const angle = foldOpenAngle(openAngle)
+  /*
+   * Only a genuinely flat hinge takes the single-screen path.
+   *
+   * This used to claim everything from 177 degrees up, and three degrees is
+   * enough to feel: the device snapped fully flat as the slider crossed 177 and
+   * stayed there for the rest of the travel, so dragging near the top read as a
+   * magnet pulling to 180. Worse, each crossing swapped one DeviceScreen for
+   * two (and back), tearing down the live DOM and flashing its content - and
+   * around the boundary a drag crosses it repeatedly.
+   *
+   * The flat path is still worth keeping for flat: splitting the display into
+   * two half-panes leaves a hard seam down the crease, where one continuous
+   * screen draws the soft gradient the real inner display has. So the band is
+   * now narrow enough to be invisible (a twentieth of a degree) rather than
+   * gone: `openAngle` / `openAngle={true}` / `openAngle={180}` all render the seamless flat
+   * pose, and every angle below it renders its own pose through the continuous
+   * flex path with no mode change along the way.
+   */
+  const mode: 'open' | 'closed' | 'flex' =
+    angle < 0.5 ? 'closed' : angle >= FLAT_EPSILON ? 'open' : 'flex'
   const isOpenFace = mode !== 'closed'
   const state = isOpenFace ? spec.open : spec.closed
   const { display } = state

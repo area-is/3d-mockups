@@ -56,7 +56,7 @@ interface PropState {
   color: string
   orientation: 'portrait' | 'landscape'
   /** Hinge angle in degrees - 180 flat, 0 shut, anything between is Flex Mode. */
-  open: number
+  openAngle: number
   coverage: 'panel' | 'full' | 'perforated'
   float: boolean
   surfaceBackground: string
@@ -85,7 +85,7 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
   variant: lockedVariant ?? spec.variants?.[0]?.id ?? '',
   color: '',
   orientation: 'portrait',
-  open: 180,
+  openAngle: 180,
   coverage: 'panel',
   float: false,
   surfaceBackground: '',
@@ -123,8 +123,8 @@ const initialState = (
       // One prop, two pieces of UI state: the switch and the speed slider.
       state.autoRotate = value !== false && value !== 0
       if (typeof value === 'number') state.autoRotateSpeed = value
-    } else if (name === 'open') {
-      state.open = typeof value === 'number' ? value : value === false ? 0 : 180
+    } else if (name === 'openAngle') {
+      state.openAngle = typeof value === 'number' ? value : value === false ? 0 : 180
     } else if (name in state) {
       // A hand-written control owns it; the rest are inferred rows in `extra`.
       ;(state as unknown as Record<string, unknown>)[name] = value
@@ -268,7 +268,8 @@ function buildSource(
   if (spec.variants && p.variant !== base.variant) add(`variant="${p.variant}"`)
   if (documents.has('color') && p.color) add(`color="${p.color}"`)
   if (spec.orientation && p.orientation !== 'portrait') add(`orientation="${p.orientation}"`)
-  if (spec.openable && p.open !== 180) add(p.open === 0 ? 'open={false}' : `open={${p.open}}`)
+  if (spec.openable && p.openAngle !== 180)
+    add(p.openAngle === 0 ? 'openAngle={false}' : `openAngle={${p.openAngle}}`)
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
   if (p.float) add('float')
   if (p.surfaceBackground) add(`surfaceBackground="${p.surfaceBackground}"`)
@@ -444,7 +445,7 @@ function MockupExplorerImpl({
     ...(hasColor ? ['color'] : []),
     ...(spec.variants ? ['variant'] : []),
     ...(spec.orientation ? ['orientation'] : []),
-    ...(spec.openable ? ['open'] : []),
+    ...(spec.openable ? ['openAngle'] : []),
     ...(spec.coverage ? ['coverage'] : []),
   ])
   const panel = panelProps(spec, driven)
@@ -476,7 +477,7 @@ function MockupExplorerImpl({
   const infoProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
-    ...(spec.openable ? { open: p.open } : {}),
+    ...(spec.openable ? { openAngle: p.openAngle } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...geometry,
   }
@@ -507,7 +508,7 @@ function MockupExplorerImpl({
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(hasColor && p.color ? { color: p.color } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
-    ...(spec.openable ? { open: p.open } : {}),
+    ...(spec.openable ? { openAngle: p.openAngle } : {}),
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...(p.surfaceBackground ? { surfaceBackground: p.surfaceBackground } : {}),
     ...(p.resolution ? { resolution: p.resolution } : {}),
@@ -716,19 +717,19 @@ function MockupExplorerImpl({
             ) : null}
             {spec.openable ? (
               <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
-                <span className="mx-prop">open</span>
+                <span className="mx-prop">openAngle</span>
                 <span className="mx-row-controls">
                   <input
                     type="range"
                     className="mx-range"
-                    aria-label="open"
+                    aria-label="openAngle"
                     min={0}
                     max={180}
                     step={1}
-                    value={p.open}
-                    onChange={(e) => set('open', Number(e.target.value))}
+                    value={p.openAngle}
+                    onChange={(e) => set('openAngle', Number(e.target.value))}
                   />
-                  <span className="mx-hex">{p.open === 180 ? 'flat' : p.open === 0 ? 'shut' : `${p.open}°`}</span>
+                  <span className="mx-hex">{p.openAngle === 180 ? 'flat' : p.openAngle === 0 ? 'shut' : `${p.openAngle}°`}</span>
                 </span>
               </div>
             ) : null}

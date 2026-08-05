@@ -5,7 +5,27 @@ Notable changes to `area-3d-mockups`. This project follows
 
 ## Unreleased
 
+### Changed (breaking)
+
+- **`open` is now `openAngle` on `FoldMockup`/`FlipMockup`** (and `Fold`/`Flip`,
+  and in `mockupInfo('fold' | 'flip', …)`). It matches `LaptopMockup`'s existing
+  `openAngle`, and it says what the number means. No alias is kept — the package
+  has not been published.
+
+  ```diff
+  - <FoldMockup open={110} />
+  + <FoldMockup openAngle={110} />
+  ```
+
 ### Fixed
+
+- **A hinge angle near flat snapped to flat and flickered.** The flat
+  single-screen pose claimed everything from 177° up, so three degrees of travel
+  all rendered fully flat — a slider felt magnetised to 180 — and each crossing
+  of that edge swapped one live screen for two, tearing down the DOM and
+  flashing the content. Around the boundary a drag re-crossed it repeatedly. The
+  flat pose now claims only genuinely flat angles (`FLAT_EPSILON`), so every
+  angle renders its own pose and dragging below flat never rebuilds a screen.
 
 - **`railColor` derived rails in the wrong colour space.** Its HSL constants
   were fitted against sRGB values measured off retail hardware, but three's

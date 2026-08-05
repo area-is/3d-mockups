@@ -13,7 +13,7 @@ export type FlipMockupProps = MockupProps<FlipProps>
  *   <YourApp />
  * </FlipMockup>
  *
- * <FlipMockup open={false}>
+ * <FlipMockup openAngle={false}>
  *   <CoverWidget /> {/* folded: content on the square cover screen *\/}
  * </FlipMockup>
  * ```

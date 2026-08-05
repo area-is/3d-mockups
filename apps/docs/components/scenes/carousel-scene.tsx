@@ -104,6 +104,15 @@ const RIG_DROP = 0.6
 /** Painted screen for the picker row, matching the sidebar thumbnails. */
 const ROW_SURFACE =
   'radial-gradient(120% 90% at 30% 18%, rgba(80,224,66,0.55) 0%, rgba(49,211,34,0.22) 45%, transparent 78%), #0d1016'
+/**
+ * Hinge angle the foldables are posed at on the carousel.
+ *
+ * Flat, they read as one more slab in a row of slabs; a little short of it and
+ * the hinge, the spine band and the crease are all visible, which is the point
+ * of having them here.
+ */
+const CAROUSEL_OPEN_ANGLE = 150
+
 /** Resting pose - a slight turn reads as three-dimensional at a glance. */
 const BASE_RY = -0.3
 /**
@@ -272,23 +281,27 @@ const DEVICES: Entry[] = [
   {
     id: 'galaxy-z-fold7',
     name: 'Galaxy Z Fold 7',
-    res: resOf('fold', { open: true }),
+    res: resOf('fold', { openAngle: CAROUSEL_OPEN_ANGLE }),
     fit: FOLD_FIT,
     lift: 0,
     colorways: FOLD_COLORWAYS.fold7,
     render: ({ color, screen, surface, surfaceStyle }) => (
-      <Fold color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</Fold>
+      <Fold openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </Fold>
     ),
   },
   {
     id: 'galaxy-z-flip7',
     name: 'Galaxy Z Flip 7',
-    res: resOf('flip', { open: true }),
+    res: resOf('flip', { openAngle: CAROUSEL_OPEN_ANGLE }),
     fit: FLIP_FIT,
     lift: 0,
     colorways: FLIP_COLORWAYS.flip7,
     render: ({ color, screen, surface, surfaceStyle }) => (
-      <Flip color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</Flip>
+      <Flip openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </Flip>
     ),
   },
   {

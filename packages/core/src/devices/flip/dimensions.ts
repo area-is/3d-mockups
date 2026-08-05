@@ -155,9 +155,9 @@ export const FLIP_MM_PER_UNIT = 36.66
  */
 export const FLIP_METRICS = {
   mmPerUnit: FLIP_MM_PER_UNIT,
-  regions: ({ variant, open, orientation }) => {
+  regions: ({ variant, openAngle, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const { display, resolution } = foldOpenAngle(open) < 0.5 ? spec.closed : spec.open
+    const { display, resolution } = foldOpenAngle(openAngle) < 0.5 ? spec.closed : spec.open
     const landscape = orientation === 'landscape'
     return {
       screen: {
@@ -168,13 +168,13 @@ export const FLIP_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ variant?: FlipVariant; open?: boolean | number; orientation?: Orientation }>
+} as const satisfies MockupMetrics<{ variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation }>
 
 export const FLIP_FRAMING = {
   contactGap: 0.05,
-  extent: ({ variant, open, orientation }) => {
+  extent: ({ variant, openAngle, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
-    const angle = foldOpenAngle(open)
+    const angle = foldOpenAngle(openAngle)
     const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
     const extent =
       orientation === 'landscape'
@@ -190,6 +190,6 @@ export const FLIP_FRAMING = {
   },
 } as const satisfies MockupFraming<{
   variant?: FlipVariant
-  open?: boolean | number
+  openAngle?: boolean | number
   orientation?: Orientation
 }>

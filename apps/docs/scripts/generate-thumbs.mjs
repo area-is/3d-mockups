@@ -10,7 +10,8 @@
  *   npm run thumbs                regenerate everything
  *   npm run thumbs -- --only=ipad substring filter on entry id
  *
- * Expects the docs dev server on PORT (default 3311); pass --base to override.
+ * Expects the docs dev server on PORT (default 3000, which is what `npm run
+ * dev` serves); pass --base to override.
  * WebGL runs on SwiftShader, so no GPU is needed - at the cost of being slow.
  */
 import { chromium } from 'playwright'
@@ -25,7 +26,7 @@ const OUT = join(here, '..', 'public', 'thumbs')
 const args = process.argv.slice(2)
 const ONLY = args.find((a) => a.startsWith('--only='))?.slice(7)
 const BASE =
-  args.find((a) => a.startsWith('--base='))?.slice(7) ?? `http://localhost:${process.env.PORT ?? 3311}`
+  args.find((a) => a.startsWith('--base='))?.slice(7) ?? `http://localhost:${process.env.PORT ?? 3000}`
 
 const ENTRIES = [...DEVICES, ...OBJECTS].filter((e) => !ONLY || e.id.includes(ONLY))
 

@@ -20,6 +20,7 @@ export {
   CONTACT_SHADOW_GAP,
   framedShadowY,
   foldOpenAngle,
+  FLAT_EPSILON,
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
