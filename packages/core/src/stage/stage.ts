@@ -36,9 +36,30 @@ export const ORBIT = {
   maxPolarAngle: Math.PI - 0.5,
 } as const
 
-/** Camera distance from the origin, or the stage default if none is configured. */
-export function cameraDistance(position?: readonly [number, number, number]): number {
-  return position ? Math.hypot(position[0], position[1], position[2]) : DEFAULT_CAMERA_DISTANCE
+/**
+ * Camera distance from the origin, or the stage default if none is configured.
+ *
+ * Takes `unknown` on purpose: a renderer's `camera` prop typically also admits
+ * a camera instance, a Vector3 or a scalar, and every one of those used to
+ * reach `position[0]` as `undefined` and hand back `NaN` - which then became a
+ * NaN orbit clamp and broke zoom entirely. Anything that is not an xyz triple
+ * of finite numbers falls back to the default distance.
+ */
+export function cameraDistance(position?: unknown): number {
+  const xyz = Array.isArray(position)
+    ? position
+    : // Vector3 and anything else exposing x/y/z.
+      position && typeof position === 'object' && 'x' in position
+      ? [
+          (position as { x: unknown }).x,
+          (position as { y?: unknown }).y,
+          (position as { z?: unknown }).z,
+        ]
+      : undefined
+  if (!xyz || xyz.length < 3 || !xyz.every((n) => typeof n === 'number' && Number.isFinite(n))) {
+    return DEFAULT_CAMERA_DISTANCE
+  }
+  return Math.hypot(xyz[0] as number, xyz[1] as number, xyz[2] as number)
 }
 
 /**

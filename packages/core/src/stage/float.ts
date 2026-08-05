@@ -15,6 +15,23 @@ export interface FloatPose {
 }
 
 /**
+ * The media query every binding checks before animating on its own.
+ *
+ * Idle float and auto-rotate run without anyone asking for them, which is
+ * exactly the motion `prefers-reduced-motion` is about. Gestures are never
+ * gated on it - a drag is the visitor's own request.
+ */
+export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
+
+/** The pose a mockup rests at when motion is suppressed. */
+export const FLOAT_REST_POSE: FloatPose = {
+  rotationX: 0,
+  rotationY: 0,
+  rotationZ: 0,
+  positionY: 0,
+}
+
+/**
  * The float pose at `elapsed` seconds. `intensity` scales rotation and bob
  * amplitudes (1 = phone-sized default); `phase` offsets the cycle so multiple
  * mockups on one page don't bob in unison.

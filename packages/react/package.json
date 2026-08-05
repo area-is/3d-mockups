@@ -51,7 +51,8 @@
         "default": "./dist/core.cjs"
       }
     },
-    "./catalog.json": "./dist/catalog.json"
+    "./catalog.json": "./dist/catalog.json",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
@@ -68,9 +69,9 @@
   "peerDependencies": {
     "@react-three/drei": ">=10",
     "@react-three/fiber": ">=9",
-    "react": ">=18",
-    "react-dom": ">=18",
-    "three": ">=0.160.0"
+    "react": ">=19",
+    "react-dom": ">=19",
+    "three": ">=0.179.0"
   },
   "devDependencies": {
     "@area-3d-mockups/core": "0.1.0",

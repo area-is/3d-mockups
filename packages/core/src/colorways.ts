@@ -1,4 +1,4 @@
-import { Color } from 'three'
+import { Color, SRGBColorSpace } from 'three'
 import type { GalaxyVariant } from './devices/galaxy/dimensions'
 import type { IPhoneVariant } from './devices/iphone/dimensions'
 import type { FoldVariant } from './devices/fold/dimensions'
@@ -208,8 +208,20 @@ const RAIL_DARKEN = 0.25
  */
 export function railColor(bodyColor: string): string {
   const hsl = { h: 0, s: 0, l: 0 }
-  new Color(bodyColor).getHSL(hsl)
+  /*
+   * sRGB explicitly, in both directions. three's HSL accessors default to the
+   * LINEAR working space when color management is on (r152+), and the
+   * constants above were fitted against sRGB values read off retail hardware.
+   * Left to the default, a Navy back returned #66718e rather than #414a60 -
+   * far too light and too saturated to read as the same product.
+   */
+  new Color(bodyColor).getHSL(hsl, SRGBColorSpace)
   const toward = hsl.l < 0.5 ? RAIL_LIGHTEN : RAIL_DARKEN
-  const rail = new Color().setHSL(hsl.h, hsl.s * RAIL_SATURATION, hsl.l + (0.5 - hsl.l) * toward)
+  const rail = new Color().setHSL(
+    hsl.h,
+    hsl.s * RAIL_SATURATION,
+    hsl.l + (0.5 - hsl.l) * toward,
+    SRGBColorSpace
+  )
   return `#${rail.getHexString()}`
 }

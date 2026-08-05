@@ -48,4 +48,10 @@ function TVSetMockupImpl({ camera, ...props }: TVSetMockupProps) {
 }
 TVSetMockupImpl.displayName = 'TVSetMockup'
 
-export const TVSetMockup = Object.assign(TVSetMockupImpl, tvSetSlots)
+export const TVSetMockup = Object.assign(TVSetMockupImpl, tvSetSlots, {
+  // The shell replaces the base as the export, so it has to carry the
+  // base's measurement statics too - otherwise `.info()`/`.regions`
+  // silently vanish for this mockup alone.
+  info: TVSetMockupBase.info,
+  regions: TVSetMockupBase.regions,
+})

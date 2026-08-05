@@ -1,4 +1,4 @@
-import { WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, APPLE_WATCH_METRICS } from '@area-3d-mockups/core'
+import { APPLE_WATCH_FRAMING, watchCameraDistance, APPLE_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, APPLE_WATCH_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { AppleWatch, watchSlots, type AppleWatchProps } from './devices/watch/watch'
 
@@ -9,7 +9,7 @@ const AppleWatchMockupBase = createMockup({
   regions: SCREEN_REGIONS,
   metrics: APPLE_WATCH_METRICS,
   object: AppleWatch,
-  framing: WATCH_FRAMING,
+  framing: APPLE_WATCH_FRAMING,
   slots: watchSlots,
 })
 
@@ -38,10 +38,16 @@ function AppleWatchMockupImpl({ camera, ...props }: AppleWatchMockupProps) {
   return (
     <AppleWatchMockupBase
       {...props}
-      camera={camera ?? { position: [0, 0.4, distance], fov: WATCH_FRAMING.camera.fov }}
+      camera={camera ?? { position: [0, 0.4, distance], fov: APPLE_WATCH_FRAMING.camera.fov }}
     />
   )
 }
 AppleWatchMockupImpl.displayName = 'AppleWatchMockup'
 
-export const AppleWatchMockup = Object.assign(AppleWatchMockupImpl, watchSlots)
+export const AppleWatchMockup = Object.assign(AppleWatchMockupImpl, watchSlots, {
+  // The shell replaces the base as the export, so it has to carry the
+  // base's measurement statics too - otherwise `.info()`/`.regions`
+  // silently vanish for this mockup alone.
+  info: AppleWatchMockupBase.info,
+  regions: AppleWatchMockupBase.regions,
+})

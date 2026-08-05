@@ -84,7 +84,9 @@ export const POSTER_FRAME_METRICS = {
       },
     }
   },
-} as const satisfies MockupMetrics<{ size?: PosterFrameSize; mat?: boolean }>
+  // `mat` takes a colour string as well as a flag; both mount the art behind
+  // a matboard, and both shrink the opening by the same border.
+} as const satisfies MockupMetrics<{ size?: PosterFrameSize; mat?: boolean | string }>
 
 export const POSTER_FRAME_FRAMING = {
   camera: { position: [0, 0.5, 8.8], fov: 40 },

@@ -79,6 +79,8 @@ export {
   ledMaskStyle,
   ledMarqueeKeyframes,
   ledCycleKeyframes,
+  ledReducedMotionRule,
+  LED_ANIM_ATTR,
 } from './screen/led-text'
 
 // The shared stage: camera, orbit, shadows, touch, zoom, fullscreen, lights, float.
@@ -105,7 +107,13 @@ export {
   STUDIO_LIGHTFORMERS,
 } from './stage/lights'
 export { TumbleOrbit, tumbleAutoRotateStep } from './stage/tumble'
-export { type FloatPose, floatPose, randomFloatPhase } from './stage/float'
+export {
+  type FloatPose,
+  floatPose,
+  randomFloatPhase,
+  REDUCED_MOTION_QUERY,
+  FLOAT_REST_POSE,
+} from './stage/float'
 export {
   OVERLAY_BUTTON_STYLE,
   OVERLAY_ICON_VIEWBOX,

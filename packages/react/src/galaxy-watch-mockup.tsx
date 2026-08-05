@@ -1,4 +1,4 @@
-import { WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, GALAXY_WATCH_METRICS } from '@area-3d-mockups/core'
+import { GALAXY_WATCH_FRAMING, watchCameraDistance, GALAXY_WATCH_DEFAULT_VARIANT, SCREEN_REGIONS, GALAXY_WATCH_METRICS } from '@area-3d-mockups/core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyWatch, watchSlots, type GalaxyWatchProps } from './devices/watch/watch'
 
@@ -12,7 +12,7 @@ const GalaxyWatchMockupBase = createMockup({
   regions: SCREEN_REGIONS,
   metrics: GALAXY_WATCH_METRICS,
   object: GalaxyWatch,
-  framing: WATCH_FRAMING,
+  framing: GALAXY_WATCH_FRAMING,
   slots: watchSlots,
 })
 
@@ -44,10 +44,16 @@ function GalaxyWatchMockupImpl({ camera, ...props }: GalaxyWatchMockupProps) {
   return (
     <GalaxyWatchMockupBase
       {...props}
-      camera={camera ?? { position: [0, 0.4, distance], fov: WATCH_FRAMING.camera.fov }}
+      camera={camera ?? { position: [0, 0.4, distance], fov: GALAXY_WATCH_FRAMING.camera.fov }}
     />
   )
 }
 GalaxyWatchMockupImpl.displayName = 'GalaxyWatchMockup'
 
-export const GalaxyWatchMockup = Object.assign(GalaxyWatchMockupImpl, watchSlots)
+export const GalaxyWatchMockup = Object.assign(GalaxyWatchMockupImpl, watchSlots, {
+  // The shell replaces the base as the export, so it has to carry the
+  // base's measurement statics too - otherwise `.info()`/`.regions`
+  // silently vanish for this mockup alone.
+  info: GalaxyWatchMockupBase.info,
+  regions: GalaxyWatchMockupBase.regions,
+})

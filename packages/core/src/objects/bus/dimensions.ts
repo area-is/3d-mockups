@@ -144,7 +144,8 @@ export type BusCoverage = 'panel' | 'full' | 'perforated'
 export const BUS_METRICS = {
   mmPerUnit: BUS_MM_PER_UNIT,
   regions: ({ coverage }) => {
-    const full = coverage !== 'panel'
+    // `?? 'panel'` matches the component's own default - see VAN_METRICS.
+    const full = (coverage ?? 'panel') !== 'panel'
     const side = full
       ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, radius: 0 }
       : { width: BUS.ad.width, height: BUS.ad.height, radius: BUS.ad.radius }

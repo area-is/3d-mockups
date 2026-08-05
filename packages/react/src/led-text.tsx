@@ -3,6 +3,7 @@ import {
   LED_CYCLE_INTERVAL,
   LED_DOT_SIZE,
   LED_MARQUEE_SPEED,
+  LED_ANIM_ATTR,
   ledCycleKeyframes,
   ledMarqueeKeyframes,
   ledMaskStyle,
@@ -111,6 +112,7 @@ function LedLine({
         <>
           <style>{ledMarqueeKeyframes(name)}</style>
           <div
+            {...{ [LED_ANIM_ATTR]: name }}
             style={{
               display: 'inline-flex',
               // `pre` keeps run-of-spaces column alignment (arrivals rows)
@@ -191,7 +193,10 @@ export function LEDText({
     return (
       <div style={panel}>
         <style>{ledCycleKeyframes(cycleName, pages.length)}</style>
-        <div style={{ animation: `${cycleName} ${pages.length * interval}s steps(${pages.length}) infinite` }}>
+        <div
+          {...{ [LED_ANIM_ATTR]: cycleName }}
+          style={{ animation: `${cycleName} ${pages.length * interval}s steps(${pages.length}) infinite` }}
+        >
           {pages.map((page, i) => (
             <div key={i} style={{ height: '100cqh', display: 'flex', alignItems: 'center' }}>
               <LedLine text={page} scroll="auto" speed={speed} align={align} fontSize="52cqh" />
