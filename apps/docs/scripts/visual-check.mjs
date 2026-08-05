@@ -13,7 +13,8 @@
  *   npm run visual -- --update  rewrite the baselines
  *   npm run visual -- --only=bus  run a subset (substring match on case name)
  *
- * Expects the docs dev server on PORT (default 3311); pass --base to override.
+ * Expects the docs dev server on PORT (default 3000, which is what `npm run
+ * dev` serves); pass --base to override.
  * WebGL runs on SwiftShader, so results are reproducible across machines
  * without a GPU - at the cost of being slow, hence the generous timeouts.
  */
@@ -29,7 +30,7 @@ const DIFFS = join(here, '..', '.visual-diffs')
 const args = process.argv.slice(2)
 const UPDATE = args.includes('--update')
 const ONLY = args.find((a) => a.startsWith('--only='))?.slice(7)
-const BASE = args.find((a) => a.startsWith('--base='))?.slice(7) ?? `http://localhost:${process.env.PORT ?? 3311}`
+const BASE = args.find((a) => a.startsWith('--base='))?.slice(7) ?? `http://localhost:${process.env.PORT ?? 3000}`
 
 /**
  * One case per pose worth defending. Weighted toward the models whose geometry

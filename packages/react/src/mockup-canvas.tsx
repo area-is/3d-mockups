@@ -63,7 +63,7 @@ function OverlayIcon({ path }: { path: string }) {
 }
 
 export interface MockupCanvasProps {
-  /** Your scene - typically a device such as `<Phone>`. */
+  /** Your scene - typically a device such as `<Galaxy>`. */
   children: React.ReactNode
   /** Drag-to-rotate controls, axis at the stage center. */
   controls?: boolean
@@ -113,7 +113,7 @@ export interface MockupCanvasProps {
 /**
  * A ready-made react-three-fiber stage for device mockups: GPU-accelerated
  * WebGL canvas, studio lighting, soft shadows and orbit controls. Compose it
- * with any device model, e.g. `<MockupCanvas><Phone>…</Phone></MockupCanvas>`.
+ * with any device model, e.g. `<MockupCanvas><Galaxy>…</Galaxy></MockupCanvas>`.
  *
  * The stage itself - camera pose, orbit feel, light rig, shadow softness -
  * is defined once in `@area-3d-mockups/core` and shared with every binding.

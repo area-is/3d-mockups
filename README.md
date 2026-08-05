@@ -55,7 +55,7 @@ Uses npm workspaces. Node 18.18+ required.
 npm install        # installs all workspaces + builds the package (prepare hook)
 npm run dev        # package in watch mode + docs at http://localhost:3000
 npm run build      # builds the package, then the docs site as a Worker bundle
-npm run typecheck  # typechecks both workspaces
+npm run typecheck  # typechecks all three workspaces
 ```
 
 ## Publishing the package

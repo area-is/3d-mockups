@@ -10,10 +10,11 @@ no 3D asset files to host and nothing to download at runtime.
 
 ## Highlights
 
-- **Seventeen devices**: the Galaxy S26 line (S26, S26 Ultra), the Galaxy
+- **Twenty-two devices**: the Galaxy S26 line (S26, S26 Ultra), the Galaxy
   Z Fold 7 and Z Flip 7 foldables, the full iPhone 17 family (17, 17 Air,
-  17 Pro, 17 Pro Max), MacBook Air 13" and MacBook Pro 14" (M5), iPad Pro 13"
-  and 11" (M5), Galaxy Tab S11 and S11 Ultra, an Apple Watch Series 11 and
+  17 Pro, 17 Pro Max), MacBook Air 13" and 15" and MacBook Pro 14" and 16"
+  (M5), iPad Pro 13" and 11" (M5), iPad Air 13" and 11" (M4), iPad (A16),
+  Galaxy Tab S11 and S11 Ultra, an Apple Watch Series 11 and
   Galaxy Watch 8 wearing full wristbands, and a Studio Display style 27"
   monitor.
 - **Twenty-three objects**: hardcover book, magazine, tri-fold brochure,
@@ -30,7 +31,10 @@ no 3D asset files to host and nothing to download at runtime.
 - **Real GPU rendering**: three.js and react-three-fiber, physically based
   materials, studio lighting, soft shadows, clamped device pixel ratio.
 - **Any content on screen**: pass React components, an `<iframe>`, or a
-  `<video>` as children. Pointer events, state, and scrolling keep working.
+  `<video>` as children. State, effects, and media playback keep running, and
+  text stays vector crisp at every angle. Screens are decorative - every
+  gesture belongs to the orbit controls, so pointer events never reach the
+  content. See [Screen content](/docs/screen-content).
 - **Composable**: use the one-liner mockup components, or drop the bare devices
   into your own react-three-fiber scene.
 
@@ -40,7 +44,8 @@ no 3D asset files to host and nothing to download at runtime.
 npm install area-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
-React 18 or newer (19 recommended).
+React 19 or newer. (React 18 is not supported: react-three-fiber 9 and drei 10,
+which the library is built against, both require React 19 themselves.)
 
 `three`, `@react-three/fiber`, and `@react-three/drei` are **peer** dependencies
 rather than bundled ones, because each has to exist exactly once in an app. Two
