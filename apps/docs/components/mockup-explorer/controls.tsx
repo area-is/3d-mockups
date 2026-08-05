@@ -10,6 +10,91 @@ import { propSummary, type EditableProp } from './prop-controls'
  */
 
 /* ------------------------------------------------------------------ */
+/*  Numeric field                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A slider and a typable box driving one number.
+ *
+ * The readout used to be plain text, which made the slider the only way in -
+ * fine for a sweep, useless for "show me exactly 150°". Both controls write
+ * the same prop, so either can be used at any time.
+ *
+ * The box keeps a draft while it has focus. A strictly controlled input would
+ * fight the typist: clearing it to retype reads as `NaN`, and a half-typed
+ * "1" of an intended "150" would be committed and echoed back. So keystrokes
+ * are held verbatim, and only a parseable value is committed - clamped, so the
+ * mockup never sees an angle outside the hinge's travel. Blur (or Enter) drops
+ * the draft, which is what snaps a typed "200" back to the clamped 180.
+ */
+export function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  unit?: string
+  onChange: (value: number) => void
+}) {
+  const [draft, setDraft] = useState<string | null>(null)
+  const clamp = (n: number) => Math.min(max, Math.max(min, n))
+
+  return (
+    <>
+      <input
+        type="range"
+        className="mx-range"
+        aria-label={label}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => {
+          // The slider is now the source of truth; a stale draft would keep
+          // showing whatever was typed before.
+          setDraft(null)
+          onChange(Number(e.target.value))
+        }}
+      />
+      <span className="mx-numfield">
+        <input
+          type="number"
+          className="mx-numfield-input"
+          aria-label={`${label} value`}
+          min={min}
+          max={max}
+          step={step}
+          value={draft ?? String(value)}
+          onChange={(e) => {
+            const raw = e.target.value
+            setDraft(raw)
+            const parsed = Number(raw)
+            // An empty box mid-retype is not a value - leave the mockup alone.
+            if (raw.trim() !== '' && Number.isFinite(parsed)) onChange(clamp(parsed))
+          }}
+          onBlur={() => setDraft(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              setDraft(null)
+              e.currentTarget.blur()
+            }
+          }}
+        />
+        {unit ? <span className="mx-numfield-unit">{unit}</span> : null}
+      </span>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  Glyphs                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -111,23 +196,38 @@ export function ColorRow({
   label,
   value,
   fallback,
+  presetName,
+  swatch,
   onChange,
 }: {
   label: string
   value: string
   fallback: string
+  /** Retail finish name, when `value` is a colorway id rather than a colour. */
+  presetName?: string
+  /** The colour the picker should show - a preset's id is not one. */
+  swatch?: string
   onChange: (v: string) => void
 }) {
+  const hex = swatch || value || fallback
   return (
     <div className="mx-row">
       <span className="mx-prop">{label}</span>
       <span className="mx-row-controls">
-        <span className="mx-hex">{value || fallback}</span>
+        {/*
+          A colorway id reads as its retail name: "Jet Black" is what the
+          swatch above is called and what the snippet passes, where the raw
+          `#17181c` said neither. The hex still shows for a custom colour,
+          which is the only time it is the whole truth.
+        */}
+        <span className="mx-hex" title={presetName ? `${presetName} (${hex})` : undefined}>
+          {presetName ?? hex}
+        </span>
         <input
           type="color"
           aria-label={label}
           className="mx-color"
-          value={value || fallback}
+          value={hex}
           onChange={(e) => onChange(e.target.value)}
         />
         {value ? <Reset label={label} onClick={() => onChange('')} /> : null}
@@ -276,20 +376,34 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
       <div className="mx-row" title={doc.description}>
         <span className="mx-prop">{name}</span>
         <span className="mx-row-controls">
-          <input
-            type="range"
-            className="mx-range"
-            aria-label={name}
-            min={control.min}
-            max={control.max}
-            step={control.step}
-            value={Number(value)}
-            onChange={(e) => onChange(Number(e.target.value))}
-          />
-          <span className="mx-hex">
-            {Number(value)}
-            {control.unit}
-          </span>
+          {control.editable ? (
+            <NumberField
+              label={name}
+              value={Number(value)}
+              min={control.min}
+              max={control.max}
+              step={control.step}
+              unit={control.unit}
+              onChange={onChange}
+            />
+          ) : (
+            <>
+              <input
+                type="range"
+                className="mx-range"
+                aria-label={name}
+                min={control.min}
+                max={control.max}
+                step={control.step}
+                value={Number(value)}
+                onChange={(e) => onChange(Number(e.target.value))}
+              />
+              <span className="mx-hex">
+                {Number(value)}
+                {control.unit}
+              </span>
+            </>
+          )}
           {reset}
         </span>
       </div>

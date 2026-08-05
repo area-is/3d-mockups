@@ -6,7 +6,7 @@ import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
 import { SCREEN_SOURCES } from '@/lib/demo-sources.generated'
 import { COMPONENT_PROPS, SHARED_PROPS, type PropDoc } from '@/lib/prop-tables.generated'
-import { ColorRow, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
+import { ColorRow, NumberField, PanelGlyph, PropRow, ResetGlyph, Segmented, Switch } from './controls'
 import { editableProp, propAttribute, same, type EditableProp } from './prop-controls'
 import { LazyScene } from '../lazy-scene'
 import { EXPLORERS, type ExplorerSpec } from './registry'
@@ -101,6 +101,12 @@ const libraryDefaults = (spec: ExplorerSpec, lockedVariant?: string): PropState 
 })
 
 /**
+ * Hinge angle a foldable explorer opens on, matching the home-page carousel
+ * and the sidebar thumbnails.
+ */
+const DOCS_OPEN_ANGLE = 150
+
+/**
  * Where the explorer starts. Zoom is on so the stage is immediately
  * scroll/pinch-zoomable and MockupCanvas draws its zoom overlay - the
  * "modified" count and the reset action measure against this, so an untouched
@@ -116,6 +122,11 @@ const initialState = (
   const state: PropState = {
     ...libraryDefaults(spec, lockedVariant),
     zoom: true,
+    // A foldable opens partly folded rather than flat: flat, it is just a slab
+    // and the hinge - the thing the page is about - is edge-on and invisible.
+    // The library's own default is still flat, so the snippet correctly prints
+    // `openAngle={150}` (it diffs against the library, not against this).
+    ...(spec.openable ? { openAngle: DOCS_OPEN_ANGLE } : {}),
     extra: { ...spec.fixed },
   }
   for (const [name, value] of Object.entries(seed ?? {})) {
@@ -494,6 +505,12 @@ function MockupExplorerImpl({
   }
 
   const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
+  /*
+   * Which retail finish is in play, if any. Matched on id first - that is what
+   * a swatch now stores - and on colour as well, so a page that seeds
+   * `color: '#3a3d42'` still lights up the swatch that shipped in it.
+   */
+  const preset = colorways.find((c) => c.id === p.color || c.color === p.color)
   const chroma = screen === 'chroma'
   const screenName = chroma ? 'ChromaSurface' : spec.print ? 'SurfaceArt' : 'LiveCounter'
   const content = (label: string) =>
@@ -680,24 +697,42 @@ function MockupExplorerImpl({
             ) : null}
 
             {colorways.length ? (
-              <div className="mx-swatches">
-                {colorways.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className="mx-swatch"
-                    title={c.name}
-                    aria-label={c.name}
-                    data-on={p.color === c.color}
-                    style={{ background: c.color }}
-                    onClick={() => set('color', c.color)}
-                  />
-                ))}
+              <div className="mx-row">
+                <span className="mx-prop">preset</span>
+                <span className="mx-swatches">
+                  {colorways.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="mx-swatch"
+                      title={c.name}
+                      aria-label={c.name}
+                      aria-pressed={preset?.id === c.id}
+                      data-on={preset?.id === c.id}
+                      style={{ background: c.color }}
+                      /*
+                       * The id, not the hex. A colorway id brings the finish's
+                       * MEASURED frame and hinge with it; the same colour as a
+                       * raw hex only gets a derived rail, so clicking a retail
+                       * swatch used to render a subtly different device than
+                       * the one it names - and the snippet copied the hex.
+                       */
+                      onClick={() => set('color', c.id)}
+                    />
+                  ))}
+                </span>
               </div>
             ) : null}
 
             {hasColor ? (
-              <ColorRow label="color" value={p.color} fallback="#101216" onChange={(v) => set('color', v)} />
+              <ColorRow
+                label="color"
+                value={p.color}
+                fallback="#101216"
+                presetName={preset?.name}
+                swatch={preset?.color}
+                onChange={(v) => set('color', v)}
+              />
             ) : null}
             {spec.orientation ? (
               <Segmented
@@ -719,17 +754,15 @@ function MockupExplorerImpl({
               <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
                 <span className="mx-prop">openAngle</span>
                 <span className="mx-row-controls">
-                  <input
-                    type="range"
-                    className="mx-range"
-                    aria-label="openAngle"
+                  <NumberField
+                    label="openAngle"
+                    value={p.openAngle}
                     min={0}
                     max={180}
                     step={1}
-                    value={p.openAngle}
-                    onChange={(e) => set('openAngle', Number(e.target.value))}
+                    unit="°"
+                    onChange={(v) => set('openAngle', v)}
                   />
-                  <span className="mx-hex">{p.openAngle === 180 ? 'flat' : p.openAngle === 0 ? 'shut' : `${p.openAngle}°`}</span>
                 </span>
               </div>
             ) : null}
