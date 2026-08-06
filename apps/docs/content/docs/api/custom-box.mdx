@@ -9,21 +9,10 @@ the longest edge auto-normalizes to the stage while the mm dimensions keep
 the true proportions. All six faces are printable live DOM at one shared
 dpi.
 
-<MockupExplorer component="CustomBoxMockup" />
-
-<ObjectDemo demo="custom-box-basic" checker />
-
-```tsx
-<CustomBoxMockup size={{ width: 240, height: 320, depth: 80 }} rotation={[0, -0.45, 0]}>
-  <YourFront />
-  <CustomBoxMockup.Left>
-    <YourSide />
-  </CustomBoxMockup.Left>
-  <CustomBoxMockup.Top>
-    <YourTop />
-  </CustomBoxMockup.Top>
-</CustomBoxMockup>
-```
+<MockupExplorer
+  component="CustomBoxMockup"
+  props={{ size: { width: 240, height: 320, depth: 80 }, rotation: [0, -0.45, 0] }}
+/>
 
 ## Props
 
@@ -66,16 +55,11 @@ what stays 3D hardware.
 
 ### Flat gift box from above
 
-<ObjectDemo demo="custom-box-flat" />
-
-```tsx
-<CustomBoxMockup
-  size={{ width: 300, height: 60, depth: 300 }}
-  camera={{ position: [0, 2.6, 7.0], fov: 40 }}
->
-  <YourFront />
-  <CustomBoxMockup.Top>
-    <YourLid />
-  </CustomBoxMockup.Top>
-</CustomBoxMockup>
-```
+<MockupExplorer
+  component="CustomBoxMockup"
+  props={{
+    size: { width: 300, height: 60, depth: 300 },
+    camera: { position: [0, 2.6, 7], fov: 40 },
+    rotation: [0, 0.4, 0],
+  }}
+/>

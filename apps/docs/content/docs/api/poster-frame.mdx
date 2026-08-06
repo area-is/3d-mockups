@@ -58,15 +58,14 @@ what stays 3D hardware.
 Bare `<PosterFrame>` objects composed in one
 [`MockupCanvas`](/docs/api/mockup-canvas).
 
-<ObjectDemo demo="poster-pair" />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.3, 10.4], fov: 40 }} shadowY={-2.5}>
-  <PosterFrame position={[-2.15, 0, -0.3]} rotation={[0, 0.35, 0]}>
-    <PosterOne />
-  </PosterFrame>
-  <PosterFrame color="#e8e5dd" position={[2.15, 0, 0]} rotation={[0, -0.25, 0]}>
-    <PosterTwo />
-  </PosterFrame>
-</MockupCanvas>
-```
+<MockupExplorer
+  component="PosterFrameMockup"
+  props={{ camera: { position: [0, 0.3, 10.4], fov: 40 } }}
+  arrangement={{
+    canvas: { shadowY: -2.5 },
+    items: [
+      { props: { position: [-2.15, 0, -0.3], rotation: [0, 0.35, 0] } },
+      { props: { color: '#e8e5dd', position: [2.15, 0, 0], rotation: [0, -0.25, 0] } },
+    ],
+  }}
+/>

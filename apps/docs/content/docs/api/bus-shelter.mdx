@@ -14,18 +14,7 @@ array of strings and each becomes a glowing dot-matrix board row (rows scroll
 when they overflow), a single string for a one-line message - or any React
 node for a fully custom board.
 
-<MockupExplorer component="BusShelterMockup" />
-
-<ObjectDemo demo="shelter-basic" checker />
-
-```tsx
-<BusShelterMockup rotation={[0, -0.55, 0]}>
-  <YourPoster />
-  <BusShelterMockup.Arrivals>
-    {['12  Harbor Loop      2 min', '4X  Union Sq Express  7 min', '31  Larchmont        12 min']}
-  </BusShelterMockup.Arrivals>
-</BusShelterMockup>
-```
+<MockupExplorer component="BusShelterMockup" props={{ rotation: [0, -0.55, 0] }} />
 
 ## Props
 
@@ -65,16 +54,7 @@ what stays 3D hardware.
 
 ### Dark steel, both poster faces
 
-<ObjectDemo demo="shelter-night" />
-
-```tsx
-<BusShelterMockup color="#22262c" rotation={[0, -0.75, 0]}>
-  <YourPoster />
-  <BusShelterMockup.Inner>
-    <InnerPoster />
-  </BusShelterMockup.Inner>
-  <BusShelterMockup.Arrivals>
-    <YourArrivalsBoard />
-  </BusShelterMockup.Arrivals>
-</BusShelterMockup>
-```
+<MockupExplorer
+  component="BusShelterMockup"
+  props={{ color: '#22262c', background: '#0b0d12', rotation: [0, -0.75, 0] }}
+/>

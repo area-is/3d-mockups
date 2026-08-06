@@ -52,13 +52,7 @@ what stays 3D hardware.
 
 ### Black boutique bag, both faces
 
-<ObjectDemo demo="bag-dark" />
-
-```tsx
-<ShoppingBagMockup autoRotate color="#1e2126" handleColor="#d8d4cc">
-  <YourBagFace />
-  <ShoppingBagMockup.Back>
-    <YourBagFace />
-  </ShoppingBagMockup.Back>
-</ShoppingBagMockup>
-```
+<MockupExplorer
+  component="ShoppingBagMockup"
+  props={{ autoRotate: 1.4, color: '#1e2126', handleColor: '#d8d4cc' }}
+/>

@@ -21,16 +21,7 @@ renderer takes over - it scrolls as a marquee when the text overflows. Pass
 an array of strings and the sign flips between them like a real alternating
 destination sign. Any React node still works for full custom control.
 
-<MockupExplorer component="BusMockup" />
-
-<ObjectDemo demo="bus-basic" checker />
-
-```tsx
-<BusMockup rotation={[0, 0.35, 0]}>
-  <YourCreative />
-  <BusMockup.DestinationSign>{['42 DOWNTOWN', 'VIA 5TH AVE']}</BusMockup.DestinationSign>
-</BusMockup>
-```
+<MockupExplorer component="BusMockup" props={{ rotation: [0, 0.35, 0] }} />
 
 ## Props
 
@@ -68,7 +59,7 @@ what stays 3D hardware.
 
 ### The full transit wrap
 
-`coverage="full"` stretches the live panels across the whole side
+`coverage="perforated"` stretches the live panels across the whole side
 elevation (skirts to roofline, tail to nose) and the whole tail. A CSS `clip-path`
 (computed from the same dimension spec the geometry is built from) carves
 out the body outline, wheel arches, door leaves, taillights - and the
@@ -78,16 +69,10 @@ door mirrors draw over the livery instead of being covered by it. Graphics
 DO run over the passenger windows, exactly like a real perforated-film
 wrap.
 
-<ObjectDemo demo="bus-full" />
-
-```tsx
-<BusMockup coverage="full" rotation={[0, 0.42, 0]}>
-  <FullLivery />
-  <BusMockup.StreetSide><FullLivery /></BusMockup.StreetSide>
-  <BusMockup.Rear><TailLivery /></BusMockup.Rear>
-  <BusMockup.DestinationSign>{['12 EASTBROOK', 'VIA HARBOR FRONT']}</BusMockup.DestinationSign>
-</BusMockup>
-```
+<MockupExplorer
+  component="BusMockup"
+  props={{ coverage: 'perforated', rotation: [0, 0.42, 0] }}
+/>
 
 ### Full wrap with the glass kept clear
 
@@ -97,15 +82,7 @@ through - the classic partial-wrap look. Each rear lamp is carved out
 individually either way, so the tail graphic runs right up to the light
 collars.
 
-<ObjectDemo demo="bus-full-clear" />
-
-```tsx
-<BusMockup coverage="full">
-  <Livery />
-  <BusMockup.StreetSide><Livery /></BusMockup.StreetSide>
-  <BusMockup.Rear><TailLivery /></BusMockup.Rear>
-</BusMockup>
-```
+<MockupExplorer component="BusMockup" props={{ coverage: 'full', rotation: [0, 0.42, 0] }} />
 
 ### Rear three-quarter with the tail ad
 
@@ -113,27 +90,14 @@ Rear window, stacked brake/turn lamps, engine louvers - and the 21"×70"
 tail ad between them. A custom node as the destination sign, for when the
 built-in LED look isn't enough.
 
-<ObjectDemo demo="bus-rear" />
-
-```tsx
-<BusMockup rotation={[0, 2.35, 0]}>
-  <Creative />
-  <BusMockup.StreetSide><Creative /></BusMockup.StreetSide>
-  <BusMockup.Rear><TailAd /></BusMockup.Rear>
-  <BusMockup.DestinationSign><Route42Marquee /></BusMockup.DestinationSign>
-</BusMockup>
-```
+<MockupExplorer component="BusMockup" props={{ rotation: [0, 2.35, 0] }} />
 
 ### A liveried fleet bus
 
 `color` paints the shell; match `surfaceBackground` to the creative for a
 wrapped look. A single long string on the sign auto-scrolls.
 
-<ObjectDemo demo="bus-livery" />
-
-```tsx
-<BusMockup color="#1d4433" surfaceBackground="#f4c534" autoRotate>
-  <YourCreative />
-  <BusMockup.DestinationSign>42 GREENWAY · NEXT STOP CANAL ST</BusMockup.DestinationSign>
-</BusMockup>
-```
+<MockupExplorer
+  component="BusMockup"
+  props={{ color: '#1d4433', surfaceBackground: '#f4c534', autoRotate: 0.6 }}
+/>

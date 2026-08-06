@@ -9,18 +9,7 @@ hollow jacket with live front (and optional back) cover art, and a glossy
 clear the whole label - concentric track-gap sheen rings, dead-wax annulus,
 spindle hole, and the 100 mm center label as a live **circular** DOM area.
 
-<MockupExplorer component="VinylRecordMockup" />
-
-<ObjectDemo demo="vinyl-basic" checker />
-
-```tsx
-<VinylRecordMockup rotation={[0, -0.2, 0]}>
-  <CoverArt />
-  <VinylRecordMockup.Label>
-    <Label />
-  </VinylRecordMockup.Label>
-</VinylRecordMockup>
-```
+<MockupExplorer component="VinylRecordMockup" props={{ rotation: [0, -0.2, 0] }} />
 
 ## Props
 
@@ -62,32 +51,11 @@ what stays 3D hardware.
 `<VinylRecordMockup.BackLabel>` the disc's side-B label, so the record reads
 right from behind too.
 
-<ObjectDemo demo="vinyl-full" />
-
-```tsx
-<VinylRecordMockup autoRotate>
-  <CoverArt />
-  <VinylRecordMockup.Back>
-    <Tracklist />
-  </VinylRecordMockup.Back>
-  <VinylRecordMockup.Label>
-    <SideA />
-  </VinylRecordMockup.Label>
-  <VinylRecordMockup.BackLabel>
-    <SideB />
-  </VinylRecordMockup.BackLabel>
-</VinylRecordMockup>
-```
+<MockupExplorer component="VinylRecordMockup" props={{ autoRotate: 1.1 }} />
 
 ### A colored pressing
 
-<ObjectDemo demo="vinyl-colored" />
-
-```tsx
-<VinylRecordMockup vinylColor="#7a2337" color="#101725" float>
-  <CoverArt />
-  <VinylRecordMockup.Label>
-    <Label />
-  </VinylRecordMockup.Label>
-</VinylRecordMockup>
-```
+<MockupExplorer
+  component="VinylRecordMockup"
+  props={{ vinylColor: '#7a2337', color: '#101725', float: true }}
+/>

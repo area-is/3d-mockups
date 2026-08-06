@@ -19,19 +19,25 @@ its reflections, it costs no network requests (no HDR files are fetched), and a
 mockup without it reads as flat untextured plastic - so it is not a prop.
 
 One canvas, two bare devices, one shared studio light rig and shadow plane.
+The inspector drives the canvas itself, so every stage prop in the table below
+applies to the whole scene - both devices at once. The Galaxy follows the
+device rows too; the iPhone beside it keeps the props written into the example,
+the way a second object in a scene of your own would.
 
-<ObjectDemo demo="phone-duo" checker />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.5, 8.6], fov: 40 }} shadowY={-2.35}>
-  <Galaxy variant="s26ultra" position={[-1.6, 0, -0.2]} rotation={[0, 0.3, 0]}>
-    <YourAndroidApp />
-  </Galaxy>
-  <IPhone variant="promax" position={[1.6, 0, 0]} rotation={[0, -0.3, 0]}>
-    <YourIOSApp />
-  </IPhone>
-</MockupCanvas>
-```
+<MockupExplorer
+  component="GalaxyMockup"
+  props={{ variant: 's26ultra', color: '#2e3238', camera: { position: [0, 0.5, 8.6], fov: 40 } }}
+  arrangement={{
+    canvas: { shadowY: -2.35 },
+    items: [
+      { props: { position: [-1.6, 0, -0.2], rotation: [0, 0.3, 0] } },
+      {
+        component: 'IPhoneMockup',
+        props: { variant: 'promax', color: 'deepblue', position: [1.6, 0, 0], rotation: [0, -0.3, 0] },
+      },
+    ],
+  }}
+/>
 
 ## Props
 
@@ -58,13 +64,7 @@ One canvas, two bare devices, one shared studio light rig and shadow plane.
 +/− buttons on both. Zooming clamps to the same distance range as the
 orbit controls.
 
-<ObjectDemo demo="canvas-zoom" />
-
-```tsx
-<BookMockup zoom float color="#4a2c3f">
-  <YourCoverArt />
-</BookMockup>
-```
+<MockupExplorer component="BookMockup" props={{ zoom: true, float: true, color: '#4a2c3f' }} />
 
 ### Full-screen view
 

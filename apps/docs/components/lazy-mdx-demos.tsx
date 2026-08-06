@@ -4,18 +4,17 @@ import dynamic from 'next/dynamic'
 import type { MockupExplorerProps } from './mockup-explorer'
 
 /**
- * Client-side entry points for the two MDX components that pull in the 3D
+ * Client-side entry point for the one MDX component that pulls in the 3D
  * stack.
  *
  * `getMDXComponents` hands the same component map to every docs page, so a
- * static import of either of these put three.js, r3f and drei — plus the ~40
- * pre-built demo element trees in `object-examples` — into the bundle of pure
- * prose pages that never render a canvas. Loading them through `next/dynamic`
- * with `ssr: false` moves the whole stack behind a chunk that only the pages
- * actually using `<ObjectDemo>` or `<MockupExplorer>` ever fetch, and matches
- * what the marketing pages already do for their scenes.
+ * static import here put three.js, r3f and drei into the bundle of pure prose
+ * pages that never render a canvas. Loading it through `next/dynamic` with
+ * `ssr: false` moves the whole stack behind a chunk that only the pages
+ * actually using `<MockupExplorer>` ever fetch, and matches what the marketing
+ * pages already do for their scenes.
  *
- * The shells are what make that work: `ssr: false` is only legal from a client
+ * The shell is what makes that work: `ssr: false` is only legal from a client
  * component, and the docs pages that consume the map are server components.
  */
 
@@ -25,21 +24,6 @@ function Placeholder({ height }: { height: number }) {
       <span>Loading the 3D scene…</span>
     </div>
   )
-}
-
-interface ObjectDemoProps {
-  demo: string
-  height?: number
-  checker?: boolean
-}
-
-const ObjectDemoInner = dynamic(
-  () => import('./object-examples').then((m) => m.ObjectDemo),
-  { ssr: false, loading: () => <Placeholder height={440} /> }
-)
-
-export function ObjectDemo(props: ObjectDemoProps) {
-  return <ObjectDemoInner {...props} />
 }
 
 const MockupExplorerInner = dynamic(

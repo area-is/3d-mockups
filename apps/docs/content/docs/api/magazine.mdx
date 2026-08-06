@@ -59,35 +59,14 @@ what stays 3D hardware.
 Magazines sell their back page - `<MagazineMockup.Back>` prints it, full
 bleed.
 
-<ObjectDemo demo="magazine-back" />
-
-```tsx
-<MagazineMockup autoRotate>
-  <YourCoverArt />
-  <MagazineMockup.Back>
-    <BackCoverAd />
-  </MagazineMockup.Back>
-</MagazineMockup>
-```
+<MockupExplorer component="MagazineMockup" props={{ autoRotate: 1.2, rotation: [0, 2.6, 0] }} />
 
 ### The spine
 
 Title and issue number on the bound edge - `<MagazineMockup.Spine>` prints
 the strip, reading top-to-bottom like a real shelf spine.
 
-<ObjectDemo demo="magazine-spine" />
-
-```tsx
-<MagazineMockup rotation={[0, 0.95, 0]}>
-  <YourCoverArt />
-  <MagazineMockup.Spine>
-    <YourSpineStrip />
-  </MagazineMockup.Spine>
-  <MagazineMockup.Back>
-    <BackCoverAd />
-  </MagazineMockup.Back>
-</MagazineMockup>
-```
+<MockupExplorer component="MagazineMockup" props={{ rotation: [0, 0.95, 0] }} />
 
 ### Matching the stock to the issue
 

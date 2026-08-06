@@ -14,17 +14,7 @@ Pass `size` (in millimeters) for a carton of any other dimensions.
 
 Front, side and top, each its own live surface.
 
-<MockupExplorer component="ProductBoxMockup" />
-
-<ObjectDemo demo="box-basic" checker />
-
-```tsx
-<ProductBoxMockup rotation={[0, -0.5, 0]}>
-  <FrontPanel />
-  <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
-  <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
-</ProductBoxMockup>
-```
+<MockupExplorer component="ProductBoxMockup" props={{ rotation: [0, -0.5, 0] }} />
 
 ## Props
 
@@ -66,18 +56,7 @@ what stays 3D hardware.
 Front, back, both sides, top and bottom - brew steps and barcode on the
 back, the roast-date stamp underneath. Drag it anywhere; it stays designed.
 
-<ObjectDemo demo="box-full" />
-
-```tsx
-<ProductBoxMockup autoRotate>
-  <FrontPanel />
-  <ProductBoxMockup.Right><SidePanel /></ProductBoxMockup.Right>
-  <ProductBoxMockup.Left><SidePanel /></ProductBoxMockup.Left>
-  <ProductBoxMockup.Top><TopPanel /></ProductBoxMockup.Top>
-  <ProductBoxMockup.Bottom><BatchStamp /></ProductBoxMockup.Bottom>
-  <ProductBoxMockup.Back><BackPanel /></ProductBoxMockup.Back>
-</ProductBoxMockup>
-```
+<MockupExplorer component="ProductBoxMockup" props={{ autoRotate: 1.1 }} />
 
 ### Kraft stock
 

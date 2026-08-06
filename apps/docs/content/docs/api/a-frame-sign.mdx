@@ -46,13 +46,7 @@ what stays 3D hardware.
 
 ### Painted frame, both sides
 
-<ObjectDemo demo="aframe-back" />
-
-```tsx
-<AFrameSignMockup color="#31404f" surfaceBackground="#1c2733" autoRotate>
-  <MenuBoard />
-  <AFrameSignMockup.Back>
-    <HoursBoard />
-  </AFrameSignMockup.Back>
-</AFrameSignMockup>
-```
+<MockupExplorer
+  component="AFrameSignMockup"
+  props={{ color: '#31404f', surfaceBackground: '#1c2733', autoRotate: 1.2 }}
+/>

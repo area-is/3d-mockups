@@ -48,7 +48,6 @@ import {
   GALAXY_WATCH_COLORWAYS,
   type Colorway,
 } from 'area-3d-mockups'
-import { LazyScene } from './lazy-scene'
 
 /**
  * Every live preview on this docs site is a playground: the mockup gets zoom +
@@ -797,43 +796,6 @@ function ControlRow({
         ))}
       </div>
     </div>
-  )
-}
-
-/**
- * A docs-page demo: the scene in its fixed-height frame, with the full prop bar
- * underneath it (outside the frame, so the canvas keeps its height however many
- * rows of controls the model needs).
- */
-export function PreviewStage({
-  children,
-  height,
-  checker = false,
-}: {
-  children: React.ReactNode
-  height: number
-  checker?: boolean
-}) {
-  const { scene, rows, values, authored, change, clear } = useMockupControls(children)
-  return (
-    <>
-      <div className={`object-demo${checker ? ' object-demo--checker' : ''}`} style={{ height }}>
-        <LazyScene>{scene}</LazyScene>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '-0.75rem 0 1.5rem' }}>
-        {rows.map((row) => (
-          <ControlRow
-            key={row.label}
-            {...row}
-            values={values}
-            authored={authored}
-            change={change}
-            clear={clear}
-            showLabel
-          />
-        ))}
-      </div>
-    </>
   )
 }
 
