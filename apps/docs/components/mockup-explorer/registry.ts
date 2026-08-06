@@ -1,29 +1,36 @@
 import {
   AFrameSignMockup,
   AppleWatchMockup,
+  Billboard,
   BillboardMockup,
+  Book,
   BookMockup,
   BrochureMockup,
   BusMockup,
   BusShelterMockup,
+  BusinessCard,
   BusinessCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
   FlipMockup,
   FoldMockup,
+  Galaxy,
   GalaxyMockup,
   GalaxyTabMockup,
   GalaxyWatchMockup,
   GreetingCardMockup,
   IDCardMockup,
   IPadMockup,
+  IPhone,
   IPhoneMockup,
   LaptopMockup,
   MagazineMockup,
   MailerBoxMockup,
+  PosterFrame,
   PosterFrameMockup,
   ProductBoxMockup,
+  RollupBanner,
   RollupBannerMockup,
   SemiTrailerMockup,
   ShoppingBagMockup,
@@ -66,6 +73,16 @@ export interface ExplorerSpec {
   kind: MockupKind
   /** Human label for the object button in the header. */
   label: string
+  /**
+   * The bare object behind the one-liner, for the pages that stage several of
+   * them in one `MockupCanvas` (`MockupExplorer`'s `arrangement`). Only the
+   * objects the docs actually compose carry one - everything else is reached
+   * through its wrapper, which is the API those pages teach.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bare?: any
+  /** Import name of that bare object, for the generated snippet. */
+  bareName?: string
   /** Selectable variants, when the family has more than one. */
   variants?: { id: string; label: string }[]
   /** Retail colorways per variant id (`''` for families without variants). */
@@ -96,6 +113,8 @@ const DEVICES: Record<string, ExplorerSpec> = {
     ],
     colorways: GALAXY_COLORWAYS,
     orientation: true,
+    bare: Galaxy,
+    bareName: 'Galaxy',
   },
   IPhoneMockup: {
     Component: IPhoneMockup,
@@ -110,6 +129,8 @@ const DEVICES: Record<string, ExplorerSpec> = {
     ],
     colorways: IPHONE_COLORWAYS,
     orientation: true,
+    bare: IPhone,
+    bareName: 'IPhone',
   },
   FoldMockup: {
     Component: FoldMockup,
@@ -201,22 +222,34 @@ const object = (
 ): ExplorerSpec => ({ Component, name, kind, label, print: true, ...extra })
 
 const OBJECTS: Record<string, ExplorerSpec> = {
-  BookMockup: object(BookMockup, 'BookMockup', 'book', 'Book'),
+  BookMockup: object(BookMockup, 'BookMockup', 'book', 'Book', { bare: Book, bareName: 'Book' }),
   MagazineMockup: object(MagazineMockup, 'MagazineMockup', 'magazine', 'Magazine'),
   BrochureMockup: object(BrochureMockup, 'BrochureMockup', 'brochure', 'Brochure'),
-  BusinessCardMockup: object(BusinessCardMockup, 'BusinessCardMockup', 'businessCard', 'Business card'),
+  BusinessCardMockup: object(BusinessCardMockup, 'BusinessCardMockup', 'businessCard', 'Business card', {
+    bare: BusinessCard,
+    bareName: 'BusinessCard',
+  }),
   IDCardMockup: object(IDCardMockup, 'IDCardMockup', 'idCard', 'ID card'),
   GreetingCardMockup: object(GreetingCardMockup, 'GreetingCardMockup', 'greetingCard', 'Greeting card'),
-  PosterFrameMockup: object(PosterFrameMockup, 'PosterFrameMockup', 'posterFrame', 'Poster frame'),
+  PosterFrameMockup: object(PosterFrameMockup, 'PosterFrameMockup', 'posterFrame', 'Poster frame', {
+    bare: PosterFrame,
+    bareName: 'PosterFrame',
+  }),
   ProductBoxMockup: object(ProductBoxMockup, 'ProductBoxMockup', 'productBox', 'Product box'),
   MailerBoxMockup: object(MailerBoxMockup, 'MailerBoxMockup', 'mailerBox', 'Mailer box'),
   ShoppingBagMockup: object(ShoppingBagMockup, 'ShoppingBagMockup', 'shoppingBag', 'Shopping bag'),
   VinylRecordMockup: object(VinylRecordMockup, 'VinylRecordMockup', 'vinylRecord', 'Vinyl record'),
-  RollupBannerMockup: object(RollupBannerMockup, 'RollupBannerMockup', 'rollupBanner', 'Roll-up banner'),
+  RollupBannerMockup: object(RollupBannerMockup, 'RollupBannerMockup', 'rollupBanner', 'Roll-up banner', {
+    bare: RollupBanner,
+    bareName: 'RollupBanner',
+  }),
   AFrameSignMockup: object(AFrameSignMockup, 'AFrameSignMockup', 'aFrameSign', 'A-frame sign'),
   BusShelterMockup: object(BusShelterMockup, 'BusShelterMockup', 'busShelter', 'Bus shelter'),
   DOOHTotemMockup: object(DOOHTotemMockup, 'DOOHTotemMockup', 'doohTotem', 'DOOH totem'),
-  BillboardMockup: object(BillboardMockup, 'BillboardMockup', 'billboard', 'Billboard'),
+  BillboardMockup: object(BillboardMockup, 'BillboardMockup', 'billboard', 'Billboard', {
+    bare: Billboard,
+    bareName: 'Billboard',
+  }),
   StorefrontMockup: object(StorefrontMockup, 'StorefrontMockup', 'storefront', 'Storefront'),
   BusMockup: object(BusMockup, 'BusMockup', 'bus', 'Bus', { coverage: true }),
   VanMockup: object(VanMockup, 'VanMockup', 'van', 'Van', { coverage: true }),

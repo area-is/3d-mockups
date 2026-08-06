@@ -15,18 +15,7 @@ arms and hand-height taillights added on. The flat cargo side carries a
 live 900×368 vinyl-wrap panel for your livery. The mockup grounds the wheels
 on a virtual road plane.
 
-<MockupExplorer component="VanMockup" />
-
-<ObjectDemo demo="van-basic" checker />
-
-```tsx
-<VanMockup rotation={[0, -0.5, 0]}>
-  <Livery />
-  <VanMockup.StreetSide><Livery /></VanMockup.StreetSide>
-  <VanMockup.Rear><RearDoors /></VanMockup.Rear>
-  <VanMockup.LicensePlate>AREA 51</VanMockup.LicensePlate>
-</VanMockup>
-```
+<MockupExplorer component="VanMockup" props={{ rotation: [0, -0.5, 0] }} />
 
 ## Props
 
@@ -78,30 +67,14 @@ show through the carves while the proud hardware (mirrors, door handles,
 the sliding-door track, the cab-door shut lines) draws over your livery,
 the way remounted hardware sits on real vinyl.
 
-<ObjectDemo demo="van-full" />
-
-```tsx
-<VanMockup coverage="full" rotation={[0, -0.42, 0]}>
-  <FullLivery />
-  <VanMockup.StreetSide><FullLivery /></VanMockup.StreetSide>
-  <VanMockup.Rear><RearLivery /></VanMockup.Rear>
-</VanMockup>
-```
+<MockupExplorer component="VanMockup" props={{ coverage: 'full', rotation: [0, -0.42, 0] }} />
 
 ### The rear three-quarter
 
 Same van from behind: rear-door panel between the brake/turn/reverse
 clusters, street-side wrap beyond.
 
-<ObjectDemo demo="van-rear" />
-
-```tsx
-<VanMockup rotation={[0, 2.25, 0]}>
-  <Livery />
-  <VanMockup.StreetSide><Livery /></VanMockup.StreetSide>
-  <VanMockup.Rear><RearDoors /></VanMockup.Rear>
-</VanMockup>
-```
+<MockupExplorer component="VanMockup" props={{ rotation: [0, 2.25, 0] }} />
 
 ### Painted body + full-color wrap
 

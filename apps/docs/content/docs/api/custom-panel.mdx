@@ -10,18 +10,10 @@ millimeters via `size`; the longest edge auto-normalizes to the stage, so a
 keeping their true aspect ratio and relative thickness. Front and back are
 live DOM.
 
-<MockupExplorer component="CustomPanelMockup" />
-
-<ObjectDemo demo="custom-panel-basic" checker />
-
-```tsx
-<CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} rotation={[0, 0.25, 0]}>
-  <YourArtwork />
-  <CustomPanelMockup.Back>
-    <BackArtwork />
-  </CustomPanelMockup.Back>
-</CustomPanelMockup>
-```
+<MockupExplorer
+  component="CustomPanelMockup"
+  props={{ size: { width: 600, height: 900, thickness: 5 }, rotation: [0, 0.25, 0] }}
+/>
 
 ## Props
 
@@ -66,10 +58,12 @@ what stays 3D hardware.
 
 ### Wide display board
 
-<ObjectDemo demo="custom-panel-wide" />
-
-```tsx
-<CustomPanelMockup size={{ width: 2400, height: 800, thickness: 12 }} color="#20242b" float>
-  <YourArtwork />
-</CustomPanelMockup>
-```
+<MockupExplorer
+  component="CustomPanelMockup"
+  props={{
+    size: { width: 2400, height: 800, thickness: 12 },
+    color: '#20242b',
+    float: true,
+    rotation: [0, -0.2, 0],
+  }}
+/>

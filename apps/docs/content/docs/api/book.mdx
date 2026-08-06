@@ -59,19 +59,7 @@ The `.Back` and `.Spine` slots complete the case: blurb and barcode on the
 back board, the title reading down the spine - the whole book stays designed
 as it turns.
 
-<ObjectDemo demo="book-full" />
-
-```tsx
-<BookMockup autoRotate color="#16324a">
-  <YourCoverArt />
-  <BookMockup.Back>
-    <BackBoard />
-  </BookMockup.Back>
-  <BookMockup.Spine>
-    <SpineStrip />
-  </BookMockup.Spine>
-</BookMockup>
-```
+<MockupExplorer component="BookMockup" props={{ color: '#16324a', autoRotate: 1.1 }} />
 
 ### Floating and auto-orbiting
 
@@ -89,18 +77,15 @@ Skip the all-in-one wrapper and drop several `<Book>` objects into one
 [`MockupCanvas`](/docs/api/mockup-canvas) - a series lineup in a single
 WebGL context.
 
-<ObjectDemo demo="book-row" />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.4, 9.4], fov: 40 }} shadowY={-2.2}>
-  <Book color="#16324a" position={[-3, 0, -0.4]} rotation={[0, 0.5, 0]}>
-    <CoverOne />
-  </Book>
-  <Book color="#5e2431" position={[0, 0, 0]} rotation={[0, 0.15, 0]}>
-    <CoverTwo />
-  </Book>
-  <Book color="#274233" position={[3, 0, -0.4]} rotation={[0, -0.35, 0]}>
-    <CoverThree />
-  </Book>
-</MockupCanvas>
-```
+<MockupExplorer
+  component="BookMockup"
+  props={{ camera: { position: [0, 0.4, 9.4], fov: 40 } }}
+  arrangement={{
+    canvas: { shadowY: -2.2 },
+    items: [
+      { props: { color: '#16324a', position: [-3, 0, -0.4], rotation: [0, 0.5, 0] } },
+      { props: { color: '#5e2431', position: [0, 0, 0], rotation: [0, 0.15, 0] } },
+      { props: { color: '#274233', position: [3, 0, -0.4], rotation: [0, -0.35, 0] } },
+    ],
+  }}
+/>

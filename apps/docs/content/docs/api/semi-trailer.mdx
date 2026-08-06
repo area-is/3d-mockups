@@ -55,12 +55,4 @@ what stays 3D hardware.
 The rear doors carry your panel *under* the lock rods - a DOM overlay draws
 the four rods over the print, the way a real wrap is applied around them.
 
-<ObjectDemo demo="trailer-rear" />
-
-```tsx
-<SemiTrailerMockup autoRotate>
-  <YourWrap />
-  <SemiTrailerMockup.StreetSide><YourWrap /></SemiTrailerMockup.StreetSide>
-  <SemiTrailerMockup.Rear><YourRearPanel /></SemiTrailerMockup.Rear>
-</SemiTrailerMockup>
-```
+<MockupExplorer component="SemiTrailerMockup" props={{ autoRotate: 1.2 }} />

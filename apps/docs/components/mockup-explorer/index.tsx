@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { MockupCanvas } from 'area-3d-mockups'
 import { ChromaSurface } from '../screens/chroma-surface'
 import { LiveCounter } from '../screens/live-counter'
 import { SurfaceArt } from '../screens/surface-art'
@@ -26,6 +27,36 @@ import { EXPLORERS, type ExplorerSpec } from './registry'
  * overlay - duplicating it in the header would give two sets of buttons.
  */
 
+/** One object in an arrangement - see `MockupExplorerProps.arrangement`. */
+export interface ArrangementItem {
+  /**
+   * Stage a DIFFERENT object beside the page's own - the MockupCanvas page's
+   * Galaxy-and-iPhone pair. A guest keeps exactly the props written here;
+   * only instances of the page's own component follow the inspector, because
+   * they are the only ones its rows are guaranteed to be valid for.
+   */
+  component?: string
+  /** This instance's own props: where it stands, and anything it alone sets. */
+  props?: Record<string, unknown>
+  /**
+   * What this instance's surface is standing in for, when the arrangement's
+   * whole point is that the objects show different faces - the front-and-back
+   * card pair. Labels the artwork; defaults to the object's primary region.
+   */
+  surface?: string
+}
+
+/**
+ * Several bare objects in one `MockupCanvas`, instead of a single one-liner
+ * mockup - the composition the "row of books" and "gallery wall pair" examples
+ * are about.
+ */
+export interface Arrangement {
+  /** Canvas-only props the composition needs (`shadowY`), which own no panel row. */
+  canvas?: Record<string, unknown>
+  items: ArrangementItem[]
+}
+
 export interface MockupExplorerProps {
   /** Component name, e.g. `"GalaxyMockup"`. */
   component: string
@@ -44,11 +75,22 @@ export interface MockupExplorerProps {
    * a running app for a device, artwork for a print surface. `chroma` fills
    * them all with broadcast green labelled by slot, which is the
    * "mockup-able areas" view: the same live explorer, showing where content
-   * lands rather than what it could look like.
+   * lands rather than what it could look like. `none` passes no children at
+   * all, for the objects that document an unprinted state (a blank shipper's
+   * flap slabs and shipping label) - so the surface tabs go with it, there
+   * being no content to inspect.
    */
-  screen?: 'auto' | 'chroma'
+  screen?: 'auto' | 'chroma' | 'none'
   /** Stage height in px. */
   stageHeight?: number
+  /**
+   * Stage bare objects in one shared canvas rather than the all-in-one mockup.
+   * The inspector drives what the instances have in common - finish, surface,
+   * and the stage they share - and the snippet prints the `MockupCanvas` the
+   * page is teaching. `float` and the transform rows drop out of the panel:
+   * both are per-instance, and the page owns where each object stands.
+   */
+  arrangement?: Arrangement
 }
 
 interface PropState {
@@ -263,14 +305,51 @@ interface Line {
   set?: boolean
 }
 
-/** The snippet for the current props - only what differs from the defaults. */
-function buildSource(
+/** A page-supplied value, written the way someone would type it into JSX. */
+function literal(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(literal).join(', ')}]`
+  if (value && typeof value === 'object')
+    return `{ ${Object.entries(value as Record<string, unknown>)
+      .map(([key, v]) => `${key}: ${literal(v)}`)
+      .join(', ')} }`
+  return JSON.stringify(value)
+}
+
+/** One prop an arrangement writes itself, rather than one the panel drives. */
+const literalAttribute = (name: string, value: unknown): string =>
+  typeof value === 'string'
+    ? `${name}="${value}"`
+    : value === true
+      ? name
+      : `${name}={${literal(value)}}`
+
+/** The prop an attribute sets - `color="#fff"` and a bare `float` alike. */
+const attributeName = (text: string) => text.split('=')[0]
+
+/**
+ * One attribute per prop, keeping the LAST - the same precedence the spread
+ * that builds the live props has, so a tag never prints a prop twice and never
+ * prints the losing side of the two.
+ */
+const lastWins = (attributes: string[]): string[] => {
+  const byName = new Map(attributes.map((text) => [attributeName(text), text]))
+  return [...byName.values()]
+}
+
+/**
+ * The props an arrangement takes off the object and gives to the canvas or to
+ * the individual instances - so neither the stage nor the snippet hands a bare
+ * object something the page or the canvas already owns.
+ */
+const NOT_AN_ARRANGED_OBJECT_PROP = ['camera', 'position', 'rotation', 'scale']
+
+/** The object props in play - what a bare instance would take too. */
+function objectAttributes(
   spec: ExplorerSpec,
   p: PropState,
-  stageHeight: number,
-  screen: string,
-  extras: EditableProp[]
-): Line[] {
+  extras: EditableProp[],
+  skip: readonly string[] = []
+): string[] {
   const base = libraryDefaults(spec)
   const documents = documented(spec)
   const props: string[] = []
@@ -282,9 +361,21 @@ function buildSource(
   if (spec.openable && p.openAngle !== 180)
     add(p.openAngle === 0 ? 'openAngle={false}' : `openAngle={${p.openAngle}}`)
   if (spec.coverage && p.coverage !== 'panel') add(`coverage="${p.coverage}"`)
-  if (p.float) add('float')
   if (p.surfaceBackground) add(`surfaceBackground="${p.surfaceBackground}"`)
   if (p.resolution) add(`resolution={${p.resolution}}`)
+  // Anything still in `extra` is there because it differs from what the
+  // component does on its own, so every one of them earns a line.
+  for (const prop of extras) {
+    if (skip.includes(prop.name)) continue
+    if (prop.name in p.extra) add(propAttribute(prop, p.extra[prop.name]))
+  }
+  return props
+}
+
+/** The stage props in play - the canvas ones, wherever the canvas comes from. */
+function stageAttributes(p: PropState): string[] {
+  const props: string[] = []
+  const add = (text: string) => props.push(text)
   if (!p.controls) add('controls={false}')
   // The switch and the speed slider drive one prop: bare when it spins at the
   // library's own rate, a multiplier when it doesn't.
@@ -293,39 +384,105 @@ function buildSource(
   if (p.fullscreen) add('fullscreen')
   if (!p.shadows) add('shadows={false}')
   if (p.background) add(`background="${p.background}"`)
-  // Anything still in `extra` is there because it differs from what the
-  // component does on its own, so every one of them earns a line.
-  for (const prop of extras) {
-    if (prop.name in p.extra) add(propAttribute(prop, p.extra[prop.name]))
-  }
+  return props
+}
 
-  const lines: Line[] = [
-    { text: `'use client'` },
-    { text: '' },
-    { text: `import { ${spec.name} } from 'area-3d-mockups'` },
-    { text: `import { ${screen} } from './${KEBAB(screen)}'` },
-    { text: '' },
-    { text: 'export function Demo() {' },
-    { text: '  return (' },
-    { text: `    <div style={{ height: ${stageHeight} }}>` },
+/** An open tag: on one line when it is short, one prop per line when it isn't. */
+function openTag(name: string, props: string[], indent: string, selfClose = false): Line[] {
+  const end = selfClose ? ' />' : '>'
+  if (props.length === 0) return [{ text: `${indent}<${name}${end}` }]
+  if (props.length <= 2) return [{ text: `${indent}<${name} ${props.join(' ')}${end}`, set: true }]
+  return [
+    { text: `${indent}<${name}` },
+    ...props.map((prop) => ({ text: `${indent}  ${prop}`, set: true })),
+    { text: `${indent}${selfClose ? '/>' : '>'}` },
   ]
+}
 
-  if (props.length === 0) {
-    lines.push({ text: `      <${spec.name}>` })
-  } else if (props.length <= 2) {
-    lines.push({ text: `      <${spec.name} ${props.join(' ')}>`, set: true })
-  } else {
-    lines.push({ text: `      <${spec.name}` })
-    for (const prop of props) lines.push({ text: `        ${prop}`, set: true })
-    lines.push({ text: '      >' })
+const preamble = (imports: string[], screen: string | null, stageHeight: number): Line[] => [
+  { text: `'use client'` },
+  { text: '' },
+  { text: `import { ${imports.join(', ')} } from 'area-3d-mockups'` },
+  ...(screen ? [{ text: `import { ${screen} } from './${KEBAB(screen)}'` }] : []),
+  { text: '' },
+  { text: 'export function Demo() {' },
+  { text: '  return (' },
+  { text: `    <div style={{ height: ${stageHeight} }}>` },
+]
+
+const closing: Line[] = [{ text: '    </div>' }, { text: '  )' }, { text: '}' }]
+
+/** The snippet for the current props - only what differs from the defaults. */
+function buildSource(
+  spec: ExplorerSpec,
+  p: PropState,
+  stageHeight: number,
+  screen: string | null,
+  extras: EditableProp[]
+): Line[] {
+  const props = [...objectAttributes(spec, p, extras), ...(p.float ? ['float'] : []), ...stageAttributes(p)]
+  const head = preamble([spec.name], screen, stageHeight)
+  // No screen is the unprinted state, and it is the absence of children that
+  // produces it - so the snippet has to close the tag on itself to be true.
+  if (!screen) return [...head, ...openTag(spec.name, props, '      ', true), ...closing]
+  return [
+    ...head,
+    ...openTag(spec.name, props, '      '),
+    { text: `        <${screen} />` },
+    { text: `      </${spec.name}>` },
+    ...closing,
+  ]
+}
+
+/**
+ * The snippet for an arrangement: one canvas, several bare objects.
+ *
+ * The panel's object props are printed on every instance of the page's own
+ * component, and its stage props once on the canvas - which is exactly how
+ * they are being applied on the stage above.
+ */
+function buildArrangedSource(
+  spec: ExplorerSpec,
+  arrangement: Arrangement,
+  p: PropState,
+  stageHeight: number,
+  screen: string,
+  extras: EditableProp[]
+): Line[] {
+  const shared = objectAttributes(spec, p, extras, NOT_AN_ARRANGED_OBJECT_PROP)
+  const camera = extras.find((prop) => prop.name === 'camera')
+  const canvas = lastWins([
+    ...stageAttributes(p),
+    ...Object.entries(arrangement.canvas ?? {}).map(([name, value]) => literalAttribute(name, value)),
+    // The camera frames the whole composition, so it is the canvas's here -
+    // there is no one-liner between the panel row and the stage to route it.
+    ...(camera && 'camera' in p.extra ? [propAttribute(camera, p.extra.camera)] : []),
+  ])
+  const lines: Line[] = []
+  const imports = new Set(['MockupCanvas'])
+
+  for (const item of arrangement.items) {
+    const itemSpec = item.component ? EXPLORERS[item.component] : spec
+    const name = itemSpec?.bareName ?? spec.bareName ?? spec.name
+    imports.add(name)
+    const own = Object.entries(item.props ?? {}).map(([prop, value]) => literalAttribute(prop, value))
+    // What the page writes on this instance wins over what the panel sets for
+    // all of them - the same way the spread on the stage resolves it.
+    const props = lastWins([...(item.component ? [] : shared), ...own])
+    lines.push(
+      ...openTag(name, props, '        '),
+      { text: `          <${screen} />` },
+      { text: `        </${name}>` }
+    )
   }
 
-  lines.push({ text: `        <${screen} />` })
-  lines.push({ text: `      </${spec.name}>` })
-  lines.push({ text: '    </div>' })
-  lines.push({ text: '  )' })
-  lines.push({ text: '}' })
-  return lines
+  return [
+    ...preamble([...imports].sort(), screen, stageHeight),
+    ...openTag('MockupCanvas', canvas, '      '),
+    ...lines,
+    { text: '      </MockupCanvas>' },
+    ...closing,
+  ]
 }
 
 /** Light syntax colouring: tags, attributes, strings and braces. */
@@ -369,6 +526,14 @@ export function MockupExplorer(props: MockupExplorerProps) {
   if (!EXPLORERS[props.component]) {
     return <p className="mx-unknown">Unknown mockup component: {props.component}</p>
   }
+  // An arrangement stages the bare objects, so every component it names has to
+  // have one registered - caught here rather than as a null element type.
+  const missing = (props.arrangement?.items ?? [])
+    .map((item) => item.component ?? props.component)
+    .find((name) => !EXPLORERS[name]?.bare)
+  if (missing) {
+    return <p className="mx-unknown">No bare object registered for: {missing}</p>
+  }
   return <MockupExplorerImpl {...props} />
 }
 
@@ -378,8 +543,10 @@ function MockupExplorerImpl({
   props: seed,
   screen = 'auto',
   stageHeight = 460,
+  arrangement,
 }: MockupExplorerProps) {
   const spec = EXPLORERS[component]!
+  const arranged = arrangement?.items.length ? arrangement : undefined
   const [p, setP] = useState<PropState>(() => initialState(spec, variant, seed))
   // Open on a wide screen, collapsed once the layout stacks. Resolved after
   // mount so the server and the first client render agree.
@@ -440,7 +607,22 @@ function MockupExplorerImpl({
   const { Component } = spec
 
   const documents = documented(spec)
-  const hasColor = documents.has('color')
+
+  /**
+   * Props the arrangement writes on every one of its own instances. A panel row
+   * for one of those could not change anything on the stage - each instance
+   * overrides it - so the row is not offered at all. That is what makes a row
+   * of three differently-bound books lose its `color` control but keep `size`.
+   */
+  const ownedByItems = useMemo(() => {
+    const own = (arranged?.items ?? [])
+      .filter((item) => !item.component)
+      .map((item) => Object.keys(item.props ?? {}))
+    if (!own.length) return new Set<string>()
+    return new Set(own[0].filter((name) => own.every((names) => names.includes(name))))
+  }, [arranged])
+
+  const hasColor = documents.has('color') && !ownedByItems.has('color')
 
   const driven = new Set<string>([
     'float',
@@ -458,6 +640,11 @@ function MockupExplorerImpl({
     ...(spec.orientation ? ['orientation'] : []),
     ...(spec.openable ? ['openAngle'] : []),
     ...(spec.coverage ? ['coverage'] : []),
+    // In an arrangement the transforms are what tell the objects apart, and the
+    // page has already written one per instance - a single panel row could only
+    // move them all onto the same spot.
+    ...(arranged ? ['position', 'rotation', 'scale'] : []),
+    ...ownedByItems,
   ])
   const panel = panelProps(spec, driven)
   const editable = [...panel.object, ...panel.transform, ...(panel.camera ? [panel.camera] : [])]
@@ -504,7 +691,9 @@ function MockupExplorerImpl({
     return (first as { px?: { width: number; height: number } } | undefined)?.px
   }
 
-  const colorways = spec.colorways?.[spec.variants ? p.variant : ''] ?? []
+  // Gated on the colour row itself: a swatch sets `color`, so where an
+  // arrangement owns that prop there is nothing for a swatch to set either.
+  const colorways = hasColor ? (spec.colorways?.[spec.variants ? p.variant : ''] ?? []) : []
   /*
    * Which retail finish is in play, if any. Matched on id first - that is what
    * a swatch now stores - and on colour as well, so a page that seeds
@@ -512,7 +701,15 @@ function MockupExplorerImpl({
    */
   const preset = colorways.find((c) => c.id === p.color || c.color === p.color)
   const chroma = screen === 'chroma'
-  const screenName = chroma ? 'ChromaSurface' : spec.print ? 'SurfaceArt' : 'LiveCounter'
+  /** Nothing on any surface - the unprinted state, which is a state worth showing. */
+  const unprinted = screen === 'none'
+  const screenName = unprinted
+    ? null
+    : chroma
+      ? 'ChromaSurface'
+      : spec.print
+        ? 'SurfaceArt'
+        : 'LiveCounter'
   const content = (label: string) =>
     chroma ? <ChromaSurface label={label} /> : spec.print ? <SurfaceArt label={label} /> : <LiveCounter />
 
@@ -520,8 +717,18 @@ function MockupExplorerImpl({
   const slots = Object.entries(Component).filter(
     ([key, value]) => /^[A-Z]/.test(key) && typeof value === 'function'
   ) as [string, React.ComponentType<{ children?: ReactNode }>][]
+  /** The surfaces the reader can open - none of them when none are printed. */
+  const views = unprinted ? [] : regions
 
-  const mockupProps: Record<string, unknown> = {
+  /**
+   * The props that describe the OBJECT - the ones a bare instance takes too.
+   *
+   * An arrangement takes four of them back. `camera` frames the composition
+   * rather than any one object, and the one-liner is not there to route it to
+   * the canvas; the transforms are the page's, one per instance. Both are gone
+   * from the panel too, so nothing here is silently dropping a live row.
+   */
+  const objectProps: Record<string, unknown> = {
     ...(spec.variants ? { variant: p.variant } : {}),
     ...(hasColor && p.color ? { color: p.color } : {}),
     ...(spec.orientation ? { orientation: p.orientation } : {}),
@@ -529,9 +736,13 @@ function MockupExplorerImpl({
     ...(spec.coverage ? { coverage: p.coverage } : {}),
     ...(p.surfaceBackground ? { surfaceBackground: p.surfaceBackground } : {}),
     ...(p.resolution ? { resolution: p.resolution } : {}),
-    ...(p.background ? { background: p.background } : {}),
     ...p.extra,
-    float: p.float,
+  }
+  if (arranged) for (const name of NOT_AN_ARRANGED_OBJECT_PROP) delete objectProps[name]
+
+  /** The props that describe the STAGE - the canvas's, wherever it comes from. */
+  const stageProps: Record<string, unknown> = {
+    ...(p.background ? { background: p.background } : {}),
     // TumbleControls - and with it the turntable - only exists while controls
     // are on, so the spin borrows them for its duration.
     controls: p.controls || spinning,
@@ -539,6 +750,9 @@ function MockupExplorerImpl({
     zoom: p.zoom,
     fullscreen: p.fullscreen,
     shadows: p.shadows,
+    ...(arranged
+      ? { ...arranged.canvas, ...(p.extra.camera ? { camera: p.extra.camera } : {}) }
+      : {}),
   }
 
   const flatPx = view === '3d' ? undefined : pxOf(view)
@@ -566,9 +780,11 @@ function MockupExplorerImpl({
    * fall out of step.
    */
   const source =
-    view === '3d'
-      ? buildSource(spec, p, stageHeight, screenName, editable)
-      : surfaceSource(spec, view, screenName, flatPx)
+    view !== '3d'
+      ? surfaceSource(spec, view, screenName ?? '', flatPx)
+      : arranged
+        ? buildArrangedSource(spec, arranged, p, stageHeight, screenName ?? '', editable)
+        : buildSource(spec, p, stageHeight, screenName, editable)
 
   return (
     <div className="mx" data-inspector={inspectorOpen}>
@@ -582,7 +798,7 @@ function MockupExplorerImpl({
           >
             {spec.label}
           </button>
-          {regions.map((region) => (
+          {views.map((region) => (
             <span key={region.name} className="mx-view-item">
               <span className="mx-divider" aria-hidden />
               <button
@@ -616,18 +832,45 @@ function MockupExplorerImpl({
         <div className="mx-stage" ref={stageRef} style={{ background: p.background || undefined }}>
           {view === '3d' ? (
             <LazyScene>
-              {/*
-                Every surface through its own named slot, including the
-                primary one. Passing bare children *and* the primary slot is
-                the one combination the library rejects - it warned on every
-                device page and dropped the bare children - and naming all of
-                them also means each surface gets its own region label.
-              */}
-              <Component {...mockupProps}>
-                {slots.map(([name, Slot]) => (
-                  <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
-                ))}
-              </Component>
+              {arranged ? (
+                /*
+                 * One canvas, the bare objects inside it - the composition the
+                 * page is teaching, with the inspector driving what they share.
+                 * One surface each rather than every slot: an arrangement is
+                 * about where the objects stand, and nine slot lines for three
+                 * books would bury that in the snippet. The other surfaces are
+                 * still a tab away.
+                 */
+                <MockupCanvas {...stageProps}>
+                  {arranged.items.map((item, i) => {
+                    const itemSpec = item.component ? EXPLORERS[item.component]! : spec
+                    const Bare = itemSpec.bare
+                    return (
+                      <Bare key={i} {...(item.component ? {} : objectProps)} {...item.props}>
+                        {content(
+                          item.surface ??
+                            REGION_LABEL(itemSpec.Component.regions?.[0]?.name ?? 'children')
+                        )}
+                      </Bare>
+                    )
+                  })}
+                </MockupCanvas>
+              ) : (
+                /*
+                  Every surface through its own named slot, including the
+                  primary one. Passing bare children *and* the primary slot is
+                  the one combination the library rejects - it warned on every
+                  device page and dropped the bare children - and naming all of
+                  them also means each surface gets its own region label.
+                */
+                <Component {...objectProps} {...stageProps} float={p.float}>
+                  {unprinted
+                    ? null
+                    : slots.map(([name, Slot]) => (
+                        <Slot key={name}>{content(REGION_LABEL(name))}</Slot>
+                      ))}
+                </Component>
+              )}
             </LazyScene>
           ) : (
             <div className="mx-flat">
@@ -678,7 +921,7 @@ function MockupExplorerImpl({
             </div>
 
             <p className="mx-group">Device</p>
-            {spec.variants && !variant ? (
+            {spec.variants && !variant && !ownedByItems.has('variant') ? (
               <div className="mx-row">
                 <span className="mx-prop">variant</span>
                 <select
@@ -734,7 +977,7 @@ function MockupExplorerImpl({
                 onChange={(v) => set('color', v)}
               />
             ) : null}
-            {spec.orientation ? (
+            {spec.orientation && !ownedByItems.has('orientation') ? (
               <Segmented
                 label="orientation"
                 value={p.orientation}
@@ -742,7 +985,7 @@ function MockupExplorerImpl({
                 onChange={(v) => set('orientation', v)}
               />
             ) : null}
-            {spec.coverage ? (
+            {spec.coverage && !ownedByItems.has('coverage') ? (
               <Segmented
                 label="coverage"
                 value={p.coverage}
@@ -750,7 +993,7 @@ function MockupExplorerImpl({
                 onChange={(v) => set('coverage', v)}
               />
             ) : null}
-            {spec.openable ? (
+            {spec.openable && !ownedByItems.has('openAngle') ? (
               <div className="mx-row" title="180 flat, 0 shut, anything between is Flex Mode">
                 <span className="mx-prop">openAngle</span>
                 <span className="mx-row-controls">
@@ -766,7 +1009,12 @@ function MockupExplorerImpl({
                 </span>
               </div>
             ) : null}
-            <Switch label="float" checked={p.float} onChange={(v) => set('float', v)} />
+            {/* `float` belongs to the one-liner, not to a bare object, so an
+                arrangement has no row for it - the panel only ever offers what
+                the snippet beside it could actually carry. */}
+            {arranged ? null : (
+              <Switch label="float" checked={p.float} onChange={(v) => set('float', v)} />
+            )}
             {panel.object.map((prop) => (
               <PropRow key={prop.name} {...rowProps(prop)} />
             ))}
@@ -900,7 +1148,7 @@ function MockupExplorerImpl({
           >
             demo.tsx
           </button>
-          {regions.map((region) => (
+          {views.map((region) => (
             <button
               key={region.name}
               type="button"

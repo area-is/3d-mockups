@@ -144,62 +144,6 @@
   color: var(--color-fd-foreground);
 }
 
-/* Live mockup examples embedded in doc pages (see components/object-examples.tsx). */
-.object-demo {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--color-fd-foreground) 10%, transparent);
-  border-radius: 12px;
-  background:
-    radial-gradient(120% 90% at 50% 0%, color-mix(in oklab, var(--color-fd-foreground) 4%, transparent), transparent 70%);
-  margin: 1.25rem 0;
-  touch-action: pan-y;
-}
-
-/*
- * Transparency checkerboard behind each page's hero example. The WebGL canvas
- * is alpha-transparent, so the checker stays visible everywhere the scene
- * doesn't paint - the classic way to show the mockup (and its contact shadow)
- * composites onto whatever the page puts behind it. Checks are tinted from
- * the foreground color so the pattern adapts to light and dark themes.
- */
-.object-demo--checker {
-  background:
-    repeating-conic-gradient(
-      color-mix(in oklab, var(--color-fd-foreground) 6.5%, transparent) 0% 25%,
-      transparent 0% 50%
-    )
-    top left / 24px 24px;
-}
-
-/* Collapsible full-TSX source panel under each demo. */
-.object-demo-source {
-  margin: -0.5rem 0 1.25rem;
-  border: 1px solid color-mix(in oklab, var(--color-fd-foreground) 10%, transparent);
-  border-radius: 10px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.85rem;
-}
-
-.object-demo-source > summary {
-  cursor: pointer;
-  color: var(--color-fd-muted-foreground);
-  user-select: none;
-  padding: 0.25rem 0;
-}
-
-.object-demo-source[open] > summary {
-  color: var(--color-fd-foreground);
-}
-
-.object-demo-source-name {
-  margin: 0.75rem 0 -0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--color-fd-muted-foreground);
-}
-
 /* ------------------------------------------------------------------ */
 /*  Device disclaimer                                                  */
 /* ------------------------------------------------------------------ */

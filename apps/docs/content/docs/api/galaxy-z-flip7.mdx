@@ -51,13 +51,10 @@ wraps around the cameras exactly like the real FlexWindow:
 Flex Mode stance, with the hinge spine rolling into the fold and your content
 bending across it:
 
-<ObjectDemo demo="flip-flex" />
-
-```tsx
-<FlipMockup openAngle={100} color="blueshadow">
-  <YourApp />
-</FlipMockup>
-```
+<MockupExplorer
+  component="FlipMockup"
+  props={{ openAngle: 100, color: 'blueshadow', rotation: [0, -0.25, 0] }}
+/>
 
 ## Colorways
 

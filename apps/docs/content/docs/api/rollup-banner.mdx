@@ -47,17 +47,21 @@ what stays 3D hardware.
 Bare `<RollupBanner>` objects in one
 [`MockupCanvas`](/docs/api/mockup-canvas); the second in black hardware.
 
-<ObjectDemo demo="banner-pair" />
-
-```tsx
-<MockupCanvas camera={{ position: [0, 0.4, 9.8], fov: 40 }} shadowY={-2.05}>
-  <group position={[0, 0.14, 0]}>
-    <RollupBanner position={[-1.55, 0, -0.4]} rotation={[0, 0.3, 0]}>
-      <LeftBanner />
-    </RollupBanner>
-    <RollupBanner color="#31343a" position={[1.55, 0, 0]} rotation={[0, -0.15, 0]}>
-      <RightBanner />
-    </RollupBanner>
-  </group>
-</MockupCanvas>
-```
+<MockupExplorer
+  component="RollupBannerMockup"
+  props={{ camera: { position: [0, 0.4, 9.8], fov: 40 } }}
+  arrangement={{
+    canvas: { shadowY: -2.05 },
+    items: [
+      { props: { position: [-1.75, 0.14, -0.4], rotation: [0, 0.3, 0] } },
+      {
+        props: {
+          size: { width: 1000 },
+          color: '#31343a',
+          position: [1.55, 0.14, 0],
+          rotation: [0, -0.15, 0],
+        },
+      },
+    ],
+  }}
+/>

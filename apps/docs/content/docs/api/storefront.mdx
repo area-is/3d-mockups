@@ -15,17 +15,7 @@ mockup surface too: both front display bays, the glazed door leaf and the
 wide center pane of each other elevation - each its own slot. Ten live
 surfaces in all (the roof stays hardware).
 
-<MockupExplorer component="StorefrontMockup" />
-
-<ObjectDemo demo="storefront-basic" checker />
-
-```tsx
-<StorefrontMockup rotation={[0, -0.25, 0]}>
-  <YourSign />
-  <StorefrontMockup.FrontLeft><YourPoster /></StorefrontMockup.FrontLeft>
-  <StorefrontMockup.FrontRight><YourPoster /></StorefrontMockup.FrontRight>
-</StorefrontMockup>
-```
+<MockupExplorer component="StorefrontMockup" props={{ rotation: [0, -0.25, 0] }} />
 
 ## Props
 
@@ -75,31 +65,11 @@ what stays 3D hardware.
 A fascia sign on every side and every pane dressed - spin the block to
 walk around it.
 
-<ObjectDemo demo="storefront-around" />
-
-```tsx
-<StorefrontMockup autoRotate>
-  <YourSign />
-  <StorefrontMockup.FrontLeft><YourWindow /></StorefrontMockup.FrontLeft>
-  <StorefrontMockup.FrontRight><YourWindow /></StorefrontMockup.FrontRight>
-  <StorefrontMockup.Door><YourWindow /></StorefrontMockup.Door>
-  <StorefrontMockup.Left><YourWindow /></StorefrontMockup.Left>
-  <StorefrontMockup.Right><YourWindow /></StorefrontMockup.Right>
-  <StorefrontMockup.Rear><YourWindow /></StorefrontMockup.Rear>
-  <StorefrontMockup.LeftSign><YourSign /></StorefrontMockup.LeftSign>
-  <StorefrontMockup.RightSign><YourSign /></StorefrontMockup.RightSign>
-  <StorefrontMockup.RearSign><YourSign /></StorefrontMockup.RearSign>
-</StorefrontMockup>
-```
+<MockupExplorer component="StorefrontMockup" props={{ autoRotate: 1.2 }} />
 
 ### Oxblood paint, three-quarter view
 
-<ObjectDemo demo="storefront-paint" />
-
-```tsx
-<StorefrontMockup color="#5c2330" rotation={[0, 0.3, 0]}>
-  <YourSign />
-  <StorefrontMockup.FrontLeft><YourWindow /></StorefrontMockup.FrontLeft>
-  <StorefrontMockup.Door><YourWindow /></StorefrontMockup.Door>
-</StorefrontMockup>
-```
+<MockupExplorer
+  component="StorefrontMockup"
+  props={{ color: '#5c2330', rotation: [0, 0.3, 0] }}
+/>

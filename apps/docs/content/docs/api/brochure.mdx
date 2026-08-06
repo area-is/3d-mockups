@@ -11,17 +11,7 @@ shade gently toward the folds, like paper actually bowing.
 Each panel has its own named slot, so content goes where the name says
 regardless of what order you write them in. Each panel is independent live DOM.
 
-<MockupExplorer component="BrochureMockup" />
-
-<ObjectDemo demo="brochure-panels" checker />
-
-```tsx
-<BrochureMockup>
-  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
-  <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
-  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
-</BrochureMockup>
-```
+<MockupExplorer component="BrochureMockup" props={{ rotation: [0, -0.12, 0] }} />
 
 ## Props
 
@@ -77,33 +67,14 @@ what stays 3D hardware.
 A real tri-fold prints on both sides of the sheet, and every face here is a
 live surface. Spin the demo to read both sides.
 
-<ObjectDemo demo="brochure-both-sides" />
-
-```tsx
-<BrochureMockup autoRotate>
-  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
-  <BrochureMockup.FrontCenter><Trails /></BrochureMockup.FrontCenter>
-  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
-  <BrochureMockup.BackLeft><Map /></BrochureMockup.BackLeft>
-  <BrochureMockup.BackCenter><Hours /></BrochureMockup.BackCenter>
-  <BrochureMockup.BackRight><Contact /></BrochureMockup.BackRight>
-</BrochureMockup>
-```
+<MockupExplorer component="BrochureMockup" props={{ autoRotate: 0.8 }} />
 
 ### Flat, before folding
 
 `foldAngle={0}` lays the sheet out flat - useful for reviewing the design as
 the full 11" spread it prints as.
 
-<ObjectDemo demo="brochure-flat" />
-
-```tsx
-<BrochureMockup foldAngle={0}>
-  <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
-  <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
-  <BrochureMockup.FrontRight><Visit /></BrochureMockup.FrontRight>
-</BrochureMockup>
-```
+<MockupExplorer component="BrochureMockup" props={{ foldAngle: 0 }} />
 
 ### One designed panel on bare stock
 

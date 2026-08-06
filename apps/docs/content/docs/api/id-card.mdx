@@ -60,13 +60,7 @@ what stays 3D hardware.
 reverse: barcodes, return-if-found text, wifi credentials for the office
 guest network…
 
-<ObjectDemo demo="idcard-back" />
-
-```tsx
-<IDCardMockup autoRotate={2} lanyardColor="#1d4ed8">
-  <BadgeFront />
-  <IDCardMockup.Back>
-    <BadgeBack />
-  </IDCardMockup.Back>
-</IDCardMockup>
-```
+<MockupExplorer
+  component="IDCardMockup"
+  props={{ autoRotate: 2, lanyardColor: '#1d4ed8' }}
+/>
