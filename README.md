@@ -65,7 +65,9 @@ binding contract.
 
 ## Development
 
-Uses npm workspaces. Node 18.18+ required.
+Uses npm workspaces. Node 22+ required (wrangler, concurrently and vitest all
+floor there). This is the toolchain for working *on* the repo - the published
+package declares no `engines` and runs in the browser.
 
 ```bash
 npm install        # installs all workspaces + builds the package (prepare hook)

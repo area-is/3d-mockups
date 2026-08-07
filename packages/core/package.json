@@ -59,10 +59,10 @@
     "three": ">=0.179.0"
   },
   "devDependencies": {
-    "@types/three": "^0.185.1",
+    "@types/three": "^0.185.4",
     "three": "^0.185.1",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.7"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   }
 }

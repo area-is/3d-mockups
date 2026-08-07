@@ -22,9 +22,9 @@
     "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.4"
   },
   "engines": {
-    "node": ">=18.18"
+    "node": ">=22"
   }
 }
