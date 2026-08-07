@@ -25,6 +25,7 @@ import {
   stadiumCutter,
   holeCutter,
   USB_CUT_DEPTH,
+  CREASE_OVERLAP,
 } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
@@ -550,31 +551,43 @@ function FoldImpl({
         : left
           ? [r, 0, 0, r]
           : [0, r, r, 0]
-      const localX = (left ? 1 : -1) * (hw / 2 - display.width / 4)
+      // Each pane overhangs the fold line by CREASE_OVERLAP (center shifted
+      // half of it foldward), so the two planes - and their inset depth
+      // masks - overlap across the crease instead of pairing their mask
+      // insets into a dark seam.
+      const localX = (left ? 1 : -1) * (hw / 2 - display.width / 4 + CREASE_OVERLAP / 2)
       // The half panes lean on the depth buffer harder than most screens: at
       // every intermediate hinge angle one half is PARTIALLY covered by the
       // other panel, which only per-pixel compositing can resolve.
       return (
         <DeviceScreen
-          width={landscape ? display.height : display.width / 2}
-          height={landscape ? display.width / 2 : display.height}
+          width={landscape ? display.height : display.width / 2 + CREASE_OVERLAP}
+          height={landscape ? display.width / 2 + CREASE_OVERLAP : display.height}
           radius={radius}
           position={[localX, 0, b.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           {...resolveSurface(screenSlot, {
             surfaceBackground,
-            // each half pane carries half the virtual display's width
-            resolution: landscape ? res : res / 2,
+            // each half pane carries half the virtual display's width, plus
+            // the overhang's pixels
+            resolution: landscape ? res : (res * (display.width / 2 + CREASE_OVERLAP)) / display.width,
             surfaceStyle,
           })}
         >
+          {/* one full-size window onto the shared virtual display, offset so
+              this pane shows its own half plus the overhang's continuation.
+              Sized in px, not %, so the overhang doesn't skew the mapping.
+              In landscape the device lies on its side: the LEFT half lands
+              at the bottom of the upright content, so it windows the BOTTOM
+              half - not the top, which briefly mirrored the content across
+              the crease relative to the flat-open pose. */}
           <div
             style={{
               position: 'absolute',
-              left: !landscape && !left ? '-100%' : 0,
-              top: landscape && !left ? '-100%' : 0,
-              width: landscape ? '100%' : '200%',
-              height: landscape ? '200%' : '100%',
+              left: landscape || left ? 0 : -px(display.width / 2 - CREASE_OVERLAP),
+              top: landscape && left ? -px(display.width / 2 - CREASE_OVERLAP) : 0,
+              width: landscape ? '100%' : px(display.width),
+              height: landscape ? px(display.width) : '100%',
             }}
           >
             {screenSlot?.children}

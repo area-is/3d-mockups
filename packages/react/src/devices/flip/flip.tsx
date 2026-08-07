@@ -26,6 +26,7 @@ import {
   stadiumCutter,
   holeCutter,
   USB_CUT_DEPTH,
+  CREASE_OVERLAP,
 } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
@@ -571,27 +572,43 @@ function FlipImpl({
         : upper
           ? [r, r, 0, 0]
           : [0, 0, r, r]
-      const localY = (upper ? 1 : -1) * (display.height / 4 - halfH / 2)
+      // Each pane overhangs the fold line by CREASE_OVERLAP (center shifted
+      // half of it foldward), so the two planes - and their inset depth
+      // masks - overlap across the crease instead of pairing their mask
+      // insets into a dark seam.
+      const localY = (upper ? 1 : -1) * (display.height / 4 - halfH / 2 - CREASE_OVERLAP / 2)
+      // The fold's soft shadow falling into the crease: peaks ON the fold
+      // line and tapers through the overhang at the same slope the other
+      // pane's ramp has beneath it, so the shadow reads continuous whichever
+      // pane composites on top.
+      const shade = 0.18
+      const shadeLen = px(shade + CREASE_OVERLAP)
+      const creaseShadow = (dir: 'right' | 'left' | 'bottom' | 'top') =>
+        `linear-gradient(to ${dir}, transparent, rgba(0,0,0,0.24) ${
+          (shade / (shade + CREASE_OVERLAP)) * 100
+        }%, rgba(0,0,0,${0.24 * (1 - CREASE_OVERLAP / shade)}))`
       // The half panes lean on the depth buffer harder than most screens: at
       // every intermediate hinge angle one half is PARTIALLY covered by the
       // other panel, which only per-pixel compositing can resolve.
       return (
         <DeviceScreen
-          width={landscape ? display.height / 2 : display.width}
-          height={landscape ? display.width : display.height / 2}
+          width={landscape ? display.height / 2 + CREASE_OVERLAP : display.width}
+          height={landscape ? display.width : display.height / 2 + CREASE_OVERLAP}
           radius={radius}
           position={[0, localY, half.depth / 2 + 0.006]}
           rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
           {...resolveSurface(screenSlot, {
             surfaceBackground,
-            // each half pane carries half the virtual display's height
-            resolution: landscape ? res / 2 : res,
+            // each half pane carries half the virtual display's height, plus
+            // the overhang's pixels
+            resolution: landscape
+              ? (res * (display.height / 2 + CREASE_OVERLAP)) / display.height
+              : res,
             surfaceStyle,
           })}
           overlay={
             <>
               {upper ? punchHoleOverlay : null}
-              {/* the fold's soft shadow falling into the crease */}
               <div
                 aria-hidden
                 style={{
@@ -600,23 +617,26 @@ function FlipImpl({
                   zIndex: 2147483646,
                   ...(landscape
                     ? upper
-                      ? { top: 0, bottom: 0, right: 0, width: px(0.18), background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.24))' }
-                      : { top: 0, bottom: 0, left: 0, width: px(0.18), background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.24))' }
+                      ? { top: 0, bottom: 0, right: 0, width: shadeLen, background: creaseShadow('right') }
+                      : { top: 0, bottom: 0, left: 0, width: shadeLen, background: creaseShadow('left') }
                     : upper
-                      ? { left: 0, right: 0, bottom: 0, height: px(0.18), background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.24))' }
-                      : { left: 0, right: 0, top: 0, height: px(0.18), background: 'linear-gradient(to top, transparent, rgba(0,0,0,0.24))' }),
+                      ? { left: 0, right: 0, bottom: 0, height: shadeLen, background: creaseShadow('bottom') }
+                      : { left: 0, right: 0, top: 0, height: shadeLen, background: creaseShadow('top') }),
                 }}
               />
             </>
           }
         >
+          {/* one full-size window onto the shared virtual display, offset so
+              this pane shows its own half plus the overhang's continuation.
+              Sized in px, not %, so the overhang doesn't skew the mapping. */}
           <div
             style={{
               position: 'absolute',
-              left: landscape && !upper ? '-100%' : 0,
-              top: !landscape && !upper ? '-100%' : 0,
-              width: landscape ? '200%' : '100%',
-              height: landscape ? '100%' : '200%',
+              left: landscape && !upper ? -px(display.height / 2 - CREASE_OVERLAP) : 0,
+              top: !landscape && !upper ? -px(display.height / 2 - CREASE_OVERLAP) : 0,
+              width: landscape ? px(display.height) : '100%',
+              height: landscape ? '100%' : px(display.height),
             }}
           >
             {screenSlot?.children}
