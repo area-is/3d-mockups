@@ -82,6 +82,7 @@ import { A_FRAME_SIGN_METRICS, A_FRAME_SIGN_REGIONS } from './objects/a-frame-si
 import { DOOH_TOTEM_METRICS, DOOH_TOTEM_REGIONS, type DoohTotemSize } from './objects/dooh-totem/dimensions'
 import { SEMI_TRAILER_METRICS, SEMI_TRAILER_REGIONS } from './objects/semi-trailer/dimensions'
 import { MAILER_BOX_METRICS, MAILER_BOX_REGIONS, type MailerBoxSizeMm } from './objects/mailer-box/dimensions'
+import { MILK_CARTON_METRICS, MILK_CARTON_REGIONS, type MilkCartonSizeMm } from './objects/milk-carton/dimensions'
 import { SHOPPING_BAG_METRICS, SHOPPING_BAG_REGIONS, type ShoppingBagSizeMm } from './objects/shopping-bag/dimensions'
 import { CUSTOM_PANEL_METRICS, CUSTOM_PANEL_REGIONS, type CustomSizeMm } from './objects/custom-panel/dimensions'
 import { CUSTOM_BOX_METRICS, CUSTOM_BOX_REGIONS, type CustomBoxSizeMm } from './objects/custom-box/dimensions'
@@ -128,6 +129,7 @@ export interface MockupPropsMap {
   doohTotem: { size?: DoohTotemSize }
   semiTrailer: Record<string, never>
   mailerBox: { size?: MailerBoxSizeMm }
+  milkCarton: { size?: MilkCartonSizeMm }
   shoppingBag: { size?: ShoppingBagSizeMm }
   customPanel: { size: CustomSizeMm }
   customBox: { size: CustomBoxSizeMm }
@@ -139,7 +141,7 @@ export type MockupKind = keyof MockupPropsMap
 interface Entry {
   regions: readonly RegionSpec[]
   // Props are validated by `mockupInfo`'s public signature; inside the registry
-  // the 33 prop shapes are deliberately erased so one table can hold them all.
+  // the 34 prop shapes are deliberately erased so one table can hold them all.
   metrics: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mmPerUnit: number | ((props: any) => number)
@@ -184,6 +186,7 @@ const REGISTRY: Record<MockupKind, Entry> = {
   doohTotem: { regions: DOOH_TOTEM_REGIONS, metrics: DOOH_TOTEM_METRICS },
   semiTrailer: { regions: SEMI_TRAILER_REGIONS, metrics: SEMI_TRAILER_METRICS },
   mailerBox: { regions: MAILER_BOX_REGIONS, metrics: MAILER_BOX_METRICS },
+  milkCarton: { regions: MILK_CARTON_REGIONS, metrics: MILK_CARTON_METRICS },
   shoppingBag: { regions: SHOPPING_BAG_REGIONS, metrics: SHOPPING_BAG_METRICS },
   customPanel: { regions: CUSTOM_PANEL_REGIONS, metrics: CUSTOM_PANEL_METRICS },
   customBox: { regions: CUSTOM_BOX_REGIONS, metrics: CUSTOM_BOX_METRICS },

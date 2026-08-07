@@ -27,6 +27,7 @@ import {
   LaptopMockup,
   MagazineMockup,
   MailerBoxMockup,
+  MilkCartonMockup,
   PosterFrame,
   PosterFrameMockup,
   ProductBoxMockup,
@@ -237,6 +238,7 @@ const OBJECTS: Record<string, ExplorerSpec> = {
   }),
   ProductBoxMockup: object(ProductBoxMockup, 'ProductBoxMockup', 'productBox', 'Product box'),
   MailerBoxMockup: object(MailerBoxMockup, 'MailerBoxMockup', 'mailerBox', 'Mailer box'),
+  MilkCartonMockup: object(MilkCartonMockup, 'MilkCartonMockup', 'milkCarton', 'Milk carton'),
   ShoppingBagMockup: object(ShoppingBagMockup, 'ShoppingBagMockup', 'shoppingBag', 'Shopping bag'),
   VinylRecordMockup: object(VinylRecordMockup, 'VinylRecordMockup', 'vinylRecord', 'Vinyl record'),
   RollupBannerMockup: object(RollupBannerMockup, 'RollupBannerMockup', 'rollupBanner', 'Roll-up banner', {

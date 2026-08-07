@@ -36,6 +36,7 @@ const ENTRIES = {
   'StorefrontMockup (shop facade)': "export { StorefrontMockup } from './src/index'",
   'SemiTrailerMockup (53ft dry van)': "export { SemiTrailerMockup } from './src/index'",
   'MailerBoxMockup (shipper box)': "export { MailerBoxMockup } from './src/index'",
+  'MilkCartonMockup (gable-top carton)': "export { MilkCartonMockup } from './src/index'",
   'ShoppingBagMockup (kraft carrier)': "export { ShoppingBagMockup } from './src/index'",
   'CustomPanelMockup (any-size sheet)': "export { CustomPanelMockup } from './src/index'",
   'CustomBoxMockup (any-size box)': "export { CustomBoxMockup } from './src/index'",

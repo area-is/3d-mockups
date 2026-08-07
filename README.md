@@ -26,7 +26,8 @@ lineup is 22 strong: the Galaxy S26 line, the Z Fold 7 and Z Flip 7 foldables, t
 iPhone 17 family, MacBook Air and Pro, the iPad and Galaxy Tab families, an Apple
 Watch and a Galaxy Watch on full wristbands, and a 27" desktop display. Beyond devices,
 the same live-surface API covers everyday objects - books, magazines,
-brochures, cards, packaging (product box, mailer box, shopping bag),
+brochures, cards, packaging (product box, mailer box, gable-top milk carton,
+shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
 records, out-of-home formats (billboard, bus shelter, double-sided DOOH totem,
 A-frame, roll-up banner, storefront), a 65" TV, and wrap-ready vehicles (transit

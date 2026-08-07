@@ -33,6 +33,7 @@ export { DOOHTotemMockup, type DOOHTotemMockupProps } from './dooh-totem-mockup'
 export { StorefrontMockup, type StorefrontMockupProps } from './storefront-mockup'
 export { SemiTrailerMockup, type SemiTrailerMockupProps } from './semi-trailer-mockup'
 export { MailerBoxMockup, type MailerBoxMockupProps } from './mailer-box-mockup'
+export { MilkCartonMockup, type MilkCartonMockupProps } from './milk-carton-mockup'
 export { ShoppingBagMockup, type ShoppingBagMockupProps } from './shopping-bag-mockup'
 export { CustomPanelMockup, type CustomPanelMockupProps } from './custom-panel-mockup'
 export { CustomBoxMockup, type CustomBoxMockupProps } from './custom-box-mockup'
@@ -118,6 +119,7 @@ export { DOOHTotem, type DOOHTotemProps } from './objects/dooh-totem/dooh-totem'
 export { Storefront, type StorefrontProps } from './objects/storefront/storefront'
 export { SemiTrailer, type SemiTrailerProps } from './objects/semi-trailer/semi-trailer'
 export { MailerBox, type MailerBoxProps } from './objects/mailer-box/mailer-box'
+export { MilkCarton, type MilkCartonProps } from './objects/milk-carton/milk-carton'
 export { ShoppingBag, type ShoppingBagProps } from './objects/shopping-bag/shopping-bag'
 export { CustomPanel, type CustomPanelProps } from './objects/custom-panel/custom-panel'
 export { CustomBox, type CustomBoxProps } from './objects/custom-box/custom-box'
@@ -170,5 +172,6 @@ export type {
   CustomBoxSizeMm,
   ProductBoxSizeMm,
   MailerBoxSizeMm,
+  MilkCartonSizeMm,
   ShoppingBagSizeMm,
 } from '@area-3d-mockups/core'
