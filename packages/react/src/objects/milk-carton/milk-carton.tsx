@@ -107,7 +107,17 @@ function MilkCartonImpl({
    * ridge flat, with an ear fold closing each end. One buffer, wound outward -
    * the carton is solid, so nothing needs a back face.
    *
-   * The ear folds are the reason an end is not a flat triangle. The side panel
+   * Two things shape it beyond the slopes.
+   *
+   * The CORNERS carry the walls' fold radius up through the eave. The roof's
+   * footprint is the body's rounded rectangle, not a sharp one: the same fold
+   * that rounds a vertical corner is still rounded where the roof sits on it,
+   * so the corner fillet runs into the roof instead of dead-ending under a
+   * square overhang. Every slope panel therefore narrows over its last
+   * `body.radius` of depth, and each corner gets a wall of its own from the
+   * eave up to wherever the slope has climbed to.
+   *
+   * The EAR FOLDS are why an end is not a flat triangle. The side panel
    * carries its full depth up past the eave while the roof narrows toward the
    * ridge, and the excess board has to go somewhere: it creases down the
    * middle and folds INWARD, deepening the whole way up until the two halves
@@ -115,12 +125,21 @@ function MilkCartonImpl({
    * flat to be sealed into it. So each end is two facets meeting along a
    * crease that dives into the carton - flush with the wall at the eave,
    * `gable.tuck` inside it just below the fin, back out to the fin at the top.
-   * Flat-shaded off its own faces, so the crease is real geometry catching
+   * Flat-shaded off its own faces, so every crease is real geometry catching
    * real light rather than a line painted on a plane.
    */
   const roofGeometry = React.useMemo(() => {
     const hw = body.width / 2
     const hd = body.depth / 2
+    const crease = gable.crease
+    // The corner fold, never wide enough to eat the slope it rounds.
+    const fold = Math.min(body.radius, hw / 2, (hd - crease) / 2)
+    // Rise per unit of depth: the slopes are planes, so every height on the
+    // roof is a function of z alone - which is what lets it loft in strips.
+    const pitch = gable.rise / hd
+    const heightAt = (z: number) =>
+      Math.abs(z) <= crease ? apex : eave + (hd - Math.abs(z)) * pitch
+
     const positions: number[] = []
     const push = (...vs: [number, number, number][]) => {
       for (const v of vs) positions.push(...v)
@@ -133,41 +152,84 @@ function MilkCartonImpl({
       r: [number, number, number]
     ) => (flip ? push(p, r, q) : push(p, q, r))
 
-    const crease = gable.crease
-    for (const s of [1, -1] as const) {
-      // The slant, as seen from outside: eave corners along the bottom, the
-      // ridge flat's near edge along the top. The far side is wound in reverse
-      // - mirroring a face flips which way round its vertices read.
-      const a: [number, number, number] = [-hw, eave, s * hd]
-      const b: [number, number, number] = [hw, eave, s * hd]
-      const c: [number, number, number] = [hw, apex, s * crease]
-      const d: [number, number, number] = [-hw, apex, s * crease]
-      tri(s === -1, a, b, c)
-      tri(s === -1, a, c, d)
+    /**
+     * The corner fold, sampled from the front face round to the side face -
+     * `z` walking in from the outer face, `x` walking out to the full width.
+     */
+    const CORNER_STEPS = 5
+    const arc = Array.from({ length: CORNER_STEPS + 1 }, (_, i) => {
+      const angle = (i / CORNER_STEPS) * (Math.PI / 2)
+      return { z: hd - fold + fold * Math.cos(angle), x: hw - fold + fold * Math.sin(angle) }
+    })
+
+    /*
+     * The top surface, lofted as strips between stations in z: the corner fold
+     * at the front, the straight run of slope, the ridge flat, then the same
+     * mirrored. Each station is a horizontal line at that z, so a strip is one
+     * quad however the footprint narrows underneath it.
+     */
+    const stations: { z: number; x: number }[] = [
+      ...arc,
+      { z: crease, x: hw },
+      { z: -crease, x: hw },
+      ...arc.map(({ z, x }) => ({ z: -z, x })).reverse(),
+    ]
+    for (let i = 0; i < stations.length - 1; i++) {
+      const near = stations[i]!
+      const far = stations[i + 1]!
+      const nearY = heightAt(near.z)
+      const farY = heightAt(far.z)
+      tri(false, [-near.x, nearY, near.z], [near.x, nearY, near.z], [far.x, farY, far.z])
+      tri(false, [-near.x, nearY, near.z], [far.x, farY, far.z], [-far.x, farY, far.z])
     }
 
-    // The ridge flat itself, bridging the two planes.
-    tri(false, [-hw, apex, crease], [hw, apex, crease], [hw, apex, -crease])
-    tri(false, [-hw, apex, crease], [hw, apex, -crease], [-hw, apex, -crease])
+    // The four corner walls, each running from the eave up to the slope above
+    // it - full height where it meets the side face, nothing at all where it
+    // meets the front, which is where the slope already reaches the eave.
+    for (const sx of [1, -1] as const) {
+      for (const sz of [1, -1] as const) {
+        for (let i = 0; i < arc.length - 1; i++) {
+          const a = arc[i]!
+          const b = arc[i + 1]!
+          const foot = (p: { x: number; z: number }): [number, number, number] => [
+            sx * p.x,
+            eave,
+            sz * p.z,
+          ]
+          const top = (p: { x: number; z: number }): [number, number, number] => [
+            sx * p.x,
+            heightAt(p.z),
+            sz * p.z,
+          ]
+          const flip = sx * sz < 0
+          tri(flip, foot(a), foot(b), top(b))
+          tri(flip, foot(a), top(b), top(a))
+        }
+      }
+    }
 
     for (const s of [1, -1] as const) {
       /*
        * The ear fold at the `s` end: a fan from the tucked crease peak out to
-       * every corner of the opening it closes - the two eave corners with the
-       * crease's foot between them, and the two ends of the ridge flat above.
-       * Walking the rim in order keeps every triangle wound the same way.
+       * every corner of the opening it closes - along the eave with the
+       * crease's foot in the middle, up the two slope edges, and across the
+       * ends of the ridge flat. Walking the rim in order keeps every triangle
+       * wound the same way.
        */
+      const shoulder = heightAt(hd - fold)
       const peak: [number, number, number] = [
         s * (hw - gable.tuck),
         eave + gable.rise * gable.tuckAt,
         0,
       ]
       const rim: [number, number, number][] = [
-        [s * hw, eave, hd],
+        [s * hw, eave, hd - fold],
         [s * hw, eave, 0],
-        [s * hw, eave, -hd],
+        [s * hw, eave, -(hd - fold)],
+        [s * hw, shoulder, -(hd - fold)],
         [s * hw, apex, -crease],
         [s * hw, apex, crease],
+        [s * hw, shoulder, hd - fold],
       ]
       for (let i = 0; i < rim.length; i++) {
         tri(s === -1, rim[i]!, rim[(i + 1) % rim.length]!, peak)
@@ -177,7 +239,17 @@ function MilkCartonImpl({
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.computeVertexNormals()
     return geometry
-  }, [body.width, body.depth, eave, apex, gable.rise, gable.tuck, gable.tuckAt, gable.crease])
+  }, [
+    body.width,
+    body.depth,
+    body.radius,
+    eave,
+    apex,
+    gable.rise,
+    gable.tuck,
+    gable.tuckAt,
+    gable.crease,
+  ])
   React.useEffect(() => () => roofGeometry.dispose(), [roofGeometry])
 
   /*

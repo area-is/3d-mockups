@@ -27,9 +27,13 @@ import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const MILK_CARTON = {
   /**
-   * The walls: width (x), height (y) up to the eave, depth (z). `radius` is
-   * the corner fold - board creased on a rule comes off it rounded, not
-   * knife-edged, so every fold on the carton keeps this much radius.
+   * The walls: width (x), height (y) up to the eave, depth (z).
+   *
+   * `radius` is the corner fold - board creased on a rule comes off it
+   * rounded, not knife-edged, so every fold on the carton keeps this much
+   * radius. The roof's footprint is the same rounded rectangle, which is what
+   * carries a corner's fillet up through the eave rather than ending it under
+   * a square overhang.
    */
   body: { width: 1.734, height: 3.469, depth: 1.734, radius: 0.034 },
   /**
