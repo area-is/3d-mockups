@@ -34,11 +34,11 @@ export interface MilkCartonProps extends Omit<GroupProps, 'children' | 'color'>,
 
 /**
  * A procedurally built gable-top beverage carton: poly-coated board walls, the
- * roof folding up to a ridge with triangular ear folds closing both ends, the
- * sealed fin standing on top, and a screw cap on the front roof panel. Every
- * wall is live DOM, and so are both roof panels - the cap rides over the front
- * one exactly like a real spout rides over the print. No 3D asset files are
- * loaded.
+ * roof folding up to a ridge, an ear fold pinching each end inward the way the
+ * excess board really folds, the sealed fin standing on top, and a screw cap on
+ * the front roof panel. Every wall is live DOM, and so are both roof panels -
+ * the cap rides over the front one exactly like a real spout rides over the
+ * print. No 3D asset files are loaded.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  *
@@ -83,9 +83,21 @@ function MilkCartonImpl({
   const normalY = body.depth / 2 / gable.slant
   const normalZ = gable.rise / gable.slant
 
-  // The closed roof: a slanted panel each side, meeting at the ridge, with a
-  // triangular ear fold closing each end. One buffer, wound outward - the
-  // carton is solid, so nothing needs a back face.
+  /*
+   * The closed roof: a slanted panel front and back, meeting at the ridge,
+   * with an ear fold closing each end. One buffer, wound outward - the carton
+   * is solid, so nothing needs a back face.
+   *
+   * The ear folds are the reason an end is not a flat triangle. The side panel
+   * carries its full depth up past the eave while the roof narrows toward the
+   * ridge, and the excess board has to go somewhere: it creases down the
+   * middle and folds INWARD, deepest partway up (`gable.tuckAt`) and pinched
+   * back flat where the fin seals it. So each end is two facets meeting along
+   * a crease that bows into the carton - flush with the wall at the eave,
+   * `gable.tuck` inside it at the peak, back on the ridge line at the top.
+   * Flat-shaded off its own faces, so the crease is real geometry catching
+   * real light rather than a line painted on a plane.
+   */
   const roofGeometry = React.useMemo(() => {
     const hw = body.width / 2
     const hd = body.depth / 2
@@ -93,29 +105,48 @@ function MilkCartonImpl({
     const push = (...vs: [number, number, number][]) => {
       for (const v of vs) positions.push(...v)
     }
+    /** One triangle, wound outward: the far side of a pair mirrors across z or x. */
+    const tri = (
+      flip: boolean,
+      p: [number, number, number],
+      q: [number, number, number],
+      r: [number, number, number]
+    ) => (flip ? push(p, r, q) : push(p, q, r))
+
     for (const s of [1, -1] as const) {
       // The slant, as seen from outside: eave corners along the bottom, ridge
       // along the top. The far side is wound in reverse - mirroring a face
-      // across z flips which way round its vertices read.
+      // flips which way round its vertices read.
       const a: [number, number, number] = [-hw, eave, s * hd]
       const b: [number, number, number] = [hw, eave, s * hd]
       const c: [number, number, number] = [hw, ridge, 0]
       const d: [number, number, number] = [-hw, ridge, 0]
-      if (s === 1) push(a, b, c, a, c, d)
-      else push(b, a, d, b, d, c)
+      tri(s === -1, a, b, c)
+      tri(s === -1, a, c, d)
 
-      // The ear fold: the triangle between the two slants at this end.
-      const e1: [number, number, number] = [s * hw, eave, hd]
-      const e2: [number, number, number] = [s * hw, eave, -hd]
-      const apex: [number, number, number] = [s * hw, ridge, 0]
-      if (s === 1) push(e1, e2, apex)
-      else push(e2, e1, apex)
+      // The ear fold at the `s` end, as four triangles either side of the
+      // crease: eave corners, the crease foot flush in the wall, the crease
+      // peak tucked inward, and the pinch point on the ridge.
+      const front: [number, number, number] = [s * hw, eave, hd]
+      const back: [number, number, number] = [s * hw, eave, -hd]
+      const foot: [number, number, number] = [s * hw, eave, 0]
+      const peak: [number, number, number] = [
+        s * (hw - gable.tuck),
+        eave + gable.rise * gable.tuckAt,
+        0,
+      ]
+      const pinch: [number, number, number] = [s * hw, ridge, 0]
+      const flip = s === -1
+      tri(flip, front, foot, peak)
+      tri(flip, front, peak, pinch)
+      tri(flip, back, pinch, peak)
+      tri(flip, back, peak, foot)
     }
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.computeVertexNormals()
     return geometry
-  }, [body.width, body.depth, eave, ridge])
+  }, [body.width, body.depth, eave, ridge, gable.rise, gable.tuck, gable.tuckAt])
   React.useEffect(() => () => roofGeometry.dispose(), [roofGeometry])
 
   const board = { color, metalness: 0, roughness: 0.42, clearcoat: 0.45, clearcoatRoughness: 0.35 }
@@ -150,19 +181,6 @@ function MilkCartonImpl({
         <boxGeometry args={[body.width, fin.height, fin.thickness]} />
         <meshPhysicalMaterial {...board} />
       </mesh>
-
-      {/* the ear folds' creases: the board is folded double down the middle of
-          each end triangle, which is the one crease that reads from outside */}
-      {([1, -1] as const).map((s) => (
-        <mesh
-          key={`crease-${s}`}
-          position={[s * (body.width / 2 + 0.002), eave + gable.rise / 2, 0]}
-          rotation-y={s * (Math.PI / 2)}
-        >
-          <planeGeometry args={[body.width * 0.007, gable.rise]} />
-          <meshBasicMaterial color="#000000" transparent opacity={0.07} />
-        </mesh>
-      ))}
 
       {/* the screw cap, moulded onto the front roof panel. Its collar sits on
           the panel and the cap stands proud of it, so it masks whatever the

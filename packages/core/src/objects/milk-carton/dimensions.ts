@@ -7,10 +7,13 @@
  * Normalized to ~55 mm per world unit so the carton is 4.4 units tall.
  *
  * The top is the shape the pack is named for: two slanted roof panels meeting
- * at a ridge, triangular ear folds closing both ends, and the fin the four
- * panels are pinched into. A screw cap sits on the front roof panel, which is
- * where a real carton puts it - so it rides over that panel's artwork the way
- * a real spout rides over the print.
+ * at a ridge, an ear fold closing each end, and the fin the four panels are
+ * pinched into. The ear folds are why the ends are not flat triangles - a side
+ * panel stays its full width as it rises while the roof narrows toward the
+ * ridge, so the excess board folds inward, deepest partway up and pinched back
+ * flat where it meets the fin. A screw cap sits on the front roof panel, which
+ * is where a real carton puts it - so it rides over that panel's artwork the
+ * way a real spout rides over the print.
  *
  * Live faces: the four wall panels (front is the primary region) plus both
  * roof panels.
@@ -24,8 +27,14 @@ import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 export const MILK_CARTON = {
   /** The walls: width (x), height (y) up to the eave, depth (z). `radius` softens the board's vertical creases. */
   body: { width: 1.734, height: 3.469, depth: 1.734, radius: 0.022 },
-  /** The gable roof: how far the ridge rises above the walls. */
-  gable: { rise: 0.694 },
+  /**
+   * The gable roof. `rise` is how far the ridge stands above the walls;
+   * `tuck` is how deep the ear fold pulls each end inward where it is
+   * deepest - the side panel keeps its full width as it rises while the roof
+   * narrows toward the ridge, and that excess board folds inward rather than
+   * vanishing. It is what makes a carton's ends pinched rather than flat.
+   */
+  gable: { rise: 0.694, tuck: 0.29 },
   /** The sealed top fin, standing on the ridge. */
   fin: { height: 0.237, thickness: 0.052 },
   /**
@@ -51,6 +60,19 @@ export const MILK_CARTON_HEIGHT =
  * squat pint and a tall quart both get a carton-shaped top.
  */
 const GABLE_PITCH = MILK_CARTON.gable.rise / MILK_CARTON.body.depth
+
+/** Ear-fold depth as a fraction of the carton's depth. */
+const GABLE_TUCK = MILK_CARTON.gable.tuck / MILK_CARTON.body.depth
+
+/**
+ * Where the ear fold is deepest, as a fraction of the rise.
+ *
+ * Not at either end of the crease: at the eave the side panel is still the
+ * flat wall of a square tube, and at the ridge the board is pinched flat into
+ * the fin. The fold swells between them, which is why a carton's end reads as
+ * pinched rather than as a plain sloped facet.
+ */
+const EAR_FOLD_PEAK = 0.58
 
 /** Fin height and thickness as fractions of the carton's width. */
 const FIN_HEIGHT = MILK_CARTON.fin.height / MILK_CARTON.body.width
@@ -85,8 +107,12 @@ export const MILK_CARTON_SIZE_MM: MilkCartonSizeMm = { width: 95, height: 241, d
 export interface MilkCartonLayout {
   /** The walls, up to the eave where the roof starts. */
   body: { width: number; height: number; depth: number; radius: number }
-  /** The roof: its rise above the eave, and the length of one slanted panel. */
-  gable: { rise: number; slant: number }
+  /**
+   * The roof: its rise above the eave, the length of one slanted panel, and
+   * the ear fold each end pinches into - `tuck` deep at `tuckAt` of the rise,
+   * dying to nothing at the eave below it and at the ridge above.
+   */
+  gable: { rise: number; slant: number; tuck: number; tuckAt: number }
   fin: { height: number; thickness: number }
   cap: { radius: number; height: number; flange: number; collar: number; offset: number }
   /** Overall height, walls + roof + fin. */
@@ -113,7 +139,14 @@ export function milkCartonLayout(size: MilkCartonSizeMm = MILK_CARTON_SIZE_MM): 
   const capScale = width / MILK_CARTON.body.width
   return {
     body: { width, height: bodyHeight, depth, radius: MILK_CARTON.body.radius },
-    gable: { rise, slant: Math.hypot(depth / 2, rise) },
+    gable: {
+      rise,
+      slant: Math.hypot(depth / 2, rise),
+      // Never past the middle of the carton: a deep, narrow pack would
+      // otherwise fold its two ends through each other.
+      tuck: Math.min(depth * GABLE_TUCK, width / 2),
+      tuckAt: EAR_FOLD_PEAK,
+    },
     fin,
     cap: {
       radius: MILK_CARTON.cap.radius * capScale,

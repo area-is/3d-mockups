@@ -5,12 +5,18 @@ description: A gable-top beverage carton with every wall and both roof panels pr
 
 `<MilkCarton>` and `<MilkCartonMockup>` render a gable-top beverage carton
 (95×241×95 mm, the US half-gallon): poly-coated board walls, the roof folded
-up to a ridge with the triangular ear folds closing both ends, the sealed fin
-standing on top, and a screw cap moulded onto the front roof panel. All four
-walls are live, and so are both roof panels - the cap rides *over* the front
-one, exactly like a real spout rides over the print. Pass `size` (in
-millimeters) for a quart, a half-pint or anything else; `height` is the
-overall height, roof and fin included.
+up to a ridge, the sealed fin standing on top, and a screw cap moulded onto
+the front roof panel. All four walls are live, and so are both roof panels -
+the cap rides *over* the front one, exactly like a real spout rides over the
+print. Pass `size` (in millimeters) for a quart, a half-pint or anything
+else; `height` is the overall height, roof and fin included.
+
+The ends are not flat triangles, because on a real carton they cannot be: a
+side panel carries its full depth up past the eave while the roof narrows
+toward the ridge, so the excess board creases down the middle and folds
+inward. Each end here is that ear fold - two facets meeting along a crease
+that is flush with the wall at the eave, deepest partway up, and pinched back
+flat where the fin seals it.
 
 <MockupExplorer component="MilkCartonMockup" props={{ rotation: [0, 0.4, 0] }} />
 
