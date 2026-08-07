@@ -1,0 +1,81 @@
+---
+title: Milk carton
+description: A gable-top beverage carton with every wall and both roof panels printable.
+---
+
+`<MilkCarton>` and `<MilkCartonMockup>` render a gable-top beverage carton
+(95×241×95 mm, the US half-gallon): poly-coated board walls, the roof folded
+up to a ridge with the triangular ear folds closing both ends, the sealed fin
+standing on top, and a screw cap moulded onto the front roof panel. All four
+walls are live, and so are both roof panels - the cap rides *over* the front
+one, exactly like a real spout rides over the print. Pass `size` (in
+millimeters) for a quart, a half-pint or anything else; `height` is the
+overall height, roof and fin included.
+
+<MockupExplorer component="MilkCartonMockup" props={{ rotation: [0, 0.4, 0] }} />
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `{ width, height, depth }` | `95×241×95` | Real size in **millimeters**, `height` measured over the roof and fin. The longest edge normalizes to the stage, so any size fills the camera at true proportions. |
+| `color` | `string` | `'#f4f3ef'` | Board color. Poly-coated white by default; try a brand dip or kraft. |
+| `capColor` | `string` | `'#d7dbdf'` | Screw cap color. |
+| `cap` | `boolean` | `true` | Render the screw cap. Off gives the older pull-open spout carton. |
+| `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind each printed panel. |
+| `resolution` | `number` | `420` | Virtual front panel width in CSS px; other panels share its dpi. |
+
+## Regions
+
+| Slot | Panel |
+| --- | --- |
+| `<MilkCartonMockup.Front>` | Front wall - the hero face (bare children). |
+| `<MilkCartonMockup.Back>` | Back wall. |
+| `<MilkCartonMockup.Right>` | Right wall. |
+| `<MilkCartonMockup.Left>` | Left wall. |
+| `<MilkCartonMockup.GableFront>` | Front roof panel, with the screw cap riding over it. |
+| `<MilkCartonMockup.GableBack>` | Back roof panel. |
+
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
+same slots exist on the bare `<MilkCarton>`.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D board.
+
+<MockupExplorer component="MilkCartonMockup" screen="chroma" />
+
+## More examples
+
+### The whole pack printed
+
+Front and back panels, a nutrition panel down one side and the pasteurizing
+line across the roof - the carton reads as a designed pack from any angle.
+
+<MockupExplorer
+  component="MilkCartonMockup"
+  props={{ autoRotate: 1.1, rotation: [0, 0.4, 0] }}
+/>
+
+### A quart, no cap
+
+`size` takes any carton, `height` measured over the roof - here the
+70×195×70 mm quart, with `cap={false}` for the older pull-open spout. With
+no `children` the front panel falls back to its `surfaceBackground` and
+every other face is bare board.
+
+<MockupExplorer
+  component="MilkCartonMockup"
+  screen="none"
+  props={{
+    float: true,
+    cap: false,
+    size: { width: 70, height: 195, depth: 70 },
+    rotation: [0, -0.4, 0],
+  }}
+/>

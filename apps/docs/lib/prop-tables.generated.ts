@@ -154,6 +154,14 @@ export const COMPONENT_PROPS: Record<string, PropDoc[]> = {
     {"name":"surfaceBackground","type":"string","default":"'#ffffff'","description":"CSS background behind each printed panel."},
     {"name":"resolution","type":"number","default":"520","description":"Virtual top panel width in CSS px; other panels share its dpi."},
   ],
+  "MilkCartonMockup": [
+    {"name":"size","type":"{ width, height, depth }","default":"95×241×95","description":"Real size in millimeters, height measured over the roof and fin. The longest edge normalizes to the stage, so any size fills the camera at true proportions."},
+    {"name":"color","type":"string","default":"'#f4f3ef'","description":"Board color. Poly-coated white by default; try a brand dip or kraft."},
+    {"name":"capColor","type":"string","default":"'#d7dbdf'","description":"Screw cap color."},
+    {"name":"cap","type":"boolean","default":"true","description":"Render the screw cap. Off gives the older pull-open spout carton."},
+    {"name":"surfaceBackground","type":"string","default":"'#ffffff'","description":"CSS background behind each printed panel."},
+    {"name":"resolution","type":"number","default":"420","description":"Virtual front panel width in CSS px; other panels share its dpi."},
+  ],
   "ShoppingBagMockup": [
     {"name":"size","type":"{ width, height, depth }","default":"320×420×140","description":"Real size in millimeters. The longest edge normalizes to the stage, so any size fills the camera at true proportions."},
     {"name":"color","type":"string","default":"'#c19a6b'","description":"Bag stock. Kraft by default; try gloss white or a brand dip."},

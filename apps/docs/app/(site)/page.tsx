@@ -13,7 +13,9 @@ export default function HomePage() {
       <section className="hero">
         <p className="eyebrow">GPU-accelerated mockups for React</p>
         <h1>Your app. In 3D.</h1>
-        <p className="lede">Twenty-two procedural devices. Zero asset files. Fully live.</p>
+        <p className="lede">
+          Twenty-two devices, twenty-four objects. Zero asset files. Fully live.
+        </p>
         <div className="hero-actions">
           <Link className="btn btn-primary" href="/docs">
             Get started
@@ -34,7 +36,7 @@ export default function HomePage() {
             <div className="stat-label">devices, generated at runtime</div>
           </div>
           <div className="stat">
-            <div className="stat-value">23</div>
+            <div className="stat-value">24</div>
             <div className="stat-label">print, packaging &amp; OOH objects</div>
           </div>
           <div className="stat">

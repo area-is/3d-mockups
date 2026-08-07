@@ -23,6 +23,14 @@ import {
   AppleWatch,
   GalaxyWatch,
   StudioDisplay,
+  Book,
+  VinylRecord,
+  MilkCarton,
+  ProductBox,
+  MailerBox,
+  ShoppingBag,
+  PosterFrame,
+  AFrameSign,
   GALAXY_COLORWAYS,
   IPHONE_COLORWAYS,
   FOLD_COLORWAYS,
@@ -50,39 +58,62 @@ import {
   STUDIO_DISPLAY_FRAMING,
   TABLET_FRAMING,
   WATCH_FRAMING,
+  A_FRAME_SIGN_FRAMING,
+  BOOK_FRAMING,
+  MAILER_BOX_FRAMING,
+  MILK_CARTON_FRAMING,
+  POSTER_FRAME_FRAMING,
+  PRODUCT_BOX_FRAMING,
+  SHOPPING_BAG_FRAMING,
+  VINYL_RECORD_FRAMING,
   type MockupFraming,
 } from 'area-3d-mockups/core'
 import { MusicPlayer } from '../screens/music-player'
 import { LockScreen } from '../screens/lock-screen'
 import { DesktopScreen } from '../screens/desktop-screen'
 import { WatchFace, GalaxyWatchFace } from '../screens/watch-face'
+import {
+  BagArt,
+  BookCoverArt,
+  BoxFrontArt,
+  BoxLidArt,
+  CartonFrontArt,
+  ChalkMenuArt,
+  PosterArt,
+  VinylCoverArt,
+} from '../screens/print-art'
 
 /**
- * The hero carousel: ONE WebGL canvas holding every object on show.
+ * The hero carousel: ONE WebGL canvas holding every model on show.
  *
  * Each `*Mockup` component is a canvas plus an object, which is the right
  * shape for a page that shows one device - but a carousel of them would mean
  * a context per slot, and three at once was already enough to get one dropped
  * ("THREE.WebGLRenderer: Context Lost"). So this composes the bare objects
- * (`<Galaxy>`, `<Laptop>`, …) into a single `<MockupCanvas>` and moves them
- * through the scene instead: the devices on the stage and the picker row
- * beneath it are all real geometry in the same context, none of them
- * screenshots, and adding a slot costs geometry rather than a context.
+ * (`<Galaxy>`, `<Laptop>`, `<MilkCarton>`, …) into a single `<MockupCanvas>`
+ * and moves them through the scene instead: the models on the stage and the
+ * picker row beneath it are all real geometry in the same context, none of
+ * them screenshots, and adding a slot costs geometry rather than a context.
+ *
+ * What is on show is a spread, not a catalog: ONE model per device family
+ * (the four iPhone variants and five iPads all look alike at this size, and
+ * scrolling past them read as padding) plus the print and packaging objects,
+ * which are what say the library is not only about phones.
  *
  * Sizing comes from the library's own framing data. A mockup frames its object
  * by placing the camera at a per-family distance, so an object that looks right
  * at distance `d` in its own canvas looks the same here when scaled by
- * `CAMERA_Z / d` - phones, laptops and monitors end up optically matched
- * without a table of hand-tuned scales.
+ * `CAMERA_Z / d` - phones, laptops, monitors and milk cartons end up optically
+ * matched without a table of hand-tuned scales.
  */
 
 /** Shared camera distance; every object is scaled relative to it. */
 const CAMERA_Z = 9
 /** Rig scale to fall back on before the stylesheet has been measured. */
 const DEFAULT_FIT = 1
-/** How much of the frame the staged device fills, leaving room for the row. */
+/** How much of the frame the staged model fills, leaving room for the row. */
 const STAGE_FILL = 0.74
-/** World-space gap between the staged device and each flanking one. */
+/** World-space gap between the staged model and each flanking one. */
 const SPACING = 4.8
 const STAGE_Y = 0.72
 const SIDE_SCALE = 0.5
@@ -159,15 +190,17 @@ const distanceOf = (framing: MockupFraming<never>): number =>
 interface Entry {
   id: string
   name: string
-  /** Logical resolution readout, e.g. "360 × 780". */
+  /** Live-surface readout: logical pixels for a screen, millimetres for print. */
   res: string
   /** Scale that matches this object to the shared camera. */
   fit: number
   /** Nudge for objects whose origin is not their visual centre (laptops). */
   lift: number
   colorways: Colorway[]
+  /** What the staged model carries on its primary surface. */
+  content: () => ReactNode
   /**
-   * The bare object. `screen` is live DOM for the staged devices; the picker
+   * The bare object. `screen` is live DOM for the staged models; the picker
    * row passes `surface` instead - a painted screen costs no DOM layer.
    */
   render: (props: {
@@ -178,15 +211,32 @@ interface Entry {
   }) => ReactNode
 }
 
-/** "360 × 780" for the primary screen of a mockup kind. */
-function resOf(kind: MockupKind, props?: object): string {
-  const info = mockupInfo(kind as never, props as never)
-  const region = (
-    info.regions as Record<string, { px?: { width: number; height: number } } | { px?: { width: number; height: number } }[]>
-  ).screen
-  const px = (Array.isArray(region) ? region[0] : region)?.px
-  return px ? `${px.width} × ${px.height}` : ''
+/** "360 × 780" - the primary surface of a mockup kind in logical pixels. */
+function pxRes(kind: MockupKind, props?: object): string {
+  const { width, height } = mockupInfo(kind as never, props as never).primary.px
+  return `${width} × ${height}`
 }
+
+/**
+ * "156 × 234 mm" - the same surface in millimetres, which is the number a
+ * print piece is actually specified in. A book cover's pixel grid is a
+ * rendering detail; its trim size is the thing.
+ */
+function mmRes(kind: MockupKind, props?: object): string {
+  const { width, height } = mockupInfo(kind as never, props as never).primary.mm
+  return `${Math.round(width)} × ${Math.round(height)} mm`
+}
+
+/**
+ * Finishes for the objects.
+ *
+ * The devices bring their retail catalogs with them (`GALAXY_COLORWAYS` and
+ * friends) because those are marketed finishes with measured colours. An
+ * object's `color` is a stock choice instead - board, cloth, moulding - so
+ * each one gets a short palette here rather than in the library.
+ */
+const stock = (...entries: [string, string, string][]): Colorway[] =>
+  entries.map(([id, name, color]) => ({ id, name, color }))
 
 const fitFor = (framing: MockupFraming<never>) => (CAMERA_Z / distanceOf(framing)) * STAGE_FILL
 
@@ -198,15 +248,25 @@ const LAPTOP_FIT = fitFor(LAPTOP_FRAMING as MockupFraming<never>)
 const TABLET_FIT = fitFor(TABLET_FRAMING as MockupFraming<never>)
 const WATCH_FIT = fitFor(WATCH_FRAMING as MockupFraming<never>)
 const DISPLAY_FIT = fitFor(STUDIO_DISPLAY_FRAMING as MockupFraming<never>)
+const BOOK_FIT = fitFor(BOOK_FRAMING as MockupFraming<never>)
+const VINYL_FIT = fitFor(VINYL_RECORD_FRAMING as MockupFraming<never>)
+const CARTON_FIT = fitFor(MILK_CARTON_FRAMING as MockupFraming<never>)
+const PRODUCT_BOX_FIT = fitFor(PRODUCT_BOX_FRAMING as MockupFraming<never>)
+const MAILER_FIT = fitFor(MAILER_BOX_FRAMING as MockupFraming<never>)
+const BAG_FIT = fitFor(SHOPPING_BAG_FRAMING as MockupFraming<never>)
+const POSTER_FIT = fitFor(POSTER_FRAME_FRAMING as MockupFraming<never>)
+const AFRAME_FIT = fitFor(A_FRAME_SIGN_FRAMING as MockupFraming<never>)
 
+/** One per device family - the variants are on their own docs pages. */
 const DEVICES: Entry[] = [
   {
     id: 'galaxy-s26',
     name: 'Galaxy S26',
-    res: resOf('galaxy', { variant: 's26' }),
+    res: pxRes('galaxy', { variant: 's26' }),
     fit: PHONE_FIT,
     lift: 0,
     colorways: GALAXY_COLORWAYS.s26,
+    content: () => <MusicPlayer />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Galaxy variant="s26" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -214,51 +274,13 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'galaxy-s26-ultra',
-    name: 'Galaxy S26 Ultra',
-    res: resOf('galaxy', { variant: 's26ultra' }),
-    fit: PHONE_FIT,
-    lift: 0,
-    colorways: GALAXY_COLORWAYS.s26ultra,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <Galaxy variant="s26ultra" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </Galaxy>
-    ),
-  },
-  {
-    id: 'iphone-17',
-    name: 'iPhone 17',
-    res: resOf('iphone', { variant: '17' }),
-    fit: IPHONE_FIT,
-    lift: 0,
-    colorways: IPHONE_COLORWAYS['17'],
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPhone variant="17" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPhone>
-    ),
-  },
-  {
-    id: 'iphone-17-air',
-    name: 'iPhone 17 Air',
-    res: resOf('iphone', { variant: 'air' }),
-    fit: IPHONE_FIT,
-    lift: 0,
-    colorways: IPHONE_COLORWAYS.air,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPhone variant="air" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPhone>
-    ),
-  },
-  {
     id: 'iphone-17-pro',
     name: 'iPhone 17 Pro',
-    res: resOf('iphone', { variant: 'pro' }),
+    res: pxRes('iphone', { variant: 'pro' }),
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS.pro,
+    content: () => <MusicPlayer />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <IPhone variant="pro" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -266,25 +288,13 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'iphone-17-pro-max',
-    name: 'iPhone 17 Pro Max',
-    res: resOf('iphone', { variant: 'promax' }),
-    fit: IPHONE_FIT,
-    lift: 0,
-    colorways: IPHONE_COLORWAYS.promax,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPhone variant="promax" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPhone>
-    ),
-  },
-  {
     id: 'galaxy-z-fold7',
     name: 'Galaxy Z Fold 7',
-    res: resOf('fold', { openAngle: CAROUSEL_OPEN_ANGLE }),
+    res: pxRes('fold', { openAngle: CAROUSEL_OPEN_ANGLE }),
     fit: FOLD_FIT,
     lift: 0,
     colorways: FOLD_COLORWAYS.fold7,
+    content: () => <DesktopScreen />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Fold openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -294,10 +304,11 @@ const DEVICES: Entry[] = [
   {
     id: 'galaxy-z-flip7',
     name: 'Galaxy Z Flip 7',
-    res: resOf('flip', { openAngle: CAROUSEL_OPEN_ANGLE }),
+    res: pxRes('flip', { openAngle: CAROUSEL_OPEN_ANGLE }),
     fit: FLIP_FIT,
     lift: 0,
     colorways: FLIP_COLORWAYS.flip7,
+    content: () => <MusicPlayer />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Flip openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -306,11 +317,12 @@ const DEVICES: Entry[] = [
   },
   {
     id: 'macbook-air-13',
-    name: 'MacBook Air 13″',
-    res: resOf('laptop', { variant: 'air13' }),
+    name: 'MacBook Air 13\u2033',
+    res: pxRes('laptop', { variant: 'air13' }),
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.air13,
+    content: () => <DesktopScreen />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Laptop variant="air13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -318,51 +330,13 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'macbook-air-15',
-    name: 'MacBook Air 15″',
-    res: resOf('laptop', { variant: 'air15' }),
-    fit: LAPTOP_FIT,
-    lift: 0.55,
-    colorways: LAPTOP_COLORWAYS.air15,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <Laptop variant="air15" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </Laptop>
-    ),
-  },
-  {
-    id: 'macbook-pro-14',
-    name: 'MacBook Pro 14″',
-    res: resOf('laptop', { variant: 'pro14' }),
-    fit: LAPTOP_FIT,
-    lift: 0.55,
-    colorways: LAPTOP_COLORWAYS.pro14,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <Laptop variant="pro14" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </Laptop>
-    ),
-  },
-  {
-    id: 'macbook-pro-16',
-    name: 'MacBook Pro 16″',
-    res: resOf('laptop', { variant: 'pro16' }),
-    fit: LAPTOP_FIT,
-    lift: 0.55,
-    colorways: LAPTOP_COLORWAYS.pro16,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <Laptop variant="pro16" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </Laptop>
-    ),
-  },
-  {
     id: 'ipad-pro-13',
-    name: 'iPad Pro 13″',
-    res: resOf('ipad', { variant: 'ipadpro13' }),
+    name: 'iPad Pro 13\u2033',
+    res: pxRes('ipad', { variant: 'ipadpro13' }),
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadpro13,
+    content: () => <LockScreen />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <IPad variant="ipadpro13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -370,64 +344,13 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'ipad-pro-11',
-    name: 'iPad Pro 11″',
-    res: resOf('ipad', { variant: 'ipadpro11' }),
-    fit: TABLET_FIT,
-    lift: 0,
-    colorways: IPAD_COLORWAYS.ipadpro11,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPad variant="ipadpro11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPad>
-    ),
-  },
-  {
-    id: 'ipad-air-13',
-    name: 'iPad Air 13″',
-    res: resOf('ipad', { variant: 'ipadair13' }),
-    fit: TABLET_FIT,
-    lift: 0,
-    colorways: IPAD_COLORWAYS.ipadair13,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPad variant="ipadair13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPad>
-    ),
-  },
-  {
-    id: 'ipad-air-11',
-    name: 'iPad Air 11″',
-    res: resOf('ipad', { variant: 'ipadair11' }),
-    fit: TABLET_FIT,
-    lift: 0,
-    colorways: IPAD_COLORWAYS.ipadair11,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPad variant="ipadair11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPad>
-    ),
-  },
-  {
-    id: 'ipad-11',
-    name: 'iPad 11″',
-    res: resOf('ipad', { variant: 'ipad11' }),
-    fit: TABLET_FIT,
-    lift: 0,
-    colorways: IPAD_COLORWAYS.ipad11,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <IPad variant="ipad11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </IPad>
-    ),
-  },
-  {
     id: 'galaxy-tab-s11',
     name: 'Galaxy Tab S11',
-    res: resOf('galaxyTab', { variant: 'tabs11' }),
+    res: pxRes('galaxyTab', { variant: 'tabs11' }),
     fit: TABLET_FIT,
     lift: 0,
     colorways: GALAXY_TAB_COLORWAYS.tabs11,
+    content: () => <LockScreen />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <GalaxyTab variant="tabs11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -435,67 +358,208 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'galaxy-tab-s11-ultra',
-    name: 'Galaxy Tab S11 Ultra',
-    res: resOf('galaxyTab', { variant: 'tabs11ultra' }),
-    fit: TABLET_FIT,
-    lift: 0,
-    colorways: GALAXY_TAB_COLORWAYS.tabs11ultra,
-    render: ({ color, screen, surface, surfaceStyle }) => (
-      <GalaxyTab variant="tabs11ultra" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
-        {screen}
-      </GalaxyTab>
-    ),
-  },
-  {
     id: 'apple-watch-series-11',
     name: 'Apple Watch Series 11',
-    res: resOf('appleWatch'),
+    res: pxRes('appleWatch'),
     fit: WATCH_FIT,
     lift: 0,
     colorways: APPLE_WATCH_COLORWAYS.series11,
+    content: () => <WatchFace />,
     render: ({ color, screen, surface, surfaceStyle }) => <AppleWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</AppleWatch>,
   },
   {
     id: 'galaxy-watch-8',
     name: 'Galaxy Watch 8',
-    res: resOf('galaxyWatch'),
+    res: pxRes('galaxyWatch'),
     fit: WATCH_FIT,
     lift: 0,
     colorways: GALAXY_WATCH_COLORWAYS.watch8,
+    content: () => <GalaxyWatchFace />,
     render: ({ color, screen, surface, surfaceStyle }) => <GalaxyWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</GalaxyWatch>,
   },
   {
     id: 'studio-display',
-    name: 'Studio Display 27″',
-    res: resOf('studioDisplay'),
+    name: 'Studio Display 27\u2033',
+    res: pxRes('studioDisplay'),
     fit: DISPLAY_FIT,
     lift: 0.1,
     colorways: STUDIO_DISPLAY_COLORWAYS,
+    content: () => <DesktopScreen />,
     render: ({ color, screen, surface, surfaceStyle }) => <StudioDisplay color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</StudioDisplay>,
   },
 ]
 
-const N = DEVICES.length
+/**
+ * The other half of the library: print, packaging and signage, where the live
+ * surface is a printed panel rather than a screen. Bare children land on each
+ * object's primary surface, which is the face it is designed on.
+ */
+const OBJECTS: Entry[] = [
+  {
+    id: 'book',
+    name: 'Hardcover book',
+    res: mmRes('book'),
+    fit: BOOK_FIT,
+    lift: 0,
+    colorways: stock(
+      ['navy', 'Navy cloth', '#1f3a5f'],
+      ['forest', 'Forest', '#22402f'],
+      ['oxblood', 'Oxblood', '#5b2230'],
+      ['bone', 'Bone', '#e3dbcc']
+    ),
+    content: () => <BookCoverArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <Book color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </Book>
+    ),
+  },
+  {
+    id: 'vinyl-record',
+    name: 'Vinyl record',
+    res: mmRes('vinylRecord'),
+    fit: VINYL_FIT,
+    lift: 0,
+    colorways: stock(
+      ['natural', 'Natural board', '#f2efe8'],
+      ['black', 'Black jacket', '#1b1b1e'],
+      ['sunset', 'Sunset', '#d8663f']
+    ),
+    content: () => <VinylCoverArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <VinylRecord color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </VinylRecord>
+    ),
+  },
+  {
+    id: 'milk-carton',
+    name: 'Milk carton',
+    res: mmRes('milkCarton'),
+    fit: CARTON_FIT,
+    lift: 0,
+    colorways: stock(
+      ['white', 'Coated white', '#f4f3ef'],
+      ['cream', 'Cream', '#f1e7d4'],
+      ['kraft', 'Kraft', '#cbab7f'],
+      ['slate', 'Slate', '#d3dae0']
+    ),
+    content: () => <CartonFrontArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <MilkCarton color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </MilkCarton>
+    ),
+  },
+  {
+    id: 'product-box',
+    name: 'Product box',
+    res: mmRes('productBox'),
+    fit: PRODUCT_BOX_FIT,
+    lift: 0,
+    colorways: stock(
+      ['white', 'Coated white', '#f4f1ea'],
+      ['kraft', 'Kraft', '#c9a97b'],
+      ['ink', 'Ink', '#20242c'],
+      ['sage', 'Sage', '#b9c9b4']
+    ),
+    content: () => <BoxFrontArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <ProductBox color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </ProductBox>
+    ),
+  },
+  {
+    id: 'mailer-box',
+    name: 'Mailer box',
+    res: mmRes('mailerBox'),
+    fit: MAILER_FIT,
+    lift: 0,
+    colorways: stock(
+      ['kraft', 'Kraft', '#b5915f'],
+      ['white', 'Bleached white', '#e8e4dd'],
+      ['slate', 'Slate', '#5c6672']
+    ),
+    content: () => <BoxLidArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <MailerBox color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </MailerBox>
+    ),
+  },
+  {
+    id: 'shopping-bag',
+    name: 'Shopping bag',
+    res: mmRes('shoppingBag'),
+    fit: BAG_FIT,
+    lift: 0,
+    colorways: stock(
+      ['kraft', 'Kraft', '#c19a6b'],
+      ['white', 'Gloss white', '#f2efe9'],
+      ['charcoal', 'Charcoal', '#33373d'],
+      ['olive', 'Olive', '#7d8a5c']
+    ),
+    content: () => <BagArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <ShoppingBag color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </ShoppingBag>
+    ),
+  },
+  {
+    id: 'poster-frame',
+    name: 'Framed poster',
+    res: mmRes('posterFrame'),
+    fit: POSTER_FIT,
+    lift: 0,
+    colorways: stock(
+      ['black', 'Black', '#22262e'],
+      ['oak', 'Oak', '#b08a53'],
+      ['walnut', 'Walnut', '#5a3a25'],
+      ['white', 'White', '#e9e7e2']
+    ),
+    content: () => <PosterArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <PosterFrame color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </PosterFrame>
+    ),
+  },
+  {
+    id: 'a-frame-sign',
+    name: 'A-frame sign',
+    res: mmRes('aFrameSign'),
+    fit: AFRAME_FIT,
+    lift: 0,
+    colorways: stock(
+      ['walnut', 'Walnut', '#4a3826'],
+      ['black', 'Black', '#2a2c30'],
+      ['birch', 'Birch', '#c8a97a']
+    ),
+    content: () => <ChalkMenuArt />,
+    render: ({ color, screen, surface, surfaceStyle }) => (
+      <AFrameSign color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
+        {screen}
+      </AFrameSign>
+    ),
+  },
+]
+
+/** Everything on show, devices first. */
+const SHOWCASE: Entry[] = [...DEVICES, ...OBJECTS]
+
+const N = SHOWCASE.length
 
 /**
  * Shortest signed distance from `x` to 0 on a ring of N - the float version,
- * so a slide that crosses the seam (21 → 0) travels one step rather than
+ * so a slide that crosses the seam (17 → 0) travels one step rather than
  * winding all the way back. This is what makes the loop endless in both
  * directions.
  */
 function wrapDelta(x: number): number {
   const m = ((x % N) + N) % N
   return m > N / 2 ? m - N : m
-}
-
-/** The screen each device wears while it is the one on stage. */
-function screenFor(id: string): ReactNode {
-  if (id.startsWith('macbook') || id === 'studio-display' || id === 'galaxy-z-fold7') return <DesktopScreen />
-  if (id === 'apple-watch-series-11') return <WatchFace />
-  if (id === 'galaxy-watch-8') return <GalaxyWatchFace />
-  if (id.startsWith('ipad') || id.startsWith('galaxy-tab')) return <LockScreen />
-  return <MusicPlayer />
 }
 
 /**
@@ -557,7 +621,7 @@ function Ticker({
   return null
 }
 
-/** One staged device, placed from the shared ring position every frame. */
+/** One staged model, placed from the shared ring position every frame. */
 function StageSlot({
   entry,
   index,
@@ -615,13 +679,13 @@ function StageSlot({
       {entry.render({
         color,
         /*
-         * Every staged slot carries its screen for as long as it exists -
-         * including the two waiting off-stage. Mounting them as a device
+         * Every staged slot carries its surface for as long as it exists -
+         * including the two waiting off-stage. Mounting them as a model
          * reached the middle meant a fast run through the carousel was a
          * stream of screens arriving and leaving; now the DOM is created out
-         * past the fade and simply travels with its device.
+         * past the fade and simply travels with its model.
          */
-        screen: screenFor(entry.id),
+        screen: entry.content(),
         /*
          * No fill mode. The animation ends on opacity 1, which is where the
          * screen sits anyway, so filling buys nothing - and a filled animation
@@ -684,7 +748,7 @@ function RowSlot({
 
 export default function CarouselScene() {
   const [active, setActive] = useState(0)
-  // Colorway selection per device, defaulting to each catalog's lead finish.
+  // Finish selection per model, defaulting to each palette's first swatch.
   const [finish, setFinish] = useState<Record<string, string>>({})
   const [auto, setAuto] = useState(true)
 
@@ -899,7 +963,7 @@ export default function CarouselScene() {
     go(i)
   }
 
-  const entry = DEVICES[active]!
+  const entry = SHOWCASE[active]!
   const selected = finish[entry.id] ?? entry.colorways[0]!.id
   const colorOf = (dev: Entry) => {
     const id = finish[dev.id] ?? dev.colorways[0]!.id
@@ -914,7 +978,7 @@ export default function CarouselScene() {
   const inWindow = (i: number, w: number) => Math.abs(wrapDelta(i - active)) <= w
 
   return (
-    <section className="carousel" aria-label="Device carousel" ref={sectionRef}>
+    <section className="carousel" aria-label="Mockup carousel" ref={sectionRef}>
       <div className="carousel-glow" aria-hidden />
 
       {/*
@@ -949,11 +1013,11 @@ export default function CarouselScene() {
         >
           <Ticker anim={anim} target={target} tumble={tumble} />
 
-          {/* One group for the whole rig: the staged devices, the gap between
+          {/* One group for the whole rig: the staged models, the gap between
               them and the strip below all shrink together, so a narrow canvas
               gets the same composition rather than a cropped one. */}
           <group scale={fit} position-y={ROW_Y * RIG_DROP * (1 - fit)}>
-            {DEVICES.map((dev, i) =>
+            {SHOWCASE.map((dev, i) =>
               inWindow(i, 2) ? (
                 <StageSlot
                   key={dev.id}
@@ -966,7 +1030,7 @@ export default function CarouselScene() {
               ) : null
             )}
 
-            {DEVICES.map((dev, i) =>
+            {SHOWCASE.map((dev, i) =>
               inWindow(i, 3) ? (
                 <RowSlot
                   key={`row-${dev.id}`}
@@ -1006,7 +1070,7 @@ export default function CarouselScene() {
 
       <div className="carousel-bar">
         <div className="carousel-nav">
-          <button type="button" className="carousel-arrow" aria-label="Previous device" onClick={() => go(active - 1)}>
+          <button type="button" className="carousel-arrow" aria-label="Previous mockup" onClick={() => go(active - 1)}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M15 18l-6-6 6-6" />
             </svg>
@@ -1021,7 +1085,7 @@ export default function CarouselScene() {
           >
             <span className="dim">{counter}</span> · {entry.name} · {entry.res}
           </p>
-          <button type="button" className="carousel-arrow" aria-label="Next device" onClick={() => go(active + 1)}>
+          <button type="button" className="carousel-arrow" aria-label="Next mockup" onClick={() => go(active + 1)}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -1055,7 +1119,7 @@ export default function CarouselScene() {
           </span>
         </div>
         <p className="carousel-hint">
-          Drag the device to spin it · drag either side to browse
+          Drag the model to spin it · drag either side to browse
         </p>
         {/* Hidden when the visitor's system already asked for less motion -
             the carousel is stopped, so a "pause" control would be a lie. */}
@@ -1072,7 +1136,7 @@ export default function CarouselScene() {
         {/* The strip is geometry in the canvas, so keyboard and screen-reader
             users get the same jumps from real buttons here. */}
         <div className="sr-only">
-          {DEVICES.map((dev, i) => (
+          {SHOWCASE.map((dev, i) => (
             <button key={dev.id} type="button" onClick={() => go(i)}>
               Show {dev.name}
             </button>

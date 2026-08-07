@@ -35,6 +35,7 @@ import {
   CustomBoxMockup,
   CustomPanelMockup,
   MailerBoxMockup,
+  MilkCartonMockup,
   SemiTrailerMockup,
   ShoppingBagMockup,
   StorefrontMockup,
@@ -49,6 +50,9 @@ import {
   BannerArt,
   BoxLidArt,
   BoxPanelArt,
+  CartonFrontArt,
+  CartonGableArt,
+  CartonSideArt,
   StorePosterArt,
   StoreSignArt,
   TrailerWrapArt,
@@ -749,6 +753,22 @@ export default function DemoScenes() {
           <MailerBoxMockup.Front><BoxPanelArt /></MailerBoxMockup.Front>
           <MailerBoxMockup.Right><BoxPanelArt /></MailerBoxMockup.Right>
         </MailerBoxMockup>
+      </DemoCard>
+
+      <DemoCard
+        title="Milk carton"
+        description={
+          <>
+            <code>&lt;MilkCartonMockup&gt;</code>: a gable-top carton with live print on the
+            walls and up over the roof - the screw cap sits on top of the artwork.
+          </>
+        }
+      >
+        <MilkCartonMockup rotation={[0, 0.4, 0]}>
+          <CartonFrontArt />
+          <MilkCartonMockup.Right><CartonSideArt /></MilkCartonMockup.Right>
+          <MilkCartonMockup.GableFront><CartonGableArt /></MilkCartonMockup.GableFront>
+        </MilkCartonMockup>
       </DemoCard>
 
       <DemoCard

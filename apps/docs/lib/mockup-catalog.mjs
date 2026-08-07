@@ -70,6 +70,7 @@ export const OBJECTS = [
   object('poster-frame', 'Poster frame', 'PosterFrameMockup', 'device=poster&ry=-18'),
   object('product-box', 'Product box', 'ProductBoxMockup', 'device=productbox&ry=-32&rx=12'),
   object('mailer-box', 'Mailer box', 'MailerBoxMockup', 'device=mailer&ry=-32&rx=16'),
+  object('milk-carton', 'Milk carton', 'MilkCartonMockup', 'device=milkcarton&ry=-28&rx=6'),
   object('shopping-bag', 'Shopping bag', 'ShoppingBagMockup', 'device=bag&ry=-26'),
   object('custom-panel', 'Custom panel', 'CustomPanelMockup', 'device=custompanel&ry=-18'),
   object('custom-box', 'Custom box', 'CustomBoxMockup', 'device=custombox&ry=-34&rx=14'),

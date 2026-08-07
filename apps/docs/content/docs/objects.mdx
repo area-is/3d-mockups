@@ -35,6 +35,7 @@ product dimensions - no GLB files, no hosting, no pop-in.
 | Storefront | `Storefront` | 6×4.2 m shop façade | fascia sign + window poster | 800×90 sign |
 | Semi trailer | `SemiTrailer` | 16.2×2.6×2.9 m 53 ft dry van | wraps both sides + rear doors | 1100×189 side |
 | Mailer box | `MailerBox` | 350×120×250 mm shipper | all six panels | 520×371 top |
+| Milk carton | `MilkCarton` | 95×241×95 mm gable-top carton | four walls + both roof panels | 420×840 front |
 | Shopping bag | `ShoppingBag` | 320×420×140 mm carrier | front + back below the cuff | 460×526 each |
 | Custom panel | `CustomPanel` | any size (mm) | front + back | 560 wide |
 | Custom box | `CustomBox` | any size (mm) | all six faces | 560 wide front |
@@ -90,6 +91,9 @@ pattern the devices use. Slots must be direct children of the mockup.
   `<SemiTrailer.Rear>` panel sits under a lock-rod overlay like a real wrap.
 - **`MailerBox`** prints the top, front and end panels, with the packing
   tape overlaid on your print.
+- **`MilkCarton`** prints all four walls plus both roof panels -
+  `<MilkCarton.GableFront>` is the one the screw cap rides over, the same
+  way a real spout rides over the print.
 - **`Storefront`** pairs the fascia sign (bare children) with live display
   panes - `<Storefront.FrontLeft>` and the other window slots.
 - **`CustomBox`** prints all six faces of any-size rectangular boxes at one
@@ -102,10 +106,11 @@ rectangle or box your project needs. The longest edge auto-normalizes to
 the stage, so every size fills the default camera while keeping true
 proportions. See their component pages for examples.
 
-`ProductBox`, `MailerBox` and `ShoppingBag` accept the same optional
-`size` prop (`{ width, height, depth }` in millimeters), so a 300×300×300
-mm cube shipper or a slim 100×420×80 mm bottle bag keeps its dressing -
-tuck flap, tape band, rope handles - in proportion.
+`ProductBox`, `MailerBox`, `MilkCarton` and `ShoppingBag` accept the same
+optional `size` prop (`{ width, height, depth }` in millimeters), so a
+300×300×300 mm cube shipper, a 70×195×70 mm quart carton or a slim
+100×420×80 mm bottle bag keeps its dressing - tuck flap, tape band, gable
+roof, rope handles - in proportion.
 
 ## Ground planes
 

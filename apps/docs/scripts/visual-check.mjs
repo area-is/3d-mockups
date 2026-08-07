@@ -66,6 +66,10 @@ const CASES = [
   ['brochure-back', 'device=brochure&regions=1&ry=200'],
   ['productbox', 'device=productbox&regions=1&ry=32&rx=14'],
   ['mailer', 'device=mailer&regions=1&ry=32&rx=18'],
+  // The one object whose live surfaces are not all axis-aligned: the two roof
+  // panels are posed off the spec's slant, so a wrong tilt or lift shows up
+  // here as a coloured rect sliding off the gable.
+  ['milkcarton', 'device=milkcarton&regions=1&ry=28&rx=10'],
   ['bag', 'device=bag&regions=1&ry=26'],
   ['vinyl', 'device=vinyl&regions=1&ry=20'],
   ['greeting', 'device=greeting&regions=1&ry=24'],

@@ -20,6 +20,7 @@ import {
   LaptopMockup,
   MagazineMockup,
   MailerBoxMockup,
+  MilkCartonMockup,
   MockupCanvas,
   StudioDisplayMockup,
   GalaxyMockup,
@@ -342,6 +343,16 @@ const MODELS = new Map<unknown, ModelControls>([
     MailerBoxMockup,
     {
       controls: [size('box mm', [['width', 350], ['height', 120], ['depth', 250]]), swatch('tapeColor', 'tape')],
+    },
+  ],
+  [
+    MilkCartonMockup,
+    {
+      controls: [
+        size('carton mm', [['width', 95], ['height', 241], ['depth', 95]]),
+        swatch('capColor', 'cap'),
+        toggle('cap', 'screw cap', true),
+      ],
     },
   ],
   [

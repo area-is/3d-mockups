@@ -1516,3 +1516,117 @@ export function VinylLabelBArt() {
     </div>
   )
 }
+
+/** Gable-top carton front panel - a dairy pack front, whole milk. */
+export function CartonFrontArt() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        boxSizing: 'border-box',
+        padding: '30px 22px 24px',
+        background: 'linear-gradient(180deg, #ffffff 0%, #eef4fb 58%, #d9e8f7 100%)',
+        color: '#123a63',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ fontSize: 11, letterSpacing: 5, color: '#5b86ae' }}>EST. 1948</div>
+      <div style={{ fontFamily: serif, fontSize: 40, lineHeight: 1.05, marginTop: 6, fontWeight: 500 }}>
+        Kettle Hill
+      </div>
+      <div style={{ fontSize: 12, letterSpacing: 4, color: '#5b86ae', marginTop: 2 }}>CREAMERY</div>
+      <svg viewBox="0 0 120 70" style={{ width: '78%', margin: 'auto 0' }} aria-hidden>
+        {/* rolling pasture the herd stands on */}
+        <path d="M0 52 Q30 38 58 48 T120 42 L120 70 L0 70 Z" fill="#bcd9c2" />
+        <path d="M0 60 Q34 50 64 58 T120 54 L120 70 L0 70 Z" fill="#9cc4a6" />
+        <circle cx="96" cy="16" r="9" fill="#f6d47a" />
+        <path
+          d="M38 46c0-6 5-9 11-9h14c6 0 11 3 11 9v6H38z"
+          fill="#123a63"
+        />
+        <path d="M42 52v7M52 52v7M62 52v7M70 52v7" stroke="#123a63" strokeWidth="3" strokeLinecap="round" />
+        <path d="M36 39c-4-3-6-7-4-9 2-2 6 0 8 3" fill="#123a63" />
+      </svg>
+      <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1 }}>WHOLE MILK</div>
+      <div style={{ fontSize: 11.5, color: '#4b7ba6', marginTop: 4 }}>
+        VITAMIN D · GRASS-FED · 1.89 L (½ GAL)
+      </div>
+    </div>
+  )
+}
+
+/** Gable-top carton side panel - the nutrition strip. */
+export function CartonSideArt() {
+  const rows: [string, string][] = [
+    ['Calories', '150'],
+    ['Total Fat', '8 g'],
+    ['Protein', '8 g'],
+    ['Calcium', '25%'],
+    ['Vitamin D', '15%'],
+  ]
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        boxSizing: 'border-box',
+        padding: '30px 20px 24px',
+        background: '#f4f8fc',
+        color: '#123a63',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: 1, borderBottom: '3px solid #123a63', paddingBottom: 6 }}>
+        NUTRITION FACTS
+      </div>
+      <div style={{ fontSize: 10.5, color: '#4b7ba6', margin: '6px 0 10px' }}>Per 240 mL serving</div>
+      {rows.map(([label, value]) => (
+        <div
+          key={label}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 12,
+            padding: '6px 0',
+            borderBottom: '1px solid rgba(18,58,99,0.18)',
+          }}
+        >
+          <span>{label}</span>
+          <span style={{ fontWeight: 700 }}>{value}</span>
+        </div>
+      ))}
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, color: '#4b7ba6' }}>KEEP REFRIGERATED</div>
+        <Barcode />
+      </div>
+    </div>
+  )
+}
+
+/** Gable-top carton roof panel - the line that runs up over the shoulder. */
+export function CartonGableArt() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'linear-gradient(180deg, #123a63 0%, #1b4d80 100%)',
+        color: '#e8f1fa',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: 6,
+      }}
+    >
+      <div style={{ fontSize: 15, letterSpacing: 6, fontWeight: 700 }}>PASTEURIZED</div>
+      <div style={{ fontSize: 10, letterSpacing: 3, color: '#9dc2e2' }}>HOMOGENIZED · SELL BY 09 SEP</div>
+    </div>
+  )
+}

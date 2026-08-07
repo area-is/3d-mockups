@@ -66,6 +66,13 @@ Notable changes to `area-3d-mockups`. This project follows
 
 ### Added
 
+- **`MilkCartonMockup` / `MilkCarton`** — a gable-top beverage carton
+  (95×241×95 mm, the US half-gallon, resizable in millimeters via `size`):
+  poly-coated board walls, the roof folded up to a ridge with the ear folds
+  closing both ends, the sealed fin, and a screw cap on the front roof panel.
+  Live surfaces on all four walls plus both roof panels — the cap rides over
+  the front one the way a real spout rides over the print. Measures as
+  `mockupInfo('milkCarton')`.
 - **Reduced-motion support.** `autoRotate`, `float` and the `LEDText`
   animations hold still when the visitor's system asks for reduced motion.
   Gestures are untouched. The hook is exported as `usePrefersReducedMotion`.
