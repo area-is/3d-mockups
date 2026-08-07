@@ -83,10 +83,16 @@ const CASES = [
   ['laptop', 'device=laptop&lvariant=pro14&ry=18'],
   ['fold-open', 'device=fold&ry=22'],
   ['fold-closed', 'device=fold&open=0&ry=22'],
+  // the flex poses' split screens must meet seamlessly at the crease - the
+  // pose that regressed into a dark crevice down the display's middle
+  ['fold-flex', 'device=fold&openAngle=110&ry=22'],
+  ['flip-flex', 'device=flip&openAngle=100&ry=22'],
   ['flip-closed', 'device=flip&open=0&ry=22'],
   ['watch', 'device=watch&ry=18'],
   ['shelter', 'device=shelter&ry=26'],
   ['tv', 'device=tv&ry=20'],
+  // the picture-frame set's rear: One Connect recess, groove, nub, wordmark
+  ['tv-frame-back', 'device=tv&tvvariant=frame&ry=205&rx=8'],
 ].filter(([name]) => !ONLY || name.includes(ONLY))
 
 const VIEWPORT = { width: 900, height: 675 }

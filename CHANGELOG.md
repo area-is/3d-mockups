@@ -51,6 +51,18 @@ Notable changes to `area-3d-mockups`. This project follows
   falls back to the stage default.
 - **The Galaxy Z Flip 7 cover panel was ~1% too tall**, rendering a 316×353
   screen where its own diagonal and pixel grid give 316×349.
+- **The Fold and Flip drew a dark crevice down the display at every flex
+  angle.** Each half-screen's depth mask is held a hair inside its own outline
+  (`SCREEN_MASK_INSET`), and with the halves abutting at the fold line those
+  insets paired into a strip of un-cleared canvas showing the dark glass
+  beneath - where the real bent panel is one continuous surface. Each half now
+  overhangs the fold line by `CREASE_OVERLAP` (~0.7 mm), so the planes and
+  their masks overlap across the crease and both show the shared virtual
+  display's own pixels there.
+- **The Fold's landscape flex pose windowed each half onto the wrong content.**
+  The left half lands at the bottom of the upright landscape content but showed
+  the top, so crossing the flat-open threshold mirrored the content across the
+  crease.
 
 ### Added
 
@@ -63,6 +75,12 @@ Notable changes to `area-3d-mockups`. This project follows
 - `sync-device-table.mjs` now also compares each modelled aspect against the
   hand-maintained Panel column — the one check `devices:sync` cannot satisfy by
   rewriting the columns it verifies.
+- **The TV's `frame` variant grew a real back**, proportioned from Samsung's
+  published One Connect placement: an inset rear plate whose rim seam is the
+  visible gap around the edge, the recessed One Connect bay with the slim
+  connector and its cable groove running both ways, the TV controller nub at
+  the lower right corner and a faint wordmark. Wall-mount hardware is
+  deliberately not modeled.
 
 ### Changed
 

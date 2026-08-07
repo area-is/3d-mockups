@@ -402,6 +402,7 @@ function HarnessScene() {
     return (
       <FlipMockup
         openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : params.get('open') !== '0'}
+        orientation={orientation}
         color={color}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}
@@ -418,6 +419,7 @@ function HarnessScene() {
     return (
       <FoldMockup
         openAngle={params.get('openAngle') ? Number(params.get('openAngle')) : params.get('open') !== '0'}
+        orientation={orientation}
         color={color}
         controls={controls}
         camera={{ position: [0, cy, dist], fov: 40 }}

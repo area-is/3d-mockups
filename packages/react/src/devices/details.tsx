@@ -273,6 +273,25 @@ export function mixedRoundedRectShape(
 /** How deep the USB-C cavity is machined into an edge (~5.5 mm at phone scale). */
 export const USB_CUT_DEPTH = 0.15
 
+/**
+ * How far each half of a foldable's flex-pose display continues PAST the fold
+ * line, in world units (~0.7 mm).
+ *
+ * The halves pivot on the display surface, so two edge-to-edge planes DO meet
+ * at the crease - but each DeviceScreen holds its depth mask a hair inside its
+ * own outline (see `SCREEN_MASK_INSET`), and with abutting halves those two
+ * insets pair into a strip of un-cleared canvas straight down the middle of
+ * the display: the dark glass under the panes showed through as a crevice at
+ * every intermediate angle, where the real bent panel is one continuous
+ * surface. Overhanging each half past the fold line makes the masks' inset
+ * edges land BEYOND it, so their cleared regions overlap and the canvas is
+ * transparent across the whole crease - and because both halves are windows
+ * onto one shared virtual display, the overhang shows the same pixels the
+ * other half paints there, so whichever plane composites on top the display
+ * reads continuous.
+ */
+export const CREASE_OVERLAP = 0.02
+
 let evaluator: Evaluator | null = null
 
 /**

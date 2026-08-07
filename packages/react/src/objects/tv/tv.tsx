@@ -12,6 +12,7 @@ import {
   type TVVariant,
 } from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
+import { createLogoGeometry } from '../../devices/logos'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -73,7 +74,7 @@ function TVSetImpl({
     () => (size === undefined && variant === TV_DEFAULT_VARIANT ? TV : tvSpec(size, variant)),
     [size, variant]
   )
-  const { body, display, backBulge, stand, portBay } = spec
+  const { body, display, backBulge, stand, portBay, backPanel } = spec
 
   const bodyGeometry = React.useMemo(() => {
     const shape = roundedRectShape(
@@ -226,6 +227,71 @@ function TVSetImpl({
   }, [portBay])
   React.useEffect(() => () => bayFloorGeometry?.dispose(), [bayFloorGeometry])
 
+  // The picture-frame set's rear: an inset plate (its rim seam is the visible
+  // gap around the back) with the One Connect recess punched THROUGH it - the
+  // connector bay and its cable groove share one union hole, so the opening
+  // gets real side walls from the extrusion and reads carved, not painted. A
+  // dark floor at the body's own back face closes it.
+  const recessOutline = React.useMemo(() => {
+    if (!backPanel) return null
+    const { bay, groove } = backPanel
+    const yBottom = -body.height / 2 + bay.bottomY
+    const yGroove = yBottom + groove.height
+    const yBay = yBottom + bay.height
+    const points: [number, number][] = [
+      [-groove.width / 2, yBottom],
+      [groove.width / 2, yBottom],
+      [groove.width / 2, yGroove],
+      [bay.centerX + bay.width / 2, yGroove],
+      [bay.centerX + bay.width / 2, yBay],
+      [bay.centerX - bay.width / 2, yBay],
+      [bay.centerX - bay.width / 2, yGroove],
+      [-groove.width / 2, yGroove],
+    ]
+    return points
+  }, [backPanel, body.height])
+  const backPlateGeometry = React.useMemo(() => {
+    if (!backPanel || !recessOutline) return null
+    const bevel = 0.006
+    const shape = roundedRectShape(
+      body.width - backPanel.inset * 2 - bevel * 2,
+      body.height - backPanel.inset * 2 - bevel * 2,
+      body.radius
+    )
+    const hole = new THREE.Path()
+    recessOutline.forEach(([x, y], i) => (i === 0 ? hole.moveTo(x, y) : hole.lineTo(x, y)))
+    hole.closePath()
+    shape.holes.push(hole)
+    const core = backPanel.depth - bevel * 2
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: core,
+      bevelEnabled: true,
+      bevelThickness: bevel,
+      bevelSize: bevel,
+      bevelSegments: 2,
+      curveSegments: 12,
+    })
+    geometry.translate(0, 0, -core / 2)
+    return geometry
+  }, [backPanel, recessOutline, body])
+  React.useEffect(() => () => backPlateGeometry?.dispose(), [backPlateGeometry])
+  const recessFloorGeometry = React.useMemo(() => {
+    if (!recessOutline) return null
+    const shape = new THREE.Shape()
+    recessOutline.forEach(([x, y], i) => (i === 0 ? shape.moveTo(x, y) : shape.lineTo(x, y)))
+    shape.closePath()
+    return new THREE.ShapeGeometry(shape)
+  }, [recessOutline])
+  React.useEffect(() => () => recessFloorGeometry?.dispose(), [recessFloorGeometry])
+  // The faint SAMSUNG print on the upper back of the rear plate.
+  const backLogoGeometry = React.useMemo(
+    () => (backPanel ? createLogoGeometry('samsung', 0.7, 0.7 * 0.155) : null),
+    [backPanel]
+  )
+  React.useEffect(() => () => backLogoGeometry?.dispose(), [backLogoGeometry])
+  // Where the rear plate's outward face lands (proud of the body back).
+  const plateFaceZ = backPanel ? -body.depth / 2 + 0.004 - backPanel.depth : 0
+
   return (
     /* the stage lift centering the panel + feet ensemble on the group origin */
     <group position-y={TV_STAGE_OFFSET_Y}>
@@ -306,6 +372,88 @@ function TVSetImpl({
           </group>
         ))}
       </group>
+
+      {/* the picture-frame set's rear (all it has - its electronics live in
+          the external connect box): the inset plate whose rim seam is the
+          visible gap around the back, the One Connect recess with the slim
+          connector, the cable groove running both ways out of it, the
+          controller nub at the lower right corner and the faint wordmark.
+          Wall-mount hardware deliberately absent. */}
+      {backPanel && backPlateGeometry && (
+        <group position-y={body.centerY}>
+          <mesh
+            geometry={backPlateGeometry}
+            position-z={-body.depth / 2 + 0.004 - backPanel.depth / 2}
+          >
+            <meshPhysicalMaterial color={color} metalness={0.25} roughness={0.6} />
+          </mesh>
+          {/* dark floor closing the recess at the body's own back face */}
+          {recessFloorGeometry && (
+            <mesh geometry={recessFloorGeometry} position-z={-body.depth / 2 - 0.002}>
+              <meshPhysicalMaterial
+                color="#0a0b0d"
+                metalness={0.15}
+                roughness={0.7}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+          {/* the slim One Connect socket, sunk below the plate surface */}
+          <group
+            position={[
+              backPanel.bay.centerX,
+              -body.height / 2 + backPanel.bay.bottomY + backPanel.bay.height * 0.58,
+              -body.depth / 2 - 0.003,
+            ]}
+          >
+            <RoundedBox
+              args={[backPanel.port.width + 0.024, backPanel.port.height + 0.02, 0.012]}
+              radius={0.005}
+            >
+              <meshPhysicalMaterial color="#b9bdc4" metalness={0.85} roughness={0.3} />
+            </RoundedBox>
+            <RoundedBox
+              args={[backPanel.port.width, backPanel.port.height, 0.01]}
+              radius={0.004}
+              position-z={-0.003}
+            >
+              <meshPhysicalMaterial color="#0a0b0d" metalness={0.2} roughness={0.6} />
+            </RoundedBox>
+          </group>
+          {/* TV controller nub near the lower right rear corner */}
+          <mesh
+            rotation-x={Math.PI / 2}
+            position={[
+              body.width / 2 - backPanel.button.inset,
+              -body.height / 2 + backPanel.button.inset,
+              plateFaceZ - 0.005,
+            ]}
+          >
+            <cylinderGeometry
+              args={[backPanel.button.r, backPanel.button.r * 0.85, 0.014, 20]}
+            />
+            <meshPhysicalMaterial color={color} metalness={0.4} roughness={0.5} />
+          </mesh>
+          {/* faint wordmark print on the upper back */}
+          {backLogoGeometry && (
+            <mesh
+              geometry={backLogoGeometry}
+              rotation-y={Math.PI}
+              position={[0, body.height * 0.22, plateFaceZ - 0.002]}
+            >
+              <meshPhysicalMaterial
+                transparent
+                opacity={0.38}
+                color="#454a52"
+                metalness={0.4}
+                roughness={0.5}
+                polygonOffset
+                polygonOffsetFactor={-1}
+              />
+            </mesh>
+          )}
+        </group>
+      )}
 
       {/* splayed feet: a slim ankle block under the cabinet with two
           wide-splayed struts running fore and aft - the shallow Λ stance of

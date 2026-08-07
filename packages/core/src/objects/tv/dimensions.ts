@@ -169,6 +169,32 @@ export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARI
      * an external connect box.
      */
     portBay: v.ports ? { width: 0.62, height: 1.08, inset: 0.03 } : null,
+    /**
+     * The picture-frame set's flat back (its electronics live in the connect
+     * box, so this is all it has): an inset rear plate whose rim seam is the
+     * visible gap around the edge, a recessed One Connect bay low on the
+     * back - Samsung documents the 65"'s bay ~122 mm up from the bottom with
+     * its right edge ~168 mm right of center - with the slim connector
+     * inside, a horizontal cable-routing groove running left and right of
+     * the bay, and the TV controller nub near the lower right corner. Wall
+     * mount hardware is deliberately not modeled. Null on cabinets that
+     * carry a real input bay instead.
+     */
+    backPanel: v.ports
+      ? null
+      : {
+          /** Rear plate inset from the body edges, and how proud it sits. */
+          inset: 0.04,
+          depth: 0.016,
+          /** Recessed connector bay; `centerX` from body center, `bottomY` up from the bottom edge. */
+          bay: { width: mm(160), height: mm(64), centerX: mm(88), bottomY: mm(122) },
+          /** Cable groove sharing the bay's bottom edge, running both ways. */
+          groove: { width: Math.min(bodyW * 0.72, mm(1150)), height: mm(26) },
+          /** The One Connect socket in the bay. */
+          port: { width: mm(62), height: mm(13) },
+          /** TV controller nub, inset from the lower right rear corner. */
+          button: { r: mm(11), inset: mm(85) },
+        },
     /** How the set stands: splayed feet, a center pedestal, or nothing. */
     stand,
     /** Distance from panel center down to the media-stand plane. */
