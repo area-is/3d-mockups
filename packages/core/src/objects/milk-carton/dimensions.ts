@@ -26,18 +26,28 @@
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
 
 export const MILK_CARTON = {
-  /** The walls: width (x), height (y) up to the eave, depth (z). `radius` softens the board's vertical creases. */
-  body: { width: 1.734, height: 3.469, depth: 1.734, radius: 0.022 },
+  /**
+   * The walls: width (x), height (y) up to the eave, depth (z). `radius` is
+   * the corner fold - board creased on a rule comes off it rounded, not
+   * knife-edged, so every fold on the carton keeps this much radius.
+   */
+  body: { width: 1.734, height: 3.469, depth: 1.734, radius: 0.034 },
   /**
    * The gable roof. `rise` is how far the ridge stands above the walls;
    * `tuck` is how deep the ear fold pulls each end inward where it is
    * deepest - the side panel keeps its full width as it rises while the roof
    * narrows toward the ridge, and that excess board folds inward rather than
    * vanishing. It is what makes a carton's ends pinched rather than flat.
+   * `crease` is the half-width of the flat the ridge fold keeps, for the same
+   * reason the walls have a corner radius.
    */
-  gable: { rise: 0.694, tuck: 0.36 },
-  /** The sealed top fin, standing on the ridge. */
-  fin: { height: 0.237, thickness: 0.052 },
+  gable: { rise: 0.694, tuck: 0.36, crease: 0.026 },
+  /**
+   * The sealed top fin, standing on the ridge: four plies of board and the
+   * seal between them, which is why it is thin next to everything else on the
+   * carton. `radius` rounds its edges - it is a pressed fold, not a cut slab.
+   */
+  fin: { height: 0.237, thickness: 0.028, radius: 0.011 },
   /**
    * The screw cap on the front roof panel: the cap itself, the collar it is
    * moulded onto, and `offset` - how far up the slant it sits, as a fraction
@@ -77,8 +87,9 @@ export const MILK_CARTON_HEIGHT =
  */
 const GABLE_PITCH = MILK_CARTON.gable.rise / MILK_CARTON.body.depth
 
-/** Ear-fold depth as a fraction of the carton's depth. */
+/** Ear-fold depth, and the ridge fold's flat, as fractions of the carton's depth. */
 const GABLE_TUCK = MILK_CARTON.gable.tuck / MILK_CARTON.body.depth
+const GABLE_CREASE = MILK_CARTON.gable.crease / MILK_CARTON.body.depth
 
 /**
  * Where the ear fold is deepest, as a fraction of the rise.
@@ -91,9 +102,10 @@ const GABLE_TUCK = MILK_CARTON.gable.tuck / MILK_CARTON.body.depth
  */
 const EAR_FOLD_PEAK = 0.88
 
-/** Fin height and thickness as fractions of the carton's width. */
+/** Fin height, thickness and edge radius as fractions of the carton's width. */
 const FIN_HEIGHT = MILK_CARTON.fin.height / MILK_CARTON.body.width
 const FIN_THICKNESS = MILK_CARTON.fin.thickness / MILK_CARTON.body.width
+const FIN_RADIUS = MILK_CARTON.fin.radius / MILK_CARTON.body.width
 
 /**
  * Least of the overall height the walls keep. A carton asked for shorter than
@@ -125,12 +137,13 @@ export interface MilkCartonLayout {
   /** The walls, up to the eave where the roof starts. */
   body: { width: number; height: number; depth: number; radius: number }
   /**
-   * The roof: its rise above the eave, the length of one slanted panel, and
-   * the ear fold each end pinches into - `tuck` deep at `tuckAt` of the rise,
-   * dying to nothing at the eave below and pinched back to the fin above.
+   * The roof: its rise above the eave, the length of one slanted panel, the
+   * flat its ridge fold keeps (`crease`, a half-width in z), and the ear fold
+   * each end pinches into - `tuck` deep at `tuckAt` of the rise, dying to
+   * nothing at the eave below and pinched back to the fin above.
    */
-  gable: { rise: number; slant: number; tuck: number; tuckAt: number }
-  fin: { height: number; thickness: number }
+  gable: { rise: number; slant: number; tuck: number; tuckAt: number; crease: number }
+  fin: { height: number; thickness: number; radius: number }
   cap: {
     radius: number
     height: number
@@ -158,7 +171,13 @@ export function milkCartonLayout(size: MilkCartonSizeMm = MILK_CARTON_SIZE_MM): 
   const depth = size.depth * scale
   const overall = size.height * scale
   const rise = depth * GABLE_PITCH
-  const fin = { height: width * FIN_HEIGHT, thickness: width * FIN_THICKNESS }
+  const thickness = width * FIN_THICKNESS
+  const fin = {
+    height: width * FIN_HEIGHT,
+    thickness,
+    // A rounded box cannot round past half its own smallest side.
+    radius: Math.min(width * FIN_RADIUS, thickness * 0.45),
+  }
   // The walls are what the overall height has left over once the roof and fin
   // have taken their share (see MIN_WALL_SHARE).
   const bodyHeight = Math.max(overall - rise - fin.height, overall * MIN_WALL_SHARE)
@@ -172,6 +191,9 @@ export function milkCartonLayout(size: MilkCartonSizeMm = MILK_CARTON_SIZE_MM): 
       // otherwise fold its two ends through each other.
       tuck: Math.min(depth * GABLE_TUCK, width / 2),
       tuckAt: EAR_FOLD_PEAK,
+      // Wider than the fin standing on it, so a soft shoulder of folded board
+      // shows either side of the seal instead of a knife edge running into it.
+      crease: Math.min(depth * GABLE_CREASE, depth * 0.06),
     },
     fin,
     cap: {

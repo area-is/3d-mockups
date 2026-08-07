@@ -90,9 +90,22 @@ function MilkCartonImpl({
   const normalZ = gable.rise / gable.slant
 
   /*
-   * The closed roof: a slanted panel front and back, meeting at the ridge,
-   * with an ear fold closing each end. One buffer, wound outward - the carton
-   * is solid, so nothing needs a back face.
+   * The ridge, flattened by the width of its own fold (`gable.crease`).
+   *
+   * Board creased on a rule comes off it rounded, so the two roof planes never
+   * actually meet in a line: they run out onto a narrow flat that the fin
+   * stands on. Both planes stay exactly where the spec puts them - the flat is
+   * where they would have crossed, which is why its top sits a hair below the
+   * nominal ridge and the fin grows by the same amount to keep the carton its
+   * documented height.
+   */
+  const ridgeDrop = (gable.crease * gable.rise) / (body.depth / 2)
+  const apex = ridge - ridgeDrop
+
+  /*
+   * The closed roof: a slanted panel front and back, running out onto the
+   * ridge flat, with an ear fold closing each end. One buffer, wound outward -
+   * the carton is solid, so nothing needs a back face.
    *
    * The ear folds are the reason an end is not a flat triangle. The side panel
    * carries its full depth up past the eave while the roof narrows toward the
@@ -120,40 +133,51 @@ function MilkCartonImpl({
       r: [number, number, number]
     ) => (flip ? push(p, r, q) : push(p, q, r))
 
+    const crease = gable.crease
     for (const s of [1, -1] as const) {
-      // The slant, as seen from outside: eave corners along the bottom, ridge
-      // along the top. The far side is wound in reverse - mirroring a face
-      // flips which way round its vertices read.
+      // The slant, as seen from outside: eave corners along the bottom, the
+      // ridge flat's near edge along the top. The far side is wound in reverse
+      // - mirroring a face flips which way round its vertices read.
       const a: [number, number, number] = [-hw, eave, s * hd]
       const b: [number, number, number] = [hw, eave, s * hd]
-      const c: [number, number, number] = [hw, ridge, 0]
-      const d: [number, number, number] = [-hw, ridge, 0]
+      const c: [number, number, number] = [hw, apex, s * crease]
+      const d: [number, number, number] = [-hw, apex, s * crease]
       tri(s === -1, a, b, c)
       tri(s === -1, a, c, d)
+    }
 
-      // The ear fold at the `s` end, as four triangles either side of the
-      // crease: eave corners, the crease foot flush in the wall, the crease
-      // peak tucked inward, and the pinch point on the ridge.
-      const front: [number, number, number] = [s * hw, eave, hd]
-      const back: [number, number, number] = [s * hw, eave, -hd]
-      const foot: [number, number, number] = [s * hw, eave, 0]
+    // The ridge flat itself, bridging the two planes.
+    tri(false, [-hw, apex, crease], [hw, apex, crease], [hw, apex, -crease])
+    tri(false, [-hw, apex, crease], [hw, apex, -crease], [-hw, apex, -crease])
+
+    for (const s of [1, -1] as const) {
+      /*
+       * The ear fold at the `s` end: a fan from the tucked crease peak out to
+       * every corner of the opening it closes - the two eave corners with the
+       * crease's foot between them, and the two ends of the ridge flat above.
+       * Walking the rim in order keeps every triangle wound the same way.
+       */
       const peak: [number, number, number] = [
         s * (hw - gable.tuck),
         eave + gable.rise * gable.tuckAt,
         0,
       ]
-      const pinch: [number, number, number] = [s * hw, ridge, 0]
-      const flip = s === -1
-      tri(flip, front, foot, peak)
-      tri(flip, front, peak, pinch)
-      tri(flip, back, pinch, peak)
-      tri(flip, back, peak, foot)
+      const rim: [number, number, number][] = [
+        [s * hw, eave, hd],
+        [s * hw, eave, 0],
+        [s * hw, eave, -hd],
+        [s * hw, apex, -crease],
+        [s * hw, apex, crease],
+      ]
+      for (let i = 0; i < rim.length; i++) {
+        tri(s === -1, rim[i]!, rim[(i + 1) % rim.length]!, peak)
+      }
     }
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.computeVertexNormals()
     return geometry
-  }, [body.width, body.depth, eave, ridge, gable.rise, gable.tuck, gable.tuckAt])
+  }, [body.width, body.depth, eave, apex, gable.rise, gable.tuck, gable.tuckAt, gable.crease])
   React.useEffect(() => () => roofGeometry.dispose(), [roofGeometry])
 
   /*
@@ -203,11 +227,19 @@ function MilkCartonImpl({
         <meshPhysicalMaterial {...board} />
       </mesh>
 
-      {/* the sealed fin, pinched up from all four panels */}
-      <mesh position={[0, ridge + fin.height / 2, 0]}>
-        <boxGeometry args={[body.width, fin.height, fin.thickness]} />
+      {/* The sealed fin, pinched up from all four panels: four plies and the
+          seal between them, so it is thin - and pressed, so its edges are
+          rounded. It stands on the ridge flat and makes up the drop, leaving
+          the carton exactly as tall as the spec says. */}
+      <RoundedBox
+        args={[body.width, fin.height + ridgeDrop, fin.thickness]}
+        radius={fin.radius}
+        steps={1}
+        smoothness={3}
+        position={[0, apex + (fin.height + ridgeDrop) / 2, 0]}
+      >
         <meshPhysicalMaterial {...board} />
-      </mesh>
+      </RoundedBox>
 
       {/* the screw cap, moulded onto the front roof panel. Its collar sits on
           the panel and the cap stands proud of it, so it masks whatever the
