@@ -2,7 +2,13 @@ import * as React from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MILK_CARTON, MILK_CARTON_REGIONS, milkCartonLayout, type MilkCartonSizeMm } from '@area-3d-mockups/core'
+import {
+  MILK_CARTON,
+  MILK_CARTON_REGIONS,
+  gearShape,
+  milkCartonLayout,
+  type MilkCartonSizeMm,
+} from '@area-3d-mockups/core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
@@ -91,10 +97,11 @@ function MilkCartonImpl({
    * The ear folds are the reason an end is not a flat triangle. The side panel
    * carries its full depth up past the eave while the roof narrows toward the
    * ridge, and the excess board has to go somewhere: it creases down the
-   * middle and folds INWARD, deepest partway up (`gable.tuckAt`) and pinched
-   * back flat where the fin seals it. So each end is two facets meeting along
-   * a crease that bows into the carton - flush with the wall at the eave,
-   * `gable.tuck` inside it at the peak, back on the ridge line at the top.
+   * middle and folds INWARD, deepening the whole way up until the two halves
+   * close on each other just under the fin (`gable.tuckAt`) and are pinched
+   * flat to be sealed into it. So each end is two facets meeting along a
+   * crease that dives into the carton - flush with the wall at the eave,
+   * `gable.tuck` inside it just below the fin, back out to the fin at the top.
    * Flat-shaded off its own faces, so the crease is real geometry catching
    * real light rather than a line painted on a plane.
    */
@@ -149,7 +156,27 @@ function MilkCartonImpl({
   }, [body.width, body.depth, eave, ridge, gable.rise, gable.tuck, gable.tuckAt])
   React.useEffect(() => () => roofGeometry.dispose(), [roofGeometry])
 
+  /*
+   * The cap's grip: the same gear profile the watch crown is machined from,
+   * extruded down the cap's axis so the ribs run the height of the skirt. A
+   * closure is knurled for the same reason a crown is - so a wet hand can
+   * turn it - and it is the detail that separates a screw cap from a puck.
+   *
+   * Extruded along +Z and stood upright by the mesh, because that is the axis
+   * ExtrudeGeometry works on.
+   */
+  const capGeometry = React.useMemo(() => {
+    if (!cap) return null
+    const skirt = capSize.height - capSize.rim * 2
+    return new THREE.ExtrudeGeometry(gearShape(capSize.radius, capSize.flutes, capSize.fluteDepth), {
+      depth: Math.max(skirt, capSize.height * 0.2),
+      bevelEnabled: false,
+    })
+  }, [cap, capSize.radius, capSize.flutes, capSize.fluteDepth, capSize.height, capSize.rim])
+  React.useEffect(() => () => capGeometry?.dispose(), [capGeometry])
+
   const board = { color, metalness: 0, roughness: 0.42, clearcoat: 0.45, clearcoatRoughness: 0.35 }
+  const plastic = { color: capColor, metalness: 0, roughness: 0.38, clearcoat: 0.55 }
 
   const panelDefaults = { surfaceBackground, resolution, surfaceStyle }
   const pxPerUnit = resolution / body.width
@@ -185,7 +212,7 @@ function MilkCartonImpl({
       {/* the screw cap, moulded onto the front roof panel. Its collar sits on
           the panel and the cap stands proud of it, so it masks whatever the
           gable panel is printing - the same way it would on a real carton. */}
-      {cap && (
+      {cap && capGeometry && (
         <group
           position={[
             0,
@@ -196,13 +223,31 @@ function MilkCartonImpl({
           // the slant rather than off the floor.
           rotation-x={Math.atan2(gable.rise, body.depth / 2)}
         >
+          {/* the moulded neck flange the cap screws onto */}
           <mesh position={[0, capSize.collar / 2, 0]}>
-            <cylinderGeometry args={[capSize.flange, capSize.flange, capSize.collar, 32]} />
-            <meshPhysicalMaterial color={capColor} metalness={0} roughness={0.45} clearcoat={0.5} />
+            <cylinderGeometry args={[capSize.flange, capSize.flange, capSize.collar, 48]} />
+            <meshPhysicalMaterial {...plastic} roughness={0.45} />
           </mesh>
-          <mesh position={[0, capSize.collar + capSize.height / 2, 0]}>
-            <cylinderGeometry args={[capSize.radius, capSize.radius, capSize.height, 32]} />
-            <meshPhysicalMaterial color={capColor} metalness={0} roughness={0.35} clearcoat={0.6} />
+          {/* the smooth band the ribs run out into at the foot of the skirt */}
+          <mesh position={[0, capSize.collar + capSize.rim / 2, 0]}>
+            <cylinderGeometry args={[capSize.radius, capSize.radius, capSize.rim, 48]} />
+            <meshPhysicalMaterial {...plastic} />
+          </mesh>
+          {/* the ribbed skirt itself */}
+          <mesh
+            geometry={capGeometry}
+            position={[0, capSize.collar + capSize.rim, 0]}
+            rotation-x={-Math.PI / 2}
+          >
+            <meshPhysicalMaterial {...plastic} />
+          </mesh>
+          {/* the flat top, drawn in a hair over the skirt like a moulded
+              closure's, so the ribs end on a shoulder rather than an edge */}
+          <mesh position={[0, capSize.collar + capSize.height - capSize.rim / 2, 0]}>
+            <cylinderGeometry
+              args={[capSize.radius - capSize.fluteDepth, capSize.radius, capSize.rim, 48]}
+            />
+            <meshPhysicalMaterial {...plastic} roughness={0.3} />
           </mesh>
         </group>
       )}

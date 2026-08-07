@@ -10,10 +10,11 @@
  * at a ridge, an ear fold closing each end, and the fin the four panels are
  * pinched into. The ear folds are why the ends are not flat triangles - a side
  * panel stays its full width as it rises while the roof narrows toward the
- * ridge, so the excess board folds inward, deepest partway up and pinched back
- * flat where it meets the fin. A screw cap sits on the front roof panel, which
- * is where a real carton puts it - so it rides over that panel's artwork the
- * way a real spout rides over the print.
+ * ridge, so the excess board folds inward - deepening the whole way up until
+ * the two halves close on each other just under the fin, where they are
+ * pinched flat and sealed into it. A ribbed screw cap sits on the front roof
+ * panel, which is where a real carton puts it - so it rides over that panel's
+ * artwork the way a real spout rides over the print.
  *
  * Live faces: the four wall panels (front is the primary region) plus both
  * roof panels.
@@ -34,7 +35,7 @@ export const MILK_CARTON = {
    * narrows toward the ridge, and that excess board folds inward rather than
    * vanishing. It is what makes a carton's ends pinched rather than flat.
    */
-  gable: { rise: 0.694, tuck: 0.29 },
+  gable: { rise: 0.694, tuck: 0.36 },
   /** The sealed top fin, standing on the ridge. */
   fin: { height: 0.237, thickness: 0.052 },
   /**
@@ -43,8 +44,23 @@ export const MILK_CARTON = {
    * of the slant (0 at the eave, 1 at the ridge). The cap is the one part of
    * the carton that is not a fraction of the board, so it scales with the
    * carton's width rather than with whichever edge is longest.
+   *
+   * `flutes` and `fluteDepth` are the moulded grip: the ribs a closure is
+   * knurled with so a wet hand can turn it, the same gear profile the watch
+   * crown is machined from. `rim` is the smooth band the ribs die into at the
+   * top and bottom of the skirt, which is where a moulded cap's parting
+   * surfaces are - ribs never run right off either edge.
    */
-  cap: { radius: 0.2, height: 0.13, flange: 0.246, collar: 0.045, offset: 0.55 },
+  cap: {
+    radius: 0.2,
+    height: 0.15,
+    flange: 0.246,
+    collar: 0.045,
+    offset: 0.55,
+    flutes: 42,
+    fluteDepth: 0.013,
+    rim: 0.022,
+  },
   /** Default CSS px width of the virtual front panel; other panels share its dpi. */
   resolution: 420,
 } as const
@@ -67,12 +83,13 @@ const GABLE_TUCK = MILK_CARTON.gable.tuck / MILK_CARTON.body.depth
 /**
  * Where the ear fold is deepest, as a fraction of the rise.
  *
- * Not at either end of the crease: at the eave the side panel is still the
- * flat wall of a square tube, and at the ridge the board is pinched flat into
- * the fin. The fold swells between them, which is why a carton's end reads as
- * pinched rather than as a plain sloped facet.
+ * Near the top, not halfway: the board a side panel has to shed grows with
+ * every millimetre the roof narrows, so the fold deepens all the way up and
+ * the two facets close on each other just under the fin - the glued line the
+ * ear is finally sealed into. The last fraction back out to the fin is the
+ * pinch itself, where the fold is pressed flat to be sealed.
  */
-const EAR_FOLD_PEAK = 0.58
+const EAR_FOLD_PEAK = 0.88
 
 /** Fin height and thickness as fractions of the carton's width. */
 const FIN_HEIGHT = MILK_CARTON.fin.height / MILK_CARTON.body.width
@@ -110,11 +127,20 @@ export interface MilkCartonLayout {
   /**
    * The roof: its rise above the eave, the length of one slanted panel, and
    * the ear fold each end pinches into - `tuck` deep at `tuckAt` of the rise,
-   * dying to nothing at the eave below it and at the ridge above.
+   * dying to nothing at the eave below and pinched back to the fin above.
    */
   gable: { rise: number; slant: number; tuck: number; tuckAt: number }
   fin: { height: number; thickness: number }
-  cap: { radius: number; height: number; flange: number; collar: number; offset: number }
+  cap: {
+    radius: number
+    height: number
+    flange: number
+    collar: number
+    offset: number
+    flutes: number
+    fluteDepth: number
+    rim: number
+  }
   /** Overall height, walls + roof + fin. */
   height: number
 }
@@ -154,6 +180,11 @@ export function milkCartonLayout(size: MilkCartonSizeMm = MILK_CARTON_SIZE_MM): 
       flange: MILK_CARTON.cap.flange * capScale,
       collar: MILK_CARTON.cap.collar * capScale,
       offset: MILK_CARTON.cap.offset,
+      // The rib COUNT is fixed - a closure is moulded with the grip its
+      // diameter calls for, so a smaller cap gets finer ribs, not fewer.
+      flutes: MILK_CARTON.cap.flutes,
+      fluteDepth: MILK_CARTON.cap.fluteDepth * capScale,
+      rim: MILK_CARTON.cap.rim * capScale,
     },
     height: bodyHeight + rise + fin.height,
   }

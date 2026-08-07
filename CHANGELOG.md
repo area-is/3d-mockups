@@ -70,7 +70,8 @@ Notable changes to `area-3d-mockups`. This project follows
   (95×241×95 mm, the US half-gallon, resizable in millimeters via `size`):
   poly-coated board walls, the roof folded up to a ridge, an ear fold pinching
   each end inward the way a real carton's excess board folds, the sealed fin,
-  and a screw cap on the front roof panel. Live surfaces on all four walls plus
+  and a ribbed screw cap on the front roof panel (knurled from the same
+  `gearShape` the watch crown is). Live surfaces on all four walls plus
   both roof panels — the cap rides over the front one the way a real spout
   rides over the print. Measures as `mockupInfo('milkCarton')`.
 - **Reduced-motion support.** `autoRotate`, `float` and the `LEDText`
