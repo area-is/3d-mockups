@@ -80,6 +80,15 @@ export interface CollectedSlot extends SlotProps {
 
 export type Slot<P extends SlotProps = SlotProps> = React.FC<P>
 
+// Every bundler replaces `process.env.NODE_ENV` with a literal at build time,
+// so this is the only part of `process` the library ever names. Declaring it
+// here rather than depending on @types/node keeps Node's globals out of a
+// browser package's typecheck - with them in scope `setTimeout` starts
+// returning `NodeJS.Timeout` instead of a number. TypeScript 5 resolved the
+// name anyway from whatever @types/node a workspace sibling had hoisted;
+// TypeScript 6 no longer does.
+declare const process: { env: { NODE_ENV?: string } }
+
 function warnDev(message: string): void {
   if (process.env.NODE_ENV !== 'production') {
     // eslint-disable-next-line no-console

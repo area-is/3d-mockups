@@ -12,6 +12,11 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    // Nothing here uses a deprecated option - tsup does. Its dts build injects
+    // `baseUrl: compilerOptions.baseUrl || "."` into the config it hands the
+    // compiler (rollup.js), which TypeScript 6 rejects outright. Drop this once
+    // tsup stops setting it; TypeScript 7 removes the option entirely.
+    "ignoreDeprecations": "6.0"
   }
 }

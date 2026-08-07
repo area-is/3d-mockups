@@ -75,16 +75,16 @@
   },
   "devDependencies": {
     "@area-3d-mockups/core": "0.1.0",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.1",
-    "@types/react": "^19.2.17",
-    "@types/three": "^0.185.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "@types/react": "^19.2.18",
+    "@types/three": "^0.185.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "three": "^0.185.1",
     "three-bvh-csg": "^0.0.18",
-    "three-mesh-bvh": "^0.9.11",
+    "three-mesh-bvh": "^0.9.14",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   }
 }

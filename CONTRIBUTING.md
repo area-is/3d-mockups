@@ -6,7 +6,7 @@ are all runnable locally.
 
 ## Getting set up
 
-Node 18.18+ (CI runs 22). npm workspaces, no other package manager.
+Node 22+ (which is what CI runs). npm workspaces, no other package manager.
 
 ```bash
 npm install        # installs every workspace and builds the package
