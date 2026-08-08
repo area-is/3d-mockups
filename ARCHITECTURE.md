@@ -40,10 +40,10 @@ say so in review when a change crosses it.
 
 What that puts in the core today:
 
-- **Specs** (`src/devices/*/dimensions.ts`, `src/objects/*/dimensions.ts`) - physical
+- **Specs** (`src/core/devices/*/dimensions.ts`, `src/core/objects/*/dimensions.ts`) - physical
   dimensions, display panels, camera layouts, per-variant data for every device and
   object. Pure data with zero imports.
-- **Regions & framing** (`src/regions.ts` + each spec's `*_REGIONS` / `*_FRAMING`) -
+- **Regions & framing** (`src/core/regions.ts` + each spec's `*_REGIONS` / `*_FRAMING`) -
   every live surface a device/object exposes, declared as pure data next to its
   dimensions. Region names are the API contract: the compound slots are derived
   from them (`front` → `<AFrameSign.Front>`) and the docs tables are generated
@@ -51,11 +51,11 @@ What that puts in the core today:
   `*_FRAMING` is the per-object stage math (camera pose, float intensity, the
   ground line under the object) that wrappers used to hand-code; `framedShadowY`
   turns it into the contact-shadow plane's Y.
-- **Geometry math** (`src/geometry`) - `roundedRectShape`, `gearShape`, the
+- **Geometry math** (`src/core/geometry`) - `roundedRectShape`, `gearShape`, the
   CSS `clip-path` builders and `sweptStrapGeometry` (a crowned watch-strap
   section swept along a worn-wrist oval), all returning plain three.js values
   any renderer can consume.
-- **Screen behaviors** (`src/screen`) - everything that makes the live DOM screen
+- **Screen behaviors** (`src/core/screen`) - everything that makes the live DOM screen
   work, minus the framework portal itself:
   - `screenSurfaceStyle`, `screenCssHeight`, `screenCornerRadiusCss`,
     `screenDistanceFactor` - the CSS-pixel math mapping a world-unit display onto DOM;
@@ -67,13 +67,16 @@ What that puts in the core today:
   the depth buffer masks it per-pixel, which also means nothing has to deal with
   pointer input, hit-testing or gesture handoff on a screen. The canvas owns every
   gesture.
-- **Stage** (`src/stage`) - the shared look and feel of every mockup canvas:
+- **Stage** (`src/core/stage`) - the shared look and feel of every mockup canvas:
   camera pose, orbit constraints and damping, contact-shadow settings, the
   procedural studio light rig (`STUDIO_LIGHTFORMERS`), the idle float animation
   (`floatPose`), touch-action policy, zoom math (`orbitZoomBy`), fullscreen helpers
   and the overlay-button chrome.
 
-What stays in the React layer:
+What stays in the React layer (note that `src/core/screen` and `src/screen`
+are different directories - the core half is the math, the React half is the
+drei bridge; same for `devices`/`objects`, whose specs and scene components
+mirror each other):
 
 - The **canvas/stage component** wiring core config into the renderer
   (`mockup-canvas.tsx` over r3f `<Canvas>`, drei `Environment`/`ContactShadows`,
