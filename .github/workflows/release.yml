@@ -30,7 +30,15 @@ name: Release area-3d-mockups
 # it on main, then push a matching tag.
 #
 #   npm version patch -w area-3d-mockups   # or minor / major
+#   git commit -am 'Release area-3d-mockups v0.1.1'
+#   git tag v0.1.1
 #   git push origin main --follow-tags
+#
+# The commit and the tag are deliberate steps, not decoration: run against a
+# workspace (`-w`), `npm version` only rewrites the manifest and the lockfile —
+# it makes no commit and no tag, unlike its single-package behaviour. Leave them
+# out and `--follow-tags` pushes nothing, the tag trigger never fires, and the
+# release looks like it succeeded while nothing was published.
 #
 # The tag is the trigger and the version guard below refuses any tag that does
 # not match the manifest, so a stale tag fails loudly instead of publishing the

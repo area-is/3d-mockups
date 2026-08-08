@@ -75,3 +75,38 @@ trickiest invariants in this repo are only obvious once someone has broken them.
 Describe what changed and why. If a change moves a baseline or a documented
 number, say so in the message — those are the diffs a reviewer most needs
 pointed out.
+
+## Releasing
+
+Only `packages/react` ships to npm, as [`area-3d-mockups`]. `@area-3d-mockups/core`
+is compiled into that bundle straight from its source (see the `esbuildOptions`
+alias in `packages/react/tsup.config.ts`), so it is deliberately never published
+— the tarball is one self-contained install with no runtime dependency on core.
+
+Releases run on [`.github/workflows/release.yml`](.github/workflows/release.yml)
+via npm Trusted Publishing: GitHub mints an OIDC token, npm exchanges it for a
+short-lived publish credential, and the tarball gets a provenance attestation
+linking it to the commit. There is no `NPM_TOKEN` in this repository.
+
+A tag is the trigger:
+
+```bash
+npm version patch -w area-3d-mockups   # or minor / major
+git commit -am 'Release area-3d-mockups v0.1.1'
+git tag v0.1.1
+git push origin main --follow-tags
+```
+
+The commit and the tag are separate steps on purpose. Against a workspace
+(`-w`), `npm version` only rewrites the manifest and the lockfile — it does not
+commit and does not tag, which is the opposite of its single-package behaviour.
+Skip them and `--follow-tags` pushes nothing at all: no tag, no workflow run, no
+publish, and no error to tell you so.
+
+The workflow refuses any tag that disagrees with `packages/react/package.json`,
+so a stale tag fails loudly rather than publishing the wrong tree. To rehearse
+the whole thing without spending a version number, run the workflow from the
+Actions tab with **Run workflow** — a dispatched run defaults to `--dry-run` and
+only packs.
+
+[`area-3d-mockups`]: https://www.npmjs.com/package/area-3d-mockups
