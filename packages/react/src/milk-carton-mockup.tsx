@@ -1,4 +1,4 @@
-import { MILK_CARTON_FRAMING, MILK_CARTON_REGIONS, MILK_CARTON_METRICS } from '@area-3d-mockups/core'
+import { MILK_CARTON_FRAMING, MILK_CARTON_REGIONS, MILK_CARTON_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { MilkCarton, milkCartonSlots, type MilkCartonProps } from './objects/milk-carton/milk-carton'
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { REDUCED_MOTION_QUERY } from '@area-3d-mockups/core'
+import { REDUCED_MOTION_QUERY } from './core'
 
 const subscribe = (onChange: () => void): (() => void) => {
   if (typeof window === 'undefined' || !window.matchMedia) return () => {}

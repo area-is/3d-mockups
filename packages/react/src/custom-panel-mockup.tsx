@@ -1,4 +1,4 @@
-import { CUSTOM_PANEL_FRAMING, CUSTOM_PANEL_REGIONS, CUSTOM_PANEL_METRICS } from '@area-3d-mockups/core'
+import { CUSTOM_PANEL_FRAMING, CUSTOM_PANEL_REGIONS, CUSTOM_PANEL_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { CustomPanel, customPanelSlots, type CustomPanelProps } from './objects/custom-panel/custom-panel'
 

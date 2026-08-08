@@ -1,4 +1,4 @@
-import { GALAXY_FRAMING, SCREEN_REGIONS, GALAXY_METRICS } from '@area-3d-mockups/core'
+import { GALAXY_FRAMING, SCREEN_REGIONS, GALAXY_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Galaxy, galaxySlots, type GalaxyProps } from './devices/galaxy/galaxy'
 

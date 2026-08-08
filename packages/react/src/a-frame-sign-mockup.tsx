@@ -1,4 +1,4 @@
-import { A_FRAME_SIGN_FRAMING, A_FRAME_SIGN_REGIONS, A_FRAME_SIGN_METRICS } from '@area-3d-mockups/core'
+import { A_FRAME_SIGN_FRAMING, A_FRAME_SIGN_REGIONS, A_FRAME_SIGN_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { AFrameSign, aFrameSignSlots, type AFrameSignProps } from './objects/a-frame-sign/a-frame-sign'
 

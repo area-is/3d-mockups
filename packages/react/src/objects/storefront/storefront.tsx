@@ -5,7 +5,7 @@ import {
   STOREFRONT,
   STOREFRONT_REGIONS,
   storefrontLayout,
-} from '@area-3d-mockups/core'
+} from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SlotProps, type SurfaceProps } from '../../slots'
 

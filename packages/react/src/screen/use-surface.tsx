@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '@area-3d-mockups/core'
+import { screenCssHeight, screenPxPerUnit, type ScreenRadius } from '../core'
 
 /**
  * What the surface your content is rendering into actually resolved to.

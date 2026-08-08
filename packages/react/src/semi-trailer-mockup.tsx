@@ -1,4 +1,4 @@
-import { SEMI_TRAILER_FRAMING, SEMI_TRAILER_REGIONS, SEMI_TRAILER_METRICS } from '@area-3d-mockups/core'
+import { SEMI_TRAILER_FRAMING, SEMI_TRAILER_REGIONS, SEMI_TRAILER_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { SemiTrailer, semiTrailerSlots, type SemiTrailerProps } from './objects/semi-trailer/semi-trailer'
 

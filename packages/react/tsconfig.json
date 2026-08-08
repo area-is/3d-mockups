@@ -1,13 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    // Resolve the core against its TypeScript source so typechecking and the
-    // tsup dts build work without building the core workspace first. Paths are
-    // relative to this file: `baseUrl` is deprecated in TypeScript 6 and gone
-    // in 7, and `moduleResolution: Bundler` does not need it.
-    "paths": {
-      "@area-3d-mockups/core": ["../core/src/index.ts"]
-    }
-  },
   "include": ["src"]
 }

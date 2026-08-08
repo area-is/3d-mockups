@@ -10,7 +10,7 @@ import {
   clipRoundedRect,
   clipRoundedRectOutline,
   type BusCoverage,
-} from '@area-3d-mockups/core'
+} from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { LEDText, isLedText } from '../../led-text'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'

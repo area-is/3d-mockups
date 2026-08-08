@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group } from 'three'
-import { floatPose, randomFloatPhase, FLOAT_REST_POSE } from '@area-3d-mockups/core'
+import { floatPose, randomFloatPhase, FLOAT_REST_POSE } from './core'
 import { usePrefersReducedMotion } from './use-reduced-motion'
 
 /**

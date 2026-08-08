@@ -1,10 +1,10 @@
 import * as React from 'react'
-import type { RegionSpec } from '@area-3d-mockups/core'
+import type { RegionSpec } from './core'
 
 /**
  * Compound-slot machinery: how a mockup's regions become child elements.
  *
- * Region names come from the object's spec in `@area-3d-mockups/core`
+ * Region names come from the object's spec in `src/core`
  * (`A_FRAME_SIGN_REGIONS` → `<AFrameSign.Front>` / `<AFrameSign.Back>`). Slot
  * components render nothing themselves - the parent mockup collects them from
  * its children with `collectSlots` and feeds each region's content and

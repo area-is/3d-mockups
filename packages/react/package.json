@@ -1,7 +1,7 @@
 {
   "name": "area-3d-mockups",
   "version": "0.1.0",
-  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone and it stays fully live. React binding of @area-3d-mockups/core.",
+  "description": "Interactive, GPU-accelerated 3D device mockups for React. Drop any content onto the screen of a 3D phone and it stays fully live.",
   "keywords": [
     "react",
     "threejs",
@@ -59,12 +59,15 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && node scripts/build-catalog.mjs",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsup && node scripts/build-catalog.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsup && node scripts/build-catalog.mjs",
+    "prepare": "npm run clean && tsup && node scripts/build-catalog.mjs",
     "devices:check": "node scripts/sync-device-table.mjs",
-    "devices:sync": "node scripts/sync-device-table.mjs --write"
+    "devices:sync": "node scripts/sync-device-table.mjs --write",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
     "@react-three/drei": ">=10",
@@ -74,9 +77,9 @@
     "three": ">=0.179.0"
   },
   "devDependencies": {
-    "@area-3d-mockups/core": "0.1.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
+    "@types/node": "^22.20.1",
     "@types/react": "^19.2.18",
     "@types/three": "^0.185.4",
     "react": "^19.2.8",
@@ -85,6 +88,7 @@
     "three-bvh-csg": "^0.0.18",
     "three-mesh-bvh": "^0.9.14",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   }
 }

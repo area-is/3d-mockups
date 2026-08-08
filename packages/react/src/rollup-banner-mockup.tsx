@@ -1,4 +1,4 @@
-import { ROLLUP_BANNER_FRAMING, ROLLUP_BANNER_STAGE_OFFSET_Y, ROLLUP_BANNER_REGIONS, ROLLUP_BANNER_METRICS } from '@area-3d-mockups/core'
+import { ROLLUP_BANNER_FRAMING, ROLLUP_BANNER_STAGE_OFFSET_Y, ROLLUP_BANNER_REGIONS, ROLLUP_BANNER_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { RollupBanner, rollupBannerSlots, type RollupBannerProps } from './objects/rollup-banner/rollup-banner'
 

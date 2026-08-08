@@ -31,8 +31,7 @@ shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
 records, out-of-home formats (billboard, bus shelter, double-sided DOOH totem,
 A-frame, roll-up banner, storefront), a 65" TV, and wrap-ready vehicles (transit
-bus, cargo van, 53 ft semi trailer). 2D (CSS/SVG) mockups sharing the same API are
-on the roadmap.
+bus, cargo van, 53 ft semi trailer).
 
 ```tsx
 'use client'
@@ -55,14 +54,14 @@ Every device and object has its own page with a live prop explorer.
 
 | Path | npm name | What it is |
 | --- | --- | --- |
-| [`packages/core`](packages/core) | `@area-3d-mockups/core` | Framework-agnostic core: device/object specs, geometry math, screen & stage behaviors (depends on `three` only) |
-| [`packages/react`](packages/react) | `area-3d-mockups` | The React binding - the publishable npm package (bundles the core) |
+| [`packages/react`](packages/react) | `area-3d-mockups` | The published npm package - the whole library |
 | [`apps/docs`](apps/docs) | - | Next.js docs & live demos site |
 
-Keeping the specs, geometry and stage behavior out of the React layer is what makes
-each mockup measurable and testable on its own, and it leaves room for other
-renderers later. See [ARCHITECTURE.md](ARCHITECTURE.md) for the layering rule and the
-binding contract.
+Inside the package, `src/core` holds the specs, geometry math and screen/stage
+behavior, depends on `three` and never imports React; the rest of `src` is the
+react-three-fiber layer that renders it. Keeping the numbers out of the components is
+what makes each mockup measurable and unit-testable without a renderer. See
+[ARCHITECTURE.md](ARCHITECTURE.md) for the layering rule.
 
 ## Development
 
@@ -74,8 +73,8 @@ package declares no `engines` and runs in the browser.
 npm install        # installs all workspaces + builds the package (prepare hook)
 npm run dev        # package in watch mode + docs at http://localhost:3000
 npm run build      # builds the package, then the docs site as a Worker bundle
-npm run typecheck  # typechecks all three workspaces
-npm run test       # core unit tests
+npm run typecheck  # typechecks both workspaces
+npm run test       # core unit tests (no DOM, no WebGL)
 npm run visual     # visual regression vs baselines (needs `npm run dev` running)
 ```
 

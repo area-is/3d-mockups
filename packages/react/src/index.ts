@@ -57,7 +57,7 @@ export {
   type RegionInfo,
   type RegionMetrics,
   type Size,
-} from '@area-3d-mockups/core'
+} from './core'
 export {
   useSurface,
   useSurfaceOptional,
@@ -128,13 +128,13 @@ export { CustomBox, type CustomBoxProps } from './objects/custom-box/custom-box'
 // next to the components. The FULL core (every spec constant, geometry helper,
 // screen/stage behavior) lives behind the `area-3d-mockups/core` subpath so its
 // internals can evolve without breaking this package's semver contract.
-export type { Orientation } from '@area-3d-mockups/core'
+export type { Orientation } from './core'
 export {
   type RegionSpec,
   type CameraFraming,
   type MockupFraming,
   SCREEN_REGIONS,
-} from '@area-3d-mockups/core'
+} from './core'
 export {
   type Colorway,
   GALAXY_COLORWAYS,
@@ -148,7 +148,7 @@ export {
   GALAXY_WATCH_COLORWAYS,
   STUDIO_DISPLAY_COLORWAYS,
   findColorway,
-} from '@area-3d-mockups/core'
+} from './core'
 export type {
   GalaxyVariant,
   IPhoneVariant,
@@ -160,7 +160,7 @@ export type {
   FoldVariant,
   FlipVariant,
   TVVariant,
-} from '@area-3d-mockups/core'
+} from './core'
 export type {
   BookSize,
   MagazineSize,
@@ -174,4 +174,4 @@ export type {
   MailerBoxSizeMm,
   MilkCartonSizeMm,
   ShoppingBagSizeMm,
-} from '@area-3d-mockups/core'
+} from './core'
