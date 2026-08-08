@@ -1,3 +1,8 @@
+/// <reference types="node" />
+// TypeScript 6 no longer pulls every @types/* package into the program on its
+// own, and this is the only file in the package that needs node's types. The
+// reference is scoped here on purpose: putting `node` in the tsconfig `types`
+// array would hand node globals to the components too, and this is browser code.
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
