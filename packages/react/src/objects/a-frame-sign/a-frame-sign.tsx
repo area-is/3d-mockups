@@ -109,9 +109,17 @@ function AFrameSignImpl({
             <mesh geometry={frameGeometry} rotation-y={isFront ? 0 : Math.PI}>
               <meshPhysicalMaterial color={color} metalness={0} roughness={0.75} />
             </mesh>
-            {/* board behind the opening */}
+            {/*
+              Board behind the opening. DOUBLE-SIDED, and it has to be: this is
+              the only opaque thing standing between the camera and the OTHER
+              panel's screen. That screen faces away, so its DOM is hidden by
+              the backface culler - but a hidden screen's depth mask still
+              clears the canvas over it, so with a single-sided board (culled
+              from the far side, since it is rotated to face outward) the page
+              showed straight through the sign.
+            */}
             <mesh geometry={boardGeometry} rotation-y={isFront ? 0 : Math.PI} position-z={isFront ? -0.012 : 0.012}>
-              <meshPhysicalMaterial color="#181b17" metalness={0} roughness={0.95} />
+              <meshPhysicalMaterial color="#181b17" metalness={0} roughness={0.95} side={THREE.DoubleSide} />
             </mesh>
             {/* frame stiles extended past the bottom rail into four leg tips */}
             {([1, -1] as const).map((side) => (
