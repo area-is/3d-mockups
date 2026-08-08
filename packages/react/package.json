@@ -59,10 +59,11 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && node scripts/build-catalog.mjs",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsup && node scripts/build-catalog.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsup && node scripts/build-catalog.mjs",
+    "prepare": "npm run clean && tsup && node scripts/build-catalog.mjs",
     "devices:check": "node scripts/sync-device-table.mjs",
     "devices:sync": "node scripts/sync-device-table.mjs --write"
   },

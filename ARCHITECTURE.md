@@ -124,9 +124,10 @@ trails the WebGL body.
 
 ## How the core is consumed
 
-The core is a normal publishable package (`packages/core`, built with tsup), but the
-React binding **bundles it from source** into its own `dist` (see the esbuild `alias`
-in `packages/react/tsup.config.ts` and the `paths` mapping in its `tsconfig.json`).
+The core is a workspace-only package - `packages/core` is marked `private`, so npm
+refuses to publish it and its manifest carries no registry metadata. The React
+binding **bundles it from source** into its own `dist` (see the esbuild `alias` in
+`packages/react/tsup.config.ts` and the `paths` mapping in its `tsconfig.json`).
 That keeps three properties:
 
 - `npm install area-3d-mockups` stays a single self-contained install;
@@ -134,9 +135,19 @@ That keeps three properties:
 - the core is stateless data + pure helpers, so anything bundling its own copy can
   safely coexist with another on one page.
 
+Because the core is bundled rather than published, `area-3d-mockups/core` is the only
+way a consumer reaches the specs, which makes that subpath's **RSC boundary** part of
+the contract. The core deliberately carries no `'use client'` directive so a server
+component can import a spec for layout math; a client directive there would turn every
+exported constant into a client reference the server cannot read. `banner` is a
+whole-build esbuild option, so the binding builds its two entries as two tsup configs
+and stamps the directive on the components entry only - see the comments in
+`packages/react/tsup.config.ts` before merging them back together.
+
 Should the core ever be consumed by something other than `area-3d-mockups`, it
-graduates to a standalone npm release and the binding swaps its alias for a real
-dependency: a build-config change only, no API change.
+graduates to a standalone npm release: drop `private`, restore the registry metadata,
+and swap the binding's alias for a real dependency. A build-config change only, no API
+change.
 
 ## Adding a device or object
 

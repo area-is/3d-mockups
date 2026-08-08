@@ -1,27 +1,14 @@
 {
   "name": "@area-3d-mockups/core",
   "version": "0.1.0",
-  "description": "Framework-agnostic core for area-3d-mockups: device/object specs, geometry math, and the screen & stage behaviors shared by every framework binding.",
-  "keywords": [
-    "threejs",
-    "3d",
-    "mockup",
-    "device",
-    "phone",
-    "smartphone",
-    "webgl",
-    "gpu"
-  ],
+  "private": true,
+  "description": "Framework-agnostic core for area-3d-mockups: device/object specs, geometry math, and the screen & stage behaviors shared by every framework binding. Workspace-only: bundled into area-3d-mockups, never published on its own.",
   "license": "MIT",
   "author": "subwaymatch",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/area-is/3d-mockups.git",
     "directory": "packages/core"
-  },
-  "homepage": "https://github.com/area-is/3d-mockups#readme",
-  "bugs": {
-    "url": "https://github.com/area-is/3d-mockups/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",
@@ -40,12 +27,6 @@
     },
     "./package.json": "./package.json"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist"
-  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
