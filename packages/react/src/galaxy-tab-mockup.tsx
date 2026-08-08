@@ -1,4 +1,4 @@
-import { GALAXY_TAB_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS, GALAXY_TAB_METRICS } from '@area-3d-mockups/core'
+import { GALAXY_TAB_FRAMING, TABLET_ULTRA_CAMERA, SCREEN_REGIONS, GALAXY_TAB_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { GalaxyTab, tabletSlots, type GalaxyTabProps } from './devices/tablet/tablet'
 

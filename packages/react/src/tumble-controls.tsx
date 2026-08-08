@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ORBIT, TumbleOrbit, tumbleAutoRotateStep } from '@area-3d-mockups/core'
+import { ORBIT, TumbleOrbit, tumbleAutoRotateStep } from './core'
 import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export interface TumbleControlsHandle {

@@ -1,4 +1,4 @@
-import { TV_FRAMING, tvCameraFraming, SCREEN_REGIONS, TV_METRICS } from '@area-3d-mockups/core'
+import { TV_FRAMING, tvCameraFraming, SCREEN_REGIONS, TV_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { TVSet, tvSetSlots, type TVProps } from './objects/tv/tv'
 

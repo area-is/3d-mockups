@@ -16,8 +16,8 @@ npm run dev        # package in watch mode + docs at http://localhost:3000
 ## Before you open a pull request
 
 ```bash
-npm run typecheck     # all three workspaces
-npm run test          # core unit tests
+npm run typecheck     # both workspaces
+npm run test          # core unit tests (no DOM, no WebGL)
 npm run devices:check # the derived half of the device table, and aspect drift
 npm run visual        # visual regression (needs `npm run dev` running)
 ```
@@ -31,13 +31,13 @@ geometry.
 The layering rule is in [ARCHITECTURE.md](ARCHITECTURE.md) and it is the thing
 most worth reading before a first change:
 
-> If it can be written against **three.js and the DOM** without importing a UI
-> framework, it lives in `@area-3d-mockups/core`.
+> If it can be written against **three.js and the DOM** without importing
+> React, it lives in `src/core`.
 
 In practice that means **numbers live in specs, not in scene components**. A
-rect computed inline in JSX cannot be measured, cannot be unit-tested, and has
-to be re-derived by every other binding — and it silently drops the object out
-of `mockupInfo`, the generated catalog and the docs tables.
+rect computed inline in JSX cannot be measured and cannot be unit-tested — and
+it silently drops the object out of `mockupInfo`, the generated catalog and the
+docs tables.
 
 Adding a device or object is five pieces, all documented under
 [“Adding a device or object”](ARCHITECTURE.md#adding-a-device-or-object).
@@ -78,10 +78,10 @@ pointed out.
 
 ## Releasing
 
-Only `packages/react` ships to npm, as [`area-3d-mockups`]. `@area-3d-mockups/core`
-is compiled into that bundle straight from its source (see the `esbuildOptions`
-alias in `packages/react/tsup.config.ts`), so it is deliberately never published
-— the tarball is one self-contained install with no runtime dependency on core.
+`packages/react` is the only package that ships, as [`area-3d-mockups`]. It is
+the whole library: the core layer is a directory inside it (`src/core`), built
+as a second entry point and published as the `area-3d-mockups/core` subpath, so
+the tarball is one self-contained install.
 
 Releases run on [`.github/workflows/release.yml`](.github/workflows/release.yml)
 via npm Trusted Publishing: GitHub mints an OIDC token, npm exchanges it for a

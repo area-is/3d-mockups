@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg'
-import { roundedRectShape } from '@area-3d-mockups/core'
+import { roundedRectShape } from '../core'
 
 /**
  * Shared machined hardware details used across the device models: side keys,

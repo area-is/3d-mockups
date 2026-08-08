@@ -1,4 +1,4 @@
-import { POSTER_FRAME_FRAMING, POSTER_FRAME_REGIONS, POSTER_FRAME_METRICS } from '@area-3d-mockups/core'
+import { POSTER_FRAME_FRAMING, POSTER_FRAME_REGIONS, POSTER_FRAME_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { PosterFrame, posterFrameSlots, type PosterFrameProps } from './objects/poster-frame/poster-frame'
 

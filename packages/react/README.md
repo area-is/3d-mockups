@@ -99,7 +99,7 @@ lands where the name says no matter what order you write the slots in:
 
 The same slots exist on the raw scene components (`<AFrameSign.Front>` inside your own
 r3f scene). Slots must be direct children of their mockup (fragments are fine); region
-names come from each object's spec in the core, so every future binding shares them.
+names come from each object's spec in the core.
 
 ## Components
 
@@ -236,20 +236,21 @@ button.
 Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPAD_VARIANTS`,
 `APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
 `PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
-available from the `area-3d-mockups/core` subpath - the same data will drive the planned
-2D (CSS/SVG) renderers.
+available from the `area-3d-mockups/core` subpath. It carries no `'use client'`
+directive, so a server component can import a spec for layout math.
 
 ## Architecture
 
-`area-3d-mockups` is the **React binding** of a framework-agnostic core. All device/object
-specs, region registries, stage framing, geometry math and shared screen/stage behaviors
-live in
-[`@area-3d-mockups/core`](https://github.com/area-is/3d-mockups/tree/main/packages/core)
-(bundled into this package - nothing extra to install). The main entry re-exports a
-curated slice (variants, colorways, size types); the full core surface is available from
-`area-3d-mockups/core`. See
-[ARCHITECTURE.md](https://github.com/area-is/3d-mockups/blob/main/ARCHITECTURE.md)
-for the layering rule and the binding contract.
+`area-3d-mockups` is one package in two layers. All device/object specs, region
+registries, stage framing, geometry math and shared screen/stage behaviors live in a
+renderer-agnostic core that depends on `three` and never on React; the components are
+the layer that renders it through react-three-fiber.
+
+The main entry re-exports a curated slice of the core (variants, colorways, size
+types); the full core surface is available from `area-3d-mockups/core`, which carries
+no `'use client'` directive so a server component can import a spec for layout math.
+See [ARCHITECTURE.md](https://github.com/area-is/3d-mockups/blob/main/ARCHITECTURE.md)
+for the layering rule.
 
 ## Docs & demos
 

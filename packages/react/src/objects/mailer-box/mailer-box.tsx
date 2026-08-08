@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { RoundedBox } from '@react-three/drei'
 import type { ThreeElements } from '@react-three/fiber'
-import { MAILER_BOX, MAILER_BOX_REGIONS, mailerBoxLayout, type MailerBoxSizeMm } from '@area-3d-mockups/core'
+import { MAILER_BOX, MAILER_BOX_REGIONS, mailerBoxLayout, type MailerBoxSizeMm } from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 

@@ -1,4 +1,4 @@
-import { BUS_FRAMING, BUS_REGIONS, BUS_METRICS } from '@area-3d-mockups/core'
+import { BUS_FRAMING, BUS_REGIONS, BUS_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Bus, busSlots, type BusProps } from './objects/bus/bus'
 

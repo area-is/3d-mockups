@@ -9,7 +9,7 @@ import {
   clipRoundedRectOutline,
   roundedRectShape,
   roundedRectShapeCorners,
-} from '@area-3d-mockups/core'
+} from '../../core'
 import { DeviceScreen, SCREEN_MASK_INSET } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 

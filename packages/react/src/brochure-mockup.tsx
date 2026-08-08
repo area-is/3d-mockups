@@ -1,4 +1,4 @@
-import { BROCHURE_FRAMING, BROCHURE_REGIONS, BROCHURE_METRICS } from '@area-3d-mockups/core'
+import { BROCHURE_FRAMING, BROCHURE_REGIONS, BROCHURE_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { Brochure, brochureSlots, type BrochureProps } from './objects/brochure/brochure'
 

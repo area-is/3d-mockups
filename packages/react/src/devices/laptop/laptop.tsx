@@ -10,7 +10,7 @@ import {
   SCREEN_REGIONS,
   type LaptopVariant,
   roundedRectShape,
-} from '@area-3d-mockups/core'
+} from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'

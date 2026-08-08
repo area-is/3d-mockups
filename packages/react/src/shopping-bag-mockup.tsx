@@ -1,4 +1,4 @@
-import { SHOPPING_BAG_FRAMING, SHOPPING_BAG_REGIONS, SHOPPING_BAG_METRICS } from '@area-3d-mockups/core'
+import { SHOPPING_BAG_FRAMING, SHOPPING_BAG_REGIONS, SHOPPING_BAG_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { ShoppingBag, shoppingBagSlots, type ShoppingBagProps } from './objects/shopping-bag/shopping-bag'
 

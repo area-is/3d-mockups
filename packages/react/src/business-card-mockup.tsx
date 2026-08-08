@@ -1,4 +1,4 @@
-import { BUSINESS_CARD_FRAMING, BUSINESS_CARD_REGIONS, BUSINESS_CARD_METRICS } from '@area-3d-mockups/core'
+import { BUSINESS_CARD_FRAMING, BUSINESS_CARD_REGIONS, BUSINESS_CARD_METRICS } from './core'
 import { createMockup, type MockupProps } from './create-mockup'
 import { BusinessCard, businessCardSlots, type BusinessCardProps } from './objects/business-card/business-card'
 

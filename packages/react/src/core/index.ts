@@ -1,9 +1,21 @@
-// @area-3d-mockups/core - the framework-agnostic heart of area-3d-mockups.
+// area-3d-mockups/core - the renderer-agnostic heart of the library.
 //
-// Everything here depends on `three` at most, never on a UI framework:
-// device/object specs, geometry math, the live-screen behaviors and the shared
-// stage configuration. The React binding (`area-3d-mockups`) is a thin layer that
-// feeds this data into its renderer. See ARCHITECTURE.md at the repo root.
+// Device/object specs, region registries, framing, geometry math, and the
+// screen & stage behaviors. Everything here depends on `three` at most and
+// never on React: the components are a thin layer that feeds this data into
+// react-three-fiber. Keeping the dependency one-way is what makes the numbers
+// testable without a renderer - the unit tests in `__tests__` need no DOM, no
+// WebGL and no React.
+//
+// This file is also the package's second entry point, published as the
+// `area-3d-mockups/core` subpath, so specs can be imported without pulling in
+// the components:
+//
+//   import { IPHONE_VARIANTS, STUDIO_LIGHTFORMERS } from 'area-3d-mockups/core'
+//
+// It carries no 'use client' directive, unlike the main entry - a server
+// component can import a spec for layout math. See ARCHITECTURE.md at the repo
+// root.
 
 export type { Orientation } from './orientation'
 

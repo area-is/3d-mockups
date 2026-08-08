@@ -1,4 +1,3 @@
-import path from 'node:path'
 import { defineConfig, type Options } from 'tsup'
 
 /*
@@ -6,14 +5,11 @@ import { defineConfig, type Options } from 'tsup'
  * the two entries may carry the RSC client directive.
  *
  * `src/index.ts` is the components, which use hooks and WebGL, so it is a
- * client module. `src/core.ts` re-exports @area-3d-mockups/core - pure specs
- * and math that deliberately carry no directive, so a server component can
- * import a spec for layout math without crossing the client boundary. One
- * shared config stamped 'use client' onto that entry too, which turned every
- * constant it exports into a client reference the server cannot read: the core
- * is built without the banner (packages/core/tsup.config.ts) precisely to avoid
- * that, but the core is bundled rather than published, so this subpath is the
- * only way a consumer reaches those specs and it undid the intent.
+ * client module. `src/core/index.ts` is pure specs and math, and deliberately
+ * carries no directive: a server component can import a spec for layout math
+ * without crossing the client boundary. One shared config stamped 'use client'
+ * onto that entry too, which turned every constant it exports into a client
+ * reference the server cannot read.
  */
 const shared = {
   format: ['esm', 'cjs'],
@@ -29,27 +25,20 @@ const shared = {
    */
   clean: false,
   external: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
-  // Compile @area-3d-mockups/core straight from its source into this bundle: the
-  // published `area-3d-mockups` package stays a single self-contained install, and
-  // the build never depends on the core workspace having been built first.
-  esbuildOptions(options) {
-    options.alias = {
-      ...options.alias,
-      '@area-3d-mockups/core': path.resolve(__dirname, '../core/src/index.ts'),
-    }
-  },
 } satisfies Options
 
 export default defineConfig([
   {
     ...shared,
-    entry: ['src/index.ts'],
+    entry: { index: 'src/index.ts' },
     // Components use hooks and WebGL, so the bundle is a client module for RSC frameworks.
     banner: { js: "'use client';" },
   },
   {
     ...shared,
-    entry: ['src/core.ts'],
+    // Named so the output stays `dist/core.js`, which is what the
+    // `area-3d-mockups/core` subpath export resolves to.
+    entry: { core: 'src/core/index.ts' },
     /*
      * Regenerate `dist/catalog.json` after every build, watch rebuilds included.
      *

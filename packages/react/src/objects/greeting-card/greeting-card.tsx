@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { ThreeElements } from '@react-three/fiber'
-import { GREETING_CARD, GREETING_CARD_REGIONS } from '@area-3d-mockups/core'
+import { GREETING_CARD, GREETING_CARD_REGIONS } from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
