@@ -779,10 +779,11 @@ export default function CarouselScene() {
   const step = useCallback((dir: number) => goTo(activeRef.current + dir), [goTo])
 
   /*
-   * Auto-advance is motion nobody asked for, on a timer nobody can predict -
-   * WCAG 2.2.2 wants a way to stop it, and a reduced-motion preference is a
-   * standing request to. `playing` covers both: the button toggles it, and
-   * the preference forces it off.
+   * Auto-advance stops for good at the first sign of a visitor: `stop()` runs
+   * on every arrow, swatch and pointer-down on the stage, and a reduced-motion
+   * preference forces it off before it ever starts. There is no explicit
+   * play/pause control - so the only way to stop it without touching the
+   * carousel is the system preference (see the note in globals.css).
    */
   const reducedMotion = usePrefersReducedMotion()
   const playing = auto && !reducedMotion
@@ -979,95 +980,11 @@ export default function CarouselScene() {
 
   return (
     <section className="carousel" aria-label="Mockup carousel" ref={sectionRef}>
-      <div className="carousel-glow" aria-hidden />
-
       {/*
-       * Hover lighting, BEHIND the canvas. The canvas is alpha-transparent, so
-       * a wash under it reads as light in the scene rather than a film over
-       * the hardware - which is what it looked like when this sat on top.
+       * The readout sits ABOVE the stage, directly under the page's headline -
+       * it is the hero's subtitle now, so what the visitor reads first is the
+       * object actually in front of them rather than a fixed line of copy.
        */}
-      <div className="carousel-layer carousel-washes" aria-hidden>
-        <span className="carousel-centre" />
-        <span className="carousel-edge" data-side="left" />
-        <span className="carousel-edge" data-side="right" />
-      </div>
-
-      <div
-        className="carousel-stage"
-        ref={stageRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          drag.current = null
-          if (sectionRef.current) sectionRef.current.dataset.dragging = 'false'
-        }}
-        onPointerLeave={() => {
-          if (sectionRef.current) sectionRef.current.dataset.zone = ''
-        }}
-      >
-        <MockupCanvas
-          controls={false}
-          shadows={false}
-          camera={{ position: [0, 0, CAMERA_Z], fov: DEFAULT_CAMERA_FOV }}
-        >
-          <Ticker anim={anim} target={target} tumble={tumble} />
-
-          {/* One group for the whole rig: the staged models, the gap between
-              them and the strip below all shrink together, so a narrow canvas
-              gets the same composition rather than a cropped one. */}
-          <group scale={fit} position-y={ROW_Y * RIG_DROP * (1 - fit)}>
-            {SHOWCASE.map((dev, i) =>
-              inWindow(i, 2) ? (
-                <StageSlot
-                  key={dev.id}
-                  entry={dev}
-                  index={i}
-                  anim={anim}
-                  tumble={tumble}
-                  color={colorOf(dev)}
-                />
-              ) : null
-            )}
-
-            {SHOWCASE.map((dev, i) =>
-              inWindow(i, 3) ? (
-                <RowSlot
-                  key={`row-${dev.id}`}
-                  entry={dev}
-                  index={i}
-                  anim={anim}
-                  color={colorOf(dev)}
-                  onSelect={select(i)}
-                />
-              ) : null
-            )}
-          </group>
-        </MockupCanvas>
-      </div>
-
-      {/* The markers stay in FRONT: they name the gesture, and a label the
-          device could hide would be worse than no label. */}
-      <div className="carousel-layer carousel-marks" aria-hidden>
-        <span className="carousel-rotate-badge">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-            <path d="M21 3v6h-6" />
-          </svg>
-          Drag to rotate
-        </span>
-        <span className="carousel-chevron" data-side="left">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </span>
-        <span className="carousel-chevron" data-side="right">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </span>
-      </div>
-
       <div className="carousel-bar">
         <div className="carousel-nav">
           <button type="button" className="carousel-arrow" aria-label="Previous mockup" onClick={() => go(active - 1)}>
@@ -1077,12 +994,7 @@ export default function CarouselScene() {
           </button>
           {/* Announced politely: the strip is WebGL geometry, so without this
               a screen-reader user pressing the arrows hears nothing change. */}
-          <p
-            className="carousel-readout"
-            style={{ textTransform: 'uppercase' }}
-            aria-live="polite"
-            aria-atomic="true"
-          >
+          <p className="carousel-readout" aria-live="polite" aria-atomic="true">
             <span className="dim">{counter}</span> · {entry.name} · {entry.res}
           </p>
           <button type="button" className="carousel-arrow" aria-label="Next mockup" onClick={() => go(active + 1)}>
@@ -1092,7 +1004,7 @@ export default function CarouselScene() {
           </button>
         </div>
         <div className="carousel-finishes">
-          <span className="carousel-finish-label">FINISH</span>
+          <span className="carousel-finish-label">Colors</span>
           <span className="carousel-swatches">
             {entry.colorways.map((c) => (
               <button
@@ -1114,25 +1026,113 @@ export default function CarouselScene() {
               />
             ))}
           </span>
-          <span className="carousel-finish-name" style={{ textTransform: 'uppercase' }}>
+          <span className="carousel-finish-name">
             {entry.colorways.find((c) => c.id === selected)?.name}
           </span>
         </div>
+      </div>
+
+      {/*
+       * Stage and its overlays share one positioned box. The washes, the marks
+       * and the glow are all placed off the top of the stage, so they need a
+       * containing block that starts where the stage does - not one that starts
+       * above the bar.
+       */}
+      <div className="carousel-viewport">
+        <div className="carousel-glow" aria-hidden />
+
+        {/*
+         * Hover lighting, BEHIND the canvas. The canvas is alpha-transparent, so
+         * a wash under it reads as light in the scene rather than a film over
+         * the hardware - which is what it looked like when this sat on top.
+         */}
+        <div className="carousel-layer carousel-washes" aria-hidden>
+          <span className="carousel-centre" />
+          <span className="carousel-edge" data-side="left" />
+          <span className="carousel-edge" data-side="right" />
+        </div>
+
+        <div
+          className="carousel-stage"
+          ref={stageRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => {
+            drag.current = null
+            if (sectionRef.current) sectionRef.current.dataset.dragging = 'false'
+          }}
+          onPointerLeave={() => {
+            if (sectionRef.current) sectionRef.current.dataset.zone = ''
+          }}
+        >
+          <MockupCanvas
+            controls={false}
+            shadows={false}
+            camera={{ position: [0, 0, CAMERA_Z], fov: DEFAULT_CAMERA_FOV }}
+          >
+            <Ticker anim={anim} target={target} tumble={tumble} />
+
+            {/* One group for the whole rig: the staged models, the gap between
+                them and the strip below all shrink together, so a narrow canvas
+                gets the same composition rather than a cropped one. */}
+            <group scale={fit} position-y={ROW_Y * RIG_DROP * (1 - fit)}>
+              {SHOWCASE.map((dev, i) =>
+                inWindow(i, 2) ? (
+                  <StageSlot
+                    key={dev.id}
+                    entry={dev}
+                    index={i}
+                    anim={anim}
+                    tumble={tumble}
+                    color={colorOf(dev)}
+                  />
+                ) : null
+              )}
+
+              {SHOWCASE.map((dev, i) =>
+                inWindow(i, 3) ? (
+                  <RowSlot
+                    key={`row-${dev.id}`}
+                    entry={dev}
+                    index={i}
+                    anim={anim}
+                    color={colorOf(dev)}
+                    onSelect={select(i)}
+                  />
+                ) : null
+              )}
+            </group>
+          </MockupCanvas>
+        </div>
+
+        {/* The markers stay in FRONT: they name the gesture, and a label the
+            device could hide would be worse than no label. */}
+        <div className="carousel-layer carousel-marks" aria-hidden>
+          <span className="carousel-rotate-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+              <path d="M21 3v6h-6" />
+            </svg>
+            Drag to rotate
+          </span>
+          <span className="carousel-chevron" data-side="left">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </span>
+          <span className="carousel-chevron" data-side="right">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <div className="carousel-foot">
         <p className="carousel-hint">
           Drag the model to spin it · drag either side to browse
         </p>
-        {/* Hidden when the visitor's system already asked for less motion -
-            the carousel is stopped, so a "pause" control would be a lie. */}
-        {reducedMotion ? null : (
-          <button
-            type="button"
-            className="carousel-playstate"
-            aria-pressed={!playing}
-            onClick={() => setAuto((a) => !a)}
-          >
-            {playing ? 'Pause the carousel' : 'Resume the carousel'}
-          </button>
-        )}
         {/* The strip is geometry in the canvas, so keyboard and screen-reader
             users get the same jumps from real buttons here. */}
         <div className="sr-only">

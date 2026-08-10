@@ -10,21 +10,12 @@ const importSnippet = `import { GalaxyMockup } from 'area-3d-mockups'
 export default function HomePage() {
   return (
     <>
+      {/* Title only: the carousel's own readout - index, object, size, colours -
+          is what sits under the headline now, so the hero says what the page is
+          and the carousel says what you are looking at. */}
       <section className="hero">
         <p className="eyebrow">GPU-accelerated mockups for React</p>
         <h1>Your app. In 3D.</h1>
-        <p className="lede">
-          Twenty-two devices, twenty-four objects. Zero asset files. Fully live.
-        </p>
-        <div className="hero-actions">
-          <Link className="btn btn-primary" href="/docs">
-            Get started
-          </Link>
-          <Link className="btn btn-secondary" href="/demos">
-            Live demos
-          </Link>
-        </div>
-        <p className="install-line">$ npm install area-3d-mockups</p>
       </section>
 
       <HeroCarousel />
@@ -55,9 +46,11 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="quickstart-code">
+          {/* One package: three, fiber and drei are peers, and npm 7+/pnpm 8+
+              pull peers in on their own. The docs' Installation page carries
+              the long version, including the Yarn caveat. */}
           <pre>
-            <span className="prompt">$</span> npm install area-3d-mockups three @react-three/fiber
-            @react-three/drei
+            <span className="prompt">$</span> npm install area-3d-mockups
           </pre>
           <pre>{importSnippet}</pre>
         </div>
