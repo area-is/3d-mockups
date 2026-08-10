@@ -15,6 +15,28 @@ mockup grounds the pole on a virtual ground plane.
   props={{ rotation: [0, -0.18, 0] }}
 />
 
+## `<Billboard>` vs `<BillboardMockup>`
+
+<BareVsMockup object="Billboard" kind="billboard" slot="Face" />
+
+```tsx
+import { MockupCanvas, Billboard, BillboardMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BillboardMockup float style={{ height: 520 }}>
+  <YourApp />
+</BillboardMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Billboard rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Billboard>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

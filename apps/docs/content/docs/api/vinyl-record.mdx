@@ -11,6 +11,28 @@ spindle hole, and the 100 mm center label as a live **circular** DOM area.
 
 <MockupExplorer component="VinylRecordMockup" props={{ rotation: [0, -0.2, 0] }} />
 
+## `<VinylRecord>` vs `<VinylRecordMockup>`
+
+<BareVsMockup object="VinylRecord" kind="vinylRecord" slot="Cover" />
+
+```tsx
+import { MockupCanvas, VinylRecord, VinylRecordMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<VinylRecordMockup float style={{ height: 520 }}>
+  <YourApp />
+</VinylRecordMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <VinylRecord rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </VinylRecord>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

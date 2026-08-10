@@ -11,6 +11,28 @@ the digital sibling of the [billboard](/docs/api/billboard) and
 
 <MockupExplorer component="DOOHTotemMockup" props={{ rotation: [0, -0.18, 0] }} />
 
+## `<DOOHTotem>` vs `<DOOHTotemMockup>`
+
+<BareVsMockup object="DOOHTotem" kind="doohTotem" slot="Front" />
+
+```tsx
+import { MockupCanvas, DOOHTotem, DOOHTotemMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<DOOHTotemMockup float style={{ height: 520 }}>
+  <YourApp />
+</DOOHTotemMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <DOOHTotem rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </DOOHTotem>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

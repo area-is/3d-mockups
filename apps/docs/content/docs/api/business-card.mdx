@@ -13,6 +13,28 @@ on the front - and, optionally, the back.
   props={{ float: true, rotation: [-0.1, -0.35, 0] }}
 />
 
+## `<BusinessCard>` vs `<BusinessCardMockup>`
+
+<BareVsMockup object="BusinessCard" kind="businessCard" slot="Front" />
+
+```tsx
+import { MockupCanvas, BusinessCard, BusinessCardMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BusinessCardMockup float style={{ height: 520 }}>
+  <YourApp />
+</BusinessCardMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <BusinessCard rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </BusinessCard>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

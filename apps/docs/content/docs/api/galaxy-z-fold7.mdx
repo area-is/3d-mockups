@@ -19,6 +19,28 @@ triple camera on the back.
   props={{ color: 'silvershadow', rotation: [0, -0.3, 0] }}
 />
 
+## `<Fold>` vs `<FoldMockup>`
+
+<BareVsMockup object="Fold" kind="fold" slot="Screen" />
+
+```tsx
+import { MockupCanvas, Fold, FoldMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<FoldMockup float style={{ height: 520 }}>
+  <YourApp />
+</FoldMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Fold rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Fold>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the

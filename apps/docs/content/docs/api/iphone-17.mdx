@@ -14,6 +14,28 @@ camera architecture follows the real devices: two-lens pill (17), ultra-thin
 single-lens bar (Air), full-width triple-lens plateau with flash and LiDAR
 (Pro and Pro Max).
 
+## `<IPhone>` vs `<IPhoneMockup>`
+
+<BareVsMockup object="IPhone" kind="iphone" slot="Screen" />
+
+```tsx
+import { MockupCanvas, IPhone, IPhoneMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<IPhoneMockup float style={{ height: 520 }}>
+  <YourApp />
+</IPhoneMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <IPhone rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </IPhone>
+</MockupCanvas>
+```
+
 ## Props
 
 Same API as [`Galaxy`](/docs/api/galaxy-s26), except:

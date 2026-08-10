@@ -13,6 +13,28 @@ chalk menus, sale boards, open/closed signs.
   props={{ rotation: [0, -0.3, 0] }}
 />
 
+## `<AFrameSign>` vs `<AFrameSignMockup>`
+
+<BareVsMockup object="AFrameSign" kind="aFrameSign" slot="Front" />
+
+```tsx
+import { MockupCanvas, AFrameSign, AFrameSignMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<AFrameSignMockup float style={{ height: 520 }}>
+  <YourApp />
+</AFrameSignMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <AFrameSign rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </AFrameSign>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

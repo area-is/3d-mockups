@@ -14,6 +14,28 @@ canvas in the library - both 15.2×2.6 m sides plus the rear doors are live.
   props={{ rotation: [0, -0.35, 0] }}
 />
 
+## `<SemiTrailer>` vs `<SemiTrailerMockup>`
+
+<BareVsMockup object="SemiTrailer" kind="semiTrailer" slot="CurbSide" />
+
+```tsx
+import { MockupCanvas, SemiTrailer, SemiTrailerMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<SemiTrailerMockup float style={{ height: 520 }}>
+  <YourApp />
+</SemiTrailerMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <SemiTrailer rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </SemiTrailer>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

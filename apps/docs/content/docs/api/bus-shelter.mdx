@@ -16,6 +16,28 @@ node for a fully custom board.
 
 <MockupExplorer component="BusShelterMockup" props={{ rotation: [0, -0.55, 0] }} />
 
+## `<BusShelter>` vs `<BusShelterMockup>`
+
+<BareVsMockup object="BusShelter" kind="busShelter" slot="Poster" />
+
+```tsx
+import { MockupCanvas, BusShelter, BusShelterMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BusShelterMockup float style={{ height: 520 }}>
+  <YourApp />
+</BusShelterMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <BusShelter rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </BusShelter>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

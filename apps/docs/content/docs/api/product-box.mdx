@@ -16,6 +16,28 @@ Front, side and top, each its own live surface.
 
 <MockupExplorer component="ProductBoxMockup" props={{ rotation: [0, -0.5, 0] }} />
 
+## `<ProductBox>` vs `<ProductBoxMockup>`
+
+<BareVsMockup object="ProductBox" kind="productBox" slot="Front" />
+
+```tsx
+import { MockupCanvas, ProductBox, ProductBoxMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<ProductBoxMockup float style={{ height: 520 }}>
+  <YourApp />
+</ProductBoxMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <ProductBox rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </ProductBox>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

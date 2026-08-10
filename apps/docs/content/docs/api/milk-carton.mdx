@@ -21,6 +21,28 @@ sealed into it.
 
 <MockupExplorer component="MilkCartonMockup" props={{ rotation: [0, 0.4, 0] }} />
 
+## `<MilkCarton>` vs `<MilkCartonMockup>`
+
+<BareVsMockup object="MilkCarton" kind="milkCarton" slot="Front" />
+
+```tsx
+import { MockupCanvas, MilkCarton, MilkCartonMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<MilkCartonMockup float style={{ height: 520 }}>
+  <YourApp />
+</MilkCartonMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <MilkCarton rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </MilkCarton>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

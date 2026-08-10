@@ -17,6 +17,28 @@ dimensions.
   props={{ rotation: [0, 0.35, 0] }}
 />
 
+## `<ShoppingBag>` vs `<ShoppingBagMockup>`
+
+<BareVsMockup object="ShoppingBag" kind="shoppingBag" slot="Front" />
+
+```tsx
+import { MockupCanvas, ShoppingBag, ShoppingBagMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<ShoppingBagMockup float style={{ height: 520 }}>
+  <YourApp />
+</ShoppingBagMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <ShoppingBag rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </ShoppingBag>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

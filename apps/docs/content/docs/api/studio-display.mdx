@@ -31,6 +31,28 @@ and the 2026 product shots for everything on the back.
   props={{ rotation: [0, -0.25, 0] }}
 />
 
+## `<StudioDisplay>` vs `<StudioDisplayMockup>`
+
+<BareVsMockup object="StudioDisplay" kind="studioDisplay" slot="Screen" />
+
+```tsx
+import { MockupCanvas, StudioDisplay, StudioDisplayMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<StudioDisplayMockup float style={{ height: 520 }}>
+  <YourApp />
+</StudioDisplayMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <StudioDisplay rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </StudioDisplay>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
