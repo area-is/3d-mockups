@@ -122,7 +122,7 @@ jobs:
             if (succeeded && !urls.alias && !urls.preview) {
               core.warning(
                 'Build succeeded but no preview URL was found in the check-run output. ' +
-                'Preview URLs are opt-in per Worker, so check that they are enabled — and ' +
+                'Preview URLs are opt-in per Worker, so check that they are enabled, and ' +
                 'if they are, the labels in the summary have probably changed again.'
               );
             }

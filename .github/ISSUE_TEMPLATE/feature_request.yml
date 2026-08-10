@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Check the [roadmap](https://github.com/area-is/3d-mockups/blob/main/apps/docs/content/docs/roadmap.mdx)
-        first — it may already be planned.
+        first, it may already be planned.
 
   - type: textarea
     id: what
@@ -14,7 +14,7 @@ body:
       label: What would you like to render?
       description: >
         For a new device or object, real dimensions and a reference photo or
-        product page help enormously — everything here is modelled from
+        product page help enormously. Everything here is modelled from
         published hardware measurements rather than 3D asset files.
     validations:
       required: true

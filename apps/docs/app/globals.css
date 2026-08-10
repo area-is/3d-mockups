@@ -437,8 +437,22 @@ code {
   padding: clamp(40px, 6vw, 64px) clamp(16px, 4vw, 48px) 0;
 }
 
-/* Nothing follows the headline in the hero any more - the carousel's readout
-   is the next line on the page, and it brings its own spacing. */
+/*
+ * The hero's eyebrow is a sentence, not a label. Everywhere else the class is
+ * a tracked-out uppercase tag (the 404's "404"), which is why this overrides
+ * rather than rewrites `.eyebrow`: at 20px in sentence case, the tracking and
+ * the caps both read as shouting.
+ */
+.hero .eyebrow {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0 0 12px;
+}
+
+/* Nothing follows the headline in the hero any more, the carousel's readout
+   is the next line on the page and it brings its own spacing. */
 .hero h1 {
   font-size: clamp(44px, 7vw, 76px);
   font-weight: 700;
@@ -809,10 +823,11 @@ code {
  * and wraps onto a second line rather than pushing the arrows off the edge.
  */
 .carousel-readout {
-  font-family: var(--font-mono);
+  /* Inter, like the rest of the page: the readout sits under the headline now,
+     so it reads as a sentence about the object rather than a spec sticker. */
+  font-family: var(--font-sans);
   font-size: clamp(11.5px, 1.8vw, 13.5px);
-  /* Explicit rather than dropped: `body` tightens the whole page by -0.011em,
-     and this line is mono, where that is a squeeze rather than a refinement. */
+  /* Explicit rather than dropped: `body` tightens the whole page by -0.011em. */
   letter-spacing: 0;
   color: var(--muted);
   margin: 0;
@@ -836,17 +851,21 @@ code {
   justify-content: center;
 }
 
+/* Set with the readout above them, so the whole bar is one voice. */
+.carousel-finish-label,
+.carousel-finish-name {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  letter-spacing: 0;
+}
+
 .carousel-finish-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
   color: var(--text-low);
 }
 
+/* A floor, not a width: it keeps the swatches from sliding about as the
+   selected finish's name changes length. */
 .carousel-finish-name {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
   color: var(--muted);
   min-width: 96px;
 }

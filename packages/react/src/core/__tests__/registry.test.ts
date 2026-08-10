@@ -6,8 +6,8 @@ import { MOCKUP_KINDS, mockupInfo, mockupRegions, type MockupKind } from '../met
  *
  * These are the checks the visual harness structurally cannot make: it renders
  * a mockup and diffs pixels, so a metrics resolver that disagrees with the
- * component it claims to describe produces a perfectly stable — and perfectly
- * wrong — picture. Every failure mode encoded here was a real bug found in the
+ * component it claims to describe produces a perfectly stable, perfectly
+ * wrong picture. Every failure mode encoded here was a real bug found in the
  * repository audit.
  */
 

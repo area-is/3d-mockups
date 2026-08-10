@@ -1,7 +1,7 @@
 name: Release area-3d-mockups
 
 # Publishes `packages/react` to npm as `area-3d-mockups` using npm Trusted
-# Publishing (OIDC) — no NPM_TOKEN, no secret in this repo at all. GitHub mints
+# Publishing (OIDC): no NPM_TOKEN, no secret in this repo at all. GitHub mints
 # a short-lived OIDC token, the npm CLI exchanges it for a publish credential,
 # and npm attaches a provenance attestation linking the tarball to this commit.
 #
@@ -21,7 +21,7 @@ name: Release area-3d-mockups
 #    config is inert without it.)
 #
 # This job deliberately declares no `environment:`. Adding one is a reasonable
-# upgrade — it gives a deployment record and an optional approval gate — but the
+# upgrade (it gives a deployment record and an optional approval gate), but the
 # GitHub environment name becomes part of the OIDC claim, so it has to be created
 # in repo settings AND passed to the trust config as `--env <name>` or the
 # exchange stops matching.
@@ -35,7 +35,7 @@ name: Release area-3d-mockups
 #   git push origin main --follow-tags
 #
 # The commit and the tag are deliberate steps, not decoration: run against a
-# workspace (`-w`), `npm version` only rewrites the manifest and the lockfile —
+# workspace (`-w`), `npm version` only rewrites the manifest and the lockfile:
 # it makes no commit and no tag, unlike its single-package behaviour. Leave them
 # out and `--follow-tags` pushes nothing, the tag trigger never fires, and the
 # release looks like it succeeded while nothing was published.
@@ -55,7 +55,7 @@ on:
         type: boolean
         default: true
 
-# id-token: write is what makes OIDC — and therefore this whole workflow —
+# id-token: write is what makes OIDC, and therefore this whole workflow,
 # possible. Everything else stays read-only.
 permissions:
   contents: read
@@ -70,7 +70,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           # Trusted publishing needs Node 22.14+ and npm 11.5.1+. Node 22 still
-          # ships an npm 10.x, so the CLI has to be upgraded explicitly — without
+          # ships an npm 10.x, so the CLI has to be upgraded explicitly. Without
           # it the publish falls back to looking for a token and fails.
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'

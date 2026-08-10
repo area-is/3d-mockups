@@ -4,8 +4,8 @@
  *
  * ⚠️ SET THIS FOR THE REAL DEPLOYMENT. Nothing else in the repo records the
  * production URL, so the fallback below is a placeholder built from the Worker
- * name in `wrangler.jsonc`. Point it at the actual origin — a custom domain if
- * there is one — by setting `NEXT_PUBLIC_SITE_URL` as a *build* variable
+ * name in `wrangler.jsonc`. Point it at the actual origin (a custom domain if
+ * there is one) by setting `NEXT_PUBLIC_SITE_URL` as a *build* variable
  * (Workers & Pages → area-3d-mockups-docs → Settings → Build → Variables),
  * because `metadataBase` is baked in at build time, not read at runtime.
  *
@@ -22,7 +22,7 @@ export const OG_IMAGE = {
   url: '/og.png',
   width: 1200,
   height: 630,
-  alt: 'area-3d-mockups — a live 3D phone mockup with real DOM on the glass',
+  alt: 'area-3d-mockups: a live 3D phone mockup with real DOM on the glass',
 }
 
 /** Shared Open Graph / Twitter block; pages override `title` and `description`. */

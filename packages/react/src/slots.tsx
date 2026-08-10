@@ -71,7 +71,7 @@ export interface SlotProps extends SurfaceProps {
  *
  * Deliberately not part of `SlotProps`. That type is the public surface
  * vocabulary a caller writes on `<BookMockup.Spine>`, and it is pinned to
- * exactly `SurfaceProps` + `children` by a type test — `region` is something
+ * exactly `SurfaceProps` + `children` by a type test. `region` is something
  * the library fills in, never something you pass.
  */
 export interface CollectedSlot extends SlotProps {

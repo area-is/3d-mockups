@@ -40,7 +40,7 @@ export default function HomePage() {
       <section className="quickstart">
         <div className="quickstart-copy">
           <h2>Quick start</h2>
-          <p>One component. Anything you pass as children shows up on the glass — live.</p>
+          <p>One component. Anything you pass as children shows up on the glass, live.</p>
           <Link className="accent-link" href="/docs">
             Read the docs →
           </Link>

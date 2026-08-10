@@ -766,7 +766,7 @@
   line-height: 1;
   /*
    * The theme's own on-primary colour, not a hardcoded white. White on the
-   * dark theme's #31d322 accent is about 2:1 — nowhere near readable — and
+   * dark theme's #31d322 accent is about 2:1 (nowhere near readable), and it
    * still fails at this size on the light theme's green.
    */
   color: var(--color-fd-primary-foreground);

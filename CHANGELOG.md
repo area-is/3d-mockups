@@ -9,8 +9,8 @@ Notable changes to `area-3d-mockups`. This project follows
 
 - **`open` is now `openAngle` on `FoldMockup`/`FlipMockup`** (and `Fold`/`Flip`,
   and in `mockupInfo('fold' | 'flip', …)`). It matches `LaptopMockup`'s existing
-  `openAngle`, and it says what the number means. No alias is kept — the package
-  has not been published.
+  `openAngle`, and it says what the number means. No alias is kept, as the
+  package has not been published.
 
   ```diff
   - <FoldMockup open={110} />
@@ -21,7 +21,7 @@ Notable changes to `area-3d-mockups`. This project follows
 
 - **A hinge angle near flat snapped to flat and flickered.** The flat
   single-screen pose claimed everything from 177° up, so three degrees of travel
-  all rendered fully flat — a slider felt magnetised to 180 — and each crossing
+  all rendered fully flat (a slider felt magnetised to 180), and each crossing
   of that edge swapped one live screen for two, tearing down the DOM and
   flashing the content. Around the boundary a drag re-crossed it repeatedly. The
   flat pose now claims only genuinely flat angles (`FLAT_EPSILON`), so every
@@ -30,7 +30,7 @@ Notable changes to `area-3d-mockups`. This project follows
 - **`railColor` derived rails in the wrong colour space.** Its HSL constants
   were fitted against sRGB values measured off retail hardware, but three's
   HSL accessors default to the linear working space, so every custom `color`
-  produced a rail far too light and too saturated — a Navy back returned
+  produced a rail far too light and too saturated: a Navy back returned
   `#66718e` instead of `#414a60`. Named retail colorways were unaffected
   (they carry a measured `frameColor`).
 - **`mockupInfo('van')` and `mockupInfo('bus')` measured the wrong surface.**
@@ -66,22 +66,22 @@ Notable changes to `area-3d-mockups`. This project follows
 
 ### Added
 
-- **`MilkCartonMockup` / `MilkCarton`** — a gable-top beverage carton
+- **`MilkCartonMockup` / `MilkCarton`**: a gable-top beverage carton
   (95×241×95 mm, the US half-gallon, resizable in millimeters via `size`):
   poly-coated board walls, the roof folded up to a ridge, an ear fold pinching
   each end inward the way a real carton's excess board folds, the sealed fin,
   and a ribbed screw cap on the front roof panel (knurled from the same
   `gearShape` the watch crown is). Live surfaces on all four walls plus
-  both roof panels — the cap rides over the front one the way a real spout
+  both roof panels; the cap rides over the front one the way a real spout
   rides over the print. Measures as `mockupInfo('milkCarton')`.
 - **Reduced-motion support.** `autoRotate`, `float` and the `LEDText`
   animations hold still when the visitor's system asks for reduced motion.
   Gestures are untouched. The hook is exported as `usePrefersReducedMotion`.
-- **`mockupRegions(kind)`** — the regions a kind advertises, without measuring.
+- **`mockupRegions(kind)`**: the regions a kind advertises, without measuring.
 - Unit tests (`npm run test`) covering registry invariants, measurement
   defaults, colour derivation and framing fallbacks.
 - `sync-device-table.mjs` now also compares each modelled aspect against the
-  hand-maintained Panel column — the one check `devices:sync` cannot satisfy by
+  hand-maintained Panel column, the one check `devices:sync` cannot satisfy by
   rewriting the columns it verifies.
 - **The TV's `frame` variant grew a real back**, proportioned from Samsung's
   published One Connect placement: an inset rear plate whose rim seam is the
