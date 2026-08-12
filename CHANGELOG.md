@@ -19,6 +19,19 @@ Notable changes to `area-3d-mockups`. This project follows
 
 ### Fixed
 
+- **The iPhone 17 Pro and Pro Max rear lenses rendered inside out.** Their
+  collars stand 0.7 mm proud of the camera plateau, but `LensRing` laid the
+  bezel, barrel, front element and cover glass out at fixed depths behind the
+  collar face - depths larger than that collar is tall. Every one of them sank
+  into the plateau, which is a solid, so each lens came out as a black annulus
+  around a disc of *body-coloured pedestal*: glass the same colour as the
+  phone, on the two models whose cameras are the reason to look at the back.
+  The stack is now laid out as fractions of the collar's height and closed with
+  its own opaque floor, so a 0.5 mm collar and a 2 mm one both show a real bore
+  and neither can show the surface it stands on. Lens `pupil` values above 0.45
+  were also being clamped away, which had been quietly flattening the iPads'
+  wide front elements.
+
 - **A hinge angle near flat snapped to flat and flickered.** The flat
   single-screen pose claimed everything from 177° up, so three degrees of travel
   all rendered fully flat (a slider felt magnetised to 180), and each crossing
@@ -92,6 +105,22 @@ Notable changes to `area-3d-mockups`. This project follows
 
 ### Changed
 
+- **The iPhone camera hardware is modelled from Apple's macro photography**,
+  not just from the accessory drawings, which stop at the plateau. Lens collars
+  are wider (the bore is 0.72 of the collar radius, as measured off the retail
+  shots) with a rolled shoulder that carries the bright arc every product photo
+  has; the optics are two elements rather than one, so the studio softbox
+  reflects as a compact coating flare instead of a white band across the whole
+  lens, tinted per lens because the coatings are. The flash is a domed phosphor
+  window in a glassy margin instead of a flat cream disc, and the LiDAR scanner
+  and the mic beside it are no longer the same dot: one is black glass, the
+  other a drilled hole.
+- **The 17 Pro / Pro Max back is anodized aluminum, not glass**, and its camera
+  plateau is that unibody's own shelf, so both take the same matte finish. The
+  plateau used to carry a clearcoat of its own, which put a bright rim around
+  its whole outline and made it read as a glossy tile stuck onto the phone. The
+  Ceramic Shield charging window below it is now the only glossy panel on a Pro
+  back, which is the contrast the two-tone design is built on.
 - **Peer dependencies now state what actually works**: `react`/`react-dom`
   `>=19` (react-three-fiber 9 and drei 10 both require React 19, so `>=18` was
   unsatisfiable) and `three` `>=0.179.0` (the bundled CSG engine's floor).

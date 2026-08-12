@@ -68,11 +68,20 @@ export interface IPhoneSpec {
       raise?: number
       wall?: number
     }
-    /** Lens rings with absolute positions. `h` is how far the ring stands proud of the pedestal. */
-    lenses: { x: number; y: number; r: number; h?: number; pupil?: number }[]
+    /**
+     * Lens rings with absolute positions. `h` is how far the ring stands proud
+     * of the pedestal, `pupil` the front element's fraction of the ring radius
+     * and `glint` its coating flare - Apple's macro shots show each lens in a
+     * cluster flaring a different colour, because the AR coatings differ.
+     */
+    lenses: { x: number; y: number; r: number; h?: number; pupil?: number; glint?: string }[]
     flash: { x: number; y: number; r: number }
-    /** Small auxiliary dots (mic, LiDAR…). */
-    dots?: { x: number; y: number; r: number }[]
+    /**
+     * Small auxiliary openings. `mic` is a drilled hole, `sensor` a black-glass
+     * window (the LiDAR scanner) - they are the same circle on a drawing and
+     * completely different objects in a photo.
+     */
+    dots?: { x: number; y: number; r: number; kind?: 'mic' | 'sensor' }[]
   }
   /**
    * Ceramic Shield window on the lower back (the 17 Pro generation's aluminum
@@ -122,11 +131,11 @@ const IPHONE_17: IPhoneSpec = {
     style: 'pill',
     frame: { x: 0.5949, y: 1.4086, width: 0.6697, height: 1.1381, raise: 0.0479, wall: 0.0703 },
     lenses: [
-      { x: 0.5949, y: 1.647, r: 0.2153, h: 0.045 },
-      { x: 0.5949, y: 1.1701, r: 0.2153, h: 0.045 },
+      { x: 0.5949, y: 1.647, r: 0.2153, h: 0.045, pupil: 0.5, glint: '#3f4f7a' },
+      { x: 0.5949, y: 1.1701, r: 0.2153, h: 0.045, pupil: 0.46, glint: '#4b4270' },
     ],
     flash: { x: 0.1429, y: 1.4086, r: 0.0845 },
-    dots: [{ x: 0.4086, y: 1.4086, r: 0.0135 }],
+    dots: [{ x: 0.4086, y: 1.4086, r: 0.0135, kind: 'mic' }],
   },
   bottomEdge: {
     usb: { x: 0, width: 0.239, height: 0.071 },
@@ -174,9 +183,9 @@ const IPHONE_17_AIR: IPhoneSpec = {
   rearCamera: {
     style: 'bar',
     frame: { x: 0, y: 1.627, width: 1.739, height: 0.889, radius: 0.4445, raise: 0.082, wall: 0.128 },
-    lenses: [{ x: 0.5669, y: 1.6638, r: 0.21, h: 0.0713 }],
+    lenses: [{ x: 0.5669, y: 1.6638, r: 0.21, h: 0.0713, pupil: 0.5, glint: '#3f4f7a' }],
     flash: { x: -0.5672, y: 1.6638, r: 0.0848 },
-    dots: [{ x: -0.3766, y: 1.6638, r: 0.031 }],
+    dots: [{ x: -0.3766, y: 1.6638, r: 0.031, kind: 'mic' }],
   },
   bottomEdge: {
     usb: { x: 0, width: 0.239, height: 0.071 },
@@ -222,18 +231,28 @@ const IPHONE_17_PRO: IPhoneSpec = {
   // 14.37 mm in from the top-left corner (rows 14.37 / 33.61, third lens at
   // 32.36 across on the 23.99 mm center line), and the Ø6.80 flash, Ø1.05 mic
   // and Ø6.65 LiDAR share the 58.03 mm column at rows 13.82 / 23.99 / 34.16.
+  //
+  // Collar height and the optics' proportions come off Apple's own macro
+  // photography of this generation rather than the drawing, which stops at the
+  // plateau: the anodized collars stand ~1.2 mm proud of the plateau (so the
+  // module clears the back by ~3.8 mm in total), the black bore fills ~0.72 of
+  // the collar and the front element ~0.52, and the three coatings flare
+  // visibly differently - blue on the main, violet on the ultra wide.
   rearCamera: {
     style: 'bar',
     frame: { x: 0, y: 1.4167, width: 1.895, height: 1.1647, radius: 0.269, raise: 0.0686 },
     lenses: [
-      { x: 0.5802, y: 1.6321, r: 0.215, h: 0.02 }, // main (top-left from the back)
-      { x: 0.5802, y: 1.1142, r: 0.215, h: 0.02 }, // ultra wide (bottom-left)
-      { x: 0.096, y: 1.3733, r: 0.215, h: 0.02 }, // telephoto (inboard, mid-height)
+      // main (top-left from the back)
+      { x: 0.5802, y: 1.6321, r: 0.215, h: 0.033, pupil: 0.48, glint: '#3f4f7a' },
+      // ultra wide (bottom-left)
+      { x: 0.5802, y: 1.1142, r: 0.215, h: 0.033, pupil: 0.46, glint: '#54406e' },
+      // telephoto (inboard, mid-height) - the tetraprism shows the widest glass
+      { x: 0.096, y: 1.3733, r: 0.215, h: 0.033, pupil: 0.5, glint: '#3a4a70' },
     ],
     flash: { x: -0.5949, y: 1.647, r: 0.0915 },
     dots: [
-      { x: -0.5949, y: 1.0994, r: 0.0895 }, // LiDAR
-      { x: -0.5949, y: 1.3733, r: 0.0141 }, // mic
+      { x: -0.5949, y: 1.0994, r: 0.0895, kind: 'sensor' }, // LiDAR
+      { x: -0.5949, y: 1.3733, r: 0.0141, kind: 'mic' }, // mic
     ],
   },
   // Apple's drawing: 64.06 x 98.14 mm with generous ~16 mm corners, spanning
@@ -298,14 +317,15 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
     style: 'bar',
     frame: { x: 0, y: 1.5969, width: 2.06, height: 1.1642, radius: 0.32, raise: 0.0686 },
     lenses: [
-      { x: 0.6632, y: 1.8127, r: 0.219, h: 0.02 },
-      { x: 0.6632, y: 1.2947, r: 0.219, h: 0.02 },
-      { x: 0.179, y: 1.5537, r: 0.219, h: 0.02 },
+      // same modules as the Pro, so the same collars and coatings
+      { x: 0.6632, y: 1.8127, r: 0.219, h: 0.033, pupil: 0.48, glint: '#3f4f7a' }, // main
+      { x: 0.6632, y: 1.2947, r: 0.219, h: 0.033, pupil: 0.46, glint: '#54406e' }, // ultra wide
+      { x: 0.179, y: 1.5537, r: 0.219, h: 0.033, pupil: 0.5, glint: '#3a4a70' }, // telephoto
     ],
     flash: { x: -0.677, y: 1.8127, r: 0.0915 },
     dots: [
-      { x: -0.677, y: 1.28, r: 0.0895 }, // LiDAR
-      { x: -0.677, y: 1.5537, r: 0.0155 }, // mic
+      { x: -0.677, y: 1.28, r: 0.0895, kind: 'sensor' }, // LiDAR
+      { x: -0.677, y: 1.5537, r: 0.0155, kind: 'mic' }, // mic
     ],
   },
   // Apple's drawing: Ceramic Shield window 70.19 x 111.57 mm with ~16 mm
