@@ -21,7 +21,7 @@ body:
     attributes:
       label: How to reproduce
       description: >
-        The smallest snippet that shows it — which mockup, which props. A
+        The smallest snippet that shows it: which mockup, which props. A
         StackBlitz or CodeSandbox link is ideal but not required.
       render: tsx
     validations:

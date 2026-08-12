@@ -23,6 +23,28 @@ against the official product photography.
   props={{ color: 'coralred', rotation: [0, -0.3, 0] }}
 />
 
+## `<Flip>` vs `<FlipMockup>`
+
+<BareVsMockup object="Flip" kind="flip" slot="Screen" />
+
+```tsx
+import { MockupCanvas, Flip, FlipMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<FlipMockup float style={{ height: 520 }}>
+  <YourApp />
+</FlipMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Flip rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Flip>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the

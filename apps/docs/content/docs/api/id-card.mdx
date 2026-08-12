@@ -22,6 +22,28 @@ around a real opening.
   props={{ float: true, rotation: [0, -0.25, 0.04] }}
 />
 
+## `<IDCard>` vs `<IDCardMockup>`
+
+<BareVsMockup object="IDCard" kind="idCard" slot="Front" />
+
+```tsx
+import { MockupCanvas, IDCard, IDCardMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<IDCardMockup float style={{ height: 520 }}>
+  <YourApp />
+</IDCardMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <IDCard rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </IDCard>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

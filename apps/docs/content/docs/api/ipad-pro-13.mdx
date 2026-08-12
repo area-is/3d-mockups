@@ -20,6 +20,28 @@ clusters in both short edges, and the front camera in the landscape-top bezel.
 The virtual display swaps to 1376×1032 in landscape - real desktop-class
 layouts apply.
 
+## `<IPad>` vs `<IPadMockup>`
+
+<BareVsMockup object="IPad" kind="ipad" slot="Screen" />
+
+```tsx
+import { MockupCanvas, IPad, IPadMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<IPadMockup float style={{ height: 520 }}>
+  <YourApp />
+</IPadMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <IPad rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </IPad>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

@@ -2,7 +2,7 @@ name: CI
 
 # Runs on every PR and every push to main. Deploys are handled by Cloudflare
 # Workers Builds (configured in the dashboard, not here) and releases by
-# release.yml on a tag — this workflow only checks.
+# release.yml on a tag. This workflow only checks.
 
 on:
   pull_request:
@@ -28,8 +28,8 @@ jobs:
           node-version: '22'
           cache: npm
 
-      # `npm ci` runs the `prepare` hooks, which build packages/react/dist —
-      # the device check and the docs build both read it.
+      # `npm ci` runs the `prepare` hooks, which build packages/react/dist.
+      # The device check and the docs build both read it.
       - name: Install and build the package
         run: npm ci
 
@@ -52,7 +52,7 @@ jobs:
           node scripts/extract-demo-sources.mjs
           node scripts/extract-prop-tables.mjs
           git diff --exit-code -- lib/ \
-            || (echo "::error::lib/*.generated.ts is stale — run the extract scripts and commit the result." && exit 1)
+            || (echo "::error::lib/*.generated.ts is stale. Run the extract scripts and commit the result." && exit 1)
 
       - name: Build the docs site
         run: npm run build:docs

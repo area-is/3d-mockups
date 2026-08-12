@@ -15,6 +15,28 @@ floor.
   props={{ rotation: [0, 0.18, 0] }}
 />
 
+## `<RollupBanner>` vs `<RollupBannerMockup>`
+
+<BareVsMockup object="RollupBanner" kind="rollupBanner" slot="Banner" />
+
+```tsx
+import { MockupCanvas, RollupBanner, RollupBannerMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<RollupBannerMockup float style={{ height: 520 }}>
+  <YourApp />
+</RollupBannerMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <RollupBanner rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </RollupBanner>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

@@ -21,6 +21,28 @@ The window on screen is real DOM, not a texture - drag anywhere to orbit. The
 keyboard and palm rest occlude it per-pixel, so the screen's reflection ends
 exactly where the hardware begins.
 
+## `<Laptop>` vs `<LaptopMockup>`
+
+<BareVsMockup object="Laptop" kind="laptop" slot="Screen" />
+
+```tsx
+import { MockupCanvas, Laptop, LaptopMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<LaptopMockup float style={{ height: 520 }}>
+  <YourApp />
+</LaptopMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Laptop rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Laptop>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

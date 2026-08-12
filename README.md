@@ -78,7 +78,7 @@ npm run test       # core unit tests (no DOM, no WebGL)
 npm run visual     # visual regression vs baselines (needs `npm run dev` running)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for what each check catches — they overlap
+See [CONTRIBUTING.md](CONTRIBUTING.md) for what each check catches; they overlap
 less than they look.
 
 ## Publishing the package
@@ -102,7 +102,7 @@ cd packages/react
 npm publish --access public
 ```
 
-Then attach the publisher once — the command and its caveats are documented at the top
+Then attach the publisher once. The command and its caveats are documented at the top
 of `release.yml`. The `prepare` script builds `dist/` automatically before publish,
 and the core is bundled into `area-3d-mockups`, so it is not published separately.
 
@@ -158,14 +158,14 @@ two indirections worth knowing about:
 - **`npm run build` in `apps/docs` is `opennextjs-cloudflare build`, not `next build`.**
   Wrangler needs `.open-next/worker.js`, which a plain Next build never produces. The
   Next build survives as `build:next`, and `open-next.config.ts` sets that as OpenNext's
-  `buildCommand` — without it the adapter would fall back to its own default of
+  `buildCommand`. Without it the adapter would fall back to its own default of
   `npm run build` and recurse into itself.
 - **`wrangler deploy` re-executes itself as `opennextjs-cloudflare deploy`.** It detects
   an OpenNext project from a `next.config.*`, an `open-next.config.*` and an installed
   `@opennextjs/cloudflare`, then hands off. That hand-off is the seam where cache
   population would happen if `open-next.config.ts` ever gains an incremental cache.
 
-`wrangler versions upload` has no such hand-off — it uploads the built Worker directly.
+`wrangler versions upload` has no such hand-off: it uploads the built Worker directly.
 That is equivalent today, because the incremental cache is `dummy` and there is nothing
 to populate. If that changes, the non-production command has to become an explicit
 `opennextjs-cloudflare upload` rather than the default.

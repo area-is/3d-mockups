@@ -416,13 +416,6 @@ code {
   color: var(--accent);
 }
 
-.install-line {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-low);
-  margin: 0;
-}
-
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -444,19 +437,28 @@ code {
   padding: clamp(40px, 6vw, 64px) clamp(16px, 4vw, 48px) 0;
 }
 
+/*
+ * The hero's eyebrow is a sentence, not a label. Everywhere else the class is
+ * a tracked-out uppercase tag (the 404's "404"), which is why this overrides
+ * rather than rewrites `.eyebrow`: at 20px in sentence case, the tracking and
+ * the caps both read as shouting.
+ */
+.hero .eyebrow {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0 0 12px;
+}
+
+/* Nothing follows the headline in the hero any more, the carousel's readout
+   is the next line on the page and it brings its own spacing. */
 .hero h1 {
   font-size: clamp(44px, 7vw, 76px);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1;
-  margin: 0 0 16px;
-}
-
-.hero .lede {
-  font-size: clamp(15.5px, 2vw, 18px);
-  color: var(--muted);
-  margin: 0 0 28px;
-  text-wrap: pretty;
+  margin: 0;
 }
 
 .hero-actions {
@@ -514,6 +516,16 @@ code {
     --carousel-fit: 1;
     --carousel-stage-h: clamp(420px, 118vw, 560px);
   }
+}
+
+/*
+ * The stage and everything layered over it. The washes, the marks and the glow
+ * are placed from the top of the stage, so they need a containing block that
+ * begins there - the section itself no longer does, now that the readout bar
+ * sits above it.
+ */
+.carousel-viewport {
+  position: relative;
 }
 
 .carousel-glow {
@@ -757,12 +769,25 @@ code {
   animation: pulse 1.6s ease-in-out infinite;
 }
 
+/*
+ * The readout bar, ABOVE the stage: it reads as the hero's subtitle, so it
+ * takes the space the lede used to and the headline's own margin is the gap
+ * over it.
+ */
 .carousel-bar {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding: 22px 16px 0;
+  padding: 20px 16px 6px;
+}
+
+/* What is left below the stage: the gesture hint and the off-screen jumps. */
+.carousel-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px 0;
 }
 
 .carousel-nav {
@@ -798,9 +823,12 @@ code {
  * and wraps onto a second line rather than pushing the arrows off the edge.
  */
 .carousel-readout {
-  font-family: var(--font-mono);
-  font-size: clamp(10.5px, 1.6vw, 12px);
-  letter-spacing: 0.16em;
+  /* Inter, like the rest of the page: the readout sits under the headline now,
+     so it reads as a sentence about the object rather than a spec sticker. */
+  font-family: var(--font-sans);
+  font-size: clamp(11.5px, 1.8vw, 13.5px);
+  /* Explicit rather than dropped: `body` tightens the whole page by -0.011em. */
+  letter-spacing: 0;
   color: var(--muted);
   margin: 0;
   min-width: min(360px, 58vw);
@@ -823,17 +851,21 @@ code {
   justify-content: center;
 }
 
+/* Set with the readout above them, so the whole bar is one voice. */
+.carousel-finish-label,
+.carousel-finish-name {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  letter-spacing: 0;
+}
+
 .carousel-finish-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
   color: var(--text-low);
 }
 
+/* A floor, not a width: it keeps the swatches from sliding about as the
+   selected finish's name changes length. */
 .carousel-finish-name {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
   color: var(--muted);
   min-width: 96px;
 }
@@ -1255,25 +1287,10 @@ code {
   inset: -10px;
 }
 
-/* The carousel's play/pause control (WCAG 2.2.2 - moving content needs a stop). */
-.carousel-playstate {
-  appearance: none;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--muted);
-  cursor: pointer;
-  font: inherit;
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
-  margin-top: 10px;
-  padding: 7px 16px;
-  text-transform: uppercase;
-  transition: color 0.18s ease, border-color 0.18s ease;
-}
-
-.carousel-playstate:hover,
-.carousel-playstate:focus-visible {
-  color: var(--accent);
-  border-color: var(--accent);
-}
+/*
+ * The carousel's play/pause control is gone by request. What is left of WCAG
+ * 2.2.2's "moving content needs a stop": the auto-advance halts permanently at
+ * the first arrow, swatch or drag, and `prefers-reduced-motion` keeps it from
+ * ever starting. Neither is a control on the page, so a visitor who wants the
+ * motion stopped without touching the carousel has only the system setting.
+ */

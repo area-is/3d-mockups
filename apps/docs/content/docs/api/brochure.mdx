@@ -13,6 +13,28 @@ regardless of what order you write them in. Each panel is independent live DOM.
 
 <MockupExplorer component="BrochureMockup" props={{ rotation: [0, -0.12, 0] }} />
 
+## `<Brochure>` vs `<BrochureMockup>`
+
+<BareVsMockup object="Brochure" kind="brochure" slot="FrontLeft" />
+
+```tsx
+import { MockupCanvas, Brochure, BrochureMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BrochureMockup float style={{ height: 520 }}>
+  <YourApp />
+</BrochureMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Brochure rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Brochure>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

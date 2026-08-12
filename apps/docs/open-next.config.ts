@@ -15,7 +15,7 @@ export default {
 
   /**
    * `opennextjs-cloudflare build` shells out to the app's own Next.js build,
-   * and under npm that defaults to `npm run build` — which is this adapter
+   * and under npm that defaults to `npm run build`, which is this adapter
    * again, so it would recurse forever. Pointing it at the plain Next build is
    * what lets `build` keep the name Workers Builds expects by default.
    */

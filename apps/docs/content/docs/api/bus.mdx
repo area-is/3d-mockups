@@ -23,6 +23,28 @@ destination sign. Any React node still works for full custom control.
 
 <MockupExplorer component="BusMockup" props={{ rotation: [0, 0.35, 0] }} />
 
+## `<Bus>` vs `<BusMockup>`
+
+<BareVsMockup object="Bus" kind="bus" slot="CurbSide" />
+
+```tsx
+import { MockupCanvas, Bus, BusMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BusMockup float style={{ height: 520 }}>
+  <YourApp />
+</BusMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Bus rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Bus>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

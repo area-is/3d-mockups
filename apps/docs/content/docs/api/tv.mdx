@@ -19,6 +19,28 @@ ends and grow only mildly across the range.
   props={{ rotation: [0, -0.22, 0] }}
 />
 
+## `<TVSet>` vs `<TVSetMockup>`
+
+<BareVsMockup object="TVSet" kind="tv" slot="Screen" />
+
+```tsx
+import { MockupCanvas, TVSet, TVSetMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<TVSetMockup float style={{ height: 520 }}>
+  <YourApp />
+</TVSetMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <TVSet rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </TVSet>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

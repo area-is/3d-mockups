@@ -31,6 +31,28 @@ band that lays open, see [Galaxy Watch](/docs/api/galaxy-watch-8).
   props={{ float: true, color: '#1c1d21', bandColor: '#33415c', rotation: [0, -0.35, 0] }}
 />
 
+## `<AppleWatch>` vs `<AppleWatchMockup>`
+
+<BareVsMockup object="AppleWatch" kind="appleWatch" slot="Screen" />
+
+```tsx
+import { MockupCanvas, AppleWatch, AppleWatchMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<AppleWatchMockup float style={{ height: 520 }}>
+  <YourApp />
+</AppleWatchMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <AppleWatch rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </AppleWatch>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

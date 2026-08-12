@@ -19,6 +19,28 @@ Real editorial CSS lays out exactly as it would in a browser at 480×620.
   props={{ rotation: [0, -0.3, 0] }}
 />
 
+## `<Magazine>` vs `<MagazineMockup>`
+
+<BareVsMockup object="Magazine" kind="magazine" slot="Cover" />
+
+```tsx
+import { MockupCanvas, Magazine, MagazineMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<MagazineMockup float style={{ height: 520 }}>
+  <YourApp />
+</MagazineMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Magazine rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Magazine>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

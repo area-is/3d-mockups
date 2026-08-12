@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for taking an interest. This is a small project, so the process is
-light — but the checks below are what keep the mockups trustworthy, and they
+light, but the checks below are what keep the mockups trustworthy, and they
 are all runnable locally.
 
 ## Getting set up
@@ -23,7 +23,7 @@ npm run visual        # visual regression (needs `npm run dev` running)
 ```
 
 CI runs the first three plus a docs build on every PR. The visual check needs a
-browser and a dev server, so it stays local — run it whenever you touch
+browser and a dev server, so it stays local. Run it whenever you touch
 geometry.
 
 ## Where code goes
@@ -35,7 +35,7 @@ most worth reading before a first change:
 > React, it lives in `src/core`.
 
 In practice that means **numbers live in specs, not in scene components**. A
-rect computed inline in JSX cannot be measured and cannot be unit-tested — and
+rect computed inline in JSX cannot be measured and cannot be unit-tested, and
 it silently drops the object out of `mockupInfo`, the generated catalog and the
 docs tables.
 
@@ -46,19 +46,19 @@ Adding a device or object is five pieces, all documented under
 
 They overlap less than they look:
 
-- **`npm run test`** — registry invariants and pure math. Catches a metrics
+- **`npm run test`**: registry invariants and pure math. Catches a metrics
   resolver that disagrees with the component it describes: a default that does
   not match the component's default, a region declared but never measured, a
   colour derived in the wrong space. The visual check is blind to all of these,
   because render and report read the same numbers.
-- **`npm run visual`** — geometry. Renders every mockup on `/harness` with each
+- **`npm run visual`**: geometry. Renders every mockup on `/harness` with each
   live region filled in a flat labelled colour and diffs against
   `apps/docs/visual-baselines/`. A surface that moves, resizes or starts
   bleeding through the body fails. Update baselines with
   `npm run visual -- --update`, and **review the diffs in
-  `apps/docs/.visual-diffs/` before you do** — a baseline update is a claim that
+  `apps/docs/.visual-diffs/` before you do**. A baseline update is a claim that
   the new picture is the correct one.
-- **`npm run devices:check`** — the numbers in `docs/devices.mdx`. Two halves:
+- **`npm run devices:check`**: the numbers in `docs/devices.mdx`. Two halves:
   the Portrait/Landscape columns against what actually renders (`devices:sync`
   rewrites those), and the modelled aspect against the hand-maintained Panel
   column, which is the one comparison syncing cannot satisfy.
@@ -67,13 +67,13 @@ They overlap less than they look:
 
 Match the surrounding code. The one habit worth calling out: comments here
 explain *why*, usually by naming the thing that went wrong without them. If you
-fix a subtle bug, leave the reason behind in a comment — several of the
+fix a subtle bug, leave the reason behind in a comment. Several of the
 trickiest invariants in this repo are only obvious once someone has broken them.
 
 ## Commits and pull requests
 
 Describe what changed and why. If a change moves a baseline or a documented
-number, say so in the message — those are the diffs a reviewer most needs
+number, say so in the message; those are the diffs a reviewer most needs
 pointed out.
 
 ## Releasing
@@ -98,7 +98,7 @@ git push origin main --follow-tags
 ```
 
 The commit and the tag are separate steps on purpose. Against a workspace
-(`-w`), `npm version` only rewrites the manifest and the lockfile — it does not
+(`-w`), `npm version` only rewrites the manifest and the lockfile: it does not
 commit and does not tag, which is the opposite of its single-package behaviour.
 Skip them and `--follow-tags` pushes nothing at all: no tag, no workflow run, no
 publish, and no error to tell you so.
@@ -106,7 +106,7 @@ publish, and no error to tell you so.
 The workflow refuses any tag that disagrees with `packages/react/package.json`,
 so a stale tag fails loudly rather than publishing the wrong tree. To rehearse
 the whole thing without spending a version number, run the workflow from the
-Actions tab with **Run workflow** — a dispatched run defaults to `--dry-run` and
+Actions tab with **Run workflow**. A dispatched run defaults to `--dry-run` and
 only packs.
 
 [`area-3d-mockups`]: https://www.npmjs.com/package/area-3d-mockups

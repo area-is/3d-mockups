@@ -17,6 +17,28 @@ jacket's palette so the spine and back board feel like the same book.
   props={{ color: '#16324a', rotation: [0, 0.35, 0] }}
 />
 
+## `<Book>` vs `<BookMockup>`
+
+<BareVsMockup object="Book" kind="book" slot="Cover" />
+
+```tsx
+import { MockupCanvas, Book, BookMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<BookMockup float style={{ height: 520 }}>
+  <YourApp />
+</BookMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <Book rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </Book>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):

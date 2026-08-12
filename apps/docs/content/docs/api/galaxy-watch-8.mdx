@@ -31,6 +31,28 @@ rather than being eyeballed.
   props={{ color: '#33363c', bandColor: '#23252a', float: true, rotation: [0, 0.3, 0] }}
 />
 
+## `<GalaxyWatch>` vs `<GalaxyWatchMockup>`
+
+<BareVsMockup object="GalaxyWatch" kind="galaxyWatch" slot="Screen" />
+
+```tsx
+import { MockupCanvas, GalaxyWatch, GalaxyWatchMockup } from 'area-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<GalaxyWatchMockup float style={{ height: 520 }}>
+  <YourApp />
+</GalaxyWatchMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <GalaxyWatch rotation={[0, 0.4, 0]}>
+    <YourApp />
+  </GalaxyWatch>
+</MockupCanvas>
+```
+
 ## Props
 
 Beyond the [shared screen props](/docs/screen-content):
