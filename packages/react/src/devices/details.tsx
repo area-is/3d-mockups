@@ -75,13 +75,19 @@ export function SideKey({
 }
 
 /**
- * A machined camera lens ring, modeled on retail macro photography: slightly
- * tapered body-color wall, polished chamfer, a matte-black bezel ring, a
- * stepped barrel of concentric cones, a LARGE glossy front element (the real
- * optics fill roughly half the ring) with a bright center glint - all sealed
- * under a smoked cover-glass disc, so the interior reads deep black with one
- * soft window reflection. Mount it in a group at the ring's center on the
- * mounting surface; it builds toward -z (the device back's outward direction).
+ * A machined camera lens ring, modeled on retail macro photography: a tapered
+ * collar wall rolled over a bright rim, a deep dark bore, and two glossy
+ * elements carrying the coating flare, all sealed under a smoked cover-glass
+ * disc. Mount it in a group at the ring's center on the mounting surface; it
+ * builds toward -z (the device back's outward direction).
+ *
+ * Everything the eye reads is laid out as fractions of `proud`, between the
+ * collar's rim and the mounting surface. That matters because the surface a
+ * ring stands on is a SOLID (a camera plateau, a raised island): any part of
+ * the stack authored at a fixed depth sinks into it on a shallow ring and the
+ * bore then shows body-colored pedestal where it should show black glass -
+ * which is exactly how a 0.7 mm-proud ring used to render. Scaling the stack
+ * instead keeps a 0.5 mm collar and a 2 mm one both reading as real optics.
  */
 export function LensRing({
   r,
@@ -91,6 +97,7 @@ export function LensRing({
   element = '#0b101e',
   pupil = 0.44,
   matte = false,
+  glint = '#2c3a5e',
 }: {
   r: number
   /** How far the ring wall stands proud of its mounting surface. */
@@ -103,134 +110,255 @@ export function LensRing({
   /**
    * Front-element size as a fraction of the ring radius. The real modules
    * differ per lens: a 200 MP f/1.7 main is ~0.47, ultra-wides ~0.38-0.40,
-   * folded periscope teles ~0.30.
+   * folded periscope teles ~0.30, and the iPhone 17 Pro's 48 MP trio ~0.52.
    */
   pupil?: number
   /**
    * Matte anodized collar (the iPhones' body-color rings) instead of the
-   * polished machined metal of the Galaxy rings.
+   * polished machined metal of the Galaxy rings. Apple's collars are also
+   * wider: the macro shots put the black bore at ~0.72 of the ring radius
+   * against ~0.84 on the Galaxy rings.
    */
   matte?: boolean
+  /** Coating flare on the front element - the violet/blue spot in the macro shots. */
+  glint?: string
 }) {
   const faceZ = -proud
-  // Barrel steps sink inward from just behind the bezel; on shallow rings the
-  // deeper parts vanish behind the (solid) mounting surface, which simply
-  // reads as a flatter lens - like the thin rings on the real devices.
-  const step = Math.min(0.014, Math.max(0.008, proud * 0.35))
-  const bezelZ = faceZ + 0.01
-  const domeR = r * Math.min(0.45, Math.max(0.28, pupil))
-  const domeTopZ = faceZ + 0.013
+  // Where the metal ends and the black bore begins, and how much of the
+  // collar's top reads as a flat lit band rather than a tilted chamfer: an
+  // anodized collar is one wide band (a chamfer alone self-shadows and goes
+  // near-black head-on), a machined one a narrow band above a bright chamfer.
+  const collar = matte ? 0.72 : 0.84
+  const rimInner = matte ? collar : 0.92
+  const chamfer = Math.min(0.006, proud * 0.22)
+  // The collar's outer edge is rolled, not cut square: that little shoulder is
+  // where the bright arc in every product shot comes from, and without it a
+  // flat top face reads as a painted circle on the plateau rather than a
+  // machined ring standing off it.
+  const rimOuter = 0.93
+  const shoulder = Math.min(0.004, proud * 0.16)
+  // The bore runs from just under the rim down to a floor held just clear of
+  // the mount, so it is always a real cavity with its own walls and floor.
+  const boreTopZ = matte ? faceZ : faceZ + chamfer
+  const floorZ = -Math.max(0.002, proud * 0.1)
+  const boreDepth = Math.max(0.004, floorZ - boreTopZ)
+  const boreR = r * collar
+  // Clamped under the bore wall so the element sits INSIDE the bore. The old
+  // ceiling of 0.45 was below several of the values the specs pass (the iPads
+  // ask for 0.6), so a wide front element silently came out narrow.
+  const glassR = r * Math.min(collar * 0.85, Math.max(0.2, pupil))
+  // The optics are two elements, not one: a wide dark front glass and a much
+  // more curved inner element behind it. That second curve is what turns the
+  // studio softbox into the compact coloured flare the macro shots show - a
+  // single flattened dome spreads the same reflection into a white band across
+  // the whole lens, which is the giveaway of a drawn-on camera.
+  const innerR = glassR * 0.58
+  const glassRise = Math.min(glassR * 0.34, boreDepth * 0.45)
   return (
     <group>
+      {/* the parting line where the collar meets its mount: the retail rings
+          are seated into the plateau and read that way mostly through this
+          contact shadow, which the stage's soft lighting will not cast at
+          this scale */}
+      <mesh rotation-y={Math.PI} position-z={-0.0006}>
+        <ringGeometry args={[r * 0.95, r * 1.06, 48]} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.16} depthWrite={false} />
+      </mesh>
       {/* tapered outer wall - an open tube so the bore stays visible; the
-          chamfer shell below closes its face */}
-      <mesh rotation-x={Math.PI / 2} position-z={-(proud - seat) / 2}>
-        <cylinderGeometry args={[r, r * 0.97, proud + seat, 48, 1, true]} />
+          shoulder, rim and chamfer below close its face */}
+      <mesh rotation-x={Math.PI / 2} position-z={(seat - proud + shoulder) / 2}>
+        <cylinderGeometry args={[r, r * 0.97, proud + seat - shoulder, 48, 1, true]} />
         <meshPhysicalMaterial
           color={frameColor}
-          metalness={matte ? 0.35 : 0.92}
-          roughness={matte ? 0.48 : 0.22}
-          envMapIntensity={matte ? 0.8 : 1}
+          metalness={matte ? 0.5 : 0.92}
+          roughness={matte ? 0.4 : 0.22}
+          envMapIntensity={matte ? 0.9 : 1}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* polished chamfer stepping down from the wall's face (open cone shell) */}
-      <mesh rotation-x={Math.PI / 2} position-z={-proud + 0.005}>
-        <cylinderGeometry args={[r * 0.86, r * 0.97, 0.01, 48, 1, true]} />
+      {/* the rolled shoulder: a bright arc where the top face turns down into
+          the wall */}
+      <mesh rotation-x={Math.PI / 2} position-z={faceZ + shoulder / 2}>
+        <cylinderGeometry args={[r * 0.97, r * rimOuter, shoulder, 48, 1, true]} />
         <meshPhysicalMaterial
           color={frameColor}
-          metalness={matte ? 0.42 : 0.94}
-          roughness={matte ? 0.4 : 0.18}
-          envMapIntensity={matte ? 0.85 : 0.9}
+          metalness={matte ? 0.62 : 0.94}
+          roughness={matte ? 0.24 : 0.16}
+          envMapIntensity={matte ? 1.25 : 1.05}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* anodized collars present a FLAT annular face to the camera (the
-          product shots show a wide, evenly-lit body-color ring) - the tilted
-          chamfer alone self-shadows and reads near-black from the front */}
-      {matte && (
-        <mesh rotation-y={Math.PI} position-z={faceZ - 0.0005}>
-          <ringGeometry args={[r * 0.8, r * 0.985, 48]} />
+      {/* the collar's lit top face */}
+      <mesh rotation-y={Math.PI} position-z={faceZ - 0.0005}>
+        <ringGeometry args={[r * rimInner, r * rimOuter, 48]} />
+        <meshPhysicalMaterial
+          color={frameColor}
+          metalness={matte ? 0.45 : 0.9}
+          roughness={matte ? 0.34 : 0.2}
+          envMapIntensity={matte ? 1 : 0.95}
+        />
+      </mesh>
+      {/* polished chamfer funnelling from the rim into the bore (machined
+          collars only - the anodized ones drop straight to black) */}
+      {!matte && (
+        <mesh rotation-x={Math.PI / 2} position-z={faceZ + chamfer / 2}>
+          <cylinderGeometry args={[boreR, r * rimInner, chamfer, 48, 1, true]} />
           <meshPhysicalMaterial
             color={frameColor}
-            metalness={0.3}
-            roughness={0.45}
+            metalness={0.94}
+            roughness={0.18}
             envMapIntensity={0.9}
+            side={THREE.DoubleSide}
           />
         </mesh>
       )}
-      {/* matte-black bezel ring between the metal and the barrel */}
-      <mesh rotation-x={Math.PI / 2} position-z={bezelZ}>
-        <cylinderGeometry args={[r * 0.6, r * (matte ? 0.8 : 0.86), 0.006, 48, 1, true]} />
+      {/* the bore wall, tapering in toward the optics - dark, but not the same
+          black as the floor behind it: in the macro shots it is the one
+          surface in there that still catches light, and that is what reads as
+          depth rather than as a hole punched in the plateau */}
+      <mesh rotation-x={Math.PI / 2} position-z={(boreTopZ + floorZ) / 2}>
+        <cylinderGeometry args={[glassR * 1.14, boreR, boreDepth, 48, 1, true]} />
         <meshPhysicalMaterial
-          color="#0e0f12"
+          color="#15171c"
           metalness={0.2}
-          roughness={0.5}
+          roughness={0.45}
           envMapIntensity={0.5}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* stepped lens barrel: two concentric cones whose edges catch light
-          like the threaded rings in the macro shots */}
-      <mesh rotation-x={Math.PI / 2} position-z={bezelZ + step / 2}>
-        <cylinderGeometry args={[r * 0.52, r * 0.6, step, 48, 1, true]} />
-        <meshPhysicalMaterial
-          color="#191b20"
-          metalness={0.4}
-          roughness={0.28}
-          envMapIntensity={0.7}
-          side={THREE.DoubleSide}
-        />
+      {/* the bore's floor - opaque, so the bore never shows the pedestal it is
+          standing on however shallow the collar is */}
+      <mesh rotation-y={Math.PI} position-z={floorZ}>
+        <circleGeometry args={[glassR * 1.14, 48]} />
+        <meshPhysicalMaterial color="#08090c" metalness={0.2} roughness={0.5} envMapIntensity={0.3} />
       </mesh>
-      <mesh rotation-x={Math.PI / 2} position-z={bezelZ + step * 1.5}>
-        <cylinderGeometry args={[r * 0.46, r * 0.52, step, 48, 1, true]} />
-        <meshPhysicalMaterial
-          color="#141519"
-          metalness={0.35}
-          roughness={0.3}
-          envMapIntensity={0.6}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* the front element: a large, glossy near-black dome filling the barrel
-          (roughly half the ring, like the real optics), its arc highlight
-          coming free from the environment map */}
-      <mesh position-z={domeTopZ + domeR * 0.32} scale={[1, 1, 0.32]}>
-        <sphereGeometry args={[domeR, 40, 24]} />
+      {/* the front element: a wide, softly domed dark glass seated on the
+          barrel floor (equator on the floor, so its silhouette is exactly its
+          radius rather than most of it sinking into the floor) */}
+      <mesh position-z={floorZ} scale={[1, 1, glassRise / glassR]}>
+        <sphereGeometry args={[glassR, 40, 24]} />
         <meshPhysicalMaterial
           color={element}
           metalness={0.1}
-          roughness={0.03}
+          roughness={0.04}
           clearcoat={1}
           clearcoatRoughness={0.04}
-          envMapIntensity={1.5}
+          envMapIntensity={1.4}
         />
       </mesh>
-      {/* small bright inner-element glint at the center */}
-      <mesh rotation-y={Math.PI} position-z={domeTopZ - 0.0015}>
-        <circleGeometry args={[r * Math.min(0.45, Math.max(0.28, pupil)) * 0.23, 24]} />
+      {/* the inner element: tighter curve, coated - it carries the flare. Sits
+          just clear of the front glass rather than behind it: the two surfaces
+          would otherwise intersect, and an opaque front element would hide it
+          entirely where the real one is transparent. */}
+      <mesh position-z={floorZ - glassRise * 0.85} scale={[1, 1, (glassRise * 0.62) / innerR]}>
+        <sphereGeometry args={[innerR, 32, 20]} />
         <meshPhysicalMaterial
-          color="#2c3a5e"
+          color={glint}
           metalness={0.3}
-          roughness={0.05}
+          roughness={0.04}
           clearcoat={1}
+          clearcoatRoughness={0.02}
+          iridescence={0.4}
+          iridescenceIOR={1.8}
+          iridescenceThicknessRange={[140, 460]}
           envMapIntensity={1.6}
         />
       </mesh>
-      {/* smoked cover glass sealing the bore just under the chamfer: darkens
-          the whole interior and carries one soft, glossy window reflection */}
-      <mesh rotation-x={Math.PI / 2} position-z={-proud + 0.007}>
-        <cylinderGeometry args={[r * 0.87, r * 0.87, 0.003, 48]} />
+      {/* smoked cover glass sealing the bore just under the rim: darkens the
+          whole interior and carries one soft, glossy window reflection */}
+      <mesh rotation-x={Math.PI / 2} position-z={boreTopZ + Math.min(0.002, proud * 0.08)}>
+        <cylinderGeometry args={[boreR * 0.99, boreR * 0.99, 0.0016, 48]} />
         <meshPhysicalMaterial
           color="#05070c"
           transparent
-          opacity={0.55}
+          opacity={0.5}
           metalness={0.1}
           roughness={0.05}
           clearcoat={1}
           clearcoatRoughness={0.06}
           envMapIntensity={1.15}
           depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
+
+/**
+ * A True Tone flash: a warm-white phosphor diffuser under a softly domed
+ * window, inside a thin seam. The retail part is not the flat cream disc it is
+ * often drawn as - the macro shots show a bright, gently domed window with a
+ * cooler glassy margin and only a hairline of dark where it meets the body.
+ * Built toward -z like `LensRing`.
+ *
+ * The dome is a half-ellipsoid seated ON the mounting plane (equator at z = 0,
+ * apex `proud` out), so its silhouette is exactly its base radius however tall
+ * it is - a sphere pushed out by an offset instead would have most of its
+ * width swallowed by the surface it stands on.
+ */
+export function FlashModule({ r, proud = 0.006 }: { r: number; proud?: number }) {
+  const core = r * 0.62
+  return (
+    <group>
+      {/* hairline seam where the window meets the shell */}
+      <mesh rotation-y={Math.PI} position-z={-0.0006}>
+        <ringGeometry args={[r * 0.95, r, 32]} />
+        <meshPhysicalMaterial color="#4a4b50" metalness={0.3} roughness={0.5} envMapIntensity={0.5} />
+      </mesh>
+      {/* the cool glassy margin around the phosphor */}
+      <mesh rotation-y={Math.PI} position-z={-0.0011}>
+        <ringGeometry args={[core, r * 0.95, 32]} />
+        <meshPhysicalMaterial
+          color="#a9a7a4"
+          metalness={0.08}
+          roughness={0.17}
+          clearcoat={1}
+          clearcoatRoughness={0.08}
+          envMapIntensity={1.2}
+        />
+      </mesh>
+      {/* the phosphor diffuser - faintly self-lit, so it keeps its glow in
+          shadow the way the real window does */}
+      <mesh scale={[1, 1, proud / core]}>
+        <sphereGeometry args={[core, 32, 20]} />
+        <meshPhysicalMaterial
+          color="#f2ede1"
+          emissive="#fff4dc"
+          emissiveIntensity={0.18}
+          metalness={0.03}
+          roughness={0.3}
+          clearcoat={1}
+          clearcoatRoughness={0.14}
+          envMapIntensity={1}
+        />
+      </mesh>
+    </group>
+  )
+}
+
+/**
+ * A black-glass sensor window (LiDAR, proximity, spectral): a glossy dark disc
+ * set a hair below a matte rim, so it reads as glass over a cavity rather than
+ * a painted dot. Built toward -z like `LensRing`.
+ */
+export function SensorWindow({ r, color = '#05060a' }: { r: number; color?: string }) {
+  return (
+    <group>
+      {/* matte rim around the window */}
+      <mesh rotation-y={Math.PI} position-z={-0.0025}>
+        <ringGeometry args={[r * 0.86, r, 32]} />
+        <meshPhysicalMaterial color="#0a0b0e" metalness={0.2} roughness={0.6} envMapIntensity={0.25} />
+      </mesh>
+      {/* the window itself, recessed under the rim */}
+      <mesh rotation-y={Math.PI} position-z={-0.0018}>
+        <circleGeometry args={[r * 0.88, 32]} />
+        <meshPhysicalMaterial
+          color={color}
+          metalness={0.1}
+          roughness={0.1}
+          clearcoat={1}
+          clearcoatRoughness={0.08}
+          envMapIntensity={0.9}
         />
       </mesh>
     </group>

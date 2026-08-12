@@ -17,6 +17,8 @@ import { createLogoGeometry } from '../logos'
 import {
   SideKey,
   LensRing,
+  FlashModule,
+  SensorWindow,
   UsbC,
   EdgeSocket,
   cutGeometry,
@@ -199,8 +201,13 @@ function IPhoneImpl({
     return geometry
   }, [rearCamera])
 
-  // Every lens ring mounts on the pedestal face and stands `h` proud of it.
-  const pedestalTop = body.depth / 2 + (rearCamera.frame.raise ?? 0.048)
+  // The back shell's outer face, and the pedestal face standing `raise` proud
+  // of it - the pedestal mesh sits 0.002 off the shell, so its top face is
+  // that much further out than the raise alone. Camera hardware mounts on one
+  // of these two planes and builds outward from it, so getting this wrong
+  // sinks the lens stacks into the plateau they stand on.
+  const shellZ = body.depth / 2 + 0.002
+  const pedestalTop = shellZ + (rearCamera.frame.raise ?? 0.048)
   // A flash or sensor mounts on the pedestal face when it falls inside the
   // pedestal's footprint and on the flat back when it doesn't - on the 17 the
   // mic sits on the pill while the flash is out on the glass beside it.
@@ -210,8 +217,18 @@ function IPhoneImpl({
       Math.abs(x - frame.x) <= frame.width / 2 && Math.abs(y - frame.y) <= frame.height / 2
     )
   }
-  const mountZ = (x: number, y: number) =>
-    onPedestal(x, y) ? -pedestalTop - 0.005 : -body.depth / 2 - 0.008
+  const mountZ = (x: number, y: number) => -(onPedestal(x, y) ? pedestalTop : shellZ)
+  // The Pro generation's back is a bead-blasted aluminum unibody and its
+  // camera plateau is that unibody's own shelf, not a part glued onto it; the
+  // 17 and Air are glass, pill and bar included. So shell and pedestal share
+  // one material: a clearcoat on the plateau alone drew a bright rim right
+  // around its outline and turned the whole camera into a glossy tile stuck
+  // on the phone. On a Pro back that leaves the Ceramic Shield window as the
+  // only glossy panel, which is the contrast the two-tone design is built on.
+  const aluminum = !!backWindow
+  const shellFinish = aluminum
+    ? { metalness: 0.6, roughness: 0.5, clearcoat: 0, envMapIntensity: 0.9 }
+    : { metalness: 0.28, roughness: 0.31, clearcoat: 1, clearcoatRoughness: 0.2, envMapIntensity: 1 }
   // Apple badge - real vector geometry from the SVG. The retail logo is
   // tone-on-tone in the back glass ("practically invisible in some light"):
   // a slight tone shift plus a glossier finish, no printed color.
@@ -251,15 +268,10 @@ function IPhoneImpl({
           <meshPhysicalMaterial color={frameColor} metalness={0.8} roughness={0.35} />
         </mesh>
 
-        {/* back glass colorway */}
-        <mesh geometry={backGeometry} rotation-y={Math.PI} position-z={-body.depth / 2 - 0.002}>
-          <meshPhysicalMaterial
-            color={color}
-            metalness={0.25}
-            roughness={0.32}
-            clearcoat={1}
-            clearcoatRoughness={0.2}
-          />
+        {/* back shell colorway - glass on the 17 / Air, anodized aluminum on
+            the Pros (see `shellFinish`) */}
+        <mesh geometry={backGeometry} rotation-y={Math.PI} position-z={-shellZ}>
+          <meshPhysicalMaterial color={color} {...shellFinish} />
         </mesh>
 
         {/* cover glass (the black ring visible around the display) */}
@@ -284,55 +296,65 @@ function IPhoneImpl({
           </mesh>
         )}
 
-        {/* rear camera pedestal (pill or full-width plateau) */}
+        {/* rear camera pedestal (pill or full-width plateau) - same material as
+            the shell it is part of */}
         <mesh
           geometry={pedestalGeometry}
           rotation-y={Math.PI}
-          position={[rearCamera.frame.x, rearCamera.frame.y, -body.depth / 2 - 0.002]}
+          position={[rearCamera.frame.x, rearCamera.frame.y, -shellZ]}
         >
-          <meshPhysicalMaterial
-            color={color}
-            metalness={0.35}
-            roughness={0.28}
-            clearcoat={1}
-            clearcoatRoughness={0.2}
-          />
+          <meshPhysicalMaterial color={color} {...shellFinish} />
         </mesh>
 
-        {/* lens stacks: machined ring standing proud of the pedestal, dark bezel
-            wall, blue-coated glass, glint */}
-        {rearCamera.lenses.map(({ x, y, r, h, pupil }, i) => (
+        {/* lens stacks: anodized collar standing proud of the pedestal, deep
+            black bore, coated front element */}
+        {rearCamera.lenses.map(({ x, y, r, h, pupil, glint }, i) => (
           <group key={i} position={[x, y, -pedestalTop]}>
-            <LensRing r={r} proud={h ?? 0.05} frameColor={frameColor} element="#0d1524" pupil={pupil} matte />
+            <LensRing
+              r={r}
+              proud={h ?? 0.05}
+              frameColor={frameColor}
+              element="#0d1524"
+              pupil={pupil}
+              glint={glint}
+              matte
+            />
           </group>
         ))}
 
-        {/* flash + auxiliary sensors on the back panel or plateau */}
-        <mesh
-          rotation-x={Math.PI / 2}
+        {/* True Tone flash, on the plateau (Pros) or out on the glass (17) */}
+        <group
           position={[
             rearCamera.flash.x,
             rearCamera.flash.y,
             mountZ(rearCamera.flash.x, rearCamera.flash.y),
           ]}
         >
-          <cylinderGeometry args={[rearCamera.flash.r, rearCamera.flash.r, 0.016, 32]} />
-          <meshPhysicalMaterial
-            color="#efe9da"
-            emissive="#fff3d6"
-            emissiveIntensity={0.25}
-            roughness={0.4}
-          />
-        </mesh>
-        {rearCamera.dots?.map(({ x, y, r }, i) => (
-          <mesh
-            key={i}
-            rotation-x={Math.PI / 2}
-            position={[x, y, mountZ(x, y) + 0.001]}
-          >
-            <cylinderGeometry args={[r, r, 0.012, 24]} />
-            <meshPhysicalMaterial color="#111318" metalness={0.5} roughness={0.3} clearcoat={0.6} />
-          </mesh>
+          <FlashModule r={rearCamera.flash.r} />
+        </group>
+
+        {/* auxiliary openings: the LiDAR scanner is a black-glass window, the
+            mic a drilled hole - identical circles on the drawing, and nothing
+            alike to look at */}
+        {rearCamera.dots?.map(({ x, y, r, kind }, i) => (
+          <group key={i} position={[x, y, mountZ(x, y)]}>
+            {kind === 'sensor' ? (
+              <SensorWindow r={r} />
+            ) : (
+              // flush, not a stub standing off the shell: a 1 mm mic hole
+              // extruded even a fraction of a millimeter reads as a peg the
+              // moment the device turns
+              <mesh rotation-y={Math.PI} position-z={-0.0008}>
+                <circleGeometry args={[r, 20]} />
+                <meshPhysicalMaterial
+                  color="#08090c"
+                  metalness={0.1}
+                  roughness={0.7}
+                  envMapIntensity={0.2}
+                />
+              </mesh>
+            )}
+          </group>
         ))}
 
         {/* Apple badge - on the Pros it sits ON the raised Ceramic Shield
