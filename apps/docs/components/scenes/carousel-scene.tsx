@@ -10,6 +10,7 @@ import {
   type RefObject,
 } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Palette } from 'lucide-react'
 import type { Group } from 'three'
 import {
   MockupCanvas,
@@ -68,20 +69,26 @@ import {
   VINYL_RECORD_FRAMING,
   type MockupFraming,
 } from 'area-3d-mockups/core'
-import { MusicPlayer } from '../screens/music-player'
-import { LockScreen } from '../screens/lock-screen'
-import { DesktopScreen } from '../screens/desktop-screen'
-import { WatchFace, GalaxyWatchFace } from '../screens/watch-face'
+import { ChalkMenuArt } from '../screens/print-art'
 import {
-  BagArt,
-  BookCoverArt,
-  BoxFrontArt,
-  BoxLidArt,
-  CartonFrontArt,
-  ChalkMenuArt,
-  PosterArt,
-  VinylCoverArt,
-} from '../screens/print-art'
+  SwissBag,
+  SwissBill,
+  SwissBox,
+  SwissCarton,
+  SwissChecker,
+  SwissConstruction,
+  SwissDialA,
+  SwissDialB,
+  SwissEpicentre,
+  SwissField,
+  SwissJacket,
+  SwissLid,
+  SwissModule,
+  SwissRaster,
+  SwissRhythm,
+  SwissRotation,
+  SwissSleeve,
+} from '../screens/swiss-art'
 
 /**
  * The hero carousel: ONE WebGL canvas holding every model on show.
@@ -266,7 +273,7 @@ const DEVICES: Entry[] = [
     fit: PHONE_FIT,
     lift: 0,
     colorways: GALAXY_COLORWAYS.s26,
-    content: () => <MusicPlayer />,
+    content: () => <SwissRotation />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Galaxy variant="s26" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -280,7 +287,7 @@ const DEVICES: Entry[] = [
     fit: IPHONE_FIT,
     lift: 0,
     colorways: IPHONE_COLORWAYS.pro,
-    content: () => <MusicPlayer />,
+    content: () => <SwissRaster />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <IPhone variant="pro" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -294,7 +301,7 @@ const DEVICES: Entry[] = [
     fit: FOLD_FIT,
     lift: 0,
     colorways: FOLD_COLORWAYS.fold7,
-    content: () => <DesktopScreen />,
+    content: () => <SwissConstruction />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Fold openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -308,7 +315,7 @@ const DEVICES: Entry[] = [
     fit: FLIP_FIT,
     lift: 0,
     colorways: FLIP_COLORWAYS.flip7,
-    content: () => <MusicPlayer />,
+    content: () => <SwissField />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Flip openAngle={CAROUSEL_OPEN_ANGLE} color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -322,7 +329,7 @@ const DEVICES: Entry[] = [
     fit: LAPTOP_FIT,
     lift: 0.55,
     colorways: LAPTOP_COLORWAYS.air13,
-    content: () => <DesktopScreen />,
+    content: () => <SwissModule />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Laptop variant="air13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -336,7 +343,7 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: IPAD_COLORWAYS.ipadpro13,
-    content: () => <LockScreen />,
+    content: () => <SwissEpicentre />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <IPad variant="ipadpro13" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -350,7 +357,7 @@ const DEVICES: Entry[] = [
     fit: TABLET_FIT,
     lift: 0,
     colorways: GALAXY_TAB_COLORWAYS.tabs11,
-    content: () => <LockScreen />,
+    content: () => <SwissChecker />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <GalaxyTab variant="tabs11" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -364,7 +371,7 @@ const DEVICES: Entry[] = [
     fit: WATCH_FIT,
     lift: 0,
     colorways: APPLE_WATCH_COLORWAYS.series11,
-    content: () => <WatchFace />,
+    content: () => <SwissDialA />,
     render: ({ color, screen, surface, surfaceStyle }) => <AppleWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</AppleWatch>,
   },
   {
@@ -374,7 +381,7 @@ const DEVICES: Entry[] = [
     fit: WATCH_FIT,
     lift: 0,
     colorways: GALAXY_WATCH_COLORWAYS.watch8,
-    content: () => <GalaxyWatchFace />,
+    content: () => <SwissDialB />,
     render: ({ color, screen, surface, surfaceStyle }) => <GalaxyWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</GalaxyWatch>,
   },
   {
@@ -384,7 +391,7 @@ const DEVICES: Entry[] = [
     fit: DISPLAY_FIT,
     lift: 0.1,
     colorways: STUDIO_DISPLAY_COLORWAYS,
-    content: () => <DesktopScreen />,
+    content: () => <SwissRhythm />,
     render: ({ color, screen, surface, surfaceStyle }) => <StudioDisplay color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>{screen}</StudioDisplay>,
   },
 ]
@@ -407,7 +414,7 @@ const OBJECTS: Entry[] = [
       ['oxblood', 'Oxblood', '#5b2230'],
       ['bone', 'Bone', '#e3dbcc']
     ),
-    content: () => <BookCoverArt />,
+    content: () => <SwissJacket />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <Book color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -425,7 +432,7 @@ const OBJECTS: Entry[] = [
       ['black', 'Black jacket', '#1b1b1e'],
       ['sunset', 'Sunset', '#d8663f']
     ),
-    content: () => <VinylCoverArt />,
+    content: () => <SwissSleeve />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <VinylRecord color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -444,7 +451,7 @@ const OBJECTS: Entry[] = [
       ['kraft', 'Kraft', '#cbab7f'],
       ['slate', 'Slate', '#d3dae0']
     ),
-    content: () => <CartonFrontArt />,
+    content: () => <SwissCarton />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <MilkCarton color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -463,7 +470,7 @@ const OBJECTS: Entry[] = [
       ['ink', 'Ink', '#20242c'],
       ['sage', 'Sage', '#b9c9b4']
     ),
-    content: () => <BoxFrontArt />,
+    content: () => <SwissBox />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <ProductBox color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -481,7 +488,7 @@ const OBJECTS: Entry[] = [
       ['white', 'Bleached white', '#e8e4dd'],
       ['slate', 'Slate', '#5c6672']
     ),
-    content: () => <BoxLidArt />,
+    content: () => <SwissLid />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <MailerBox color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -500,7 +507,7 @@ const OBJECTS: Entry[] = [
       ['charcoal', 'Charcoal', '#33373d'],
       ['olive', 'Olive', '#7d8a5c']
     ),
-    content: () => <BagArt />,
+    content: () => <SwissBag />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <ShoppingBag color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -519,7 +526,7 @@ const OBJECTS: Entry[] = [
       ['walnut', 'Walnut', '#5a3a25'],
       ['white', 'White', '#e9e7e2']
     ),
-    content: () => <PosterArt />,
+    content: () => <SwissBill />,
     render: ({ color, screen, surface, surfaceStyle }) => (
       <PosterFrame color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle}>
         {screen}
@@ -1004,7 +1011,13 @@ export default function CarouselScene() {
           </button>
         </div>
         <div className="carousel-finishes">
-          <span className="carousel-finish-label">Colors</span>
+          {/* The word "Colors" next to a row of coloured dots was labelling
+              what the dots already say; the glyph holds the row's left edge
+              without spelling it out, and the name stays for screen readers. */}
+          <span className="carousel-finish-label">
+            <Palette size={17} strokeWidth={1.75} aria-hidden />
+            <span className="sr-only">Colors</span>
+          </span>
           <span className="carousel-swatches">
             {entry.colorways.map((c) => (
               <button

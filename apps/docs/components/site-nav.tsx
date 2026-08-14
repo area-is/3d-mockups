@@ -23,7 +23,7 @@ function GitHubMark() {
  * on desktop, and - below the breakpoint where that row stops fitting - a
  * disclosure button opening a full-width sheet under the header. The links used
  * to be `display: none` on narrow screens, which left phones with no way to
- * reach the docs or the demos at all; the sheet is what puts them back.
+ * reach the docs or the examples at all; the sheet is what puts them back.
  */
 export function SiteNav() {
   const [open, setOpen] = useState(false)
@@ -66,9 +66,6 @@ export function SiteNav() {
         <Link href="/docs" className="nav-plain">
           Docs
         </Link>
-        <Link href="/demos" className="nav-plain">
-          Demos
-        </Link>
         <ExamplesMenu />
       </span>
 
@@ -109,9 +106,6 @@ export function SiteNav() {
       <div className="nav-sheet" id="site-nav-sheet" hidden={!open}>
         <Link href="/docs" className="nav-sheet-link">
           Docs
-        </Link>
-        <Link href="/demos" className="nav-sheet-link">
-          Demos
         </Link>
         {SITE_EXAMPLES.map((example) => (
           <Link key={example.href} href={example.href} className="nav-sheet-link">

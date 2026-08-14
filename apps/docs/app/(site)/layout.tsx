@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   ...socialMetadata({ title: SITE_TITLE, description: SITE_DESCRIPTION }),
 }
 
-// Root layout for the marketing site (home, demos). The docs and embedded
-// routes have their own root layouts, so the site styles never mix with the
-// Fumadocs/Tailwind styles and vice versa.
+// Root layout for the marketing site (the home page and its 404). The docs and
+// embedded routes have their own root layouts, so the site styles never mix
+// with the Fumadocs/Tailwind styles and vice versa.
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>

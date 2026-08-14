@@ -16,7 +16,7 @@ import { SITE_EXAMPLES } from '@/components/site-examples'
  * they are tooling and an iframe target, not pages.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const marketing = ['', '/demos', ...SITE_EXAMPLES.map((e) => e.href)].map((path) => ({
+  const marketing = ['', ...SITE_EXAMPLES.map((e) => e.href)].map((path) => ({
     url: `${SITE_URL}${path}`,
     changeFrequency: 'weekly' as const,
     priority: path === '' ? 1 : 0.7,

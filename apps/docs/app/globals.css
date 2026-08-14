@@ -44,7 +44,7 @@ body {
   font-optical-sizing: auto;
   font-weight: 400;
   /* slightly tightened tracking, per Inter's dynamic-metrics guidance */
-  letter-spacing: -0.011em;
+  letter-spacing: -0.015em;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -459,6 +459,17 @@ code {
   letter-spacing: -0.035em;
   line-height: 1;
   margin: 0;
+  /* The rotating noun changes the line's width as it types; wrapping would let
+     that reflow throw "In 3D." onto a second line and back again. */
+  text-wrap: nowrap;
+}
+
+/*
+ * The word that cycles. Accent-coloured, so the one moving part of the
+ * headline reads as deliberate rather than as text failing to settle.
+ */
+.hero-rotator {
+  color: var(--accent-2);
 }
 
 .hero-actions {
@@ -485,20 +496,37 @@ code {
  * which buys back some of that width and keeps the composition from being one
  * device in a tall empty column.
  */
+/*
+ * Stage height and rig scale move together, and always in opposite directions.
+ *
+ * The camera's fov fixes how much WORLD the stage shows vertically, so a taller
+ * element does not reveal more of it - it just draws the same slice bigger, and
+ * an object that overhung the top edge overhangs it by proportionally as much.
+ * What buys headroom is height UP and `--carousel-fit` DOWN by the same factor:
+ * every object keeps the pixel size it had, and the extra height is empty world
+ * above and below it. That is what stops the Z Fold - the tallest thing in the
+ * carousel - being sliced off at the top.
+ *
+ * `--carousel-lift` then slides the whole stage back up under the readout bar,
+ * so the headroom is spent on clearance rather than on a gap between the object
+ * and the swatches picking its finish.
+ */
 .carousel {
   position: relative;
   /* The glow and the canvas both bleed past this box on purpose; clipping the
      bleed here keeps it from widening the page on a narrow screen, where
      there is no margin for it to spill into. */
   overflow-x: clip;
-  --carousel-fit: 1;
-  --carousel-stage-h: clamp(560px, 76vw, 700px);
+  --carousel-fit: 0.83;
+  --carousel-stage-h: clamp(670px, 90vw, 840px);
+  --carousel-lift: clamp(84px, 8vw, 120px);
 }
 
 @media (max-width: 900px) {
   .carousel {
-    --carousel-fit: 0.85;
-    --carousel-stage-h: clamp(500px, 72vw, 640px);
+    --carousel-fit: 0.71;
+    --carousel-stage-h: clamp(600px, 86vw, 770px);
+    --carousel-lift: clamp(72px, 7vw, 96px);
   }
 }
 
@@ -513,8 +541,9 @@ code {
  */
 @media (max-width: 620px) {
   .carousel {
-    --carousel-fit: 1;
-    --carousel-stage-h: clamp(420px, 118vw, 560px);
+    --carousel-fit: 0.87;
+    --carousel-stage-h: clamp(482px, 136vw, 644px);
+    --carousel-lift: clamp(56px, 14vw, 76px);
   }
 }
 
@@ -526,6 +555,14 @@ code {
  */
 .carousel-viewport {
   position: relative;
+  /*
+   * The stage runs UP behind the readout bar. The bar is text on nothing, so
+   * the overlap costs no pixels of it, and it buys the staged object the space
+   * to be tall without a hard edge - and the swatches sit just above the object
+   * they recolour instead of a stage-height away from it.
+   */
+  margin-top: calc(-1 * var(--carousel-lift));
+  z-index: 0;
 }
 
 .carousel-glow {
@@ -780,6 +817,23 @@ code {
   align-items: center;
   gap: 14px;
   padding: 20px 16px 6px;
+  /* Stacked over the stage, which now starts above this row: without it the
+     later sibling paints on top and the arrows and swatches stop taking
+     clicks. */
+  position: relative;
+  z-index: 1;
+  /*
+   * ...and the bar's own background is what softens the overlap. It is the
+   * page colour, so it is invisible against the page, and it fades out exactly
+   * where the stage emerges from under it - so an object tall enough to reach
+   * up here dissolves rather than ending on the canvas's straight edge, and
+   * the readout stays legible over whatever is behind it.
+   *
+   * A second mask layer on the stage would have done the same thing, but that
+   * means compositing a mask over the live canvas and every CSS3D screen on
+   * it; a flat gradient in the layer above costs nothing.
+   */
+  background: linear-gradient(180deg, var(--bg) 62%, transparent);
 }
 
 /* What is left below the stage: the gesture hint and the off-screen jumps. */
@@ -827,7 +881,7 @@ code {
      so it reads as a sentence about the object rather than a spec sticker. */
   font-family: var(--font-sans);
   font-size: clamp(11.5px, 1.8vw, 13.5px);
-  /* Explicit rather than dropped: `body` tightens the whole page by -0.011em. */
+  /* Explicit rather than dropped: `body` tightens the whole page by -0.015em. */
   letter-spacing: 0;
   color: var(--muted);
   margin: 0;
@@ -852,14 +906,17 @@ code {
 }
 
 /* Set with the readout above them, so the whole bar is one voice. */
-.carousel-finish-label,
 .carousel-finish-name {
   font-family: var(--font-sans);
   font-size: 13.5px;
   letter-spacing: 0;
 }
 
+/* The palette glyph. Sized to the swatches it introduces and dimmed to the
+   same level the word it replaced was set at. */
 .carousel-finish-label {
+  display: inline-flex;
+  align-items: center;
   color: var(--text-low);
 }
 
@@ -904,44 +961,48 @@ code {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stat band                                                          */
+/*  Features                                                           */
 /* ------------------------------------------------------------------ */
 
-.stat-band {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  margin-top: 44px;
-}
-
-.stat-band-inner {
+/*
+ * Four claims, on the page's own grid and nothing else - no rules, no cards,
+ * no boxes. The gutters do the separating: at this size a border around a
+ * paragraph adds a second, competing rectangle to a page that is already one
+ * big rectangle of hardware.
+ */
+.features {
   max-width: 1200px;
   margin: 0 auto;
+  padding: clamp(40px, 6vw, 76px) clamp(16px, 4vw, 48px) 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: clamp(28px, 3.5vw, 44px) clamp(24px, 3vw, 40px);
 }
 
-.stat {
-  padding: clamp(18px, 3vw, 28px) clamp(20px, 4vw, 48px);
-  border-right: 1px solid var(--border);
-}
-
-.stat:last-child {
-  border-right: 0;
-}
-
-.stat-value {
-  font-size: clamp(26px, 3vw, 32px);
-  font-weight: 750;
-  letter-spacing: -0.03em;
+/* The index is the only ornament: it numbers the set without drawing a line
+   around any member of it. */
+.feature-index {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
-.stat-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--text-low);
-  text-transform: uppercase;
+.features h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 12px 0 8px;
+}
+
+.features p {
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.65;
+  margin: 0;
+  text-wrap: pretty;
 }
 
 /* ------------------------------------------------------------------ */
@@ -989,12 +1050,28 @@ code {
   border-radius: 12px;
 }
 
-.quickstart-code pre .prompt {
+/*
+ * Shiki nests a <code> inside its <pre>, and the page's inline-code style is a
+ * green chip - which would wrap the whole block in one. The highlighting lives
+ * on the token spans inside, so the element itself has nothing to carry.
+ */
+.quickstart-code pre code {
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* The shell prompt is punctuation, not something to copy, so it is drawn by
+   the stylesheet rather than typed into the snippet. */
+.quickstart-install pre code::before {
+  content: '$ ';
   color: var(--accent);
 }
 
 /* ------------------------------------------------------------------ */
-/*  Generic pages (docs, demos)                                        */
+/*  Generic pages                                                      */
 /* ------------------------------------------------------------------ */
 
 .page {
@@ -1009,66 +1086,6 @@ code {
 .page-header p {
   color: var(--muted);
   font-size: 16.5px;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Code blocks & props tables                                         */
-/* ------------------------------------------------------------------ */
-
-/* ------------------------------------------------------------------ */
-/*  Demo gallery                                                       */
-/* ------------------------------------------------------------------ */
-
-.demo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 56px 48px;
-}
-
-/* classic alpha checkerboard: proves the canvas itself is transparent */
-.alpha-checker {
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-conic-gradient(
-      rgba(255, 255, 255, 0.05) 0% 25%,
-      rgba(255, 255, 255, 0.012) 0% 50%
-    )
-    0 0 / 26px 26px;
-}
-
-.aurora-screen {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(90% 60% at 20% 0%, rgba(32, 197, 49, 0.5) 0%, transparent 60%),
-    radial-gradient(90% 60% at 90% 100%, rgba(80, 224, 66, 0.38) 0%, transparent 60%),
-    #05060a;
-}
-
-.aurora-screen p {
-  font-family: var(--font-mono);
-  font-size: 26px;
-  letter-spacing: 0.3em;
-  color: rgba(238, 240, 246, 0.9);
-  margin: 0;
-}
-
-.demo-card h3 {
-  margin: 20px 0 8px;
-  font-size: 16px;
-}
-
-.demo-card p {
-  color: var(--muted);
-  font-size: 14.5px;
-}
-
-.demo-viewport {
-  height: 500px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1133,17 +1150,6 @@ code {
 /*  Responsive                                                         */
 /* ------------------------------------------------------------------ */
 
-@media (max-width: 1020px) {
-  .demo-grid {
-    grid-template-columns: 1fr;
-    gap: 44px 48px;
-  }
-
-  .demo-viewport {
-    height: 540px;
-  }
-}
-
 /*
  * Below this the header's link row stops fitting next to the wordmark, so the
  * links move into the sheet and the burger takes their place. Everything the
@@ -1157,37 +1163,6 @@ code {
 
   .nav-burger {
     display: inline-flex;
-  }
-}
-
-/*
- * Below three columns the band stacks. `auto-fit` would drop it to two and
- * leave the third stat alone in a half-empty row, and either way the dividers
- * have to turn: a `border-right` on a full-width row is a stray line down the
- * side of the page rather than a rule between two stats.
- */
-@media (max-width: 700px) {
-  .stat-band-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .stat {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stat:last-child {
-    border-bottom: 0;
-  }
-}
-
-@media (max-width: 620px) {
-  .demo-viewport {
-    height: min(74vh, 480px);
-  }
-
-  .demo-grid {
-    gap: 36px;
   }
 }
 
