@@ -9,13 +9,13 @@ import { SceneBoundary } from './scene-boundary'
  *
  * Browsers cap the number of live WebGL contexts (as few as 8 on mobile
  * Chrome) and silently kill the oldest context when the cap is exceeded -
- * on a gallery page full of canvases that leaves earlier cards showing the
- * "sad canvas" icon with the CSS3D screen floating detached. Keeping only
- * the nearby scenes mounted stays far under the cap and also skips the GPU
- * cost of rendering off-screen scenes.
+ * on a page carrying several canvases that leaves the earlier ones showing
+ * the "sad canvas" icon with the CSS3D screen floating detached. Keeping
+ * only the nearby scenes mounted stays far under the cap and also skips the
+ * GPU cost of rendering off-screen scenes.
  *
  * The wrapper fills its parent, so it must sit inside a container with a
- * fixed height (`.demo-viewport`) for layout to hold while unmounted.
+ * fixed height (`.mockup-viewport`) for layout to hold while unmounted.
  */
 export function LazyScene({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)

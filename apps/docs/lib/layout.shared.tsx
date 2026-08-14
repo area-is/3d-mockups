@@ -13,9 +13,6 @@ export function baseOptions(): BaseLayoutProps {
       ),
     },
     githubUrl: 'https://github.com/area-is/3d-mockups',
-    links: [
-      { text: 'Home', url: '/' },
-      { text: 'Demos', url: '/demos' },
-    ],
+    links: [{ text: 'Home', url: '/' }],
   }
 }

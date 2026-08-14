@@ -10,9 +10,9 @@ import { notFound } from 'next/navigation'
  * catch-all inside the site group gives those URLs a segment to match, so
  * `(site)/not-found.tsx` renders with the site's header and footer.
  *
- * Concrete segments (`/docs`, `/demos`, `/embedded`, `/examples`, `/harness`)
- * are more specific than a catch-all and still win, so this only ever sees
- * paths nothing else claimed.
+ * Concrete segments (`/docs`, `/embedded`, `/examples`, `/harness`) are more
+ * specific than a catch-all and still win, so this only ever sees paths
+ * nothing else claimed.
  */
 export default function CatchAllNotFound(): never {
   notFound()
