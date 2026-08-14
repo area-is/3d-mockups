@@ -86,8 +86,12 @@ export default function HomePage() {
           and the carousel says what you are looking at. */}
       <section className="hero">
         <p className="eyebrow">GPU-accelerated mockups for React</p>
+        {/* The break only exists on a narrow screen: the headline is set on one
+            unwrappable line so the rotating noun cannot throw "In 3D." onto a
+            second line and back again mid-word, and below ~700px the longest
+            noun stops fitting on one. */}
         <h1>
-          Your <HeroRotator />. In 3D.
+          Your <HeroRotator />.<br className="hero-break" /> In 3D.
         </h1>
       </section>
 

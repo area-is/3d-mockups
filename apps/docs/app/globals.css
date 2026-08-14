@@ -454,14 +454,26 @@ code {
 /* Nothing follows the headline in the hero any more, the carousel's readout
    is the next line on the page and it brings its own spacing. */
 .hero h1 {
-  font-size: clamp(44px, 7vw, 76px);
+  font-size: clamp(38px, 7vw, 76px);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1;
   margin: 0;
   /* The rotating noun changes the line's width as it types; wrapping would let
-     that reflow throw "In 3D." onto a second line and back again. */
+     that reflow throw "In 3D." onto a second line and back again. Where the
+     line genuinely does not fit, `.hero-break` puts the break in a fixed
+     place instead. */
   text-wrap: nowrap;
+}
+
+.hero-break {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .hero-break {
+    display: inline;
+  }
 }
 
 /*
