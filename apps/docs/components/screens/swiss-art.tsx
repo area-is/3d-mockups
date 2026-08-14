@@ -10,16 +10,22 @@ import type { PatternDefinition } from 'tabbied'
  *
  * Two constraints shaped this. The carousel is not touchable - it owns every
  * gesture over the stage so the models can be spun and browsed - so a surface
- * with buttons on it is a surface offering something it cannot deliver; these
- * are printed pieces, not apps. And a carousel is seen in passing at a quarter
- * of a screen's size, so whatever is on the glass has to read as a composition
- * at a glance rather than as an interface to be examined.
+ * with buttons on it is a surface offering something it cannot deliver. And a
+ * carousel is seen in passing at a quarter of a screen's size, so whatever is
+ * on the glass has to read as a composition at a glance rather than as an
+ * interface to be examined.
  *
  * So: Swiss. A strict field, one flush-left type block, Inter throughout, and
  * a generative pattern from `tabbied` doing the work that a photograph would
  * do on a real poster. The patterns are picked for the vocabulary the style
  * actually uses - concentric rings, halftone rasters, radial line fields,
  * square grids - and palettes are cut down to paper, ink and one signal red.
+ *
+ * What says the surfaces are live is the redraw rather than a control: the
+ * device screens reseed themselves every couple of seconds (see `Pattern`),
+ * so the picture on a phone being dragged through 3D visibly recomposes. That
+ * is something a texture cannot do, and it is the claim the carousel is here
+ * to make. The printed objects hold still, because paper does.
  *
  * Every measurement is in `cq` units against a `container-type: size` root, so
  * one layout holds from a 396px watch face to a 2000px billboard panel: the
@@ -53,30 +59,55 @@ const TONES: Record<'paper' | 'ink', Tone> = {
 /* ------------------------------------------------------------------ */
 
 /**
+ * How often a screen redraws itself.
+ *
+ * Short enough to be caught rather than waited for - the carousel gives each
+ * object about six seconds before it advances, so a screen repaints twice
+ * while it is on stage - and long enough that each composition is a picture
+ * you looked at rather than a flicker.
+ */
+const RESEED_MS = 2600
+
+/**
  * The pattern block.
  *
  * `fit="cover"` rather than the default grid fit: the authored `grid` option
  * is the composition here - a poster wants a countable number of large marks,
  * not a texture that gets denser as the surface gets bigger - and `cover`
- * keeps that grid whatever shape the face turns out to be. The seed is fixed
- * per object so a slot scrolling out of the render window and back comes back
- * as the same picture.
+ * keeps that grid whatever shape the face turns out to be.
+ *
+ * `live` is the difference between a screen and a printed thing. A screen
+ * takes a new seed every `RESEED_MS`, which is the whole point of the surface
+ * being real DOM rather than a texture: nothing about a picture that redraws
+ * itself on a phone you are dragging around in 3D is bakeable. Print does not
+ * get it - a milk carton that reprinted itself every two seconds would be
+ * saying something false about what the library does to a milk carton.
+ *
+ * The two are mutually exclusive by construction, because `redrawInterval`
+ * only drives the seed while the seed is uncontrolled: a live surface passes
+ * no `seed` and takes a fresh one per mount, a printed one pins it so a slot
+ * scrolling out of the render window and back comes back as the same picture.
+ *
+ * Tabbied drops ticks under `prefers-reduced-motion`, on a hidden tab, and for
+ * anything scrolled out of view, so none of this runs when it should not.
  */
 function Pattern({
   pattern,
   seed,
   palette,
   grid,
+  live,
 }: {
   pattern: PatternDefinition
-  seed: string
+  seed?: string
   palette: string[]
   grid: string
+  live?: boolean
 }) {
   return (
     <TabbiedPattern
       pattern={pattern}
-      seed={seed}
+      {...(live ? { redrawInterval: RESEED_MS } : { seed })}
       palette={palette}
       options={{ grid }}
       fit="cover"
@@ -149,7 +180,10 @@ const sheet = (tone: Tone): CSSProperties => ({
 
 export interface SwissProps {
   pattern: PatternDefinition
-  seed: string
+  /** Pinned for a printed face; omitted on a live one, which reseeds itself. */
+  seed?: string
+  /** A screen: repaints on a timer instead of holding one composition. */
+  live?: boolean
   tone?: 'paper' | 'ink'
   /** Coarse on a small face, finer on a large one - see each caller. */
   grid?: string
@@ -167,6 +201,7 @@ export interface SwissProps {
 export function SwissStack({
   pattern,
   seed,
+  live,
   tone = 'paper',
   grid = '4x6',
   index,
@@ -183,7 +218,7 @@ export function SwissStack({
       </div>
       <div style={rule(t.text)} />
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        <Pattern pattern={pattern} seed={seed} palette={t.palette} grid={grid} />
+        <Pattern pattern={pattern} seed={seed} live={live} palette={t.palette} grid={grid} />
       </div>
       <Title>{title}</Title>
       <Micro style={{ opacity: 0.72 }}>{meta}</Micro>
@@ -198,6 +233,7 @@ export function SwissStack({
 export function SwissSplit({
   pattern,
   seed,
+  live,
   tone = 'paper',
   grid = '4x6',
   index,
@@ -224,7 +260,7 @@ export function SwissSplit({
         <Micro style={{ opacity: 0.72 }}>{meta}</Micro>
       </div>
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        <Pattern pattern={pattern} seed={seed} palette={t.palette} grid={grid} />
+        <Pattern pattern={pattern} seed={seed} live={live} palette={t.palette} grid={grid} />
       </div>
     </div>
   )
@@ -237,6 +273,7 @@ export function SwissSplit({
 export function SwissFrame({
   pattern,
   seed,
+  live,
   tone = 'paper',
   grid = '4x6',
   index,
@@ -248,7 +285,7 @@ export function SwissFrame({
   return (
     <div style={{ ...sheet(t), flexDirection: 'column' }}>
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        <Pattern pattern={pattern} seed={seed} palette={t.palette} grid={grid} />
+        <Pattern pattern={pattern} seed={seed} live={live} palette={t.palette} grid={grid} />
       </div>
       <div
         style={{
@@ -280,6 +317,7 @@ export function SwissFrame({
 export function SwissDial({
   pattern,
   seed,
+  live,
   tone = 'ink',
   grid = '2x3',
   kicker,
@@ -289,7 +327,7 @@ export function SwissDial({
   return (
     <div style={{ ...sheet(t), position: 'relative', alignItems: 'flex-end' }}>
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Pattern pattern={pattern} seed={seed} palette={t.palette} grid={grid} />
+        <Pattern pattern={pattern} seed={seed} live={live} palette={t.palette} grid={grid} />
       </div>
       <div
         style={{
@@ -320,12 +358,16 @@ export function SwissDial({
  * carousel is eighteen slots long, and eighteen prints of the same poster is a
  * screensaver rather than a showcase. Grids are coarser on the small faces and
  * finer on the large ones, so every object shows a comparable number of marks.
+ *
+ * The ten device screens are `live` and the seven printed faces are seeded.
+ * That split is the whole point of the set: put them side by side in the strip
+ * and the ones that are displays are the ones that keep changing.
  */
 
 export const SwissRotation = () => (
   <SwissStack
     pattern={gyre}
-    seed="s26-rotation"
+    live
     tone="paper"
     grid="6x9"
     index="01"
@@ -338,7 +380,7 @@ export const SwissRotation = () => (
 export const SwissRaster = () => (
   <SwissStack
     pattern={halftone}
-    seed="iphone-raster"
+    live
     tone="ink"
     grid="6x9"
     index="02"
@@ -351,7 +393,7 @@ export const SwissRaster = () => (
 export const SwissConstruction = () => (
   <SwissStack
     pattern={bauhaus}
-    seed="fold-construction"
+    live
     tone="paper"
     grid="6x9"
     index="03"
@@ -364,7 +406,7 @@ export const SwissConstruction = () => (
 export const SwissField = () => (
   <SwissStack
     pattern={dipole}
-    seed="flip-field"
+    live
     tone="ink"
     grid="8x12"
     index="04"
@@ -377,7 +419,7 @@ export const SwissField = () => (
 export const SwissModule = () => (
   <SwissSplit
     pattern={ortho}
-    seed="laptop-module"
+    live
     tone="paper"
     grid="6x9"
     index="05"
@@ -390,7 +432,7 @@ export const SwissModule = () => (
 export const SwissEpicentre = () => (
   <SwissStack
     pattern={epicentre}
-    seed="ipad-epicentre"
+    live
     tone="ink"
     grid="6x9"
     index="06"
@@ -403,7 +445,7 @@ export const SwissEpicentre = () => (
 export const SwissChecker = () => (
   <SwissStack
     pattern={damier}
-    seed="tab-checker"
+    live
     tone="paper"
     grid="6x9"
     index="07"
@@ -414,17 +456,17 @@ export const SwissChecker = () => (
 )
 
 export const SwissDialA = () => (
-  <SwissDial pattern={gyre} seed="watch-dial-a" tone="ink" grid="4x6" kicker="Zürich" title="9:41" />
+  <SwissDial pattern={gyre} live tone="ink" grid="4x6" kicker="Zürich" title="9:41" />
 )
 
 export const SwissDialB = () => (
-  <SwissDial pattern={damier} seed="watch-dial-b" tone="paper" grid="2x3" kicker="Basel" title="9:41" />
+  <SwissDial pattern={damier} live tone="paper" grid="2x3" kicker="Basel" title="9:41" />
 )
 
 export const SwissRhythm = () => (
   <SwissSplit
     pattern={chase}
-    seed="display-rhythm"
+    live
     tone="ink"
     grid="6x9"
     index="08"
