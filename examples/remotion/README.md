@@ -16,6 +16,11 @@ to video, over animated [Tabbied](https://tabbied.com) pattern backgrounds.
   [What the probes found](#what-the-probes-found).
 - **`Bench`**: the same turning phone with parts of the stage switched off,
   to see where render time goes.
+- **`WatchSheet`, `FoldSheet`**: stills for checking a model against reference
+  photos - a watch from six angles, its side views through a long lens like
+  product shots, or a foldable at ten hinge angles to see which display is lit
+  at each. Render one frame:
+  `npx remotion still WatchSheet out/ultra4.png --props='{"kind":"apple","variant":"ultra4"}'`.
 
 It is not an npm workspace: it installs the package from `../../packages/react`
 the way an app would, so build the package first.

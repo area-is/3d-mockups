@@ -63,6 +63,8 @@ export {
   wristLoopPerimeter,
   wristLoopArcLength,
   flatStrapPath,
+  type BendAlongStrapOptions,
+  bendAlongStrap,
   sweptStrapGeometry,
 } from './geometry/strap'
 export {

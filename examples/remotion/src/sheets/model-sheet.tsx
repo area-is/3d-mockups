@@ -23,11 +23,26 @@ import { SANS } from '../reel/screens'
 
 type Vec3 = [number, number, number]
 
-const WATCH_VIEWS: { label: string; rotation: Vec3 }[] = [
+// The side views slide the watch over and step it back, so the whole strap
+// loop behind the case is in the frame - the stage frames the case face.
+type WatchView = {
+  label: string
+  rotation: Vec3
+  position?: Vec3
+  scale?: number
+  camera?: { position: Vec3; fov: number }
+}
+
+// A long lens from far off: next to flat, like the side-on product shots the
+// model is checked against, where the stage's close camera shows the inside
+// of the strap all the way round the loop.
+const TELEPHOTO = { position: [0, 0, 44] as Vec3, fov: 7 }
+
+const WATCH_VIEWS: WatchView[] = [
   { label: 'front', rotation: [0, 0, 0] },
   { label: 'three-quarter', rotation: [0.2, -0.7, 0] },
-  { label: 'crown side', rotation: [0, -Math.PI / 2, 0] },
-  { label: 'left side', rotation: [0, Math.PI / 2, 0] },
+  { label: 'crown side', rotation: [0, -Math.PI / 2, 0], position: [-0.75, 0, 0], scale: 0.8, camera: TELEPHOTO },
+  { label: 'left side', rotation: [0, Math.PI / 2, 0], position: [0.75, 0, 0], scale: 0.8, camera: TELEPHOTO },
   { label: 'back', rotation: [0, Math.PI, 0] },
   { label: 'from above', rotation: [Math.PI / 2 - 0.05, 0, 0] },
 ]
@@ -53,20 +68,24 @@ export type WatchSheetProps = {
   kind: 'apple' | 'galaxy'
   variant: string
   bandOpen?: boolean
+  color?: string
+  bandColor?: string
+  /** Replace the six standard views - close-ups of the band hardware, say. */
+  views?: WatchView[]
 }
 
-export function WatchSheet({ kind, variant, bandOpen = false }: WatchSheetProps) {
+export function WatchSheet({ kind, variant, bandOpen = false, color, bandColor, views = WATCH_VIEWS }: WatchSheetProps) {
   const delayCapture = useMockupCapture()
   return (
     <AbsoluteFill style={{ background: '#fff', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 12, padding: 12 }}>
-      {WATCH_VIEWS.map((view) => (
+      {views.map((view) => (
         <Cell key={view.label} label={`${variant} · ${view.label}`}>
           {kind === 'apple' ? (
-            <AppleWatchMockup controls={false} delayCapture={delayCapture} variant={variant as AppleWatchVariant} rotation={view.rotation}>
+            <AppleWatchMockup controls={false} delayCapture={delayCapture} variant={variant as AppleWatchVariant} color={color} bandColor={bandColor} rotation={view.rotation} position={view.position} scale={view.scale} camera={view.camera}>
               <WatchFace />
             </AppleWatchMockup>
           ) : (
-            <GalaxyWatchMockup controls={false} delayCapture={delayCapture} variant={variant as GalaxyWatchVariant} bandOpen={bandOpen} rotation={view.rotation}>
+            <GalaxyWatchMockup controls={false} delayCapture={delayCapture} variant={variant as GalaxyWatchVariant} bandOpen={bandOpen} color={color} bandColor={bandColor} rotation={view.rotation} position={view.position} scale={view.scale} camera={view.camera}>
               <WatchFace />
             </GalaxyWatchMockup>
           )}

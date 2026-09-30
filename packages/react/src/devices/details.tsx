@@ -44,6 +44,7 @@ export function SideKey({
   protrusion,
   color,
   flush = false,
+  painted = false,
 }: {
   side: 1 | -1
   /** Rail face |x| (usually body.width / 2). */
@@ -56,6 +57,12 @@ export function SideKey({
   color: string
   /** Flush keys (Camera Control) sit in the rail with a glossier face. */
   flush?: boolean
+  /**
+   * A coloured key rather than bare metal (the Apple Watch Ultra's orange
+   * Action button). At full metalness a saturated colour only tints what the
+   * key reflects, and against a dark room that reads as a dark red.
+   */
+  painted?: boolean
 }) {
   const crown = 0.01
   const seat = 0.05
@@ -83,11 +90,11 @@ export function SideKey({
       position={[side * (railX + (flush ? 0.002 : protrusion)), y, z]}
       rotation-y={side === 1 ? 0 : Math.PI}
     >
-      <meshPhysicalMaterial
-        color={color}
-        metalness={flush ? 0.94 : 0.9}
-        roughness={flush ? 0.16 : 0.24}
-      />
+      {painted ? (
+        <meshPhysicalMaterial color={color} metalness={0.2} roughness={0.4} clearcoat={0.5} clearcoatRoughness={0.3} />
+      ) : (
+        <meshPhysicalMaterial color={color} metalness={flush ? 0.94 : 0.9} roughness={flush ? 0.16 : 0.24} />
+      )}
     </mesh>
   )
 }

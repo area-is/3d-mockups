@@ -30,8 +30,8 @@ breaking change can ship in a minor release, and is always listed under
   colour-matched Ceramic Shield back, in Black, Silver, Glacier and Burgundy.
   `AppleWatchMockup` gains `variant="series12"` (the Series 11's case a
   millimetre wider, the generation's eight aluminium, titanium and ceramic
-  finishes) and `variant="ultra4"` - the 49 mm flat-sided titanium case the
-  Ultra 3 introduced, with its raised crown guard, the orange-ringed crown,
+  finishes) and `variant="ultra4"` - the 49 mm titanium case the Ultra 3
+  introduced, with its raised crown guard, the orange-ringed crown,
   the orange Action button on the left flank (orange whatever the finish,
   because on the hardware it is), a flat crystal over the 422×514 panel
   (211×257 logical) and the buckled Ocean Band; watch keys can now sit on
@@ -202,6 +202,29 @@ breaking change can ship in a minor release, and is always listed under
   ```
 
 ### Changed
+
+- **Watch bands and the Apple Watch Ultra, checked against product photos.**
+  Both families' straps were straight boxes where the hardware was: a buckle
+  frame and keeper standing off a curved band as rigid slabs, reading from
+  the side as blocks floating beside the strap. The buckle frame (and the
+  Ocean Band's titanium loop) is now bar stock bent round the strap it sits
+  on, wrapping its edges, in the case's metal, with a rounded tongue; the
+  Galaxy's keeper is a moulded sleeve right behind the buckle. The bands
+  leave the case through the case end rather than off the back edge - the
+  Galaxy's halfway up, falling away at 45° as in Samsung's side render - and
+  thicken at the root. The Ocean Band has its moulded ridges, one every
+  6.7 mm, with stadium holes cut across it in the troughs; the Galaxy Sport
+  Band is 21.8 mm of constant width (it tapered from a 33 mm lug to 16 mm)
+  with ten holes across it at Samsung's 5.2 mm pitch. The Ultra 4 has barrel
+  flanks under a flat raised lip, rounder corners, a Ø9.6 mm crown of a score
+  of coarse lobes, a round-ended crown guard with the side button in a
+  pocket and the mic drilled through it, the ten-hole speaker grille, mic and
+  siren port on the left in place of two slots, a bright orange Action button
+  (at full metalness it read as dark red), and a black ceramic sensor dome.
+  The Series has two speaker slots, a Ø7 mm crown and a longer side button.
+  Geometry only - no prop changed. The core gains `bendAlongStrap`, and
+  `gearShape` a `'lobed'` profile. The `watch`, `watch-ultra4` and
+  `watch-ultra2` visual baselines moved.
 
 - **A re-render no longer rebuilds the studio lighting.** drei's
   `<Environment>` re-renders its cube map whenever its children change

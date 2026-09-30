@@ -283,8 +283,8 @@ the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
 Both watches add `bandColor` and skip orientation. Every device draws its front camera unconditionally - a punch hole, Dynamic Island or notch is hardware, and it obstructs your layout here exactly as it would on the real panel. `<AppleWatch>` is the Apple Watch family (`'series11' | 'series12' | 'ultra4'`):
 the Series' squircle case with the knurled Digital Crown, flush side button and sensor
 back, worn on the seamless Solo Loop - which has no closure, so it takes no `bandOpen` -
-and the Ultra 4's 49 mm flat-sided titanium case with its crown guard and orange Action
-button, on its buckled Ocean Band.
+and the Ultra 4's 49 mm titanium case with its raised lip, crown guard and orange Action
+button, on its ridged, buckled Ocean Band.
 `<GalaxyWatch>` is the Galaxy Watch family (`'watch8' | 'watch9' | 'watchultra2'`):
 cushion case, round display on its dial puck, flat keys (the 47 mm titanium
 Ultra 2 adds its orange Quick Button), BioActive puck, worn on a buckled
