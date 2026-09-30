@@ -33,6 +33,8 @@ export {
   framedShadowY,
   foldOpenAngle,
   FLAT_EPSILON,
+  COVER_SCREEN_UNTIL,
+  coverScreenLit,
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.

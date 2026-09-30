@@ -110,9 +110,9 @@ export interface MockupPropsMap {
   appleWatch: { variant?: AppleWatchVariant }
   galaxyWatch: { variant?: GalaxyWatchVariant }
   studioDisplay: Record<string, never>
-  fold: { variant?: FoldVariant; openAngle?: boolean | number; orientation?: Orientation }
-  iphoneDuo: { variant?: IPhoneDuoVariant; openAngle?: boolean | number; orientation?: Orientation }
-  flip: { variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation }
+  fold: { variant?: FoldVariant; openAngle?: boolean | number; orientation?: Orientation; coverScreenUntil?: number }
+  iphoneDuo: { variant?: IPhoneDuoVariant; openAngle?: boolean | number; orientation?: Orientation; coverScreenUntil?: number }
+  flip: { variant?: FlipVariant; openAngle?: boolean | number; orientation?: Orientation; coverScreenUntil?: number }
   book: { size?: BookSize }
   magazine: { size?: MagazineSize }
   brochure: { size?: BrochureSize }

@@ -59,6 +59,14 @@ breaking change can ship in a minor release, and is always listed under
   screen. The helpers behind it, `takeCaptureHold` and `createCaptureHolds`,
   are in `react-3d-mockups/core`; `examples/remotion` renders a reel with it.
 
+- **`coverScreenUntil` on `FoldMockup`, `FlipMockup` and `IPhoneDuoMockup`**
+  (and their bare components): the hinge angle up to which the cover display
+  stays lit as the device opens, before your content moves to the inner
+  display. Defaults to 30°, where Android's reference foldable swaps; `90`
+  keeps the cover on through the half-open tent pose, `0` swaps the moment the
+  hinge moves. `mockupInfo` and `.info()` measure whichever display it lights.
+  The rule lives in core as `coverScreenLit` and `COVER_SCREEN_UNTIL`.
+
 - **`time`: the stage's motion on your clock.** `autoRotate` and `float` ran on
   the browser's clock, and a video render draws frames out of order across
   several tabs, so each landed on a different point of the spin and the bob
@@ -241,6 +249,20 @@ breaking change can ship in a minor release, and is always listed under
   delta, so a pinch is continuous and a wheel notch still moves.
 
 ### Fixed
+
+- **A foldable no longer looks switched off while it opens.** The cover
+  display went dark at the first half-degree of hinge travel and the inner
+  display took the content, but at small angles that one still faces its own
+  other half - so for the first third of every opening nothing was lit that
+  the viewer could see. On the hardware one of the two is lit at every angle;
+  the cover now stays lit, on the back of the cover half, until
+  `coverScreenUntil`.
+
+- **The Flip's folded cover wore its lenses mirrored.** The rings drawn on
+  the cover screen read the spec's half-local `x` as if seen from the front,
+  but the cover is that half's back: folded, the lenses sat top-right, and
+  half-open (where the 3D modules draw them) top-left. Both now sit top-left,
+  where the retail Flip has them with the hinge at the bottom.
 
 - **The Remotion recipe compiles and holds its frames.** It passed
   `pauseWhenOffscreen` to a one-liner mockup, which does not accept it in

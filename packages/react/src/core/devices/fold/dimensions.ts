@@ -35,7 +35,7 @@
 
 import type { Orientation } from '../../orientation'
 import type { MockupFraming, MockupMetrics } from '../../regions'
-import { foldOpenAngle } from '../../regions'
+import { coverScreenLit, foldOpenAngle } from '../../regions'
 
 /** The rear camera cluster in one pose's own back-face coordinates. */
 interface FoldRearCamera {
@@ -511,11 +511,13 @@ export interface FoldPoseProps<V extends string = FoldVariant> {
   variant?: V
   openAngle?: boolean | number
   orientation?: Orientation
+  /** Hinge angle up to which the cover display stays lit (see `COVER_SCREEN_UNTIL`). */
+  coverScreenUntil?: number
 }
 
 /**
- * Live geometry of whichever panel is facing the viewer: the big inner
- * display when open, the tall cover display when closed.
+ * Live geometry of whichever panel is lit: the tall cover display from shut
+ * until the handoff angle (`coverScreenLit`), the big inner display after.
  *
  * Built per family so an omitted `variant` falls back to the family the
  * mockup belongs to - the Galaxy Z Fold and the iPhone Duo share the spec
@@ -527,9 +529,9 @@ export interface FoldPoseProps<V extends string = FoldVariant> {
 function foldMetrics<V extends string>(variants: Record<V, FoldSpec>, defaultVariant: NoInfer<V>) {
   return {
     mmPerUnit: FOLD_MM_PER_UNIT,
-    regions: ({ variant, openAngle, orientation }: FoldPoseProps<V>) => {
+    regions: ({ variant, openAngle, orientation, coverScreenUntil }: FoldPoseProps<V>) => {
       const spec = variants[variant ?? defaultVariant]
-      const { display, resolution } = foldOpenAngle(openAngle) < 0.5 ? spec.closed : spec.open
+      const { display, resolution } = coverScreenLit(openAngle, coverScreenUntil) ? spec.closed : spec.open
       const landscape = orientation === 'landscape'
       return {
         screen: {

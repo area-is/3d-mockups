@@ -128,6 +128,37 @@ export function foldOpenAngle(openAngle: boolean | number | undefined): number {
 }
 
 /**
+ * The hinge angle, in degrees, up to which a foldable's cover display stays
+ * lit as it opens. Above it the inner display takes over.
+ *
+ * On the hardware one of the two panels is lit at every angle; which one, and
+ * where they swap, is policy. Android's reference foldable (the emulator's
+ * Pixel Fold) keeps the cover screen through 0-30 degrees; Samsung publishes
+ * no angle, and a Fold 7 was measured handing off a fraction of a second into
+ * the swing, which at a normal pace is the same tens of degrees; propped open
+ * like a tent, both Samsung and Pixel keep the cover on up to about 90. A
+ * mockup that turned the cover off the moment the hinge left 0 - as this
+ * library did - showed a device that looked switched off for the first third
+ * of every opening, because the inner display it had lit instead was still
+ * facing itself.
+ */
+export const COVER_SCREEN_UNTIL = 30
+
+/**
+ * Whether the cover display is the lit one at this hinge angle: always when
+ * shut, and while opening up to `coverScreenUntil` degrees. A flat device has
+ * its inner display lit whatever the threshold says.
+ */
+export function coverScreenLit(
+  openAngle: boolean | number | undefined,
+  coverScreenUntil: number = COVER_SCREEN_UNTIL
+): boolean {
+  const angle = foldOpenAngle(openAngle)
+  if (angle < 0.5) return true
+  return angle < FLAT_EPSILON && angle < coverScreenUntil
+}
+
+/**
  * At or above this angle a foldable counts as flat.
  *
  * A binding renders the flat pose from one continuous screen and every other

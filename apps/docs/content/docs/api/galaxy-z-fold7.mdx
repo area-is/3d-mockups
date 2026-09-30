@@ -50,11 +50,13 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 | `statusBar` | `boolean \| StatusBarContent` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - One UI's, on the cover screen and on the inner display alike, clearing whichever punch hole is showing - including the inner display's off-centre one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
 | `color` | `string` | `'#3a3d42'` | Back panel. Takes a retail colorway id from `FOLD_COLORWAYS[variant]`, which brings that model's frame and hinge with it, or any CSS color - the metal is then derived from it. |
 | `resolution` | `number` | per state | CSS pixel width of the active display; height follows the panel aspect. Defaults to the device's own logical grid for whichever screen is showing - see the [device table](/docs/devices). |
+| `coverScreenUntil` | `number` | `30` | The hinge angle, in degrees, up to which the cover display stays lit as the device opens; above it your content moves to the inner display, so one of the two is lit at every angle, as on the hardware. `30` is where Android's reference foldable swaps; `90` keeps the cover on through the half-open tent pose, `0` swaps the moment the hinge moves. |
 
 ## The two states
 
-The active display is whichever screen is showing, so your content maps onto
-the inner display when open and the cover display when closed. Switch with a
+The active display is whichever screen is lit, so your content maps onto the
+cover display from shut until the hinge passes `coverScreenUntil` (30° by
+default) and the inner display after it. Switch with a
 single prop:
 
 <MockupExplorer

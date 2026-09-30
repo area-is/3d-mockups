@@ -13,7 +13,7 @@ import {
 } from '../devices/watch/dimensions'
 import { cameraDistance, DEFAULT_CAMERA_DISTANCE } from '../stage/stage'
 import { floatPose, FLOAT_REST_POSE, REDUCED_MOTION_QUERY } from '../stage/float'
-import { foldOpenAngle, FLAT_EPSILON } from '../regions'
+import { foldOpenAngle, FLAT_EPSILON, COVER_SCREEN_UNTIL, coverScreenLit } from '../regions'
 import { mockupInfo } from '../metrics'
 
 /**
@@ -141,5 +141,38 @@ describe('foldable measurement follows openAngle', () => {
     // Every angle above the shut threshold shows the inner display.
     expect(nearlyFlat).toEqual(flat)
     expect(mockupInfo(kind, { openAngle: 90 }).primary.px).toEqual(flat)
+  })
+})
+
+/**
+ * One of a foldable's two panels is lit at every hinge angle. Which one is the
+ * cover display from shut until the handoff, and the inner display after it -
+ * never neither, which is what a device whose cover went dark at the first
+ * degree of opening looked like.
+ */
+describe('coverScreenLit', () => {
+  it('lights the cover when shut, whatever the threshold', () => {
+    expect(coverScreenLit(false)).toBe(true)
+    expect(coverScreenLit(0)).toBe(true)
+    expect(coverScreenLit(0.2, 0)).toBe(true)
+  })
+
+  it('keeps the cover lit through the first part of the opening', () => {
+    expect(COVER_SCREEN_UNTIL).toBe(30)
+    expect(coverScreenLit(10)).toBe(true)
+    expect(coverScreenLit(29.9)).toBe(true)
+    expect(coverScreenLit(30)).toBe(false)
+    expect(coverScreenLit(120)).toBe(false)
+  })
+
+  it('takes the threshold as a prop: 0 switches at once, 90 is a tent', () => {
+    expect(coverScreenLit(2, 0)).toBe(false)
+    expect(coverScreenLit(80, 90)).toBe(true)
+    expect(coverScreenLit(95, 90)).toBe(false)
+  })
+
+  it('lights the inner display on a flat device, whatever the threshold', () => {
+    expect(coverScreenLit(true, 180)).toBe(false)
+    expect(coverScreenLit(FLAT_EPSILON, 200)).toBe(false)
   })
 })
