@@ -45,6 +45,30 @@ breaking change can ship in a minor release, and is always listed under
   geometry is measured off Apple's own product-bezel drawings (see
   `agent-outputs/model-review-2026-09-apple.md`).
 
+- **`delayCapture`: frame-accurate video and screenshots.** A mockup draws
+  asynchronously in three places - react-three-fiber starts the renderer
+  after mount, WebGL redraws on the next animation frame, and each screen is
+  a React root of its own that commits after the scene and then waits a frame
+  to be placed on the glass - and a tool photographing the page could see
+  none of it. Rendered with Remotion, the first frame of a freshly mounted
+  mockup came out with no device or a bare screen hole, on different frames
+  each render. `delayCapture` (on `MockupCanvas` and every `*Mockup`) is
+  called with a reason whenever a frame is on its way that is not drawn yet,
+  and returns the function the canvas calls once it is: wire it to Remotion's
+  `delayRender`/`continueRender`. While it is set the canvas never pauses off
+  screen. The helpers behind it, `takeCaptureHold` and `createCaptureHolds`,
+  are in `react-3d-mockups/core`; `examples/remotion` renders a reel with it.
+
+- **`time`: the stage's motion on your clock.** `autoRotate` and `float` ran on
+  the browser's clock, and a video render draws frames out of order across
+  several tabs, so each landed on a different point of the spin and the bob
+  (and the float's phase was random per mount). `time` (seconds, on
+  `MockupCanvas` and every `*Mockup`) makes both a function of it:
+  `autoRotate` turns the camera as far as it would have by then, whether or
+  not `controls` is on, and `float` samples its bob at that time with a fixed
+  phase. Reduced motion does not hold them still on a clock you drive. The
+  math is `turntablePosition` and `autoRotateSpeed` in `react-3d-mockups/core`.
+
 - **Render control on every mockup.** `frameloop` (`'demand' | 'always' |
   'never'`), `pauseWhenOffscreen`, `gl` (merged over `CANVAS_GL_DEFAULTS`) and
   `onCreated` on `MockupCanvas`; `frameloop` is advertised on every `*Mockup`
@@ -171,6 +195,15 @@ breaking change can ship in a minor release, and is always listed under
 
 ### Changed
 
+- **A re-render no longer rebuilds the studio lighting.** drei's
+  `<Environment>` re-renders its cube map whenever its children change
+  identity, and three.js then re-filters it into PMREM mip levels, and the
+  canvas mapped its light formers inline, so every render of `MockupCanvas` -
+  every prop change - paid for a new environment. Invisible at rest, a hitch
+  in the prop explorer, and most of the frame in a video render, where props
+  change every frame: on SwiftShader, 12 frames of a turning phone went from
+  112 s to 25 s. The formers are built once now.
+
 - **The contact shadow redraws only when something under it moves.** It used to
   re-render the scene into its shadow map every frame (drei's `ContactShadows`
   default) - roughly half the triangles of a mockup frame. Orbiting moves the
@@ -208,6 +241,19 @@ breaking change can ship in a minor release, and is always listed under
   delta, so a pinch is continuous and a wheel notch still moves.
 
 ### Fixed
+
+- **The Remotion recipe compiles and holds its frames.** It passed
+  `pauseWhenOffscreen` to a one-liner mockup, which does not accept it in
+  TypeScript, and relied on timing alone for its frames to be complete. It
+  now uses `delayCapture` and `time`, and keeps `frameloop` at `'demand'`
+  (`'always'` only made every render tab redraw between captures).
+
+- **The `camera` prop is live.** react-three-fiber reads it once, when it
+  creates the camera, so changing it later did nothing - a dolly or a zoom
+  driven from props silently stood still. A new `position` or `fov` now
+  moves the camera there, looking at the stage center. Values are compared,
+  not the object, so a re-render that passes the same numbers leaves a
+  dragged camera where the visitor put it.
 
 - **Screens render under `@react-three/fiber` 9.8.** Fiber 9.8.0 mounts the
   scene inside `<Canvas>`'s own commit, and there drei's `<Html>`, which

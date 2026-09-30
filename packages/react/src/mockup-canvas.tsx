@@ -1,6 +1,8 @@
 import * as React from 'react'
+import type * as THREE from 'three'
 import { Canvas, useFrame, useThree, type CanvasProps } from '@react-three/fiber'
 import { Environment, Lightformer } from '@react-three/drei'
+import { FiberProvider, useContextMap } from 'its-fine'
 import { TumbleControls, type TumbleControlsHandle } from './tumble-controls'
 import { StageShadows } from './stage-shadows'
 import { StageContext, type ScreenAccessibility, type StageSettings } from './stage-context'
@@ -22,10 +24,16 @@ import {
   STUDIO_ENV_RESOLUTION,
   STUDIO_LIGHTFORMERS,
   activeFullscreenElement,
+  autoRotateSpeed,
   cameraDistance,
   canvasTouchAction,
+  createCaptureHolds,
   orbitDistanceRange,
+  takeCaptureHold,
   toggleFullscreen,
+  turntablePosition,
+  type CaptureHolds,
+  type DelayCapture,
 } from './core'
 
 /**
@@ -93,6 +101,117 @@ function useWorthDrawing(target: React.RefObject<Element | null>, enabled: boole
   }, [target, enabled])
   return worth
 }
+
+/**
+ * Holds a capture (see `delayCapture`) until the frame it waits for has been
+ * drawn: the frame after every commit of the scene - a prop change, a new
+ * child, a context value - including the first.
+ *
+ * Its own FiberProvider for the same reason `DeviceScreen` has one: the
+ * context lookup must not depend on which copy of its-fine r3f was built with.
+ */
+function CaptureGate({ holds }: { holds: CaptureHolds }) {
+  return (
+    <FiberProvider>
+      <CaptureGateFrame holds={holds} />
+    </FiberProvider>
+  )
+}
+
+function CaptureGateFrame({ holds }: { holds: CaptureHolds }) {
+  // Subscribed to every context the scene can see. A commit that only a
+  // context drove - a component inside the canvas reading a video's frame
+  // counter - re-renders nothing above the canvas, so without this it would
+  // move the scene without a hold, and a capture could land before the draw.
+  useContextMap()
+  const invalidate = useThree((state) => state.invalidate)
+  React.useLayoutEffect(() => {
+    holds.hold('react-3d-mockups: drawing the next frame')
+    invalidate()
+  })
+  useFrame(() => {
+    // Frame callbacks run before the scene is drawn, and the draw follows in
+    // this same task: a microtask lands just after it.
+    if (holds.pending) queueMicrotask(holds.release)
+  })
+  return null
+}
+
+type Vec3 = [number, number, number]
+
+/** The `camera` prop's position when it is a plain xyz triple - the one shape the stage re-applies. */
+function positionTuple(camera: CanvasProps['camera']): Vec3 | null {
+  const position = (camera as { position?: unknown } | undefined)?.position
+  return Array.isArray(position) &&
+    position.length === 3 &&
+    position.every((n) => typeof n === 'number' && Number.isFinite(n))
+    ? (position as Vec3)
+    : null
+}
+
+/**
+ * Keeps the camera on the `camera` prop after mount, and - on a caller's
+ * clock (`time`) - turns it as far round the turntable as `autoRotate` has
+ * carried it by that time.
+ *
+ * react-three-fiber reads its `camera` prop once, when it creates the camera,
+ * so a dolly or a zoom driven from props (a video's frame counter, a scroll
+ * position) silently stood still. A change of position or fov now moves the
+ * camera there, looking at the stage center as the orbit does. Values, not
+ * the object, are compared: the one-liners build a fresh camera object on
+ * every render, and a drag must survive a re-render that did not move it.
+ */
+function StageCamera({ position, fov, seconds, speed }: { position: Vec3; fov: number | undefined; seconds: number | undefined; speed: number }) {
+  const camera = useThree((state) => state.camera)
+  const invalidate = useThree((state) => state.invalidate)
+  const [x, y, z] = position
+  const mounted = React.useRef(false)
+  React.useLayoutEffect(() => {
+    // The first pose is the one react-three-fiber just created the camera
+    // at; only a clock has anything to add to it.
+    const first = !mounted.current
+    mounted.current = true
+    if (first && seconds === undefined) return
+    const at = seconds === undefined ? position : turntablePosition(position, seconds, speed)
+    camera.position.set(...at)
+    camera.up.set(0, 1, 0)
+    const perspective = camera as THREE.PerspectiveCamera
+    if (fov !== undefined && perspective.isPerspectiveCamera && perspective.fov !== fov) {
+      perspective.fov = fov
+      perspective.updateProjectionMatrix()
+    }
+    camera.lookAt(0, 0, 0)
+    invalidate()
+    // `position` is read through its components, so a fresh array with the
+    // same numbers is not a move.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camera, invalidate, x, y, z, fov, seconds, speed])
+  return null
+}
+
+/**
+ * The studio's light formers, built once for every canvas.
+ *
+ * drei's <Environment> re-renders its cube map whenever its `children` change
+ * identity, and three.js then re-filters the map into its PMREM mip chain on
+ * the next draw - a dozen full-screen passes. Mapped inline, the children
+ * were new on every render of the canvas, so every prop change paid for a
+ * new environment: a hitch in the prop explorer, and in a video render, where
+ * props change every frame, most of the frame time (on SwiftShader, 12 frames
+ * of a turning phone took 112 s with it and 25 s without). The lights never
+ * change, so neither do these.
+ */
+const STUDIO = STUDIO_LIGHTFORMERS.map((lf, i) => (
+  <Lightformer
+    key={i}
+    form={lf.form}
+    intensity={lf.intensity}
+    position={lf.position}
+    scale={lf.scale}
+    rotation-x={lf.rotationX ?? 0}
+    rotation-y={lf.rotationY ?? 0}
+  />
+))
 
 /** How far outside the viewport a canvas starts drawing again. */
 const PAUSE_MARGIN = '120px'
@@ -189,6 +308,39 @@ export interface MockupCanvasProps {
    */
   pauseWhenOffscreen?: boolean
   /**
+   * Seconds on a clock you own - a video's `frame / fps`, a scroll position.
+   * Set, the stage's own motion follows it instead of the browser's clock:
+   * `autoRotate` turns the camera as far as it would have by then, and a
+   * mockup's `float` samples its bob at that time, so the same `time` always
+   * draws the same picture. A render that draws frames out of order, across
+   * several tabs (Remotion does both), needs exactly that. Reduced motion no
+   * longer holds either still: the clock is yours, and so is the decision.
+   */
+  time?: number
+  /**
+   * Hold an outside capture - a video render, a screenshot - until the
+   * picture is complete. The canvas calls it with a reason whenever a frame
+   * is on its way that has not been drawn yet (the renderer starting up, a
+   * scene change waiting for its redraw, a screen whose content has not
+   * landed on the glass), and calls the function it returns once it has. In
+   * Remotion, wrap `delayRender` / `continueRender`:
+   *
+   * ```tsx
+   * const { delayRender, continueRender } = useDelayRender()
+   * <IPhoneMockup
+   *   delayCapture={(reason) => {
+   *     const handle = delayRender(reason)
+   *     return () => continueRender(handle)
+   *   }}
+   * />
+   * ```
+   *
+   * While it is set the canvas never pauses (`pauseWhenOffscreen` is
+   * ignored), since a paused canvas would hold the capture forever; for the
+   * same reason do not combine it with `frameloop="never"`.
+   */
+  delayCapture?: DelayCapture
+  /**
    * WebGL renderer settings, merged over the defaults
    * `{ antialias: true, alpha: true, powerPreference: 'default' }`
    * (`CANVAS_GL_DEFAULTS`). Keep `alpha` on: the screens are seen through the
@@ -237,6 +389,8 @@ export function MockupCanvas({
   dpr = [1, 2],
   frameloop = 'demand',
   pauseWhenOffscreen = true,
+  time,
+  delayCapture,
   gl,
   onCreated,
   label = '3D mockup',
@@ -294,8 +448,36 @@ export function MockupCanvas({
     if (baseDistance.current !== null && lastDistance.current) zoomBy(baseDistance.current / lastDistance.current)
   }
 
+  // The latest `delayCapture` behind one stable function: an inline arrow is
+  // a new function on every render, and rebuilding the holds for each one
+  // released the previous frame's holds before that frame was drawn.
+  const capturing = delayCapture !== undefined
+  const delayRef = React.useRef(delayCapture)
+  React.useLayoutEffect(() => {
+    delayRef.current = delayCapture
+  })
+  const capture = React.useMemo<DelayCapture | undefined>(
+    () => (capturing ? (reason) => takeCaptureHold(delayRef.current, reason) : undefined),
+    [capturing]
+  )
+  const holds = React.useMemo(() => createCaptureHolds(capture), [capture])
+  // Held from this component's first commit, not the scene's: react-three-
+  // fiber creates the renderer asynchronously, and until it has there is no
+  // scene to hold for - a capture in between photographed an empty canvas.
+  React.useLayoutEffect(() => {
+    holds.hold('react-3d-mockups: starting the renderer')
+    // Unmounted, or no longer capturing: nothing will draw for these now.
+    return () => holds.release()
+  }, [holds])
+
+  const cameraOptions = camera ?? { position: DEFAULT_CAMERA_POSITION, fov: DEFAULT_CAMERA_FOV }
+  const stagePosition = positionTuple(cameraOptions)
+  const stageFov = (cameraOptions as { fov?: unknown }).fov
+  const stageFovValue = typeof stageFov === 'number' ? stageFov : undefined
+
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const drawing = useWorthDrawing(canvasRef, pauseWhenOffscreen)
+  // A paused canvas draws nothing, so it would hold a capture forever.
+  const drawing = useWorthDrawing(canvasRef, pauseWhenOffscreen && !capturing)
 
   // An image to assistive tech, named for what it shows. r3f spreads its own
   // props onto the container rather than the canvas, and the container also
@@ -313,7 +495,10 @@ export function MockupCanvas({
       typeof gl === 'function' || (gl && 'render' in gl) ? gl : { ...CANVAS_GL_DEFAULTS, ...gl },
     [gl]
   )
-  const stage = React.useMemo<StageSettings>(() => ({ screenAccessibility }), [screenAccessibility])
+  const stage = React.useMemo<StageSettings>(
+    () => ({ screenAccessibility, delayCapture: capture }),
+    [screenAccessibility, capture]
+  )
 
   // The canvas's own container is a stacking context (see isolateCanvasStack
   // in device-screen), so the blending band is sealed inside it however large
@@ -330,13 +515,22 @@ export function MockupCanvas({
       // the canvas owns the pinch instead (touch-action none).
       style={{ touchAction: canvasTouchAction(zoom), background, ...style }}
       dpr={dpr}
-      camera={camera ?? { position: DEFAULT_CAMERA_POSITION, fov: DEFAULT_CAMERA_FOV }}
+      camera={cameraOptions}
       gl={glProps}
       onCreated={onCreated}
       frameloop={drawing ? frameloop : 'never'}
     >
       <StageContext.Provider value={stage}>
         <TouchScrollFix zoom={zoom} />
+        {capturing && <CaptureGate holds={holds} />}
+        {stagePosition && (
+          <StageCamera
+            position={stagePosition}
+            fov={stageFovValue}
+            seconds={time}
+            speed={autoRotateSpeed(autoRotate)}
+          />
+        )}
         <ambientLight intensity={STAGE_AMBIENT_LIGHT.intensity} />
         <directionalLight position={STAGE_KEY_LIGHT.position} intensity={STAGE_KEY_LIGHT.intensity} />
 
@@ -344,19 +538,7 @@ export function MockupCanvas({
             Not optional: it is what gives every material its reflections, and a
             mockup without it reads as flat untextured plastic. No HDR files are
             fetched, so it costs nothing at load and works offline. */}
-        <Environment resolution={STUDIO_ENV_RESOLUTION}>
-          {STUDIO_LIGHTFORMERS.map((lf, i) => (
-            <Lightformer
-              key={i}
-              form={lf.form}
-              intensity={lf.intensity}
-              position={lf.position}
-              scale={lf.scale}
-              rotation-x={lf.rotationX ?? 0}
-              rotation-y={lf.rotationY ?? 0}
-            />
-          ))}
-        </Environment>
+        <Environment resolution={STUDIO_ENV_RESOLUTION}>{STUDIO}</Environment>
 
         {children}
 
@@ -366,10 +548,13 @@ export function MockupCanvas({
           <TumbleControls
             ref={controlsRef}
             zoom={zoom}
-            autoRotate={autoRotate}
+            // On a caller's clock the turntable is StageCamera's, as a
+            // function of `time`; stepping it here too would double it.
+            autoRotate={time === undefined ? autoRotate : false}
             freeRotation={freeRotation}
             minDistance={orbitRange.min}
             maxDistance={orbitRange.max}
+            home={stagePosition ?? undefined}
             onDistanceChange={zoom ? handleDistanceChange : undefined}
           />
         )}

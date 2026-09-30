@@ -137,10 +137,12 @@ straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 | `shadows` | `boolean` | `true` | Soft contact shadow |
 | `shadowY` | `number` | `-2.05` | Y of the shadow plane (grounds the device). Canvas only - a mockup derives it from the object's framing |
 | `background` | `string` | - | CSS background of the canvas |
-| `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override |
+| `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override. Live: a new `position`/`fov` moves the camera there |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp. Canvas only |
 | `frameloop` | `'demand' \| 'always' \| 'never'` | `'demand'` | When to draw. `'demand'` draws only when something changes; use `'always'` for your own `useFrame` animation in a composed scene |
 | `pauseWhenOffscreen` | `boolean` | `true` | Stop drawing while the canvas is off screen or its tab is hidden. Canvas only |
+| `time` | `number` | - | Seconds on your own clock (a video's `frame / fps`): `autoRotate` and `float` follow it, so the same `time` draws the same picture |
+| `delayCapture` | `(reason) => () => void` | - | Hold a video render or screenshot until the frame is complete (renderer started, redraw done, screens placed). Wire it to Remotion's `delayRender`/`continueRender`; while set, the canvas never pauses |
 | `gl` | r3f `gl` | `{ antialias: true, alpha: true, powerPreference: 'default' }` | Renderer settings, merged over the defaults. Keep `alpha` on - screens show through transparent pixels. Canvas only |
 | `onCreated` | `(state) => void` | - | r3f's `onCreated`, e.g. to read `gl.info`. Canvas only |
 | `label` | `string` | per model | Accessible name; the canvas is exposed as `role="img"` ("3D mockup of an iPhone") |

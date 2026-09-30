@@ -88,6 +88,12 @@ type _noSeparateSpeed = Expect<Not<Has<'autoRotateSpeed', AFrameSignMockupProps>
 // When it draws and what assistive tech hears are page decisions: advertised.
 type _frameloop = Expect<Equal<AFrameSignMockupProps['frameloop'], 'demand' | 'always' | 'never' | undefined>>
 type _label = Expect<Has<'label', AFrameSignMockupProps>>
+// Whose clock the motion runs on, and whether the page is being captured,
+// are page decisions too.
+type _time = Expect<Equal<AFrameSignMockupProps['time'], number | undefined>>
+type _delayCapture = Expect<
+  Equal<AFrameSignMockupProps['delayCapture'], ((reason: string) => () => void) | undefined>
+>
 type _screenAccessibility = Expect<
   Equal<AFrameSignMockupProps['screenAccessibility'], 'hidden' | 'visible' | undefined>
 >

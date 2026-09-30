@@ -1,7 +1,7 @@
 ---
 title: MockupCanvas
 description: The ready-made stage, with a WebGL canvas, studio lighting, soft shadows, and drag-to-rotate controls.
-keywords: [stage, canvas, frameloop, pauseWhenOffscreen, gl, onCreated, label, screenAccessibility, keyboard, controls, zoom, fullscreen, dpr]
+keywords: [stage, canvas, frameloop, pauseWhenOffscreen, time, delayCapture, video, gl, onCreated, label, screenAccessibility, keyboard, controls, zoom, fullscreen, dpr]
 ---
 
 `<MockupCanvas>` wraps a react-three-fiber `Canvas` with everything a product
@@ -10,7 +10,8 @@ shot needs. Compose it with any device, for example
 
 The one-liner `*Mockup` components are built on this stage and forward most of
 these props, including the rendering and accessibility ones (`frameloop`,
-`pauseWhenOffscreen`, `gl`, `onCreated`, `label`, `screenAccessibility`).
+`pauseWhenOffscreen`, `time`, `delayCapture`, `gl`, `onCreated`, `label`,
+`screenAccessibility`).
 Three of them - `freeRotation`, `shadowY` and `dpr` - are canvas only: they tune the rendering rather than the picture, and a mockup already
 derives its shadow ground line from the object's own framing. Reach for
 `MockupCanvas` when you want that level of control, or when you are staging
@@ -54,10 +55,12 @@ the way a second object in a scene of your own would.
 | `shadows` | `boolean` | `true` | Soft contact shadow under the device. |
 | `shadowY` | `number` | `-2.05` | Y position (world units) of the shadow plane. Grounds the device on its shadow. The mockup wrappers compute this per device. |
 | `background` | `string` | - | CSS background of the canvas (color, gradient, or image). Transparent when unset - that is what the checkerboard behind each page's first example is showing through. |
-| `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Override the default camera. |
+| `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Override the default camera. Live: change `position` or `fov` later and the camera moves there, looking at the stage center - a dolly or a zoom driven from props. |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device pixel ratio clamp. Keeps hi-dpi GPU load predictable. |
 | `frameloop` | `'demand' \| 'always' \| 'never'` | `'demand'` | When the canvas draws. `'demand'` renders only when something changes (a drag and its damping, zoom, `autoRotate`, `float`, a prop change, a resize), so an idle mockup renders no frames. `'always'` renders every frame, for a `useFrame` animation of your own; `'never'` freezes the canvas. See [Rendering](#rendering). |
 | `pauseWhenOffscreen` | `boolean` | `true` | Stop rendering while the canvas is scrolled out of the viewport or the tab is hidden, and resume on return. |
+| `time` | `number` | - | Seconds on a clock you own (a video's `frame / fps`). Set, `autoRotate` and `float` follow it instead of the browser's clock, so the same `time` always draws the same picture - see [Exporting](/docs/exporting#video-with-remotion). Reduced motion does not hold them still on your clock. |
+| `delayCapture` | `(reason: string) => () => void` | - | Hold an outside capture - a video render, a screenshot - until the picture is complete: called whenever a frame is on its way that is not drawn yet (the renderer starting, a redraw after a change, a screen's content landing), it returns the function the canvas calls once it is. Wire it to Remotion's `delayRender`/`continueRender` - see [Exporting](/docs/exporting#video-with-remotion). While set, the canvas never pauses. |
 | `gl` | r3f `gl` props | `{ antialias: true, alpha: true, powerPreference: 'default' }` | WebGL renderer settings, merged over the defaults. Opt into the discrete GPU with `{ powerPreference: 'high-performance' }`. Keep `alpha: true`: screens show through transparent canvas pixels. |
 | `onCreated` | `(state) => void` | - | react-three-fiber's `onCreated`, called once with the canvas state (`gl`, `scene`, `camera`, ...) - for example to read `gl.info`. |
 | `label` | `string` | per model | Accessible name of the canvas, which has `role="img"`. Mockups default to a description of the model ("3D mockup of a Galaxy S phone"); `MockupCanvas` on its own to "3D mockup". See [Accessibility](#accessibility). |
@@ -178,7 +181,9 @@ gated. The dot-matrix `LEDText` marquees hold on their first frame for the same
 reason.
 
 Nothing is required of you: pass `autoRotate` and `float` as you would
-otherwise, and the preference is respected automatically.
+otherwise, and the preference is respected automatically. The one exception
+is `time`: on a clock you drive, `autoRotate` and `float` are part of your
+timeline - a video's, typically - so the preference is yours to apply there.
 
 If your page has its own motion to gate, the same hook the library uses is
 exported:

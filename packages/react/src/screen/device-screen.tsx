@@ -8,6 +8,7 @@ import {
   SCREEN_LAYER_CLASS,
   SCREEN_LAYER_CSS,
   createBackfaceCuller,
+  createCaptureHolds,
   roundedRectShapeCorners,
   screenCssHeight,
   screenDistanceFactor,
@@ -193,6 +194,16 @@ function warnIfOpaque(gl: THREE.WebGLRenderer, scene: THREE.Scene): void {
   )
 }
 
+/**
+ * Reports each commit of a screen's content root (see the capture holds in
+ * `BridgedScreen`). Rendered inside that root, after the content, so its
+ * layout effect runs once the content's own DOM and refs are in place.
+ */
+function CommitSignal({ token, onCommit }: { token: object; onCommit: (token: object) => void }) {
+  React.useLayoutEffect(() => onCommit(token))
+  return null
+}
+
 export interface DeviceScreenProps {
   /**
    * The region name this surface renders, surfaced to content through
@@ -299,7 +310,7 @@ function BridgedScreen({
   // no `portal` is passed here). See `portalTargetKey`.
   const connected = useThree((state) => state.events.connected)
   const htmlKey = portalTargetKey(connected || gl.domElement.parentNode)
-  const { screenAccessibility } = React.useContext(StageContext)
+  const { screenAccessibility, delayCapture } = React.useContext(StageContext)
   /*
    * drei's <Html> renders its children into a SEPARATE React root, and a new
    * root starts with no context at all - so a theme, an i18n provider, a
@@ -421,6 +432,45 @@ function BridgedScreen({
   // put it back. A stray `isolation` on a wrapper that held a mockup is inert.
   const isolatedHost = React.useRef<HTMLElement | null>(null)
   const cullBackface = React.useMemo(() => createBackfaceCuller(), [])
+
+  /*
+   * Capture holds (see `delayCapture` on MockupCanvas). The content is a
+   * React root of its own: it commits after this component does, and on
+   * mount it then waits a frame for drei to place it on the glass. The
+   * canvas's own holds end at its draw, which can come first - a capture
+   * right after it photographed a bare hole on a new screen, or the previous
+   * frame's content on a live one.
+   *
+   * So every render of this screen holds until the root reports committing
+   * THAT render (a fresh token per render, echoed back by CommitSignal), and
+   * until the element it committed has been placed in a drawn frame. A screen
+   * already placed needs no further frame for new content: the browser
+   * composites the DOM by itself.
+   */
+  const holds = React.useMemo(() => createCaptureHolds(delayCapture), [delayCapture])
+  React.useEffect(() => () => holds.release(), [holds])
+  const renderToken = {}
+  const wantedToken = React.useRef<object | null>(null)
+  const committedToken = React.useRef<object | null>(null)
+  const placedContent = React.useRef<HTMLDivElement | null>(null)
+  const isPlaced = () => contentRef.current !== null && placedContent.current === contentRef.current
+  React.useLayoutEffect(() => {
+    wantedToken.current = renderToken
+    if (committedToken.current !== renderToken || !isPlaced()) {
+      holds.hold('react-3d-mockups: placing screen content')
+    }
+  })
+  const onContentCommit = React.useCallback(
+    (token: object) => {
+      committedToken.current = token
+      if (token !== wantedToken.current || !holds.pending) return
+      if (isPlaced()) holds.release()
+      // Not on the glass yet: ask for the frame that puts it there.
+      else invalidate()
+    },
+    [holds, invalidate]
+  )
+
   useFrame(({ camera }) => {
     const canvas = gl.domElement.style
     if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
@@ -458,6 +508,10 @@ function BridgedScreen({
       isolatedHost.current = host
     }
     cullBackface(anchorRef.current, content, camera)
+    // drei placed `content` in its own frame callback, which runs before this
+    // one, and the draw follows in this same task.
+    placedContent.current = content
+    if (holds.pending && committedToken.current === wantedToken.current) queueMicrotask(holds.release)
   })
 
   /*
@@ -560,6 +614,7 @@ function BridgedScreen({
               {surface}
             </div>
           )}
+          <CommitSignal token={renderToken} onCommit={onContentCommit} />
         </ContextBridge>
       </Html>
     </group>

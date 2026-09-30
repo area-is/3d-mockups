@@ -30,6 +30,8 @@ const CODE_ONLY = new Set([
   'style',
   'frameloop',
   'pauseWhenOffscreen',
+  'time',
+  'delayCapture',
   'gl',
   'onCreated',
   'label',

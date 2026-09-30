@@ -143,7 +143,7 @@ export {
   type StudioLightformer,
   STUDIO_LIGHTFORMERS,
 } from './stage/lights'
-export { TumbleOrbit, tumbleAutoRotateStep } from './stage/tumble'
+export { TumbleOrbit, tumbleAutoRotateStep, autoRotateSpeed, turntablePosition } from './stage/tumble'
 export {
   type FloatPose,
   floatPose,
@@ -151,6 +151,12 @@ export {
   REDUCED_MOTION_QUERY,
   FLOAT_REST_POSE,
 } from './stage/float'
+export {
+  type DelayCapture,
+  type CaptureHolds,
+  takeCaptureHold,
+  createCaptureHolds,
+} from './stage/capture'
 export {
   OVERLAY_BUTTON_STYLE,
   ZOOM_PILL_BUTTON_STYLE,

@@ -44,6 +44,8 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
   'dpr',
   'frameloop',
   'pauseWhenOffscreen',
+  'time',
+  'delayCapture',
   'gl',
   'onCreated',
   'label',
@@ -58,7 +60,10 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
  *
  * `frameloop`, `label` and `screenAccessibility` are here too: when a mockup
  * draws, and what assistive tech is told about it, are decisions about the
- * page rather than about the renderer.
+ * page rather than about the renderer. So are `time` and `delayCapture`:
+ * whose clock the motion runs on, and whether the page is being photographed
+ * (a video render, a screenshot), are the page's business - and a one-liner
+ * is exactly what a video scene reaches for first.
  *
  * The rest of `MockupCanvasProps` tunes the rendering machinery rather than the
  * picture - `freeRotation` (a niche orbit constraint), `shadowY` (framing math
@@ -78,6 +83,8 @@ type MockupStageProps = Pick<
   | 'background'
   | 'camera'
   | 'frameloop'
+  | 'time'
+  | 'delayCapture'
   | 'label'
   | 'screenAccessibility'
   | 'className'
@@ -171,7 +178,13 @@ export function createMockup<
 
     return (
       <MockupCanvas {...stage} label={stage.label ?? label} camera={camera} shadowY={shadowY}>
-        {float ? <FloatGroup intensity={framing?.floatIntensity}>{scene}</FloatGroup> : scene}
+        {float ? (
+          <FloatGroup intensity={framing?.floatIntensity} time={stage.time}>
+            {scene}
+          </FloatGroup>
+        ) : (
+          scene
+        )}
       </MockupCanvas>
     )
   }
