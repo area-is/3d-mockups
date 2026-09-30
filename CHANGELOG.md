@@ -270,6 +270,28 @@ breaking change can ship in a minor release, and is always listed under
     it was glossy grey. Its flash, LiDAR and ambient light sensor match the
     iPhones'.
   - **Unchanged:** the Galaxy lenses.
+- **MacBook keyboards, checked against Apple's top-down renders.** The keys
+  stood on a flat deck, so at an angle the gaps between rows read as pale
+  aluminium and the caps as grey slabs. The keyboard now sits in a well
+  milled 1.2 mm into the deck (R4.9), with its tops just under the deck line.
+  - **The well:** its floor is the Pro's black tray, or on the Air and Neo
+    the deck's aluminium in the keys' shade.
+  - **Spacing:** caps are 1.5 mm apart (2.1 mm between top faces), where the
+    gap was 2.5 mm, at Apple's 19.0 × 18.5 mm pitch.
+  - **Caps:** a darker satin finish, near-black under studio light where they
+    read mid-grey.
+  - **Touch ID:** a Ø9.5 mm disc in a thin metal ring, where it was a grey
+    disc.
+  - **Legends:**
+    - letters and words at Apple's sizes;
+    - modifier words in the outer corner;
+    - the ▲ ▼ keys split by a hairline;
+    - the editing keys on the M5 Airs and the Neo carry ⇥ ⇪ ⇧ ⌫ ↵ (new
+      `legends` spec field).
+  - **Keyboard and trackpad positions** now follow the renders. Most moved 2
+    to 6 mm; the 15" Air's keyboard sat 12.5 mm too far back. The Neo's
+    trackpad is 116 × 72.5 mm.
+  - **Pro grilles:** they run the well's height on a 0.94 mm square grid.
 - **A re-render no longer rebuilds the studio lighting.** drei's
   `<Environment>` re-renders its cube map whenever its children change
   identity, and three.js then re-filters it into PMREM mip levels, and the

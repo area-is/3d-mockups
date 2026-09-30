@@ -82,27 +82,36 @@ function useSlabGeometry(width: number, depth: number, radius: number, thickness
 }
 
 /* -------------------------------------------------------------------------
- * Keyboard: the 78-key US Magic Keyboard, measured from product photography of
- * the MacBook Pro 14" - 18.8 mm x-pitch, 18.5 mm row pitch, 2.5 mm gaps,
- * six FULL-height rows (the function row matches the others since 2021),
- * half-height inverted-T arrows, caps flush with the deck.
+ * Keyboard: the 78-key US Magic Keyboard, measured on Apple's top-down
+ * renders of all five models (scaled by each chassis's official width, and
+ * agreeing on pitch to 0.3%): 19.0 mm across, 18.5 mm row to row, 1.5 mm
+ * between caps (2.1 mm between their top faces), six FULL-height rows,
+ * half-height inverted-T arrows. The keys sit in a well machined 1.2 mm into
+ * the deck, their tops just under its surface - so in a side view they never
+ * break the deck line, and at an angle about a millimetre of cap side shows
+ * above the well's floor.
  * ---------------------------------------------------------------------- */
 
-/** 3 mm side margin between the well edge and the first cap. */
-const KEY_PAD_X = 0.0414
-/** 3.3 mm margin above the function row / below the bottom row. */
-const KEY_PAD_Z = 0.0456
-/** 2.5 mm air between neighboring caps. */
-const KEY_GAP = 0.0345
-/** 2.2 mm keycap corner radius - the same on every cap, from 1u to the space bar. */
-const CAP_RADIUS = 0.03
-/** Height of a keycap's flat top face (0.012 extrusion + the 0.005 bevel). */
-const CAP_TOP_Y = 0.017
+/** 2.75 mm between the well's wall and the caps, on every side. */
+const KEY_PAD = 0.038
+/** 1.5 mm between neighbouring caps. */
+const KEY_GAP = 0.0207
+/** 2 mm keycap corner radius - the same on every cap, from 1u to the space bar. */
+const CAP_RADIUS = 0.028
+/** The cap's rolled edge, 0.3 mm: what takes the top face in to 2.1 mm apart. */
+const CAP_BEVEL = 0.004
+/** How deep the well is machined into the deck (1.2 mm), and its corner radius (4.9 mm). */
+const WELL_DEPTH = 0.0166
+const WELL_RADIUS = 0.068
+/** A cap stands from just off the well's floor to 0.1 mm under the deck. */
+const CAP_BOTTOM_Y = 0.002
+const CAP_TOP_Y = WELL_DEPTH - 0.0015
 
 type KeyIcon =
   | 'sunlo' | 'sunhi' | 'mission' | 'spot' | 'mic' | 'moon'
   | 'rew' | 'play' | 'fwd' | 'mute' | 'voldn' | 'volup'
   | 'globe' | 'cmd' | 'opt'
+  | 'tab' | 'caps' | 'shift' | 'delete' | 'return'
 
 type KeyLegend =
   /** Centered glyph (letters). `nub` prints the home-row bar under F / J. */
@@ -110,7 +119,7 @@ type KeyLegend =
   /** Shifted symbol stacked over the base symbol (number / punctuation keys). */
   | { t: 'dual'; a: string; b: string }
   /** Word in a bottom corner (esc, tab, return…). `dot` = caps-lock light. */
-  | { t: 'word'; s: string; align: 'bl' | 'br'; dot?: boolean }
+  | { t: 'word'; s: string; align: 'bl' | 'br'; dot?: boolean; g?: KeyIcon }
   /**
    * Modifier: word along the bottom with the symbol in the TOP-OUTER corner -
    * top-left on the left-hand keys, mirrored to top-right on the right-hand
@@ -132,20 +141,28 @@ const F_ICONS: KeyIcon[] = [
 ]
 
 /**
- * The US layout in standard key units (every row sums to 14.5u). Every current
- * MacBook - Air and Pro alike - prints the editing keys as words (esc, tab,
- * caps lock, delete, return, shift), so one layout covers all four variants.
- * Coordinates are keyboard-local, +z toward the user.
+ * The US layout in standard key units (every row sums to 14.5u). The editing
+ * keys (tab, caps lock, shift, delete, return) carry words on the Pro and
+ * symbols - ⇥ ⇪ ⇧ ⌫ ↵ - on the M5 Air and the Neo (`symbols`); esc and the
+ * modifiers keep their words on all of them. Coordinates are keyboard-local,
+ * +z toward the user.
  */
-function buildKeyboardLayout(keyboard: { width: number; depth: number }) {
-  const usable = keyboard.width - KEY_PAD_X * 2
+function buildKeyboardLayout(keyboard: { width: number; depth: number }, symbols = false) {
+  const usable = keyboard.width - KEY_PAD * 2
   const pitch = (usable + KEY_GAP) / 14.5
-  const pitchZ = (keyboard.depth - KEY_PAD_Z * 2 + KEY_GAP) / 6
+  const pitchZ = (keyboard.depth - KEY_PAD * 2 + KEY_GAP) / 6
   const capD = pitchZ - KEY_GAP
 
   const dual = (a: string, b: string): KeyLegend => ({ t: 'dual', a, b })
   const txt = (s: string, nub?: boolean): KeyLegend => ({ t: 'txt', s, nub })
-  const edit = (s: string, align: 'bl' | 'br', dot?: boolean): KeyLegend => ({ t: 'word', s, align, dot })
+  const glyphs: Record<string, KeyIcon> = { tab: 'tab', 'caps lock': 'caps', shift: 'shift', delete: 'delete', return: 'return' }
+  const edit = (s: string, align: 'bl' | 'br', dot?: boolean): KeyLegend => ({
+    t: 'word',
+    s,
+    align,
+    dot,
+    g: symbols ? glyphs[s] : undefined,
+  })
 
   const ROWS: [number, KeyLegend][][] = [
     [
@@ -189,7 +206,7 @@ function buildKeyboardLayout(keyboard: { width: number; depth: number }) {
   ]
 
   const keys: KeyDef[] = []
-  let z = -keyboard.depth / 2 + KEY_PAD_Z
+  let z = -keyboard.depth / 2 + KEY_PAD
   for (const [rowIndex, row] of ROWS.entries()) {
     let x = -usable / 2
     for (const [u, legend] of row) {
@@ -198,8 +215,8 @@ function buildKeyboardLayout(keyboard: { width: number; depth: number }) {
     }
     if (rowIndex === ROWS.length - 1) {
       // inverted-T arrows in the remaining 3u: half-height caps, ◀ ▼ ▶ on the
-      // bottom half, ▲ stacked above ▼ with a slim gap.
-      const half = (capD - 0.016) / 2
+      // bottom half, ▲ stacked above ▼ with only a hairline (0.4 mm) between.
+      const half = (capD - 0.0055) / 2
       const arrow = (slot: number, top: boolean, d: 'l' | 'r' | 'u' | 'd') =>
         keys.push({
           x: x + slot * pitch + (pitch - KEY_GAP) / 2,
@@ -405,6 +422,28 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
       line(0.1 * s, -0.26 * s, 0.42 * s, -0.26 * s)
       poly([[-0.42 * s, -0.26 * s], [-0.14 * s, -0.26 * s], [0.14 * s, 0.26 * s], [0.42 * s, 0.26 * s]], false, false)
       break
+    // The editing keys' symbols (M5 Air, Neo), outlined like the rest.
+    case 'shift':
+      poly([[0, -0.42 * s], [0.4 * s, 0], [0.17 * s, 0], [0.17 * s, 0.38 * s], [-0.17 * s, 0.38 * s], [-0.17 * s, 0], [-0.4 * s, 0]])
+      break
+    case 'caps':
+      poly([[0, -0.44 * s], [0.4 * s, -0.06 * s], [0.17 * s, -0.06 * s], [0.17 * s, 0.2 * s], [-0.17 * s, 0.2 * s], [-0.17 * s, -0.06 * s], [-0.4 * s, -0.06 * s]])
+      ctx.strokeRect(-0.17 * s, 0.3 * s, 0.34 * s, 0.12 * s)
+      break
+    case 'tab':
+      line(-0.42 * s, 0, 0.3 * s, 0)
+      poly([[0.1 * s, -0.2 * s], [0.3 * s, 0], [0.1 * s, 0.2 * s]], false, false)
+      line(0.42 * s, -0.24 * s, 0.42 * s, 0.24 * s)
+      break
+    case 'delete':
+      poly([[-0.46 * s, 0], [-0.2 * s, -0.3 * s], [0.46 * s, -0.3 * s], [0.46 * s, 0.3 * s], [-0.2 * s, 0.3 * s]])
+      line(0.02 * s, -0.12 * s, 0.26 * s, 0.12 * s)
+      line(0.02 * s, 0.12 * s, 0.26 * s, -0.12 * s)
+      break
+    case 'return':
+      poly([[0.38 * s, -0.36 * s], [0.38 * s, 0.12 * s], [-0.36 * s, 0.12 * s]], false, false)
+      poly([[-0.16 * s, -0.08 * s], [-0.36 * s, 0.12 * s], [-0.16 * s, 0.32 * s]], false, false)
+      break
   }
   ctx.restore()
 }
@@ -416,16 +455,17 @@ function drawKeyIcon(ctx: CanvasRenderingContext2D, icon: KeyIcon, x: number, y:
  * the same size share one geometry and draw as a single instanced mesh.
  */
 function keycapGeometry(width: number, depth: number) {
-  const bevel = 0.005
+  const bevel = CAP_BEVEL
   const g = new THREE.ExtrudeGeometry(roundedRectShape(width - bevel * 2, depth - bevel * 2, CAP_RADIUS - bevel), {
-    depth: 0.012,
+    depth: CAP_TOP_Y - CAP_BOTTOM_Y - bevel * 2,
     bevelEnabled: true,
     bevelThickness: bevel,
     bevelSize: bevel,
-    bevelSegments: 2,
+    bevelSegments: 3,
     curveSegments: 6,
   })
   g.rotateX(-Math.PI / 2)
+  g.translate(0, CAP_BOTTOM_Y + bevel, 0)
   return g
 }
 
@@ -455,11 +495,21 @@ function HomeRowNubs({ keys, color }: { keys: KeyDef[]; color: string }) {
     <>
       {keys.map((key, i) => (
         <mesh key={i} geometry={geometry} position={[key.x, CAP_TOP_Y, key.z + key.d * 0.316]}>
-          <meshPhysicalMaterial color={color} metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
+          <KeycapMaterial color={color} />
         </mesh>
       ))}
     </>
   )
+}
+
+/**
+ * The caps' finish: satin, not matte. A dark albedo under a soft sheen is
+ * what keeps the Air's and Pro's caps near-black (#242426-#2f3034 in Apple's
+ * renders) under a bright studio - a rough, flat black catches so much
+ * diffuse light off the environment that it reads mid-grey.
+ */
+function KeycapMaterial({ color }: { color: string }) {
+  return <meshPhysicalMaterial color={color} metalness={0} roughness={0.55} specularIntensity={0.3} envMapIntensity={0.45} />
 }
 
 /** Every cap of one footprint, in one draw call. */
@@ -484,8 +534,7 @@ function CapCluster({
   }, [keys])
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, keys.length]} geometry={geometry}>
-      {/* matte keycaps: tame the studio env so the black doesn't wash out */}
-      <meshPhysicalMaterial color={color} metalness={0.08} roughness={0.72} envMapIntensity={0.45} />
+      <KeycapMaterial color={color} />
     </instancedMesh>
   )
 }
@@ -499,16 +548,22 @@ function CapCluster({
  */
 function Keys({
   keyboard,
-  capColor = '#17181d',
+  capColor = '#0c0d10',
   ink = 'rgba(228, 231, 240, 0.85)',
+  symbols = false,
+  sensorRing = '#6f7278',
 }: {
   keyboard: { width: number; depth: number; offsetZ: number }
   /** Keycap colour - the Air and Pro's black, or the Neo's colour-matched caps. */
   capColor?: string
   /** Legend colour: light on black caps, dark on colour-matched ones. */
   ink?: string
+  /** Symbols rather than words on the editing keys (see `buildKeyboardLayout`). */
+  symbols?: boolean
+  /** Touch ID's metal ring. */
+  sensorRing?: string
 }) {
-  const layout = React.useMemo(() => buildKeyboardLayout(keyboard), [keyboard])
+  const layout = React.useMemo(() => buildKeyboardLayout(keyboard, symbols), [keyboard, symbols])
 
   // Caps bucketed by footprint - six widths plus the half-height arrows.
   const clusters = React.useMemo(() => {
@@ -557,10 +612,10 @@ function Keys({
       const hw = (key.w * scale) / 2
       const hd = (key.d * scale) / 2
       // Corner anchors measured from the printed legends: words start 3.1 mm in
-      // from a left edge, end 2.7 mm from a right edge, baseline 2.85 mm up.
+      // from a left edge and end 3.1 mm from a right one, baseline 3.1 mm up.
       const blX = px - hw + u(0.043)
-      const brX = px + hw - u(0.037)
-      const cornerY = py + hd - u(0.039)
+      const brX = px + hw - u(0.043)
+      const cornerY = py + hd - u(0.043)
       const dot = () => {
         // caps-lock light: Ø1.25 mm, top-left (3.2 mm / 2.9 mm insets)
         ctx.beginPath()
@@ -570,8 +625,8 @@ function Keys({
       const legend = key.legend
       switch (legend.t) {
         case 'txt':
-          // letters: 4 mm cap height, centered
-          font(u(0.076))
+          // letters: 4.3 mm cap height, centered
+          font(u(0.082))
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(legend.s, px, py)
@@ -579,20 +634,27 @@ function Keys({
           // geometry standing on those two caps (see HomeRowNubs).
           break
         case 'dual':
-          // shifted symbol centered 4.5 mm from the cap top, base symbol
-          // larger (5.2 mm font) centered 11.1 mm down - measured
+          // shifted symbol 3.1 mm tall, 3.4 mm down from the cap's top edge;
+          // the base symbol 4.3 mm tall, ending 3.2 mm above its bottom
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          font(u(0.052))
-          ctx.fillText(legend.a, px, py - u(0.048))
-          font(u(0.072))
-          ctx.fillText(legend.b, px, py + u(0.044))
+          font(u(0.059))
+          ctx.fillText(legend.a, px, py - u(0.049))
+          font(u(0.082))
+          ctx.fillText(legend.b, px, py + u(0.0435))
           break
         case 'word':
-          font(u(0.048))
-          ctx.textAlign = legend.align === 'bl' ? 'left' : 'right'
-          ctx.textBaseline = 'alphabetic'
-          ctx.fillText(legend.s, legend.align === 'bl' ? blX : brX, cornerY)
+          if (legend.g) {
+            // a ~3.6 mm symbol in the same corner the word would take
+            const g = u(0.05)
+            drawKeyIcon(ctx, legend.g, legend.align === 'bl' ? blX + g / 2 : brX - g / 2, cornerY - g / 2 + u(0.004), g)
+          } else {
+            // 2.2 mm x-height
+            font(u(0.057))
+            ctx.textAlign = legend.align === 'bl' ? 'left' : 'right'
+            ctx.textBaseline = 'alphabetic'
+            ctx.fillText(legend.s, legend.align === 'bl' ? blX : brX, cornerY)
+          }
           if (legend.dot) dot()
           break
         case 'mod': {
@@ -608,16 +670,18 @@ function Keys({
           } else if (legend.i) {
             drawKeyIcon(ctx, legend.i, sx, sy, legend.i === 'cmd' ? u(0.056) : u(0.06))
           }
-          font(u(0.047))
-          ctx.textAlign = 'center'
+          // the word under it, in the same outer corner (the M5 generation's
+          // alignment - the M4 Pro set them toward the space bar)
+          font(u(0.052))
+          ctx.textAlign = legend.side === 'l' ? 'left' : 'right'
           ctx.textBaseline = 'alphabetic'
-          ctx.fillText(legend.s, px, cornerY)
+          ctx.fillText(legend.s, legend.side === 'l' ? blX : brX, cornerY)
           break
         }
         case 'fn':
           // globe Ø3.9 mm bottom-left, "fn" bottom-right (measured)
           drawKeyIcon(ctx, 'globe', px - hw + u(0.07), py + hd - u(0.0666), u(0.0754))
-          font(u(0.047))
+          font(u(0.052))
           ctx.textAlign = 'right'
           ctx.textBaseline = 'alphabetic'
           ctx.fillText('fn', brX, cornerY)
@@ -627,7 +691,8 @@ function Keys({
           // retail unit) centered 2.4 mm above the cap's middle, F-label
           // 2.3 mm font centered 4.3 mm below it
           drawKeyIcon(ctx, legend.i, px, py - u(0.0325), u(0.055))
-          font(u(0.032))
+          // "F1": 2.1 mm cap height
+          font(u(0.04))
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(legend.s, px, py + u(0.0587))
@@ -644,8 +709,8 @@ function Keys({
   }, [layout, keyboard, ink])
   React.useEffect(() => () => legendsTexture?.dispose(), [legendsTexture])
 
-  // Touch ID's sensor fills two thirds of its cap (measured Ø11 mm).
-  const sensorR = layout.touchId.w * 0.335
+  // Touch ID's ring is Ø9.5 mm, concentric with its cap.
+  const sensorR = 0.0656
 
   return (
     <>
@@ -656,19 +721,20 @@ function Keys({
       <HomeRowNubs keys={layout.keys.filter((k) => k.legend.t === 'txt' && k.legend.nub)} color={capColor} />
       {/* printed legends, floating just above the caps */}
       {legendsTexture && (
-        <mesh position={[0, 0.0195, 0]} rotation-x={-Math.PI / 2}>
+        <mesh position={[0, CAP_TOP_Y + 0.0005, 0]} rotation-x={-Math.PI / 2}>
           <planeGeometry args={[keyboard.width, keyboard.depth]} />
           <meshBasicMaterial map={legendsTexture} transparent toneMapped={false} depthWrite={false} />
         </mesh>
       )}
-      {/* Touch ID: recessed sensor disc + hairline ring on the top-right key */}
-      <mesh position={[layout.touchId.x, 0.0185, layout.touchId.z]} rotation-x={-Math.PI / 2}>
-        <circleGeometry args={[sensorR, 32]} />
-        <meshPhysicalMaterial color="#0c0d11" metalness={0.35} roughness={0.32} envMapIntensity={0.7} />
+      {/* Touch ID: a flush sapphire disc, a shade glossier than the cap, in a
+          thin bright metal ring */}
+      <mesh position={[layout.touchId.x, CAP_TOP_Y + 0.0003, layout.touchId.z]} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[sensorR, 40]} />
+        <meshPhysicalMaterial color={capColor} metalness={0} roughness={0.35} specularIntensity={0.35} envMapIntensity={0.45} />
       </mesh>
-      <mesh position={[layout.touchId.x, 0.019, layout.touchId.z]} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[sensorR - 0.006, sensorR, 32]} />
-        <meshPhysicalMaterial color="#26282e" metalness={0.5} roughness={0.35} envMapIntensity={0.8} />
+      <mesh position={[layout.touchId.x, CAP_TOP_Y + 0.0005, layout.touchId.z]} rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[sensorR - 0.003, sensorR, 48]} />
+        <meshPhysicalMaterial color={sensorRing} metalness={0.8} roughness={0.3} envMapIntensity={0.8} />
       </mesh>
     </>
   )
@@ -708,7 +774,7 @@ function LaptopImpl({
   // black with light legends.
   const matchedCaps = spec.keycaps === 'matched'
   const capColor = React.useMemo(
-    () => (matchedCaps ? `#${new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.14).getHexString()}` : '#17181d'),
+    () => (matchedCaps ? `#${new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.14).getHexString()}` : '#0c0d10'),
     [matchedCaps, color]
   )
   const legendInk = matchedCaps ? 'rgba(46, 48, 56, 0.82)' : 'rgba(228, 231, 240, 0.85)'
@@ -744,19 +810,31 @@ function LaptopImpl({
     capsule.rotateZ(Math.PI / 2)
     capsule.translate(0, base.thickness / 2, footprint.depth / 2 + scoop.radius - scoop.bite)
     cutters.push(capsule)
+    // The keyboard well, milled into the deck: its wall is the band that
+    // frames the keys in every product shot, bright along the back.
+    const well = new THREE.ExtrudeGeometry(roundedRectShape(keyboard.width, keyboard.depth, WELL_RADIUS), {
+      depth: WELL_DEPTH + 0.05,
+      bevelEnabled: false,
+      curveSegments: 8,
+    })
+    well.rotateX(-Math.PI / 2)
+    well.translate(0, base.thickness / 2 - WELL_DEPTH, keyboard.offsetZ)
+    cutters.push(well)
     return cutGeometry(g, cutters)
-  }, [footprint, base, spec.ports, spec.scoop])
+  }, [footprint, base, spec.ports, spec.scoop, keyboard])
   React.useEffect(() => () => baseGeometry.dispose(), [baseGeometry])
   const lidGeometry = useSlabGeometry(footprint.width, footprint.depth, footprint.radius, lid.thickness, lid.bevel)
 
-  // The Pro's black keyboard tray. The Air has none: its caps sit straight in
-  // the aluminum deck, which shows between them.
-  const trayGeometry = React.useMemo(
-    () =>
-      keyboard.tray
-        ? new THREE.ShapeGeometry(roundedRectShape(keyboard.width, keyboard.depth, 0.06), 12)
-        : null,
+  // The well's floor: black on the Pro (its anodized tray), the deck's own
+  // aluminium on the Air and Neo - in the shade of the keys, which the stage
+  // lighting will not cast at this scale, so it is darkened a little.
+  const wellFloorGeometry = React.useMemo(
+    () => new THREE.ShapeGeometry(roundedRectShape(keyboard.width, keyboard.depth, WELL_RADIUS), 12),
     [keyboard]
+  )
+  const wellFloorColor = React.useMemo(
+    () => (keyboard.tray ? '#131416' : `#${new THREE.Color(color).lerp(new THREE.Color('#000000'), 0.2).getHexString()}`),
+    [keyboard.tray, color]
   )
   const trackpadGeometry = React.useMemo(
     () => new THREE.ShapeGeometry(roundedRectShape(trackpad.width, trackpad.depth, 0.05), 12),
@@ -785,13 +863,13 @@ function LaptopImpl({
   )
   React.useEffect(() => {
     return () => {
-      trayGeometry?.dispose()
+      wellFloorGeometry.dispose()
       trackpadGeometry.dispose()
       trackpadRimGeometry.dispose()
       bottomPlateGeometry.dispose()
       glassGeometry.dispose()
     }
-  }, [trayGeometry, trackpadGeometry, trackpadRimGeometry, bottomPlateGeometry, glassGeometry])
+  }, [wellFloorGeometry, trackpadGeometry, trackpadRimGeometry, bottomPlateGeometry, glassGeometry])
 
   // Speaker grille: each strip is a ~1.0 x 0.93 mm grid of
   // ~0.63 mm drilled holes. Painted once into a transparent canvas (dark hole
@@ -888,16 +966,29 @@ function LaptopImpl({
             {aluminum}
           </mesh>
 
-          {/* the Pro's black keyboard tray (the Air seats its keys in bare
-              aluminum, so nothing is painted under them) */}
-          {trayGeometry && (
-            <mesh geometry={trayGeometry} rotation-x={-Math.PI / 2} position={[0, deckY + 0.002, keyboard.offsetZ]}>
-              <meshPhysicalMaterial color="#101216" metalness={0.3} roughness={0.5} />
-            </mesh>
-          )}
-          {/* caps sit nearly flush with the deck (measured: tops +0.3 mm) */}
-          <group position={[0, deckY - 0.013, keyboard.offsetZ]}>
-            <Keys keyboard={keyboard} capColor={capColor} ink={legendInk} />
+          {/* the well's floor: the Pro's black tray, bare aluminium on the Air */}
+          <mesh
+            geometry={wellFloorGeometry}
+            rotation-x={-Math.PI / 2}
+            position={[0, deckY - WELL_DEPTH + 0.0003, keyboard.offsetZ]}
+          >
+            <meshPhysicalMaterial
+              color={wellFloorColor}
+              metalness={0.2}
+              roughness={0.6}
+              envMapIntensity={0.55}
+            />
+          </mesh>
+          {/* the keys, standing on the well's floor with their tops just
+              under the deck */}
+          <group position={[0, deckY - WELL_DEPTH, keyboard.offsetZ]}>
+            <Keys
+              keyboard={keyboard}
+              capColor={capColor}
+              ink={legendInk}
+              symbols={spec.legends === 'symbols'}
+              sensorRing={matchedCaps ? color : undefined}
+            />
           </group>
 
           {/* trackpad: flush glass with a hairline seam around it. Same finish as
