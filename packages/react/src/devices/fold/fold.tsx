@@ -538,7 +538,9 @@ function FoldBody({
             frameColor={frameColor}
             pupil={pupil}
             collar={cam.ringCollar}
+            step={cam.ringStep}
             glint={glint}
+            sealed={brand === 'apple'}
           />
         </group>
       ))}
@@ -561,7 +563,7 @@ function FoldBody({
           cam.flash.seat === 'plateau' ? backZ - cam.plateau.raise - 0.0015 : backZ - 0.002,
         ]}
       >
-        <FlashModule r={cam.flash.r} />
+        <FlashModule r={cam.flash.r} fresnel={brand === 'apple'} />
       </group>
     </>
   )

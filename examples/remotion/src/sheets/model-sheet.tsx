@@ -5,7 +5,14 @@ import {
   AppleWatch,
   AppleWatchMockup,
   GalaxyWatch,
+  IPad,
+  IPhone,
+  IPhoneDuo,
+  Laptop,
   MockupCanvas,
+  type IPadVariant,
+  type IPhoneVariant,
+  type LaptopVariant,
   FlipMockup,
   FoldMockup,
   GalaxyWatchMockup,
@@ -51,9 +58,9 @@ const WATCH_VIEWS: WatchView[] = [
   { label: 'from above', rotation: [Math.PI / 2 - 0.05, 0, 0] },
 ]
 
-function Cell({ label, children }: { label: string; children: React.ReactNode }) {
+function Cell({ label, children, background = '#e9e9ec' }: { label: string; children: React.ReactNode; background?: string }) {
   return (
-    <div style={{ position: 'relative', background: '#e9e9ec', borderRadius: 12, overflow: 'hidden' }}>
+    <div style={{ position: 'relative', background, borderRadius: 12, overflow: 'hidden' }}>
       {children}
       <div style={{ position: 'absolute', left: 14, top: 10, fontFamily: SANS, fontSize: 22, color: '#333' }}>{label}</div>
     </div>
@@ -146,6 +153,65 @@ export function WatchBackSheet({ kind, variant, color }: WatchBackSheetProps) {
                 <WatchFace />
               </GalaxyWatch>
             )}
+          </MockupCanvas>
+        </Cell>
+      ))}
+    </AbsoluteFill>
+  )
+}
+
+type DetailView = {
+  label: string
+  rotation?: Vec3
+  /** Moves the device so the detail under study sits at the stage centre, where the camera looks. */
+  position?: Vec3
+  camera: { position: Vec3; fov: number }
+}
+
+export type DetailSheetProps = {
+  device: 'iphone' | 'ipad' | 'duo' | 'laptop'
+  variant?: string
+  color?: string
+  openAngle?: number
+  columns?: number
+  /** Cell background - dark to match a reel shot's backdrop. */
+  background?: string
+  views: DetailView[]
+}
+
+/**
+ * Close-ups of one part of a device - a keyboard, a camera - from cameras
+ * placed per view, for checking a detail against macro product shots.
+ */
+export function DetailSheet({ device, variant, color, openAngle, columns = 3, background, views }: DetailSheetProps) {
+  const delayCapture = useMockupCapture()
+  const rows = Math.ceil(views.length / columns)
+  return (
+    <AbsoluteFill style={{ background: '#fff', display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, gap: 12, padding: 12 }}>
+      {views.map((view) => (
+        <Cell key={view.label} label={`${variant ?? device} · ${view.label}`} background={background}>
+          <MockupCanvas controls={false} shadows={false} delayCapture={delayCapture} camera={view.camera}>
+            <group position={view.position ?? [0, 0, 0]}>
+              <group rotation={view.rotation ?? [0, 0, 0]}>
+                {device === 'iphone' ? (
+                  <IPhone variant={variant as IPhoneVariant} color={color}>
+                    <Numbered label="" />
+                  </IPhone>
+                ) : device === 'ipad' ? (
+                  <IPad variant={variant as IPadVariant} color={color}>
+                    <Numbered label="" />
+                  </IPad>
+                ) : device === 'duo' ? (
+                  <IPhoneDuo color={color} openAngle={openAngle ?? false}>
+                    <Numbered label="" />
+                  </IPhoneDuo>
+                ) : (
+                  <Laptop variant={variant as LaptopVariant} color={color} openAngle={openAngle}>
+                    <Numbered label="" />
+                  </Laptop>
+                )}
+              </group>
+            </group>
           </MockupCanvas>
         </Cell>
       ))}

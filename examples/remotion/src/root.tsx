@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Composition } from 'remotion'
 import { Probe } from './probe/probe'
 import { Bench } from './probe/bench'
-import { FoldSheet, WatchBackSheet, WatchSheet } from './sheets/model-sheet'
+import { DetailSheet, FoldSheet, WatchBackSheet, WatchSheet } from './sheets/model-sheet'
 import { Reel, REEL_DURATION } from './reel/reel'
 import { EnsembleShot } from './reel/ensemble-shot'
 
@@ -36,6 +36,15 @@ export function Root() {
         fps={30}
         width={1600}
         height={1600}
+      />
+      <Composition
+        id="DetailSheet"
+        component={DetailSheet}
+        defaultProps={{ device: 'iphone' as const, variant: '18promax', views: [{ label: 'back', rotation: [0, Math.PI, 0] as [number, number, number], camera: { position: [0, 0, 12] as [number, number, number], fov: 24 } }] }}
+        durationInFrames={1}
+        fps={30}
+        width={1800}
+        height={1200}
       />
       <Composition
         id="FoldSheet"

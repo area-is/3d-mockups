@@ -242,6 +242,34 @@ breaking change can ship in a minor release, and is always listed under
   canvas textures; what catches light is geometry. Front views are
   unchanged.
 
+- **Apple cameras, rebuilt to Apple's dimensional drawings.** At a grazing
+  angle, as in a turning shot, every Apple lens read as a pale metal cup: the
+  bore walls and elements under a glossy smoked cover caught the studio
+  lights. Each lens is now built the way Apple draws it. The collar rolls over
+  at its top edge onto a flat top and stands its real height: 1.88 mm on the
+  17 Pros, 2.11 mm on the 18 Pros (it was 1.2). A glossy black lip crowns just
+  above the glass and carries the thin highlight line in the macro shots. The
+  sapphire is clear, flush with the collar and reflects little, turning a
+  darker lavender-grey at a grazing angle. Under it are a black mask, the
+  barrel's dark face, a bore and the front element well below the glass, so
+  the optics shift against the collar as the phone turns. The 18 Pro's main
+  camera shows its six-blade iris.
+  - **The 18 Pros:** their camera was a copy of the 17 Pros'. It now has
+    Apple's own figures: Ø16.58 collars (was Ø16.20), a 2.78 mm plateau (was
+    2.55), Ø6.90 flash and LiDAR, a Ø1.15 mic, and the telephoto 0.13 mm
+    further out.
+  - **The 17 Pros:** collars are Ø16.20, where they were Ø15.97 on the Pro and
+    Ø16.27 on the Pro Max.
+  - **Collar finishes:** the Pros' collars are the plateau's own anodized
+    aluminium. The 17's are bead-blasted aluminium, where they were polished.
+    The Air's and the Duo's are polished and two-tier, with a raised inner
+    collar.
+  - **Flash and LiDAR:** the flash is flush, a frosted Fresnel window in a
+    polished rim. The LiDAR is flush black glass.
+  - **iPad Pro:** the camera module is the back's bead-blasted aluminium where
+    it was glossy grey. Its flash, LiDAR and ambient light sensor match the
+    iPhones'.
+  - **Unchanged:** the Galaxy lenses.
 - **A re-render no longer rebuilds the studio lighting.** drei's
   `<Environment>` re-renders its cube map whenever its children change
   identity, and three.js then re-filters it into PMREM mip levels, and the

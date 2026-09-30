@@ -73,21 +73,36 @@ export interface IPhoneSpec {
      * of the pedestal, `pupil` the front element's fraction of the ring radius
      * and `glint` its coating flare - Apple's macro shots show each lens in a
      * cluster flaring a different colour, because the AR coatings differ.
+     * `bore` is the opening the optics sit down in (~0.6 of the radius), and
+     * `iris` the number of aperture blades where the element has them.
      */
-    lenses: { x: number; y: number; r: number; h?: number; pupil?: number; glint?: string }[]
+    lenses: {
+      x: number
+      y: number
+      r: number
+      h?: number
+      pupil?: number
+      glint?: string
+      bore?: number
+      iris?: number
+    }[]
     /**
-     * The lens collars' finish: `polished` is the bright, glossy rim of the
-     * glass-backed models (the 17's colour-matched aluminium, the Air's
-     * mirror titanium), `matte` the bead-blasted anodized collar of the Pro
-     * unibody. Defaults to `matte`.
+     * The lens collars' finish: `polished` is the Air's mirror titanium,
+     * `matte` the bead-blasted anodized aluminium of the 17's colour-matched
+     * rings and the Pro unibody's collars. Defaults to `matte`.
      */
     ringFinish?: 'matte' | 'polished'
     /**
-     * Where the collar's metal ends and the black cover glass begins, as a
-     * fraction of the ring radius - the rim reads thin on the 17 (~0.86) and
-     * broad on the Pros (~0.76). Defaults to the finish's own value.
+     * Where the collar's metal ends and its black lip begins, as a fraction
+     * of the ring radius - ~0.86 on the 17 and the Pros, ~0.85 on the Air's
+     * raised inner collar. Defaults to 0.86.
      */
     ringCollar?: number
+    /**
+     * A raised inner collar: the polished two-tier rings of the Air, stepping
+     * up at `at` of the radius by `rise` of the ring's height.
+     */
+    ringStep?: { at: number; rise: number }
     flash: { x: number; y: number; r: number }
     /**
      * Small auxiliary openings. `mic` is a drilled hole, `sensor` a black-glass
@@ -140,17 +155,19 @@ const IPHONE_17: IPhoneSpec = {
   // glass; two Ø16 lenses 17.72 mm apart on the pill's axis, 3.45 mm of glass
   // above the back (so the rings stand 1.67 mm off the pill); the Ø6.28 flash
   // out on the flat back and the Ø1 mic on the pill beside the lenses, both on
-  // the lens pair's center line. The rims are the glossy colour-matched
-  // aluminium rings of the glass-backed models - thin and bright in every
-  // product shot, with the black cover glass filling ~0.86 of each ring.
+  // the lens pair's center line. The rings are colour-anodized aluminium,
+  // bead-blasted like the Pros' collars and a deeper shade than the frosted
+  // pill: the drawing rolls their top edge in to Ø15.06 and ends the metal at
+  // Ø13.85 (0.866 of the ring), inside which the black lip and the glass
+  // take over. The coatings flare lavender.
   rearCamera: {
     style: 'pill',
     frame: { x: 0.5949, y: 1.4086, width: 0.6697, height: 1.1381, raise: 0.0479, wall: 0.0703 },
-    ringFinish: 'polished',
-    ringCollar: 0.86,
+    ringFinish: 'matte',
+    ringCollar: 0.866,
     lenses: [
-      { x: 0.5949, y: 1.647, r: 0.2153, h: 0.045, pupil: 0.5, glint: '#3f4f7a' },
-      { x: 0.5949, y: 1.1701, r: 0.2153, h: 0.045, pupil: 0.46, glint: '#4b4270' },
+      { x: 0.5949, y: 1.647, r: 0.2153, h: 0.045, pupil: 0.3, glint: '#5a4a86' },
+      { x: 0.5949, y: 1.1701, r: 0.2153, h: 0.045, pupil: 0.32, glint: '#4b4a80' },
     ],
     flash: { x: 0.1429, y: 1.4086, r: 0.0845 },
     dots: [{ x: 0.4086, y: 1.4086, r: 0.0135, kind: 'mic' }],
@@ -200,14 +217,17 @@ const IPHONE_17_AIR: IPhoneSpec = {
   // from the top-left corner, with the Ø2.30 mic and Ø6.30 flash on that same
   // center line at 51.34 and 58.42 mm.
   // The ring is the same high-gloss mirror titanium as the frame (silver on
-  // the light finishes, black chrome on Space Black), a hair broader than the
-  // 17's rim.
+  // the light finishes, black chrome on Space Black), and two-tier: the
+  // drawing's side view puts a raised inner collar (Ø14.51 to Ø13.45) ~0.55 mm
+  // above the outer ring's top, 2.65 mm off the plateau in all. Its coating
+  // flares amber and blue.
   rearCamera: {
     style: 'bar',
     frame: { x: 0, y: 1.627, width: 1.739, height: 0.889, radius: 0.4445, raise: 0.082, wall: 0.128 },
     ringFinish: 'polished',
-    ringCollar: 0.8,
-    lenses: [{ x: 0.5669, y: 1.6638, r: 0.21, h: 0.0713, pupil: 0.5, glint: '#3f4f7a' }],
+    ringCollar: 0.85,
+    ringStep: { at: 0.917, rise: 0.21 },
+    lenses: [{ x: 0.5669, y: 1.6638, r: 0.21, h: 0.0713, pupil: 0.3, glint: '#7a5836' }],
     flash: { x: -0.5672, y: 1.6638, r: 0.0848 },
     dots: [{ x: -0.3766, y: 1.6638, r: 0.031, kind: 'mic' }],
   },
@@ -260,28 +280,28 @@ const IPHONE_17_PRO: IPhoneSpec = {
   // 32.36 across on the 23.99 mm center line), and the Ø6.80 flash, Ø1.05 mic
   // and Ø6.65 LiDAR share the 58.03 mm column at rows 13.82 / 23.99 / 34.16.
   //
-  // Collar height and the optics' proportions come off Apple's own macro
-  // photography of this generation rather than the drawing, which stops at the
-  // plateau: the anodized collars stand ~1.2 mm proud of the plateau (so the
-  // module clears the back by ~3.8 mm in total), the black bore fills ~0.72 of
-  // the collar and the front element ~0.52, and the three coatings flare
-  // visibly differently - blue on the main, violet on the ultra wide.
+  // The collars are Ø16.20 and stand 1.88 mm off the plateau (the module
+  // clears the back by 4.43 mm). The drawing's circles give their profile:
+  // the top edge rolls over to Ø14.90, the flat top ends at Ø13.85 (0.855 of
+  // the ring) and the glass starts at Ø13.55, the black lip in between. The
+  // optics come off Apple's macro shots: a Ø9.8 mm bore (Ø8.4 on the tele)
+  // and a small front element deep in it, the coatings flaring violet and
+  // magenta.
   //
   // The plateau's edge is not a step: Apple's close-ups show the forged shelf
-  // rolling over into the flat back with a ~1.85 mm fillet (`wall`), and the
-  // bead-blasted collars are broad, the glass starting ~0.76 of the way out.
+  // rolling over into the flat back with a ~1.85 mm fillet (`wall`).
   rearCamera: {
     style: 'bar',
     frame: { x: 0, y: 1.4167, width: 1.895, height: 1.1647, radius: 0.269, raise: 0.0686, wall: 0.05 },
     ringFinish: 'matte',
-    ringCollar: 0.76,
+    ringCollar: 0.86,
     lenses: [
-      // main (top-left from the back)
-      { x: 0.5802, y: 1.6321, r: 0.215, h: 0.033, pupil: 0.48, glint: '#3f4f7a' },
-      // ultra wide (bottom-left)
-      { x: 0.5802, y: 1.1142, r: 0.215, h: 0.033, pupil: 0.46, glint: '#54406e' },
+      // ultra wide (top-left from the back)
+      { x: 0.5802, y: 1.6321, r: 0.218, h: 0.0506, pupil: 0.28, bore: 0.59, glint: '#5a3f7a' },
+      // main (bottom-left) - Apple's "Rear Camera 2"
+      { x: 0.5802, y: 1.1142, r: 0.218, h: 0.0506, pupil: 0.3, bore: 0.59, glint: '#6a3f70' },
       // telephoto (inboard, mid-height) - the tetraprism shows the widest glass
-      { x: 0.096, y: 1.3733, r: 0.215, h: 0.033, pupil: 0.5, glint: '#3a4a70' },
+      { x: 0.096, y: 1.3733, r: 0.218, h: 0.0506, pupil: 0.4, bore: 0.51, glint: '#443f7a' },
     ],
     flash: { x: -0.5949, y: 1.647, r: 0.0915 },
     dots: [
@@ -348,17 +368,17 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
   // Pro - full-width unibody shelf from the top edge down to 44.01 mm, 2.55 mm
   // proud, lens trio 14.37 mm in from the top-left corner - with the flash /
   // mic / LiDAR column pushed out to 64.16 mm by the wider body. Same rolled
-  // plateau edge and broad anodized collars as the Pro.
+  // plateau edge and the same Ø16.20 collars as the Pro.
   rearCamera: {
     style: 'bar',
     frame: { x: 0, y: 1.5969, width: 2.06, height: 1.1642, radius: 0.32, raise: 0.0686, wall: 0.05 },
     ringFinish: 'matte',
-    ringCollar: 0.76,
+    ringCollar: 0.86,
     lenses: [
       // same modules as the Pro, so the same collars and coatings
-      { x: 0.6632, y: 1.8127, r: 0.219, h: 0.033, pupil: 0.48, glint: '#3f4f7a' }, // main
-      { x: 0.6632, y: 1.2947, r: 0.219, h: 0.033, pupil: 0.46, glint: '#54406e' }, // ultra wide
-      { x: 0.179, y: 1.5537, r: 0.219, h: 0.033, pupil: 0.5, glint: '#3a4a70' }, // telephoto
+      { x: 0.6632, y: 1.8127, r: 0.218, h: 0.0506, pupil: 0.28, bore: 0.59, glint: '#5a3f7a' }, // ultra wide
+      { x: 0.6632, y: 1.2947, r: 0.218, h: 0.0506, pupil: 0.3, bore: 0.59, glint: '#6a3f70' }, // main
+      { x: 0.179, y: 1.5537, r: 0.218, h: 0.0506, pupil: 0.4, bore: 0.51, glint: '#443f7a' }, // telephoto
     ],
     flash: { x: -0.677, y: 1.8127, r: 0.0915 },
     dots: [
@@ -405,31 +425,58 @@ const IPHONE_17_PRO_MAX: IPhoneSpec = {
 const IPHONE_18_ISLAND_WIDTH = 0.419
 
 /**
+ * The 18 Pro generation's camera, on the 17 Pro's layout. Apple's drawings
+ * keep every lens, flash and LiDAR centre bar one - the telephoto moves
+ * 0.13 mm outboard - but the module grew: the plateau stands 2.78 mm off the
+ * back (2.55), the collars are Ø16.58 (16.20) and 2.11 mm tall (1.88), the
+ * flash and LiDAR Ø6.90 and the mic Ø1.15. The main camera has a six-blade
+ * iris.
+ */
+function iphone18ProCamera(camera: IPhoneSpec['rearCamera']): IPhoneSpec['rearCamera'] {
+  const collar = { r: 0.2232, h: 0.0568 }
+  const [ultraWide, main, tele] = camera.lenses
+  return {
+    ...camera,
+    frame: { ...camera.frame, raise: 0.0748 },
+    lenses: [
+      { ...ultraWide!, ...collar },
+      { ...main!, ...collar, iris: 6 },
+      { ...tele!, ...collar, x: tele!.x - 0.0035 },
+    ],
+    flash: { ...camera.flash, r: 0.0929 },
+    dots: camera.dots?.map((dot) => ({ ...dot, r: dot.kind === 'sensor' ? 0.0929 : 0.0155 })),
+  }
+}
+
+/**
  * iPhone 18 Pro - the 17 Pro's chassis to the published tenth of a
  * millimetre: 150.0 x 71.9 x 8.75 mm, the same 6.3" 2622x1206 panel, the same
- * forged plateau and lens trio, the same keys. So every body, camera and edge
- * figure is carried over from the 17 Pro spec, deliberately. What the
- * generation changed is visible from the front and the back: the Dynamic
- * Island is ~25% narrower, and the Ceramic Shield charging window is now
- * colour-matched to the aluminium unibody rather than the lighter two-tone
- * panel - the window is still there (it is what the model draws glossier than
- * the bead-blasted metal around it), it is just the body's own colour.
- * Logical resolution 402x874 pt.
+ * forged plateau, the same keys. So every body and edge figure is carried
+ * over from the 17 Pro spec, deliberately, and the camera keeps its layout
+ * (`iphone18ProCamera` has what grew). The rest of what the generation
+ * changed shows from the front and the back: the Dynamic Island is ~25%
+ * narrower, and the Ceramic Shield charging window is now colour-matched to
+ * the aluminium unibody rather than the lighter two-tone panel - the window
+ * is still there (it is what the model draws glossier than the bead-blasted
+ * metal around it), it is just the body's own colour. Logical resolution
+ * 402x874 pt.
  */
 const IPHONE_18_PRO: IPhoneSpec = {
   ...IPHONE_17_PRO,
   island: { ...IPHONE_17_PRO.island, width: IPHONE_18_ISLAND_WIDTH },
+  rearCamera: iphone18ProCamera(IPHONE_17_PRO.rearCamera),
 }
 
 /**
  * iPhone 18 Pro Max - the 17 Pro Max's chassis, likewise: 163.4 x 78.0 x
  * 8.75 mm, the 6.9" 2868x1320 panel, the top-edge RF window and the 17 Pro
- * Max's measured detail geometry, with the generation's narrower Dynamic Island. Logical
- * resolution 440x956 pt.
+ * Max's measured detail geometry, with the generation's narrower Dynamic
+ * Island and bigger camera. Logical resolution 440x956 pt.
  */
 const IPHONE_18_PRO_MAX: IPhoneSpec = {
   ...IPHONE_17_PRO_MAX,
   island: { ...IPHONE_17_PRO_MAX.island, width: IPHONE_18_ISLAND_WIDTH },
+  rearCamera: iphone18ProCamera(IPHONE_17_PRO_MAX.rearCamera),
 }
 
 export const IPHONE_VARIANTS: Record<'17' | 'air' | 'pro' | 'promax' | '18pro' | '18promax', IPhoneSpec> = {

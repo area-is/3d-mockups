@@ -362,20 +362,25 @@ function IPhoneImpl({
           <meshPhysicalMaterial color={pedestalColor} {...pedestalFinish} />
         </mesh>
 
-        {/* lens stacks: the collar standing proud of the pedestal (glossy
-            colour-matched rim on the glass models, bead-blasted anodized on
-            the Pros), deep black bore, coated front element */}
-        {rearCamera.lenses.map(({ x, y, r, h, pupil, glint }, i) => (
+        {/* lens stacks: the collar standing proud of the pedestal (colour-
+            matched aluminium on the 17, mirror titanium on the Air, the
+            unibody's own anodized metal on the Pros), black lip, clear
+            sapphire and the optics deep under it */}
+        {rearCamera.lenses.map(({ x, y, r, h, pupil, glint, bore, iris }, i) => (
           <group key={i} position={[x, y, -pedestalTop]}>
             <LensRing
               r={r}
               proud={h ?? 0.05}
-              frameColor={frameColor}
+              frameColor={aluminum ? pedestalColor : frameColor}
               element="#0d1524"
               pupil={pupil}
               glint={glint}
               matte={rearCamera.ringFinish !== 'polished'}
               collar={rearCamera.ringCollar}
+              step={rearCamera.ringStep}
+              bore={bore}
+              iris={iris}
+              sealed
             />
           </group>
         ))}
@@ -388,7 +393,7 @@ function IPhoneImpl({
             mountZ(rearCamera.flash.x, rearCamera.flash.y),
           ]}
         >
-          <FlashModule r={rearCamera.flash.r} />
+          <FlashModule r={rearCamera.flash.r} fresnel />
         </group>
 
         {/* auxiliary openings: the LiDAR scanner is a black-glass window, the
@@ -397,7 +402,7 @@ function IPhoneImpl({
         {rearCamera.dots?.map(({ x, y, r, kind }, i) => (
           <group key={i} position={[x, y, mountZ(x, y)]}>
             {kind === 'sensor' ? (
-              <SensorWindow r={r} />
+              <SensorWindow r={r} lip={aluminum ? pedestalColor : frameColor} />
             ) : (
               // flush, not a stub standing off the shell: a 1 mm mic hole
               // extruded even a fraction of a millimeter reads as a peg the
