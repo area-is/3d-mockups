@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { AbsoluteFill } from 'remotion'
+import { useThree } from '@react-three/fiber'
 import {
+  AppleWatch,
   AppleWatchMockup,
+  GalaxyWatch,
+  MockupCanvas,
   FlipMockup,
   FoldMockup,
   GalaxyWatchMockup,
@@ -89,6 +93,60 @@ export function WatchSheet({ kind, variant, bandOpen = false, color, bandColor, 
               <WatchFace />
             </GalaxyWatchMockup>
           )}
+        </Cell>
+      ))}
+    </AbsoluteFill>
+  )
+}
+
+/** Hides the worn band, which on a real wrist covers the case back. */
+function HideBand() {
+  const scene = useThree((state) => state.scene)
+  const invalidate = useThree((state) => state.invalidate)
+  React.useLayoutEffect(() => {
+    scene.traverse((object) => {
+      if (object.name === 'watch-band') object.visible = false
+    })
+    invalidate()
+  })
+  return null
+}
+
+const BACK_VIEWS: { label: string; rotation: Vec3; distance: number; fov: number }[] = [
+  { label: 'back', rotation: [0, Math.PI, 0], distance: 14, fov: 15 },
+  { label: 'back, three-quarter', rotation: [0.3, Math.PI + 0.55, 0], distance: 14, fov: 15 },
+  { label: 'sensor', rotation: [0, Math.PI, 0], distance: 14, fov: 7 },
+  { label: 'back, low', rotation: [-0.9, Math.PI, 0], distance: 14, fov: 15 },
+]
+
+export type WatchBackSheetProps = {
+  kind: 'apple' | 'galaxy'
+  variant: string
+  color?: string
+}
+
+/**
+ * The case back, with the band hidden - worn, the band's far side covers it
+ * from every angle that sees it square.
+ */
+export function WatchBackSheet({ kind, variant, color }: WatchBackSheetProps) {
+  const delayCapture = useMockupCapture()
+  return (
+    <AbsoluteFill style={{ background: '#fff', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 12, padding: 12 }}>
+      {BACK_VIEWS.map((view) => (
+        <Cell key={view.label} label={`${variant} · ${view.label}`}>
+          <MockupCanvas controls={false} shadows={false} delayCapture={delayCapture} camera={{ position: [0, 0, view.distance], fov: view.fov }}>
+            <HideBand />
+            {kind === 'apple' ? (
+              <AppleWatch variant={variant as AppleWatchVariant} color={color} rotation={view.rotation}>
+                <WatchFace />
+              </AppleWatch>
+            ) : (
+              <GalaxyWatch variant={variant as GalaxyWatchVariant} color={color} rotation={view.rotation}>
+                <WatchFace />
+              </GalaxyWatch>
+            )}
+          </MockupCanvas>
         </Cell>
       ))}
     </AbsoluteFill>

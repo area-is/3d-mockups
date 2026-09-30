@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Composition } from 'remotion'
 import { Probe } from './probe/probe'
 import { Bench } from './probe/bench'
-import { FoldSheet, WatchSheet } from './sheets/model-sheet'
+import { FoldSheet, WatchBackSheet, WatchSheet } from './sheets/model-sheet'
 import { Reel, REEL_DURATION } from './reel/reel'
 import { EnsembleShot } from './reel/ensemble-shot'
 
@@ -27,6 +27,15 @@ export function Root() {
         fps={30}
         width={1800}
         height={1200}
+      />
+      <Composition
+        id="WatchBackSheet"
+        component={WatchBackSheet}
+        defaultProps={{ kind: 'apple' as const, variant: 'ultra4' }}
+        durationInFrames={1}
+        fps={30}
+        width={1600}
+        height={1600}
       />
       <Composition
         id="FoldSheet"

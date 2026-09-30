@@ -132,36 +132,8 @@ export interface WatchSpec {
    * case).
    */
   bandSlot?: { width: number; height: number; z: number }
-  /**
-   * The case back's sensor cluster. Both families put an optical heart sensor
-   * behind a round crystal in the middle of the back, ringed by the metal
-   * electrode the ECG reads from - but they mount it differently: Apple sinks
-   * the crystal flush into a back plate that matches the case colour (so the
-   * watch reads as one piece of metal), while Samsung raises the whole
-   * BioActive puck proud of the aluminium cushion.
-   */
-  back: {
-    /** Crystal / puck radius. */
-    radius: number
-    /** How far it stands proud of the case back - negative sinks it in. */
-    raise: number
-    /**
-     * A raised puck that widens toward the case - the Ultra's broad, shallow
-     * sensor dome - is `flare` times `radius` where it meets the back. Without
-     * it the puck is a straight-sided drum.
-     */
-    flare?: number
-    /** The raised puck's own finish, when it is not the case's (the Ultra's black ceramic). */
-    housing?: string
-    /** Central photodiode window. */
-    hubRadius: number
-    /** The small LED windows ringed around the hub. */
-    leds: { count: number; ring: number; radius: number }
-    /** Polished metal electrode ring around the crystal. */
-    electrode: { inner: number; outer: number }
-    /** Engraved charging-coil ring outside the electrode (Apple). */
-    coilRing?: number
-  }
+  /** The case back: its sensor cluster, band releases, screws and engraving. */
+  back: WatchBack
   /**
    * Wristband. Two families, discriminated on `closure`.
    *
@@ -183,6 +155,81 @@ export interface WatchSpec {
    * twelve-o'clock side, 180° the underside of the wrist, 270° six o'clock.
    */
   band: WatchBand
+}
+
+/**
+ * The case back. Both families put an optical heart sensor behind a round
+ * window in the middle of the back, the ECG electrode round it - but they
+ * build it differently. Apple's is all glass: a dark crystal (sunk flush in
+ * the Series' body-colour back, raised on the Ultra's black ceramic dome)
+ * whose outer band is the electrode, with the LEDs and photodiodes under it.
+ * Samsung's is a raised polished metal puck - the electrode, split in two -
+ * with a small dark window in its middle. Round the sensor: the engraved
+ * model line, the band-release buttons by each lug and, on the titanium and
+ * aluminium cushions, the screws that hold the back on.
+ *
+ * Positions are device coordinates, like the rest of the spec: x toward the
+ * crown side, y toward twelve o'clock. Angles, and the engraving's run, are
+ * as seen looking at the back: degrees counter-clockwise from three o'clock.
+ */
+export interface WatchBack {
+  /** Radius of the crystal (Apple) or metal puck (Samsung). */
+  radius: number
+  /** How far it stands proud of the case back - negative sinks it in. */
+  raise: number
+  /**
+   * A raised puck that widens toward the case - the Ultra's broad, shallow
+   * sensor dome - is `flare` times `radius` where it meets the back. Without
+   * it the puck is a straight-sided drum.
+   */
+  flare?: number
+  /** The raised puck's own finish, when it is not the case's (the Ultra's black ceramic). */
+  housing?: string
+  /**
+   * Radius of the dark sensor window when the puck around it is metal
+   * (Samsung). Without it the whole crystal is glass (Apple).
+   */
+  window?: number
+  /**
+   * The ECG electrode: on a metal puck the metal itself from the window out;
+   * on an all-glass back, the lighter outer band of the crystal.
+   */
+  electrode: { inner: number; outer: number }
+  /** The insulating gap splitting the electrode into two halves, across the middle. */
+  split?: boolean
+  /** Centre element: a lens (Apple Ultra) or a polished metal sensor disc (Samsung); 0 for none. */
+  hubRadius: number
+  hub?: 'lens' | 'metal'
+  /**
+   * The LED windows on a ring round the centre, from `start` degrees, each a
+   * disc (or an oval on Samsung's) tinted by `colors` in turn.
+   */
+  leds: { count: number; ring: number; radius: number; start?: number; colors?: string[]; shape?: 'round' | 'oval' }
+  /** Photodiode windows alternating with the LEDs on the same ring - round lenses, or Samsung's diamonds. */
+  lenses?: { count: number; ring: number; radius: number; start?: number; shape: 'round' | 'diamond'; colors?: string[] }
+  /** Concentric rings etched in the sensor glass, as radii. */
+  rings?: number[]
+  /** The Ultra's sunburst: `count` radial ribs from `inner` out to the dome's edge. */
+  spokes?: { count: number; inner: number }
+  /** Engraved charging-coil ring outside the electrode. */
+  coilRing?: number
+  /**
+   * A round plate under the puck, raised off the back and carrying the
+   * engraving (the Galaxy Watch Ultra's).
+   */
+  boss?: { radius: number; raise: number }
+  /** The band-release buttons by each lug: a stadium `width` x `height`, centred at ±`y`. */
+  release?: { width: number; height: number; y: number; color?: string }
+  /** Screws at (±x, ±y): `lobes` 3 is Samsung's tri-wing, 5 Apple's pentalobe. */
+  screws?: { x: number; y: number; radius: number; lobes: number }
+  /** A small round vent (the barometer port on Samsung's back). */
+  vent?: { x: number; y: number; radius: number }
+  /**
+   * The engraved model line, set clockwise round the sensor on a circle of
+   * `radius`, starting at `from` degrees clockwise from twelve o'clock and
+   * spread over `sweep` degrees, in capitals `size` tall.
+   */
+  engraving?: { radius: number; text: string; from: number; sweep: number; size: number }
 }
 
 /** Shared by every band, whatever its closure. */
@@ -282,15 +329,28 @@ const SERIES_11: WatchSpec = {
   ],
   // Sport Band slot channel in the flat top/bottom edges, offset case-back.
   bandSlot: { width: 1.37, height: 0.24, z: -0.16 },
-  // Back: aluminium matching the case, with the sensor crystal sunk flush in
-  // the middle and the electrode ring around it.
+  // Back, off Apple's Series 11 back shot and Series 12 drawing: the body
+  // colour round a Ø25.5 mm crystal standing a hair proud in a polished bezel,
+  // its outer band the electrode, split across the middle. Under the glass,
+  // four LEDs at the quarters and four lenses between them; the model line
+  // engraved round it and a release button by each lug (8.5 x 2.3 mm).
   back: {
-    radius: 0.6,
-    raise: -0.012,
-    hubRadius: 0.17,
-    leds: { count: 4, ring: 0.33, radius: 0.078 },
-    electrode: { inner: 0.6, outer: 0.68 },
-    coilRing: 0.86,
+    radius: 0.72,
+    raise: 0.02,
+    electrode: { inner: 0.56, outer: 0.72 },
+    split: true,
+    hubRadius: 0,
+    leds: { count: 4, ring: 0.32, radius: 0.048, start: 90, colors: ['#a39d8d'] },
+    lenses: { count: 4, ring: 0.32, radius: 0.1, start: 45, shape: 'round' },
+    rings: [0.5, 0.53],
+    release: { width: 0.48, height: 0.13, y: 0.99 },
+    engraving: {
+      radius: 0.89,
+      text: 'WATCH • SERIES 11 • 46MM ALUMINUM CASE • ION-X GLASS • GPS • WR-50M •',
+      from: -80,
+      sweep: 352,
+      size: 0.05,
+    },
   },
   // Solo Loop: ONE continuous stretchy band, no closure, no holes, no
   // hardware - it flares into the lug slots at both ends and is sized to the
@@ -322,14 +382,33 @@ const GALAXY_WATCH_8: WatchSpec = {
     { y: -0.4, length: 0.56, width: 0.185, proud: 0.04 },
   ],
   mic: { y: 0.0, radius: 0.02 },
-  // Back: the BioActive puck stands proud of the aluminium cushion, its
-  // electrode ring split into two arcs around the optical windows.
+  // Back, off Samsung's back render: the BioActive puck stands proud of the
+  // aluminium - a polished metal disc, the electrode, split across the
+  // middle - round a small dark window: a metal sensor disc in the centre,
+  // the LEDs at the quarters (gold top and bottom) and diamond photodiodes
+  // between them. Round it the engraved model line, a vent, four tri-wing
+  // screws and the band releases by each lug.
   back: {
     radius: 0.62,
     raise: 0.055,
-    hubRadius: 0.14,
-    leds: { count: 4, ring: 0.3, radius: 0.068 },
-    electrode: { inner: 0.44, outer: 0.56 },
+    window: 0.32,
+    electrode: { inner: 0.32, outer: 0.62 },
+    split: true,
+    hubRadius: 0.06,
+    hub: 'metal',
+    leds: { count: 4, ring: 0.2, radius: 0.034, start: 90, colors: ['#c9a45c', '#bfb8a6'], shape: 'oval' },
+    lenses: { count: 4, ring: 0.2, radius: 0.04, start: 45, shape: 'diamond', colors: ['#5a5670', '#4b40ad'] },
+    rings: [0.29, 0.085, 0.105],
+    release: { width: 0.39, height: 0.09, y: 1.1 },
+    screws: { x: 0.66, y: 0.93, radius: 0.05, lobes: 3 },
+    vent: { x: 0.61, y: 0.45, radius: 0.045 },
+    engraving: {
+      radius: 0.71,
+      text: '44mm · Sapphire Crystal · GPS · 5 ATM · Made in Vietnam by Samsung · PO Box 12987, Dublin, IE ·',
+      from: -45,
+      sweep: 275,
+      size: 0.042,
+    },
   },
   // Two short machined speaker slots in a vertical run on the left edge.
   speaker: [
@@ -382,6 +461,13 @@ const SERIES_12: WatchSpec = {
   // Apple's Series 12 tech specs give the aluminium and titanium 46 mm case
   // a millimetre more width than the Series 11's 39: 46 x 40 x 9.7 mm.
   body: { ...SERIES_11.body, width: 2.26 },
+  back: {
+    ...SERIES_11.back,
+    engraving: {
+      ...SERIES_11.back.engraving!,
+      text: 'WATCH • SERIES 12 • 46MM ALUMINUM CASE • ION-X GLASS • GPS • WR-50M •',
+    },
+  },
 }
 
 /**
@@ -452,17 +538,31 @@ const ULTRA_4: WatchSpec = {
     { y: -0.79, length: 0.13, height: 0.13 },
   ],
   bandSlot: { width: 1.5, height: 0.26, z: -0.2 },
-  // Back: a broad, shallow black-ceramic sensor dome standing ~1.8 mm off the
-  // titanium back plate, eight windows ringed round the centre lens.
+  // Back, off Apple's back drawing and photo: a broad, shallow black-ceramic
+  // dome standing ~1.8 mm off the titanium plate, Ø27 mm where it meets it,
+  // its glass a sunburst of ribs round a window of eight sensors ringed about
+  // the centre lens. Round it the engraved model line, four pentalobe screws
+  // and a release button by each lug (8 x 1.9 mm).
   back: {
     radius: 0.68,
     raise: 0.1,
     flare: 1.13,
     housing: '#141518',
-    hubRadius: 0.15,
-    leds: { count: 8, ring: 0.3, radius: 0.045 },
-    electrode: { inner: 0.5, outer: 0.58 },
-    coilRing: 0.95,
+    electrode: { inner: 0.41, outer: 0.68 },
+    spokes: { count: 48, inner: 0.41 },
+    hubRadius: 0.07,
+    hub: 'lens',
+    leds: { count: 8, ring: 0.16, radius: 0.034, start: 90, colors: ['#8f9a8c', '#7e8796'] },
+    rings: [0.41, 0.3],
+    release: { width: 0.45, height: 0.107, y: 1.1 },
+    screws: { x: 0.73, y: 0.94, radius: 0.085, lobes: 5 },
+    engraving: {
+      radius: 0.86,
+      text: 'WATCH ULTRA • 49MM TITANIUM & CERAMIC CASE • SAPPHIRE CRYSTAL • GPS • LTE • WR-100M • DIVE-40M •',
+      from: -22,
+      sweep: 354,
+      size: 0.05,
+    },
   },
   // Ocean Band, off Apple's 2026 flat renders: a 24 mm strap of constant
   // width with a moulded ridge every 6.7 mm, seven stadium holes cut across
@@ -531,13 +631,32 @@ const GALAXY_WATCH_ULTRA_2: WatchSpec = {
     { y: 0, length: 0.44, width: 0.26, proud: 0.075, color: '#e05d2b' },
     { y: -0.42, length: 0.34, width: 0.185, proud: 0.05 },
   ],
-  // Back: the BioActive puck raised from the titanium, as on the cushion case.
+  // Back, off Samsung's Watch Ultra render: the Watch 8's split metal puck
+  // and sensor window, on a broad round plate raised off the titanium that
+  // carries the engraving, with a vent at its edge, tri-wing screws in the
+  // corners and copper-toned band releases.
   back: {
     radius: 0.65,
     raise: 0.05,
-    hubRadius: 0.14,
-    leds: { count: 4, ring: 0.3, radius: 0.068 },
-    electrode: { inner: 0.44, outer: 0.56 },
+    window: 0.33,
+    electrode: { inner: 0.33, outer: 0.65 },
+    split: true,
+    hubRadius: 0.06,
+    hub: 'metal',
+    leds: { count: 4, ring: 0.21, radius: 0.035, start: 90, colors: ['#c9a45c', '#bfb8a6'], shape: 'oval' },
+    lenses: { count: 4, ring: 0.21, radius: 0.041, start: 45, shape: 'diamond', colors: ['#5a5670', '#4b40ad'] },
+    rings: [0.3, 0.085, 0.105],
+    boss: { radius: 0.92, raise: 0.02 },
+    release: { width: 0.4, height: 0.1, y: 1.12, color: '#7a4b3c' },
+    screws: { x: 0.86, y: 0.86, radius: 0.05, lobes: 3 },
+    vent: { x: 0.8, y: 0, radius: 0.045 },
+    engraving: {
+      radius: 0.78,
+      text: '47mm · Titanium · Sapphire Crystal · LTE · GPS · 10 ATM · Made in Vietnam by Samsung · PO Box 12987, Dublin, IE ·',
+      from: -40,
+      sweep: 270,
+      size: 0.045,
+    },
   },
   speaker: [
     { y: 0.26, length: 0.37, height: 0.05 },

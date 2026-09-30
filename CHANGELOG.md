@@ -226,6 +226,22 @@ breaking change can ship in a minor release, and is always listed under
   `gearShape` a `'lobed'` profile. The `watch`, `watch-ultra4` and
   `watch-ultra2` visual baselines moved.
 
+- **Watch backs, checked against product photos.** Every back was a dark
+  disc with two green dots; it is now the real one, laid out in the spec
+  (`WatchBack`) and drawn by a new `CaseBack` component. Apple's sensor sits
+  under an all-glass crystal whose outer band is the electrode, split across
+  the middle: on the Series a Ø25.5 mm crystal standing a hair proud of the
+  body-colour back, four LEDs at the quarters and four lenses between them;
+  on the Ultra a sunburst of ribs round eight windows and a centre lens, on
+  its ceramic dome, with four pentalobe screws. Samsung's is a polished,
+  split metal puck round a small dark window - a metal sensor disc, the LEDs
+  at the quarters and diamond photodiodes between - with a vent and four
+  tri-wing screws; the Watch Ultra 2's sits on a darker round plate and has
+  copper band releases. Every back has its band-release button by each lug
+  and the model line engraved round the sensor. The fine print is drawn into
+  canvas textures; what catches light is geometry. Front views are
+  unchanged.
+
 - **A re-render no longer rebuilds the studio lighting.** drei's
   `<Environment>` re-renders its cube map whenever its children change
   identity, and three.js then re-filters it into PMREM mip levels, and the

@@ -27,6 +27,7 @@ import {
 } from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
+import { CaseBack } from './case-back'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -206,9 +207,10 @@ interface WatchBodyProps extends WatchCommonProps {
  * slots at both ends, while the Ocean Band and the Galaxy's band are two straps
  * closing with a buckle, a keeper and punched adjustment holes sized from the
  * retail fit range - and only those can be laid open with `bandOpen`, which
- * `<GalaxyWatch>` exposes. Both carry their real sensor back: an optical
- * cluster behind a round crystal, sunk flush into Apple's body-colour plate
- * (raised on the Ultra's ceramic dome), raised on Samsung's BioActive puck. No
+ * `<GalaxyWatch>` exposes. Both carry their real case back (`CaseBack`): the
+ * optical sensor under Apple's all-glass crystal (on the Ultra's ceramic
+ * dome) or in the dark window of Samsung's split metal puck, the engraved
+ * model line, the band releases and, where the case has them, its screws. No
  * 3D asset files are loaded - the whole device is generated from geometry at
  * runtime.
  */
@@ -771,100 +773,10 @@ function WatchBody({
         />
       </mesh>
 
-      {/* The case back. Both families read the heart optically through a round
-          crystal in the middle, ringed by the metal ECG electrode - but Apple
-          sinks it flush into a back plate the colour of the case (the watch
-          looks milled from one billet), while Samsung raises the whole
-          BioActive puck proud of the aluminium cushion. Either way the back is
-          NOT one big dark disc: the metal around the cluster is body-coloured,
-          and the sensor windows are small. */}
-      {(() => {
-        const { radius, raise, flare, housing, hubRadius, leds, electrode, coilRing } = spec.back
-        // Back face is −z; everything below stacks outward from it.
-        const face = -body.depth / 2
-        const at = (out: number) => face - out
-        return (
-          <group>
-            {/* raised puck carrying the crystal - a body-colour collar on the
-                Galaxy, the Ultra's broad black-ceramic dome widening to the
-                back plate */}
-            {raise > 0 && (
-              <mesh rotation-x={Math.PI / 2} position-z={at(raise / 2)}>
-                <cylinderGeometry
-                  args={flare ? [radius * flare, radius, raise, 64] : [radius, radius * 1.03, raise, 48]}
-                />
-                {housing ? (
-                  <meshPhysicalMaterial color={housing} metalness={0.1} roughness={0.2} clearcoat={0.8} clearcoatRoughness={0.2} />
-                ) : (
-                  <meshPhysicalMaterial color={color} metalness={0.8} roughness={0.34} envMapIntensity={0.9} />
-                )}
-              </mesh>
-            )}
-            {/* machined chamfer the crystal sits in - without it the near-black
-                sapphire vanishes into a near-black case */}
-            <mesh position-z={at(Math.max(raise, 0) + 0.006)} rotation-y={Math.PI}>
-              <ringGeometry args={[radius * 0.9, radius * 1.02, 48]} />
-              <meshPhysicalMaterial color={color} metalness={0.95} roughness={0.16} envMapIntensity={1.5} />
-            </mesh>
-            {/* the sensor crystal: glossy near-black sapphire, domed a hair */}
-            <mesh rotation-x={Math.PI / 2} position-z={at(Math.max(raise, 0) + 0.012)}>
-              <cylinderGeometry args={[radius * 0.94, radius * 0.94, 0.026, 48]} />
-              <meshPhysicalMaterial
-                color="#07080b"
-                metalness={0.1}
-                roughness={0.07}
-                clearcoat={1}
-                clearcoatRoughness={0.05}
-                envMapIntensity={1.3}
-              />
-            </mesh>
-            {/* polished electrode ring the ECG reads from */}
-            <mesh position-z={at(Math.max(raise, 0) + 0.014)} rotation-y={Math.PI}>
-              <ringGeometry args={[electrode.inner * 0.94, electrode.outer * 0.94, 48]} />
-              <meshPhysicalMaterial
-                color={spec.style === 'galaxy' ? '#c3c7ce' : color}
-                metalness={0.94}
-                roughness={0.2}
-                envMapIntensity={1.3}
-              />
-            </mesh>
-            {/* optical stack: the central photodiode, ringed by the LED
-                windows - the green pair reads as the heart-rate emitters */}
-            <mesh position-z={at(Math.max(raise, 0) + 0.027)} rotation-y={Math.PI}>
-              <circleGeometry args={[hubRadius, 28]} />
-              <meshPhysicalMaterial color="#1b2230" metalness={0.35} roughness={0.13} clearcoat={1} envMapIntensity={1.4} />
-            </mesh>
-            {Array.from({ length: leds.count }, (_, i) => {
-              const a = (i / leds.count) * Math.PI * 2 + Math.PI / 4
-              const green = i % 2 === 0
-              return (
-                <mesh
-                  key={i}
-                  position={[Math.cos(a) * leds.ring, Math.sin(a) * leds.ring, at(Math.max(raise, 0) + 0.027)]}
-                  rotation-y={Math.PI}
-                >
-                  <circleGeometry args={[leds.radius, 20]} />
-                  <meshPhysicalMaterial
-                    color={green ? '#0e4a2e' : '#1a2030'}
-                    emissive={green ? '#0f7a4a' : '#000000'}
-                    emissiveIntensity={green ? 0.75 : 0}
-                    metalness={0.2}
-                    roughness={0.14}
-                    clearcoat={1}
-                  />
-                </mesh>
-              )
-            })}
-            {/* engraved charging-coil ring outside the cluster (Apple) */}
-            {coilRing && (
-              <mesh position-z={at(0.004)} rotation-y={Math.PI}>
-                <ringGeometry args={[coilRing - 0.014, coilRing, 56]} />
-                <meshPhysicalMaterial color="#0f1114" metalness={0.5} roughness={0.55} transparent opacity={0.5} />
-              </mesh>
-            )}
-          </group>
-        )
-      })()}
+      {/* The case back: the sensor under its glass (Apple's crystal, the
+          Ultra's ceramic dome, Samsung's split metal puck), the band releases,
+          the screws and the engraved model line. */}
+      <CaseBack back={spec.back} depth={body.depth} color={color} />
 
       {/* the Ultra's crown guard: a raised titanium boss on the right flank
           shielding the crown and side button, both of which stand proud of
@@ -984,7 +896,7 @@ function WatchBody({
           velvety edge falloff - `sheen` gives that without the blown-out
           white a clearcoat produces at grazing angles */}
       {bandGeometries.map((geometry, i) => (
-        <mesh key={i} geometry={geometry}>
+        <mesh key={i} geometry={geometry} name="watch-band">
           <meshPhysicalMaterial
             color={bandColor}
             metalness={0}
@@ -1004,7 +916,7 @@ function WatchBody({
         // Sport Band pin-and-tuck: the twelve-o'clock strap's pin stud comes
         // up through one of the punched holes, its polished head sitting
         // flush in the opening - the only hardware the band shows.
-        <group position={pinStud.position} rotation-x={pinStud.rotX}>
+        <group position={pinStud.position} rotation-x={pinStud.rotX} name="watch-band">
           {/* the post, rooted in the strap below */}
           <mesh>
             <cylinderGeometry args={[pinStud.holeRadius * 0.72, pinStud.holeRadius * 0.72, band.thickness * 2.2, 20]} />
@@ -1021,7 +933,7 @@ function WatchBody({
       {/* the buckle frame and tongue, in the case's metal, and the keeper -
           a second metal frame or a sleeve moulded in the band's material */}
       {hardware?.map(({ geometry, finish }, i) => (
-        <mesh key={i} geometry={geometry}>
+        <mesh key={i} geometry={geometry} name="watch-band">
           {finish === 'metal' ? (
             // bead-blasted rather than polished: a mirror finish on bars this
             // thin flips between blown-out and black with the view
@@ -1079,10 +991,11 @@ export interface AppleWatchProps extends WatchCommonProps {
  * A procedurally built Apple Watch - the Series 11 or Series 12's 46 mm
  * squircle case, or the Ultra 4's 49 mm titanium one, chosen with `variant`:
  * the knurled Digital Crown, the flush side button, an edge-to-edge crystal
- * over the display, and the optical sensor back sunk flush into a body-colour
- * plate. The Ultra adds the raised crown guard round a coarsely lobed crown,
- * the orange Action button and speaker grille on the left flank, a flat
- * crystal in a raised lip over tighter corners, and a ceramic sensor dome.
+ * over the display, and the sensor crystal in a body-colour back engraved
+ * with the model line, a band release by each lug. The Ultra adds the raised
+ * crown guard round a coarsely lobed crown, the orange Action button and
+ * speaker grille on the left flank, a flat crystal in a raised lip over
+ * tighter corners, and on the back a sunburst ceramic dome and four screws.
  *
  * The Series wear the Solo Loop - ONE seamless stretchy band with no closure,
  * no adjustment holes and no hardware, flaring into the lug slots at both
@@ -1121,7 +1034,9 @@ export interface GalaxyWatchProps extends WatchCommonProps {
  * aluminium cushion case, or the Watch Ultra 2's 47 mm titanium one, chosen
  * with `variant`: the fully round display raised on its dial puck, flat
  * chamfered keys (the Ultra 2 adds its orange Quick Button), machined speaker
- * slots, and the BioActive sensor puck standing proud of the back.
+ * slots, and on the back the BioActive sensor - a split metal puck round a
+ * dark window - with the engraved model line, a vent, the band releases and
+ * four tri-wing screws.
  *
  * It wears the Sport Band: two straps closing with a buckle in the case's
  * metal and a keeper over a row of punched adjustment holes, sized from the
