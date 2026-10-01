@@ -2,7 +2,7 @@ name: CI
 
 # Runs on every PR and every push to main. Deploys are handled by Cloudflare
 # Workers Builds (configured in the dashboard, not here) and releases by
-# release.yml on a tag. This workflow only checks.
+# release.yml when a version bump lands on main. This workflow only checks.
 
 on:
   pull_request:

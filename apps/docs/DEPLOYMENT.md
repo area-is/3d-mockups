@@ -28,8 +28,8 @@ builds and deploys on push, under an API token it generates and holds itself, so
 are no deploy credentials in GitHub and no deploy workflow here.
 
 The workflows that *are* here do everything else: `ci.yml` typechecks, tests and builds
-every pull request, `release.yml` publishes to npm on a tag, and
-`cloudflare-build-pr-comments.yml` reports each Workers build back onto its PR.
+every pull request, `release.yml` publishes to npm when a version bump lands on `main`,
+and `cloudflare-build-pr-comments.yml` reports each Workers build back onto its PR.
 
 Settings live under **Workers & Pages → area-3d-mockups-docs → Settings → Build**:
 

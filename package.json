@@ -19,7 +19,9 @@
     "visual": "node apps/docs/scripts/visual-check.mjs",
     "bench": "node apps/docs/scripts/bench.mjs",
     "devices:check": "node packages/react/scripts/sync-device-table.mjs",
-    "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write"
+    "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write",
+    "release": "node packages/react/scripts/release.mjs prepare",
+    "release:notes": "node packages/react/scripts/release.mjs notes"
   },
   "devDependencies": {
     "concurrently": "^10.0.4"

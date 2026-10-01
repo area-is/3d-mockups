@@ -87,9 +87,9 @@ less than they look.
 
 ## Releasing and deploying
 
-- **The package** is published to npm from CI on a version tag, through npm
-  Trusted Publishing; the very first publish is by hand. The steps are in
-  [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
+- **The package** is published to npm from CI, through npm Trusted Publishing,
+  whenever a version bump is merged to `main`; the tag and GitHub Release follow
+  automatically. The steps are in [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
 - **The docs site** runs on Cloudflare Workers (OpenNext), deployed by Workers
   Builds on push, and is served at a path on the apex. Everything about building,
   deploying and routing it - including the stand-in Worker for the `area.is` apex -

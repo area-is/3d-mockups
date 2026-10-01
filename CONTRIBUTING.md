@@ -108,30 +108,37 @@ the whole library: the core layer is a directory inside it (`src/core`), built
 as a second entry point and published as the `react-3d-mockups/core` subpath, so
 the tarball is one self-contained install.
 
-Releases run on [`.github/workflows/release.yml`](.github/workflows/release.yml)
-via npm Trusted Publishing: GitHub mints an OIDC token, npm exchanges it for a
-short-lived publish credential, and the tarball gets a provenance attestation
-linking it to the commit. There is no `NPM_TOKEN` in this repository.
-
-A tag is the trigger:
+A release is a version bump landing on `main`; everything after that is
+automatic. To cut one, either run **Prepare a release** from the Actions tab
+with `patch`, `minor`, `major` or an exact version, which opens the PR for you,
+or do the same locally and open the PR yourself:
 
 ```bash
-npm version patch -w react-3d-mockups   # or minor / major
-git commit -am 'Release react-3d-mockups v0.1.1'
-git tag v0.1.1
-git push origin main --follow-tags
+npm run release -- minor   # or patch / major / 0.3.0
 ```
 
-The commit and the tag are separate steps on purpose. Against a workspace
-(`-w`), `npm version` only rewrites the manifest and the lockfile: it does not
-commit and does not tag, which is the opposite of its single-package behaviour.
-Skip them and `--follow-tags` pushes nothing at all: no tag, no workflow run, no
-publish, and no error to tell you so.
+That bumps `packages/react/package.json` and the lockfile, and renames the
+changelog's `## Unreleased` section to `## 0.3.0 - <date>` under a fresh empty
+one. It refuses an empty Unreleased section, so write the entries as you go.
+Merge the PR and [`release.yml`](.github/workflows/release.yml) typechecks,
+tests and builds, publishes the version to npm, then tags the merge commit
+`v0.3.0` and writes a GitHub Release from that changelog section. A prerelease
+version (`1.0.0-rc.1`) goes to the `next` dist-tag, not `latest`.
 
-The workflow refuses any tag that disagrees with `packages/react/package.json`,
-so a stale tag fails loudly rather than publishing the wrong tree. To rehearse
-the whole thing without spending a version number, run the workflow from the
-Actions tab with **Run workflow**. A dispatched run defaults to `--dry-run` and
-only packs.
+It decides what to do by asking the registry, not by trusting the event: a
+version already on npm is not republished and an existing tag is not recreated.
+A run that failed halfway is finished by re-running it, and a commit that
+touches the manifest without changing the version does nothing. To rehearse
+without spending a version number, run **Release react-3d-mockups** from the
+Actions tab: a dispatched run defaults to a dry run that only packs, and it
+works from any branch. Only `main` is ever published.
+
+Publishing uses npm Trusted Publishing: GitHub mints an OIDC token, npm
+exchanges it for a short-lived publish credential bound to this repository and
+workflow file, and the tarball gets a provenance attestation linking it to the
+commit. There is no long-lived `NPM_TOKEN`. The one exception is the very
+first publish, because npm can only attach a trusted publisher to a package
+that already exists. That bootstrap, a temporary token and then
+`npm trust github ...`, is spelled out at the top of `release.yml`.
 
 [`react-3d-mockups`]: https://www.npmjs.com/package/react-3d-mockups

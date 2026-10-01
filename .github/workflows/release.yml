@@ -1,84 +1,187 @@
 name: Release react-3d-mockups
 
-# Publishes `packages/react` to npm as `react-3d-mockups` using npm Trusted
-# Publishing (OIDC): no NPM_TOKEN, no secret in this repo at all. GitHub mints
-# a short-lived OIDC token, the npm CLI exchanges it for a publish credential,
-# and npm attaches a provenance attestation linking the tarball to this commit.
+# Publishes `packages/react` to npm as `react-3d-mockups` whenever a new version
+# lands on main, then tags that commit and writes a GitHub Release whose notes
+# are the version's CHANGELOG.md section. Nobody pushes a tag by hand.
 #
-# THIS CANNOT PERFORM THE FIRST PUBLISH. npm requires the package to already
-# exist before a trusted publisher can be attached to it
+#   1. Actions → "Prepare a release" → Run workflow, with patch, minor, major or
+#      an exact version. It opens a PR that bumps packages/react/package.json
+#      and renames the changelog's Unreleased section to the new version.
+#      (Locally that is `npm run release -- minor`, then a PR as usual.)
+#   2. Read the notes in that PR and merge it. This workflow does the rest.
+#
+# What to do is decided from the registry, not from the event: a version already
+# on npm is not published again and an existing tag is not recreated. So a run
+# that died halfway is finished by re-running it, and a commit that touches the
+# manifest without changing the version (a dependency bump) does nothing.
+#
+# Authentication is npm Trusted Publishing (OIDC): GitHub mints a short-lived
+# token, the npm CLI exchanges it for a publish credential bound to this repo
+# and this workflow file, and npm attaches a provenance attestation linking the
+# tarball to the commit. Once it is set up there is no NPM_TOKEN at all.
+#
+# THE FIRST PUBLISH IS THE EXCEPTION. npm only lets a trusted publisher be
+# attached to a package that already exists
 # (https://docs.npmjs.com/cli/v11/commands/npm-trust: "The package you're
-# configuring must already exist on the npm registry"). So v0.1.0 goes out by
-# hand from a laptop; this workflow takes over from the release after that.
-# Setup, once, after that first manual publish:
+# configuring must already exist on the npm registry"), so the very first
+# version goes out on an ordinary token. The CLI tries OIDC first and quietly
+# falls back to a token when the exchange fails, so this workflow can do that
+# publish too, given a temporary secret:
 #
-#   npm trust github react-3d-mockups \
-#     --repo area-is/react-3d-mockups --file release.yml --allow-publish
+#   1. npmjs.com → Access Tokens → Generate New Token: read and write, All
+#      packages (the package does not exist yet, so it cannot be selected),
+#      "Bypass two-factor authentication" on, and the shortest expiry offered.
+#   2. Save it as the repository secret NPM_TOKEN.
+#   3. Release as above, or run this workflow on main with dry_run unticked to
+#      publish the version already in the manifest.
+#   4. Attach the trusted publisher (npm 11.15.0+, account-level 2FA):
 #
-#   (or npmjs.com → react-3d-mockups → Settings → Trusted publishing. `npm trust`
-#    needs npm 11.15.0+ and account-level 2FA; it is not workspace-aware, hence
-#    naming the package explicitly. --allow-publish defaults to false, so the
-#    config is inert without it.)
+#        npm trust github react-3d-mockups \
+#          --repo area-is/react-3d-mockups --file release.yml --allow-publish
 #
-# This job deliberately declares no `environment:`. Adding one is a reasonable
-# upgrade (it gives a deployment record and an optional approval gate), but the
-# GitHub environment name becomes part of the OIDC claim, so it has to be created
-# in repo settings AND passed to the trust config as `--env <name>` or the
-# exchange stops matching.
+#      (or npmjs.com → react-3d-mockups → Settings → Trusted publishing.
+#       `npm trust` is not workspace-aware, hence the explicit package name, and
+#       --allow-publish defaults to false, so the config is inert without it.)
+#   5. Delete the NPM_TOKEN secret and revoke the token. Optionally set the
+#      package to "Require two-factor authentication and disallow tokens":
+#      trusted publishing does not use a token, so it keeps working.
 #
-# Release flow afterwards: bump the version in packages/react/package.json, land
-# it on main, then push a matching tag.
+# Publishing that first version from a laptop instead (`npm publish -w
+# react-3d-mockups` on main) also works: dispatch this workflow afterwards with
+# dry_run unticked and it finds the version on npm, and only tags and releases.
 #
-#   npm version patch -w react-3d-mockups   # or minor / major
-#   git commit -am 'Release react-3d-mockups v0.1.1'
-#   git tag v0.1.1
-#   git push origin main --follow-tags
-#
-# The commit and the tag are deliberate steps, not decoration: run against a
-# workspace (`-w`), `npm version` only rewrites the manifest and the lockfile:
-# it makes no commit and no tag, unlike its single-package behaviour. Leave them
-# out and `--follow-tags` pushes nothing, the tag trigger never fires, and the
-# release looks like it succeeded while nothing was published.
-#
-# The tag is the trigger and the version guard below refuses any tag that does
-# not match the manifest, so a stale tag fails loudly instead of publishing the
-# wrong tree.
+# The publish job deliberately declares no `environment:`. Adding one is a
+# reasonable upgrade (it gives a deployment record and an optional approval
+# gate), but the GitHub environment name becomes part of the OIDC claim, so it
+# has to be created in repo settings AND passed to the trust config as
+# `--env <name>` or the exchange stops matching. Renaming this file breaks the
+# trust config for the same reason.
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths:
+      - packages/react/package.json
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Pack and validate without publishing'
+        description: 'Validate and pack without publishing'
         type: boolean
         default: true
 
-# id-token: write is what makes OIDC, and therefore this whole workflow,
-# possible. Everything else stays read-only.
 permissions:
   contents: read
-  id-token: write
+
+# One release at a time, and never cancelled halfway through a publish.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  plan:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      live: ${{ steps.plan.outputs.live }}
+      first: ${{ steps.plan.outputs.first }}
+      publish: ${{ steps.plan.outputs.publish }}
+      tag: ${{ steps.plan.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compare the manifest with npm and the repository's tags
+        id: plan
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          version="$(node -p "require('./packages/react/package.json').version")"
+
+          live=true
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$DRY_RUN" = true ]; then
+            live=false
+          fi
+          if [ "$live" = true ] && [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::Only main is published. Run from main, or keep dry_run ticked to rehearse on $GITHUB_REF_NAME."
+            exit 1
+          fi
+
+          # 200 or 404, and anything else is an outage rather than an answer.
+          status() {
+            code="$(curl -s -o /dev/null -w '%{http_code}' --retry 3 "$1")"
+            case "$code" in
+              200|404) echo "$code" ;;
+              *) echo "::error::npm registry answered $code for $1" >&2; exit 1 ;;
+            esac
+          }
+          package="$(status https://registry.npmjs.org/react-3d-mockups)" || exit 1
+          release="$(status "https://registry.npmjs.org/react-3d-mockups/$version")" || exit 1
+
+          first=false;   [ "$package" = 404 ] && first=true
+          publish=false; [ "$release" = 404 ] && publish=true
+          tag=false
+          git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null || tag=true
+
+          {
+            echo "version=$version"
+            echo "live=$live"
+            echo "first=$first"
+            echo "publish=$publish"
+            echo "tag=$tag"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$publish" = false ] && [ "$tag" = false ]; then
+            echo "::notice::react-3d-mockups@$version is already on npm and tagged v$version. Nothing to release."
+          else
+            echo "react-3d-mockups@$version: publish=$publish tag=$tag live=$live first=$first"
+          fi
+
+  publish:
+    needs: plan
+    # A dry run always goes ahead, so the workflow can be rehearsed at any time.
+    if: needs.plan.outputs.live == 'false' || needs.plan.outputs.publish == 'true' || needs.plan.outputs.tag == 'true'
+    runs-on: ubuntu-latest
+    # id-token: write is what makes OIDC, and so trusted publishing and the
+    # provenance attestation, possible. contents: write is for the tag and the
+    # GitHub Release.
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      LIVE: ${{ needs.plan.outputs.live }}
+      FIRST: ${{ needs.plan.outputs.first }}
+      PUBLISH: ${{ needs.plan.outputs.publish }}
+      TAG: ${{ needs.plan.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
         with:
-          # Trusted publishing needs Node 22.14+ and npm 11.5.1+. Node 22 still
-          # ships an npm 10.x, so the CLI has to be upgraded explicitly. Without
-          # it the publish falls back to looking for a token and fails.
+          # Trusted publishing needs Node 22.14+ and npm 11.5.1+. Node 22 ships
+          # an npm 10.x, so the CLI is upgraded below; without that the publish
+          # falls back to looking for a token and fails.
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # Pinned to a major rather than `latest`: npm 12 raised its Node floor to
+      # 22.22.2, and a floating major is how a release breaks between two runs
+      # nobody changed.
       - name: Upgrade npm to a trusted-publishing capable version
         run: |
-          npm install -g npm@latest
+          npm install -g npm@11
           npm --version
+
+      - name: Check publishing credentials
+        env:
+          HAS_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
+        run: |
+          if [ "$FIRST" = true ] && [ "$PUBLISH" = true ] && [ "$LIVE" = true ] && [ "$HAS_TOKEN" != true ]; then
+            echo "::error::react-3d-mockups is not on npm yet, and npm cannot attach a trusted publisher to a package that does not exist. Add a temporary NPM_TOKEN repository secret for this first publish; the steps are at the top of release.yml."
+            exit 1
+          fi
+          if [ "$FIRST" = false ] && [ "$HAS_TOKEN" = true ]; then
+            echo "::warning::The NPM_TOKEN secret is still set. Once the trusted publisher is attached it is never used: delete the secret and revoke the token."
+          fi
 
       # Installs every workspace and runs the `prepare` hooks, which is what
       # builds packages/react/dist. `npm publish` would rebuild it anyway; doing
@@ -89,28 +192,79 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Check the tag matches the manifest version
-        if: github.event_name == 'push'
-        run: |
-          manifest="$(node -p "require('./packages/react/package.json').version")"
-          tag="${GITHUB_REF_NAME#v}"
-          if [ "$manifest" != "$tag" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match packages/react/package.json ($manifest)."
-            exit 1
-          fi
-          echo "Publishing react-3d-mockups@$manifest"
+      - name: Unit tests
+        run: npm run test
 
-      # A dispatched run defaults to packing only, so the workflow itself can be
-      # exercised on a branch without burning a version number.
+      # Before the publish, so a version with no changelog entry stops here
+      # rather than shipping and then failing to write its release.
+      - name: Release notes from CHANGELOG.md
+        run: |
+          npm run -s release:notes -- "$VERSION" > "$RUNNER_TEMP/notes.md"
+          {
+            echo
+            echo '---'
+            echo
+            echo "[\`react-3d-mockups@$VERSION\` on npm](https://www.npmjs.com/package/react-3d-mockups/v/$VERSION)"
+          } >> "$RUNNER_TEMP/notes.md"
+
+      # npm refuses to publish a prerelease to `latest` without being told, and
+      # it should not go there anyway: `npm install react-3d-mockups` would
+      # start resolving to it.
+      - name: Choose the dist-tag
+        run: |
+          case "$VERSION" in
+            *-*) echo "DIST_TAG=next" >> "$GITHUB_ENV" ;;
+            *) echo "DIST_TAG=latest" >> "$GITHUB_ENV" ;;
+          esac
+
+      # `npm publish --dry-run` still refuses a version that is already on npm,
+      # so rehearsing a released version only packs.
       - name: Pack (dry run)
-        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        if: env.LIVE == 'false'
         working-directory: packages/react
-        run: npm publish --dry-run --provenance
+        run: |
+          if [ "$PUBLISH" = true ]; then
+            npm publish --dry-run --provenance --access public --tag "$DIST_TAG"
+          else
+            echo "::notice::react-3d-mockups@$VERSION is already on npm; packing only."
+            npm pack --dry-run
+          fi
 
       - name: Publish to npm
-        if: github.event_name == 'push' || !inputs.dry_run
+        if: env.LIVE == 'true' && env.PUBLISH == 'true'
         working-directory: packages/react
+        env:
+          # Empty, and unused, once trusted publishing is set up: the CLI tries
+          # OIDC first and only falls back to this when the exchange fails, which
+          # is exactly the first publish.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         # --provenance is documented as automatic under trusted publishing, but
         # it is cheap to be explicit and it makes the failure obvious if the OIDC
         # exchange silently did not happen.
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag "$DIST_TAG"
+
+      # Creating the release creates the tag, on exactly the commit that was
+      # published. A tag pushed with this workflow's token triggers no other
+      # workflow, which is fine: nothing listens for tags any more.
+      - name: Tag and write the GitHub Release
+        if: env.LIVE == 'true' && env.TAG == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=()
+          [ "$DIST_TAG" = next ] && prerelease=(--prerelease)
+          gh release create "v$VERSION" "${prerelease[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "react-3d-mockups v$VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"
+
+      - name: Summary
+        if: env.LIVE == 'true'
+        run: |
+          {
+            echo "### react-3d-mockups@$VERSION"
+            echo
+            echo "- npm: https://www.npmjs.com/package/react-3d-mockups/v/$VERSION (dist-tag \`$DIST_TAG\`)"
+            echo "- release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v$VERSION"
+          } >> "$GITHUB_STEP_SUMMARY"

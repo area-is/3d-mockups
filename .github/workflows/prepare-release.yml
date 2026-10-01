@@ -1,0 +1,105 @@
+name: Prepare a release
+
+# Opens the PR that release.yml turns into a published version. It runs
+# `npm run release -- <version>`, which bumps packages/react/package.json and
+# the lockfile and renames CHANGELOG.md's Unreleased section to the new
+# version, and puts that on a release/v<version> branch. Merging the PR
+# publishes; closing it costs nothing.
+#
+# Two things about running as GitHub Actions:
+#
+# - Opening a PR needs Settings → Actions → General → Workflow permissions →
+#   "Allow GitHub Actions to create and approve pull requests". Without it the
+#   branch is still pushed and the run's summary links to the page that opens
+#   the PR by hand.
+# - A PR opened with the workflow's own token triggers no other workflow, so CI
+#   does not run on it. It changes no code, and release.yml typechecks, tests
+#   and builds again before it publishes anything.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'patch, minor, major, or an exact version such as 0.3.0'
+        required: true
+        default: patch
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      # No install needed: the script only rewrites the manifest, the lockfile
+      # and the changelog. The input goes through the environment, never into
+      # the script text, and the script validates it.
+      - name: Bump the version and roll the changelog
+        env:
+          BUMP: ${{ inputs.version }}
+        run: |
+          npm run -s release -- "$BUMP"
+          echo "VERSION=$(node -p "require('./packages/react/package.json').version")" >> "$GITHUB_ENV"
+
+      # An existing branch may carry someone's edits to the notes, so it is
+      # never overwritten.
+      - name: Push the release branch
+        run: |
+          branch="release/v$VERSION"
+          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "::error::$branch already exists. Merge or close its PR and delete the branch, then run this again."
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git commit -am "Release react-3d-mockups v$VERSION"
+          git push origin "$branch"
+          echo "BRANCH=$branch" >> "$GITHUB_ENV"
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run -s release:notes -- "$VERSION" > "$RUNNER_TEMP/notes.md"
+          workflow="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/.github/workflows/release.yml"
+          {
+            echo "Bumps \`react-3d-mockups\` to **$VERSION** and moves CHANGELOG.md's Unreleased section under that version."
+            echo
+            echo "**Merging this publishes it.** [\`release.yml\`]($workflow) runs on the merge: it typechecks, tests and builds, publishes \`react-3d-mockups@$VERSION\` to npm with provenance, then tags the merge commit \`v$VERSION\` and writes a GitHub Release from the notes below. Edit the notes on this branch before merging if they need it."
+            echo
+            echo "CI does not run on this PR, because GitHub Actions opened it. It changes no code."
+            echo
+            # A PR body is capped at 65,536 characters.
+            if [ "$(wc -c < "$RUNNER_TEMP/notes.md")" -lt 60000 ]; then
+              echo "<details><summary>Release notes</summary>"
+              echo
+              cat "$RUNNER_TEMP/notes.md"
+              echo
+              echo "</details>"
+            else
+              echo "The release notes are too long to repeat here; they are the CHANGELOG.md section in the diff."
+            fi
+          } > "$RUNNER_TEMP/body.md"
+
+          if ! gh pr create --base main --head "$BRANCH" \
+            --title "Release react-3d-mockups v$VERSION" \
+            --body-file "$RUNNER_TEMP/body.md"; then
+            url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/main...$BRANCH?expand=1"
+            echo "::warning::Could not open the PR, most likely because \"Allow GitHub Actions to create and approve pull requests\" is off. Open it here: $url"
+            echo "Open the release PR: $url" >> "$GITHUB_STEP_SUMMARY"
+          fi
