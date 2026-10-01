@@ -19,6 +19,10 @@ GPU-accelerated **3D device mockups for React** - drop any content onto the scre
 playing, iframes loading. The mockups are decorative - you rotate and zoom them, and the
 hardware masks the screen pixel for pixel.
 
+> **In active development.** The API may change over the next few weeks. Breaking changes
+> are listed in the [changelog](CHANGELOG.md) with what to change; pin an exact version
+> (`npm install --save-exact react-3d-mockups`) if you need it to stay put.
+
 Built on [three.js](https://threejs.org) and
 [react-three-fiber](https://github.com/pmndrs/react-three-fiber). Every model is
 generated procedurally at runtime - **no 3D asset files to load or host**. The device

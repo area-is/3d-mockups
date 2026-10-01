@@ -13,6 +13,11 @@ any angle, videos play, iframes load, React state and effects keep running. Mock
 decorative: you rotate and zoom them, and the hardware masks the screen pixel for pixel
 ([why](#screens-are-display-only)).
 
+> **In active development.** The API may change over the next few weeks. Breaking changes
+> are listed in the [changelog](https://github.com/area-is/react-3d-mockups/blob/main/CHANGELOG.md) with what to change;
+> pin an exact version (`npm install --save-exact react-3d-mockups`) if you need it to
+> stay put.
+
 - **Thirty-three devices** - the Galaxy S26 line (S26, S26 Ultra), two foldable
   generations (Z Fold 7, the wide Z Fold 8, Z Fold 8 Ultra, Z Flip 7, Z Flip 8) and
   Apple's foldable iPhone Duo, the full iPhone 17 family (17, 17 Air, 17 Pro, 17 Pro

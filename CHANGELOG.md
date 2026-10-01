@@ -7,6 +7,24 @@ breaking change can ship in a minor release, and is always listed under
 
 ## Unreleased
 
+## 0.1.0 - 2026-10-01
+
+First release: 33 procedurally generated devices and 24 objects (print,
+packaging, out-of-home formats, vehicles, a TV, and custom-size panels and
+boxes), the live-DOM screen bridge, the measurement API (`mockupInfo`,
+`useSurface`, the generated catalog), and the docs site.
+
+**In active development.** The API may change over the next few weeks.
+Breaking changes are listed in the [changelog](https://github.com/area-is/react-3d-mockups/blob/main/CHANGELOG.md)
+with what to change; pin an exact version
+(`npm install --save-exact react-3d-mockups`) if you need it to stay put.
+
+## Before 0.1.0
+
+What changed in this repository while the package was being built, before its
+first publish. Each entry compares against an earlier unpublished build, not a
+version on npm, so there is nothing here to migrate. All of it is in 0.1.0.
+
 ### Added
 
 - **The September 2026 Apple generation: six new devices.** `IPhoneDuoMockup`
@@ -136,6 +154,29 @@ breaking change can ship in a minor release, and is always listed under
   exported from `react-3d-mockups/core` for bindings outside React, and
   `<StatusBar>` from the package root for anyone composing one by hand.
 
+- **`MilkCartonMockup` / `MilkCarton`**: a gable-top beverage carton
+  (95×241×95 mm, the US half-gallon, resizable in millimeters via `size`):
+  poly-coated board walls, the roof folded up to a ridge, an ear fold pinching
+  each end inward the way a real carton's excess board folds, the sealed fin,
+  and a ribbed screw cap on the front roof panel (knurled from the same
+  `gearShape` the watch crown is). Live surfaces on all four walls plus
+  both roof panels; the cap rides over the front one the way a real spout
+  rides over the print. Measures as `mockupInfo('milkCarton')`.
+- **Reduced-motion support.** `autoRotate`, `float` and the `LEDText`
+  animations hold still when the visitor's system asks for reduced motion.
+  Gestures are untouched. The hook is exported as `usePrefersReducedMotion`.
+- **`mockupRegions(kind)`**: the regions a kind advertises, without measuring.
+- Unit tests (`npm run test`) covering registry invariants, measurement
+  defaults, colour derivation and framing fallbacks.
+- `sync-device-table.mjs` now also compares each modelled aspect against the
+  hand-maintained Panel column, the one check `devices:sync` cannot satisfy by
+  rewriting the columns it verifies.
+- **The TV's `frame` variant grew a real back**, proportioned from Samsung's
+  published One Connect placement: an inset rear plate whose rim seam is the
+  visible gap around the edge, the recessed One Connect bay with the slim
+  connector and its cable groove running both ways, the TV controller nub at
+  the lower right corner and a faint wordmark. Wall-mount hardware is
+  deliberately not modeled.
 
 ### Changed (breaking)
 
@@ -182,14 +223,13 @@ breaking change can ship in a minor release, and is always listed under
   like any other package, rather than carrying a private copy of
   `three-mesh-bvh` beside drei's.
 
-- **The package is now `react-3d-mockups`.** It was `react-3d-mockups`; nothing
+- **The package is now `react-3d-mockups`.** It was `area-3d-mockups`; nothing
   else moved, so the change is one line in your manifest and one in each import.
 
   ```diff
-  - import { GalaxyMockup } from 'react-3d-mockups'
+  - import { GalaxyMockup } from 'area-3d-mockups'
   + import { GalaxyMockup } from 'react-3d-mockups'
   ```
-
 
 - **`open` is now `openAngle` on `FoldMockup`/`FlipMockup`** (and `Fold`/`Flip`,
   and in `mockupInfo('fold' | 'flip', …)`). It matches `LaptopMockup`'s existing
@@ -336,6 +376,26 @@ breaking change can ship in a minor release, and is always listed under
   Safari's gesture events as well as the ctrl-wheel the other browsers send -
   and ctrl or ⌘ with a mouse wheel does the same. The step follows the
   delta, so a pinch is continuous and a wheel notch still moves.
+
+- **The iPhone camera hardware is modelled from Apple's macro photography**,
+  not just from the accessory drawings, which stop at the plateau. Lens collars
+  are wider (the bore is 0.72 of the collar radius, as measured off the retail
+  shots) with a rolled shoulder that carries the bright arc every product photo
+  has; the optics are two elements rather than one, so the studio softbox
+  reflects as a compact coating flare instead of a white band across the whole
+  lens, tinted per lens because the coatings are. The flash is a domed phosphor
+  window in a glassy margin instead of a flat cream disc, and the LiDAR scanner
+  and the mic beside it are no longer the same dot: one is black glass, the
+  other a drilled hole.
+- **The 17 Pro / Pro Max back is anodized aluminum, not glass**, and its camera
+  plateau is that unibody's own shelf, so both take the same matte finish. The
+  plateau used to carry a clearcoat of its own, which put a bright rim around
+  its whole outline and made it read as a glossy tile stuck onto the phone. The
+  Ceramic Shield charging window below it is now the only glossy panel on a Pro
+  back, which is the contrast the two-tone design is built on.
+- **Peer dependencies now state what actually works**: `react`/`react-dom`
+  `>=19` (react-three-fiber 9 and drei 10 both require React 19, so `>=18` was
+  unsatisfiable) and `three` `>=0.179.0` (the bundled CSG engine's floor).
 
 ### Fixed
 
@@ -485,57 +545,3 @@ breaking change can ship in a minor release, and is always listed under
   0.5-0.6 mm low and the 17 Pro's a millimetre narrow (20.65 mm); and the
   Studio Display's panel corners are square. The older Apple specs carry the
   corrected numbers; nothing about their API changed.
-
-### Added
-
-- **`MilkCartonMockup` / `MilkCarton`**: a gable-top beverage carton
-  (95×241×95 mm, the US half-gallon, resizable in millimeters via `size`):
-  poly-coated board walls, the roof folded up to a ridge, an ear fold pinching
-  each end inward the way a real carton's excess board folds, the sealed fin,
-  and a ribbed screw cap on the front roof panel (knurled from the same
-  `gearShape` the watch crown is). Live surfaces on all four walls plus
-  both roof panels; the cap rides over the front one the way a real spout
-  rides over the print. Measures as `mockupInfo('milkCarton')`.
-- **Reduced-motion support.** `autoRotate`, `float` and the `LEDText`
-  animations hold still when the visitor's system asks for reduced motion.
-  Gestures are untouched. The hook is exported as `usePrefersReducedMotion`.
-- **`mockupRegions(kind)`**: the regions a kind advertises, without measuring.
-- Unit tests (`npm run test`) covering registry invariants, measurement
-  defaults, colour derivation and framing fallbacks.
-- `sync-device-table.mjs` now also compares each modelled aspect against the
-  hand-maintained Panel column, the one check `devices:sync` cannot satisfy by
-  rewriting the columns it verifies.
-- **The TV's `frame` variant grew a real back**, proportioned from Samsung's
-  published One Connect placement: an inset rear plate whose rim seam is the
-  visible gap around the edge, the recessed One Connect bay with the slim
-  connector and its cable groove running both ways, the TV controller nub at
-  the lower right corner and a faint wordmark. Wall-mount hardware is
-  deliberately not modeled.
-
-### Changed
-
-- **The iPhone camera hardware is modelled from Apple's macro photography**,
-  not just from the accessory drawings, which stop at the plateau. Lens collars
-  are wider (the bore is 0.72 of the collar radius, as measured off the retail
-  shots) with a rolled shoulder that carries the bright arc every product photo
-  has; the optics are two elements rather than one, so the studio softbox
-  reflects as a compact coating flare instead of a white band across the whole
-  lens, tinted per lens because the coatings are. The flash is a domed phosphor
-  window in a glassy margin instead of a flat cream disc, and the LiDAR scanner
-  and the mic beside it are no longer the same dot: one is black glass, the
-  other a drilled hole.
-- **The 17 Pro / Pro Max back is anodized aluminum, not glass**, and its camera
-  plateau is that unibody's own shelf, so both take the same matte finish. The
-  plateau used to carry a clearcoat of its own, which put a bright rim around
-  its whole outline and made it read as a glossy tile stuck onto the phone. The
-  Ceramic Shield charging window below it is now the only glossy panel on a Pro
-  back, which is the contrast the two-tone design is built on.
-- **Peer dependencies now state what actually works**: `react`/`react-dom`
-  `>=19` (react-three-fiber 9 and drei 10 both require React 19, so `>=18` was
-  unsatisfiable) and `three` `>=0.179.0` (the bundled CSG engine's floor).
-
-## 0.1.0
-
-First release: 22 procedurally generated devices, 23 print, packaging,
-out-of-home and vehicle objects, the live-DOM screen bridge, the measurement
-API (`mockupInfo`, `useSurface`, the generated catalog), and the docs site.
