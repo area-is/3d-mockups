@@ -1,7 +1,7 @@
 ---
 title: Exporting images and video
 description: Why a canvas snapshot misses the screens, and how to capture a PNG with Playwright or a video with Remotion.
-keywords: [export, png, image, screenshot, video, remotion, playwright, puppeteer, todataurl, render, download, still]
+keywords: [export, png, image, screenshot, video, remotion, delayCapture, delayRender, playwright, puppeteer, todataurl, render, download, still]
 ---
 
 ## Why `toDataURL()` shows empty screens
@@ -48,6 +48,33 @@ await mockup.screenshot({ path: 'mockup.png', omitBackground: true })
 await browser.close()
 ```
 
+Two frames is a guess that usually holds. On a page you control, the mockup
+can say when it is done instead: `delayCapture` is called whenever a frame is
+on its way that has not been drawn (the renderer starting, a screen whose
+content has not landed), and the function it returns is called once it has.
+Count them on `window`, and wait for zero:
+
+```tsx title="page.tsx"
+declare global {
+  interface Window {
+    pendingMockupFrames?: number
+  }
+}
+
+function countPendingFrame() {
+  window.pendingMockupFrames = (window.pendingMockupFrames ?? 0) + 1
+  return () => {
+    window.pendingMockupFrames! -= 1
+  }
+}
+
+<IPhoneMockup delayCapture={countPendingFrame}>…</IPhoneMockup>
+```
+
+```ts
+await page.waitForFunction(() => window.pendingMockupFrames === 0)
+```
+
 `omitBackground` drops the browser's default white, so the PNG keeps its
 transparency wherever your page itself paints nothing behind the mockup.
 On a page you capture from, leave `autoRotate` and `float` off, or the pose
@@ -58,22 +85,43 @@ overlay buttons sit inside the element and would be in the picture.
 
 [Remotion](https://www.remotion.dev) renders a React composition in headless
 Chrome and captures the page frame by frame, so the screens are in the video
-too. Drive the motion from Remotion's frame counter rather than from the
-clock:
+too. Two things make a mockup behave in a render: it has to tell Remotion when
+a frame is complete, and every frame has to be a function of the frame number.
+
+```ts title="use-mockup-capture.ts"
+import { useCallback } from 'react'
+import { useDelayRender } from 'remotion'
+import type { DelayCapture } from 'react-3d-mockups'
+
+export function useMockupCapture(): DelayCapture {
+  const { delayRender, continueRender } = useDelayRender()
+  return useCallback(
+    (reason: string) => {
+      const handle = delayRender(reason)
+      return () => continueRender(handle)
+    },
+    [delayRender, continueRender]
+  )
+}
+```
 
 ```tsx title="turntable.tsx"
 import { useCurrentFrame, useVideoConfig } from 'remotion'
 import { GalaxyMockup } from 'react-3d-mockups'
+import { useMockupCapture } from './use-mockup-capture'
 
 export function Turntable() {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
+  const delayCapture = useMockupCapture()
   return (
     <GalaxyMockup
       controls={false}
-      frameloop="always"
-      pauseWhenOffscreen={false}
-      rotation={[0, (frame / fps) * 0.5, 0]}
+      delayCapture={delayCapture}
+      time={frame / fps}
+      autoRotate={6}
+      float
+      camera={{ position: [0, 0.5, 9 - frame / 60], fov: 40 }}
     >
       <YourApp />
     </GalaxyMockup>
@@ -81,12 +129,56 @@ export function Turntable() {
 }
 ```
 
-- **`rotation` from `useCurrentFrame()`**, not `autoRotate` or `float`: those
-  run on the browser's clock, which has nothing to do with the video's frames.
-  A prop change is enough to get a new frame drawn; after changing something
-  imperatively, call react-three-fiber's `invalidate()`.
-- **`frameloop="always"`** if anything else in the scene animates on its own.
-- **`pauseWhenOffscreen={false}`**, so the canvas never stops for the headless
-  renderer.
-- **WebGL in headless Chrome** needs a GPU backend: Remotion's three.js
-  documentation recommends rendering with `--gl=angle`.
+- **`delayCapture`** holds each frame until the mockup has drawn it: while
+  the renderer starts up (react-three-fiber creates it asynchronously), until
+  the redraw after a change, and until each screen's content has landed on the
+  glass. Without it Remotion captures whatever is on screen, and the first
+  frame of a freshly mounted mockup - the start of a `<Sequence>`, or
+  wherever a render tab starts - came out with no device, or with a hole
+  where the screen belongs, on different frames from one render to the next.
+  While it is set the canvas never pauses, so there is no
+  `pauseWhenOffscreen` to turn off.
+- **`time={frame / fps}`** puts `autoRotate` and `float` on the video's
+  clock. Without it they run on the browser's, and Remotion renders frames
+  out of order across several tabs, so each tab would land on a different
+  point of the spin and the bob. On your clock the same `time` always draws
+  the same picture.
+- **Everything else from `useCurrentFrame()` too**: `rotation`, `position`
+  and `scale`, and any other prop - `openAngle`, `color`, `orientation` - all
+  redraw on the frame they change.
+- **`camera` is live**: change its `position` or `fov` and the camera moves
+  there, still looking at the stage center - the dolly above is a prop. To
+  aim somewhere else, move the camera from inside a composed `MockupCanvas`:
+
+  ```tsx
+  type Vec3 = [number, number, number]
+
+  function CameraRig({ position, target }: { position: Vec3; target: Vec3 }) {
+    const camera = useThree((state) => state.camera)
+    const invalidate = useThree((state) => state.invalidate)
+    useLayoutEffect(() => {
+      camera.position.set(...position)
+      camera.lookAt(...target)
+      invalidate()
+    })
+    return null
+  }
+  ```
+
+- **Screen content** can read `useCurrentFrame()` - the page's context
+  reaches the glass. Animate it from the frame, not with timers, CSS
+  animations or transitions, which also run on the browser's clock.
+- **Keep `frameloop` at its default.** `'demand'` draws the frames a render
+  asks for and nothing else. `'always'` keeps every render tab redrawing
+  between captures, for nothing, on the same processor that is rendering.
+- **WebGL in headless Chrome** needs a GPU backend: render with `--gl=angle`
+  on a machine with a GPU. Without one (most CI and cloud machines), use
+  `--gl=swangle` - ANGLE over SwiftShader, on the CPU. It is slower but
+  workable: on a 4-core machine a 1280×720 phone turntable renders at about
+  0.8 s a frame. Try `--concurrency=1` there: every render tab shares
+  SwiftShader's one GPU process, and on that machine one tab (74 s for 90
+  frames) beat three (106 s).
+
+A complete project - single mockups, a four-device scene with a moving
+camera, and animated pattern backgrounds - is in the repository under
+[`examples/remotion`](https://github.com/area-is/react-3d-mockups/tree/main/examples/remotion).

@@ -30,8 +30,8 @@ breaking change can ship in a minor release, and is always listed under
   colour-matched Ceramic Shield back, in Black, Silver, Glacier and Burgundy.
   `AppleWatchMockup` gains `variant="series12"` (the Series 11's case a
   millimetre wider, the generation's eight aluminium, titanium and ceramic
-  finishes) and `variant="ultra4"` - the 49 mm flat-sided titanium case the
-  Ultra 3 introduced, with its raised crown guard, the orange-ringed crown,
+  finishes) and `variant="ultra4"` - the 49 mm titanium case the Ultra 3
+  introduced, with its raised crown guard, the orange-ringed crown,
   the orange Action button on the left flank (orange whatever the finish,
   because on the hardware it is), a flat crystal over the 422×514 panel
   (211×257 logical) and the buckled Ocean Band; watch keys can now sit on
@@ -44,6 +44,38 @@ breaking change can ship in a minor release, and is always listed under
   body and panel figure is Apple's published dimension, and the detail
   geometry is measured off Apple's own product-bezel drawings (see
   `agent-outputs/model-review-2026-09-apple.md`).
+
+- **`delayCapture`: frame-accurate video and screenshots.** A mockup draws
+  asynchronously in three places - react-three-fiber starts the renderer
+  after mount, WebGL redraws on the next animation frame, and each screen is
+  a React root of its own that commits after the scene and then waits a frame
+  to be placed on the glass - and a tool photographing the page could see
+  none of it. Rendered with Remotion, the first frame of a freshly mounted
+  mockup came out with no device or a bare screen hole, on different frames
+  each render. `delayCapture` (on `MockupCanvas` and every `*Mockup`) is
+  called with a reason whenever a frame is on its way that is not drawn yet,
+  and returns the function the canvas calls once it is: wire it to Remotion's
+  `delayRender`/`continueRender`. While it is set the canvas never pauses off
+  screen. The helpers behind it, `takeCaptureHold` and `createCaptureHolds`,
+  are in `react-3d-mockups/core`; `examples/remotion` renders a reel with it.
+
+- **`coverScreenUntil` on `FoldMockup`, `FlipMockup` and `IPhoneDuoMockup`**
+  (and their bare components): the hinge angle up to which the cover display
+  stays lit as the device opens, before your content moves to the inner
+  display. Defaults to 30°, where Android's reference foldable swaps; `90`
+  keeps the cover on through the half-open tent pose, `0` swaps the moment the
+  hinge moves. `mockupInfo` and `.info()` measure whichever display it lights.
+  The rule lives in core as `coverScreenLit` and `COVER_SCREEN_UNTIL`.
+
+- **`time`: the stage's motion on your clock.** `autoRotate` and `float` ran on
+  the browser's clock, and a video render draws frames out of order across
+  several tabs, so each landed on a different point of the spin and the bob
+  (and the float's phase was random per mount). `time` (seconds, on
+  `MockupCanvas` and every `*Mockup`) makes both a function of it:
+  `autoRotate` turns the camera as far as it would have by then, whether or
+  not `controls` is on, and `float` samples its bob at that time with a fixed
+  phase. Reduced motion does not hold them still on a clock you drive. The
+  math is `turntablePosition` and `autoRotateSpeed` in `react-3d-mockups/core`.
 
 - **Render control on every mockup.** `frameloop` (`'demand' | 'always' |
   'never'`), `pauseWhenOffscreen`, `gl` (merged over `CANVAS_GL_DEFAULTS`) and
@@ -171,6 +203,104 @@ breaking change can ship in a minor release, and is always listed under
 
 ### Changed
 
+- **Watch bands and the Apple Watch Ultra, checked against product photos.**
+  Both families' straps were straight boxes where the hardware was: a buckle
+  frame and keeper standing off a curved band as rigid slabs, reading from
+  the side as blocks floating beside the strap. The buckle frame (and the
+  Ocean Band's titanium loop) is now bar stock bent round the strap it sits
+  on, wrapping its edges, in the case's metal, with a rounded tongue; the
+  Galaxy's keeper is a moulded sleeve right behind the buckle. The bands
+  leave the case through the case end rather than off the back edge - the
+  Galaxy's halfway up, falling away at 45° as in Samsung's side render - and
+  thicken at the root. The Ocean Band has its moulded ridges, one every
+  6.7 mm, with stadium holes cut across it in the troughs; the Galaxy Sport
+  Band is 21.8 mm of constant width (it tapered from a 33 mm lug to 16 mm)
+  with ten holes across it at Samsung's 5.2 mm pitch. The Ultra 4 has barrel
+  flanks under a flat raised lip, rounder corners, a Ø9.6 mm crown of a score
+  of coarse lobes, a round-ended crown guard with the side button in a
+  pocket and the mic drilled through it, the ten-hole speaker grille, mic and
+  siren port on the left in place of two slots, a bright orange Action button
+  (at full metalness it read as dark red), and a black ceramic sensor dome.
+  The Series has two speaker slots, a Ø7 mm crown and a longer side button.
+  Geometry only - no prop changed. The core gains `bendAlongStrap`, and
+  `gearShape` a `'lobed'` profile. The `watch`, `watch-ultra4` and
+  `watch-ultra2` visual baselines moved.
+
+- **Watch backs, checked against product photos.** Every back was a dark
+  disc with two green dots; it is now the real one, laid out in the spec
+  (`WatchBack`) and drawn by a new `CaseBack` component. Apple's sensor sits
+  under an all-glass crystal whose outer band is the electrode, split across
+  the middle: on the Series a Ø25.5 mm crystal standing a hair proud of the
+  body-colour back, four LEDs at the quarters and four lenses between them;
+  on the Ultra a sunburst of ribs round eight windows and a centre lens, on
+  its ceramic dome, with four pentalobe screws. Samsung's is a polished,
+  split metal puck round a small dark window - a metal sensor disc, the LEDs
+  at the quarters and diamond photodiodes between - with a vent and four
+  tri-wing screws; the Watch Ultra 2's sits on a darker round plate and has
+  copper band releases. Every back has its band-release button by each lug
+  and the model line engraved round the sensor. The fine print is drawn into
+  canvas textures; what catches light is geometry. Front views are
+  unchanged.
+
+- **Apple cameras, rebuilt to Apple's dimensional drawings.** At a grazing
+  angle, as in a turning shot, every Apple lens read as a pale metal cup: the
+  bore walls and elements under a glossy smoked cover caught the studio
+  lights. Each lens is now built the way Apple draws it. The collar rolls over
+  at its top edge onto a flat top and stands its real height: 1.88 mm on the
+  17 Pros, 2.11 mm on the 18 Pros (it was 1.2). A glossy black lip crowns just
+  above the glass and carries the thin highlight line in the macro shots. The
+  sapphire is clear, flush with the collar and reflects little, turning a
+  darker lavender-grey at a grazing angle. Under it are a black mask, the
+  barrel's dark face, a bore and the front element well below the glass, so
+  the optics shift against the collar as the phone turns. The 18 Pro's main
+  camera shows its six-blade iris.
+  - **The 18 Pros:** their camera was a copy of the 17 Pros'. It now has
+    Apple's own figures: Ø16.58 collars (was Ø16.20), a 2.78 mm plateau (was
+    2.55), Ø6.90 flash and LiDAR, a Ø1.15 mic, and the telephoto 0.13 mm
+    further out.
+  - **The 17 Pros:** collars are Ø16.20, where they were Ø15.97 on the Pro and
+    Ø16.27 on the Pro Max.
+  - **Collar finishes:** the Pros' collars are the plateau's own anodized
+    aluminium. The 17's are bead-blasted aluminium, where they were polished.
+    The Air's and the Duo's are polished and two-tier, with a raised inner
+    collar.
+  - **Flash and LiDAR:** the flash is flush, a frosted Fresnel window in a
+    polished rim. The LiDAR is flush black glass.
+  - **iPad Pro:** the camera module is the back's bead-blasted aluminium where
+    it was glossy grey. Its flash, LiDAR and ambient light sensor match the
+    iPhones'.
+  - **Unchanged:** the Galaxy lenses.
+- **MacBook keyboards, checked against Apple's top-down renders.** The keys
+  stood on a flat deck, so at an angle the gaps between rows read as pale
+  aluminium and the caps as grey slabs. The keyboard now sits in a well
+  milled 1.2 mm into the deck (R4.9), with its tops just under the deck line.
+  - **The well:** its floor is the Pro's black tray, or on the Air and Neo
+    the deck's aluminium in the keys' shade.
+  - **Spacing:** caps are 1.5 mm apart (2.1 mm between top faces), where the
+    gap was 2.5 mm, at Apple's 19.0 × 18.5 mm pitch.
+  - **Caps:** a darker satin finish, near-black under studio light where they
+    read mid-grey.
+  - **Touch ID:** a Ø9.5 mm disc in a thin metal ring, where it was a grey
+    disc.
+  - **Legends:**
+    - letters and words at Apple's sizes;
+    - modifier words in the outer corner;
+    - the ▲ ▼ keys split by a hairline;
+    - the editing keys on the M5 Airs and the Neo carry ⇥ ⇪ ⇧ ⌫ ↵ (new
+      `legends` spec field).
+  - **Keyboard and trackpad positions** now follow the renders. Most moved 2
+    to 6 mm; the 15" Air's keyboard sat 12.5 mm too far back. The Neo's
+    trackpad is 116 × 72.5 mm.
+  - **Pro grilles:** they run the well's height on a 0.94 mm square grid.
+- **A re-render no longer rebuilds the studio lighting.** drei's
+  `<Environment>` re-renders its cube map whenever its children change
+  identity, and three.js then re-filters it into PMREM mip levels, and the
+  canvas mapped its light formers inline, so every render of `MockupCanvas` -
+  every prop change - paid for a new environment. Invisible at rest, a hitch
+  in the prop explorer, and most of the frame in a video render, where props
+  change every frame: on SwiftShader, 12 frames of a turning phone went from
+  112 s to 25 s. The formers are built once now.
+
 - **The contact shadow redraws only when something under it moves.** It used to
   re-render the scene into its shadow map every frame (drei's `ContactShadows`
   default) - roughly half the triangles of a mockup frame. Orbiting moves the
@@ -208,6 +338,33 @@ breaking change can ship in a minor release, and is always listed under
   delta, so a pinch is continuous and a wheel notch still moves.
 
 ### Fixed
+
+- **A foldable no longer looks switched off while it opens.** The cover
+  display went dark at the first half-degree of hinge travel and the inner
+  display took the content, but at small angles that one still faces its own
+  other half - so for the first third of every opening nothing was lit that
+  the viewer could see. On the hardware one of the two is lit at every angle;
+  the cover now stays lit, on the back of the cover half, until
+  `coverScreenUntil`.
+
+- **The Flip's folded cover wore its lenses mirrored.** The rings drawn on
+  the cover screen read the spec's half-local `x` as if seen from the front,
+  but the cover is that half's back: folded, the lenses sat top-right, and
+  half-open (where the 3D modules draw them) top-left. Both now sit top-left,
+  where the retail Flip has them with the hinge at the bottom.
+
+- **The Remotion recipe compiles and holds its frames.** It passed
+  `pauseWhenOffscreen` to a one-liner mockup, which does not accept it in
+  TypeScript, and relied on timing alone for its frames to be complete. It
+  now uses `delayCapture` and `time`, and keeps `frameloop` at `'demand'`
+  (`'always'` only made every render tab redraw between captures).
+
+- **The `camera` prop is live.** react-three-fiber reads it once, when it
+  creates the camera, so changing it later did nothing - a dolly or a zoom
+  driven from props silently stood still. A new `position` or `fov` now
+  moves the camera there, looking at the stage center. Values are compared,
+  not the object, so a re-render that passes the same numbers leaves a
+  dragged camera where the visitor put it.
 
 - **Screens render under `@react-three/fiber` 9.8.** Fiber 9.8.0 mounts the
   scene inside `<Canvas>`'s own commit, and there drei's `<Html>`, which

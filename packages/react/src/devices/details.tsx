@@ -44,6 +44,7 @@ export function SideKey({
   protrusion,
   color,
   flush = false,
+  painted = false,
 }: {
   side: 1 | -1
   /** Rail face |x| (usually body.width / 2). */
@@ -56,6 +57,12 @@ export function SideKey({
   color: string
   /** Flush keys (Camera Control) sit in the rail with a glossier face. */
   flush?: boolean
+  /**
+   * A coloured key rather than bare metal (the Apple Watch Ultra's orange
+   * Action button). At full metalness a saturated colour only tints what the
+   * key reflects, and against a dark room that reads as a dark red.
+   */
+  painted?: boolean
 }) {
   const crown = 0.01
   const seat = 0.05
@@ -83,11 +90,11 @@ export function SideKey({
       position={[side * (railX + (flush ? 0.002 : protrusion)), y, z]}
       rotation-y={side === 1 ? 0 : Math.PI}
     >
-      <meshPhysicalMaterial
-        color={color}
-        metalness={flush ? 0.94 : 0.9}
-        roughness={flush ? 0.16 : 0.24}
-      />
+      {painted ? (
+        <meshPhysicalMaterial color={color} metalness={0.2} roughness={0.4} clearcoat={0.5} clearcoatRoughness={0.3} />
+      ) : (
+        <meshPhysicalMaterial color={color} metalness={flush ? 0.94 : 0.9} roughness={flush ? 0.16 : 0.24} />
+      )}
     </mesh>
   )
 }
@@ -117,6 +124,10 @@ export function LensRing({
   matte = false,
   collar: collarProp,
   glint = '#2c3a5e',
+  sealed = false,
+  step,
+  iris,
+  bore,
 }: {
   r: number
   /** How far the ring wall stands proud of its mounting surface. */
@@ -142,14 +153,44 @@ export function LensRing({
   /**
    * Where the metal ends and the black cover glass begins, as a fraction of
    * the ring radius. Overrides the finish's default (0.72 matte, 0.84
-   * polished): the product shots put the S26's dark rims at ~0.9, the
-   * iPhone 17's glossy colour-matched rims at ~0.86 and the 17 Pro's
-   * anodized collars at ~0.76.
+   * polished): the product shots put the S26's dark rims at ~0.9, and
+   * Apple's drawings the 17 and 17 Pro collars' inner edge at ~0.86.
    */
   collar?: number
   /** Coating flare on the front element - the violet/blue spot in the macro shots. */
   glint?: string
+  /**
+   * Build the lens the way Apple's are, to their dimensional drawings (see
+   * `AppleLens`): a rolled collar, a glossy black lip, clear sapphire flush
+   * with the collar and the optics deep under it. The default open bore is
+   * the Galaxy rings'.
+   */
+  sealed?: boolean
+  /** A raised inner collar (`sealed` only) - see `AppleLens`. */
+  step?: { at: number; rise: number }
+  /** Aperture blades in front of the element (`sealed` only). */
+  iris?: number
+  /** The optics' bore opening as a fraction of the ring radius (`sealed` only). */
+  bore?: number
 }) {
+  if (sealed) {
+    return (
+      <AppleLens
+        r={r}
+        proud={proud}
+        seat={seat}
+        frameColor={frameColor}
+        element={element}
+        pupil={pupil}
+        matte={matte}
+        collar={collarProp ?? 0.86}
+        glint={glint}
+        step={step}
+        iris={iris}
+        bore={bore}
+      />
+    )
+  }
   const faceZ = -proud
   // Where the metal ends and the black bore begins, and how much of the
   // collar's top reads as a flat lit band rather than a tilted chamfer: an
@@ -318,10 +359,316 @@ export function LensRing({
 }
 
 /**
- * A True Tone flash: a warm-white phosphor diffuser under a softly domed
- * window, inside a thin seam. The retail part is not the flat cream disc it is
- * often drawn as - the macro shots show a bright, gently domed window with a
- * cooler glassy margin and only a hairline of dark where it meets the body.
+ * The profile of an Apple lens collar, for a lathe: up the wall from under
+ * the mount, over the rolled top edge, across the flat top (and up the raised
+ * inner collar, where there is one) to where the black lip takes over. Points
+ * are (radius, height off the mount). A doubled point is a hard edge - the
+ * lathe averages each vertex's normal over its two segments, and a
+ * zero-length one drops out of that average.
+ */
+function collarProfile(
+  r: number,
+  proud: number,
+  seat: number,
+  collar: number,
+  roll: number,
+  step?: { at: number; rise: number }
+): THREE.Vector2[] {
+  const points: THREE.Vector2[] = [new THREE.Vector2(r, -seat)]
+  const rolled = (outer: number, top: number, radius: number) => {
+    for (let i = 0; i <= 8; i++) {
+      const a = (i / 8) * (Math.PI / 2)
+      points.push(new THREE.Vector2(outer - radius + radius * Math.cos(a), top - radius + radius * Math.sin(a)))
+    }
+  }
+  if (step) {
+    const shelf = proud - proud * step.rise
+    rolled(r, shelf, roll)
+    const at = r * step.at
+    const inner = Math.min(roll * 0.6, proud * step.rise * 0.5)
+    points.push(new THREE.Vector2(at, shelf), new THREE.Vector2(at, shelf))
+    rolled(at, proud, inner)
+  } else {
+    rolled(r, proud, roll)
+  }
+  const edge = r * collar
+  points.push(new THREE.Vector2(edge, proud), new THREE.Vector2(edge, proud))
+  points.push(new THREE.Vector2(edge, proud - Math.min(proud * 0.2, r * 0.04)))
+  return points
+}
+
+/** The black lip's crown: a low half-ellipse from the collar's edge in to the glass. */
+function lipProfile(outer: number, inner: number, base: number, crown: number): THREE.Vector2[] {
+  const c = (outer + inner) / 2
+  const w = (outer - inner) / 2
+  const points: THREE.Vector2[] = []
+  for (let i = 0; i <= 10; i++) {
+    const a = (i / 10) * Math.PI
+    points.push(new THREE.Vector2(c + w * Math.cos(a), base + (crown - base) * Math.sin(a)))
+  }
+  return points
+}
+
+/** An aperture: a disc with an `blades`-sided hole, the blades' edges. */
+function irisShape(outer: number, opening: number, blades: number): THREE.Shape {
+  const shape = new THREE.Shape()
+  shape.absarc(0, 0, outer, 0, Math.PI * 2, false)
+  const hole = new THREE.Path()
+  for (let i = 0; i <= blades; i++) {
+    const a = (i / blades) * Math.PI * 2 + Math.PI / blades
+    if (i === 0) hole.moveTo(Math.cos(a) * opening, Math.sin(a) * opening)
+    else hole.lineTo(Math.cos(a) * opening, Math.sin(a) * opening)
+  }
+  shape.holes.push(hole)
+  return shape
+}
+
+/**
+ * An Apple camera lens, built to the dimensional drawings rather than to how
+ * it reads from one angle. On the 17 Pro (Ø16.20 collar): the collar stands
+ * 1.88 mm proud of the plateau, its top edge rolled over a ~0.65 mm radius
+ * down to a flat top that ends at 0.855 of the radius; a glossy black lip
+ * crowns just above the glass, and it is that lip, not the metal, that
+ * carries the one crisp highlight line in the macro shots. The sapphire cover
+ * sits flush with the collar, and is CLEAR: under it a black mask ring, the
+ * lens barrel's dark violet-grey face funnelling down to a Ø9.8 mm bore, and
+ * the front element deep at the bottom - so the optics slide against the
+ * collar as the phone turns, the depth every photo shows.
+ *
+ * The glass is only its reflection, added over what is under it, so it can
+ * behave like sapphire (n 1.77, violet-coated): near-black head-on, where
+ * all it adds is a faint soft window, and a grey-lavender sheet at a grazing
+ * angle, where the reflection hides the optics. The interior is dark and
+ * rough - a lit bore wall seen through a mirror-bright cover is what used to
+ * turn these lenses into pale metal cups.
+ *
+ * `step` raises an inner collar from `at` (a fraction of the radius), `rise`
+ * of the height above the outer ring's shelf - the Air's and the Duo's
+ * two-tier polished rings. `iris` puts that many aperture blades in front of
+ * the element (the 18 Pro's main camera).
+ */
+function AppleLens({
+  r,
+  proud,
+  seat,
+  frameColor,
+  element,
+  pupil,
+  matte,
+  collar,
+  glint,
+  step,
+  iris,
+  bore = 0.6,
+}: {
+  r: number
+  proud: number
+  seat: number
+  frameColor: string
+  element: string
+  pupil: number
+  matte: boolean
+  collar: number
+  glint: string
+  step?: { at: number; rise: number }
+  iris?: number
+  bore?: number
+}) {
+  // The roll is ~0.08 of the radius on the Pros' bead-blasted collars
+  // (Ø16.20 to Ø14.90), tighter on a polished one.
+  const roll = Math.min(r * (matte ? 0.08 : 0.05), proud * 0.4)
+  const lipInner = collar - 0.045
+  const maskInner = lipInner - 0.04
+  const crown = proud + r * 0.012
+  // The optics: everything under the glass, as depths below it. They stop
+  // short of the mount, which is a solid.
+  const depth = proud * 0.78
+  const barrelDepth = depth * 0.3
+  const boreR = r * Math.min(bore, maskInner - 0.04)
+  const elementR = r * Math.min(Math.max(pupil, 0.15), bore * 0.85)
+  const elementRise = Math.min(elementR * 0.35, depth * 0.3)
+  const coreR = elementR * 0.55
+  const collarGeometry = React.useMemo(
+    () => new THREE.LatheGeometry(collarProfile(r, proud, seat, collar, roll, step), 64),
+    [r, proud, seat, collar, roll, step]
+  )
+  const lipGeometry = React.useMemo(
+    () => new THREE.LatheGeometry(lipProfile(r * collar, r * lipInner, proud - r * 0.01, crown), 64),
+    [r, collar, lipInner, proud, crown]
+  )
+  const irisGeometry = React.useMemo(
+    () => (iris ? new THREE.ShapeGeometry(irisShape(boreR * 0.9, elementR * 0.78, iris), 24) : null),
+    [iris, boreR, elementR]
+  )
+  React.useEffect(
+    () => () => {
+      collarGeometry.dispose()
+      lipGeometry.dispose()
+      irisGeometry?.dispose()
+    },
+    [collarGeometry, lipGeometry, irisGeometry]
+  )
+  const glassZ = -proud
+  return (
+    <group>
+      {/* the seam where the collar meets its mount - a soft contact shadow,
+          which the stage's lighting will not cast at this scale */}
+      <mesh rotation-y={Math.PI} position-z={-0.0006}>
+        <ringGeometry args={[r * 0.97, r * 1.07, 48]} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.2} depthWrite={false} />
+      </mesh>
+      {/* the collar: wall, rolled edge and flat top in one piece - the same
+          anodized, bead-blasted metal as the plateau on the Pros, mirror
+          polished on the Air and the Duo */}
+      <mesh geometry={collarGeometry} rotation-x={-Math.PI / 2}>
+        <meshPhysicalMaterial
+          color={frameColor}
+          metalness={matte ? 0.6 : 0.92}
+          roughness={matte ? 0.46 : 0.2}
+          envMapIntensity={matte ? 0.95 : 1.15}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* the black lip, crowned just above the glass */}
+      <mesh geometry={lipGeometry} rotation-x={-Math.PI / 2}>
+        <meshPhysicalMaterial
+          color="#050506"
+          metalness={0}
+          roughness={0.1}
+          envMapIntensity={1.3}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* the black mask printed under the glass's rim */}
+      <mesh rotation-y={Math.PI} position-z={glassZ + 0.0004}>
+        <ringGeometry args={[r * maskInner, r * collar, 64]} />
+        <meshBasicMaterial color="#030304" />
+      </mesh>
+      {/* the barrel's face, funnelling down to the bore: dark violet-grey */}
+      <mesh rotation-x={Math.PI / 2} position-z={glassZ + 0.0004 + barrelDepth / 2}>
+        <cylinderGeometry args={[boreR, r * maskInner, barrelDepth, 64, 1, true]} />
+        <meshPhysicalMaterial
+          color="#1d1c24"
+          metalness={0}
+          roughness={0.8}
+          specularIntensity={0.3}
+          envMapIntensity={0.35}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* the bore */}
+      <mesh rotation-x={Math.PI / 2} position-z={glassZ + barrelDepth + (depth - barrelDepth) / 2}>
+        <cylinderGeometry args={[boreR * 0.9, boreR, depth - barrelDepth, 48, 1, true]} />
+        <meshPhysicalMaterial
+          color="#101015"
+          metalness={0}
+          roughness={0.8}
+          specularIntensity={0.3}
+          envMapIntensity={0.3}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh rotation-y={Math.PI} position-z={glassZ + depth}>
+        <circleGeometry args={[boreR * 0.9, 48]} />
+        <meshBasicMaterial color="#040405" />
+      </mesh>
+      {/* the aperture blades, in front of the element */}
+      {irisGeometry && (
+        <mesh geometry={irisGeometry} rotation-y={Math.PI} position-z={glassZ + depth - elementRise - depth * 0.08}>
+          <meshPhysicalMaterial color="#1b1b21" metalness={0.2} roughness={0.55} envMapIntensity={0.45} />
+        </mesh>
+      )}
+      {/* the front element on the bore's floor, and the tighter-curved coated
+          element that carries the coloured flare */}
+      <mesh position-z={glassZ + depth} scale={[1, 1, elementRise / elementR]}>
+        <sphereGeometry args={[elementR, 40, 20]} />
+        <meshPhysicalMaterial
+          color={element}
+          metalness={0.1}
+          roughness={0.08}
+          clearcoat={0.6}
+          clearcoatRoughness={0.06}
+          envMapIntensity={0.45}
+        />
+      </mesh>
+      <mesh position-z={glassZ + depth - elementRise * 0.5} scale={[1, 1, (elementRise * 0.9) / coreR]}>
+        <sphereGeometry args={[coreR, 32, 16]} />
+        <meshPhysicalMaterial
+          color={glint}
+          metalness={0.3}
+          roughness={0.04}
+          clearcoat={1}
+          clearcoatRoughness={0.02}
+          iridescence={0.6}
+          iridescenceIOR={1.8}
+          iridescenceThicknessRange={[140, 480]}
+          envMapIntensity={0.75}
+        />
+      </mesh>
+      {/* the sapphire cover: its reflection alone, added over the optics */}
+      <mesh rotation-y={Math.PI} position-z={glassZ}>
+        <circleGeometry args={[r * (collar + lipInner) / 2, 64]} />
+        <meshPhysicalMaterial
+          color="#000000"
+          metalness={0}
+          roughness={0.05}
+          ior={1.77}
+          specularIntensity={0.12}
+          specularColor="#cbc4f2"
+          envMapIntensity={0.9}
+          transparent
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
+
+/**
+ * The True Tone flash's window as Apple's macro shots show it: frosted
+ * pearl-grey, fine concentric Fresnel rings, the warm LED a soft spot at the
+ * centre. One texture, shared.
+ */
+let fresnelLens: THREE.CanvasTexture | null = null
+function fresnelLensTexture(): THREE.CanvasTexture | null {
+  if (typeof document === 'undefined') return null
+  if (fresnelLens) return fresnelLens
+  const size = 256
+  const c = size / 2
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const base = ctx.createRadialGradient(c, c, 0, c, c, c)
+  base.addColorStop(0, '#e9e0d2')
+  base.addColorStop(0.3, '#d9d5cf')
+  base.addColorStop(1, '#c4c4c6')
+  ctx.fillStyle = base
+  ctx.fillRect(0, 0, size, size)
+  ctx.lineWidth = 1.4
+  for (let ring = 0.36; ring < 1; ring += 0.045) {
+    ctx.strokeStyle = 'rgba(120, 118, 116, 0.28)'
+    ctx.beginPath()
+    ctx.arc(c, c, ring * c, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)'
+    ctx.beginPath()
+    ctx.arc(c, c, ring * c + 1.6, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+  fresnelLens = new THREE.CanvasTexture(canvas)
+  fresnelLens.colorSpace = THREE.SRGBColorSpace
+  fresnelLens.anisotropy = 4
+  return fresnelLens
+}
+
+/**
+ * An LED flash: a warm-white phosphor diffuser under a softly domed window,
+ * inside a thin seam - the Galaxy flash, whose macro shots show a bright,
+ * gently domed window with a cooler glassy margin and only a hairline of dark
+ * where it meets the body. `fresnel` draws Apple's True Tone flash instead:
+ * flush with the metal, a frosted Fresnel window inside a thin polished rim.
  * Built toward -z like `LensRing`.
  *
  * The dome is a half-ellipsoid seated ON the mounting plane (equator at z = 0,
@@ -329,8 +676,37 @@ export function LensRing({
  * it is - a sphere pushed out by an offset instead would have most of its
  * width swallowed by the surface it stands on.
  */
-export function FlashModule({ r, proud = 0.006 }: { r: number; proud?: number }) {
+export function FlashModule({ r, proud = 0.006, fresnel = false }: { r: number; proud?: number; fresnel?: boolean }) {
   const core = r * 0.62
+  const lens = React.useMemo(() => (fresnel ? fresnelLensTexture() : null), [fresnel])
+  if (fresnel) {
+    return (
+      <group>
+        {/* the polished rim where the metal meets the window: a thin bright ring */}
+        <mesh rotation-x={Math.PI / 2} position-z={-0.0011}>
+          <cylinderGeometry args={[r * 0.9, r, 0.0018, 40, 1, true]} />
+          <meshPhysicalMaterial color="#d4d5d9" metalness={0.9} roughness={0.14} side={THREE.DoubleSide} />
+        </mesh>
+        {/* the frosted Fresnel window, flush, its rings and the warm LED
+            behind it drawn in; a touch self-lit so it stays pale in shadow */}
+        <mesh rotation-y={Math.PI} position-z={-0.0013}>
+          <circleGeometry args={[r * 0.9, 40]} />
+          <meshPhysicalMaterial
+            color="#ffffff"
+            map={lens}
+            emissive="#ffffff"
+            emissiveMap={lens}
+            emissiveIntensity={0.12}
+            metalness={0}
+            roughness={0.32}
+            clearcoat={0.6}
+            clearcoatRoughness={0.12}
+            envMapIntensity={0.9}
+          />
+        </mesh>
+      </group>
+    )
+  }
   return (
     <group>
       {/* hairline seam where the window meets the shell */}
@@ -374,25 +750,30 @@ export function FlashModule({ r, proud = 0.006 }: { r: number; proud?: number })
  * set a hair below a matte rim, so it reads as glass over a cavity rather than
  * a painted dot. Built toward -z like `LensRing`.
  */
-export function SensorWindow({ r, color = '#05060a' }: { r: number; color?: string }) {
+export function SensorWindow({ r, color = '#05060a', lip }: { r: number; color?: string; lip?: string }) {
   return (
     <group>
-      {/* matte rim around the window */}
-      <mesh rotation-y={Math.PI} position-z={-0.0025}>
-        <ringGeometry args={[r * 0.86, r, 32]} />
-        <meshPhysicalMaterial color="#0a0b0e" metalness={0.2} roughness={0.6} envMapIntensity={0.25} />
-      </mesh>
-      {/* the window itself, recessed under the rim */}
-      <mesh rotation-y={Math.PI} position-z={-0.0018}>
-        <circleGeometry args={[r * 0.88, 32]} />
-        <meshPhysicalMaterial
-          color={color}
-          metalness={0.1}
-          roughness={0.1}
-          clearcoat={1}
-          clearcoatRoughness={0.08}
-          envMapIntensity={0.9}
-        />
+      {lip ? (
+        // Apple's LiDAR: flush, with only a hair of body-colour chamfer where
+        // the metal meets the glass to catch a thin highlight
+        <mesh rotation-x={Math.PI / 2} position-z={-0.0011}>
+          <cylinderGeometry args={[r * 0.93, r, 0.0018, 40, 1, true]} />
+          <meshPhysicalMaterial color={lip} metalness={0.85} roughness={0.2} side={THREE.DoubleSide} />
+        </mesh>
+      ) : (
+        // matte rim around the window
+        <mesh rotation-y={Math.PI} position-z={-0.0025}>
+          <ringGeometry args={[r * 0.86, r, 32]} />
+          <meshPhysicalMaterial color="#0a0b0e" metalness={0.2} roughness={0.6} envMapIntensity={0.25} />
+        </mesh>
+      )}
+      {/* the window itself. AR-coated black glass, no clearcoat and little
+          reflection: a clearcoat's Fresnel mirrored a studio light at a
+          grazing angle and turned the window into a pale disc, where every
+          product shot shows it black from any side */}
+      <mesh rotation-y={Math.PI} position-z={lip ? -0.0013 : -0.0018}>
+        <circleGeometry args={[r * (lip ? 0.94 : 0.88), 40]} />
+        <meshPhysicalMaterial color={color} metalness={0} roughness={0.06} specularIntensity={0.15} envMapIntensity={0.8} />
       </mesh>
     </group>
   )

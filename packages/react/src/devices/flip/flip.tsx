@@ -6,6 +6,7 @@ import {
   FLIP_COLORWAYS,
   findColorway,
   foldOpenAngle,
+  coverScreenLit,
   FLAT_EPSILON,
   railColor,
   FLIP_VARIANTS,
@@ -90,9 +91,17 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
   /**
    * CSS pixel width of the active display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution for
-   * whichever screen is showing (main display when open, cover when closed).
+   * whichever screen is lit (see `coverScreenUntil`).
    */
   resolution?: number
+  /**
+   * The hinge angle, in degrees, up to which the cover screen stays lit as the
+   * phone opens; above it your content moves to the main display. Defaults to
+   * 30 (`COVER_SCREEN_UNTIL`), where Android's reference foldable swaps; `90`
+   * keeps the cover on through the half-open tent pose, `0` swaps the moment
+   * the hinge moves. Shut, the cover is always lit, and flat, the main display.
+   */
+  coverScreenUntil?: number
 }
 
 /** An extruded rounded-rect slab with a soft edge bevel (one flip half / body). */
@@ -143,6 +152,7 @@ function FlipImpl({
   resolution,
   surfaceStyle,
   statusBar,
+  coverScreenUntil,
   ...groupProps
 }: FlipProps) {
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
@@ -179,8 +189,12 @@ function FlipImpl({
    */
   const mode: 'open' | 'closed' | 'flex' =
     angle < 0.5 ? 'closed' : angle >= FLAT_EPSILON ? 'open' : 'flex'
-  const isOpenFace = mode !== 'closed'
-  const state = isOpenFace ? spec.open : spec.closed
+  // Which display is lit is not the pose: the cover screen stays lit through
+  // the first part of the opening (`coverScreenUntil`), so one of the two is
+  // lit at every angle - it used to go dark at the first half-degree, while
+  // the main display lit instead still faced its own lower half.
+  const coverLit = coverScreenLit(angle, coverScreenUntil)
+  const state = coverLit ? spec.closed : spec.open
   const { display } = state
   const cam = spec.rearCamera
   const landscape = orientation === 'landscape'
@@ -516,12 +530,12 @@ function FlipImpl({
   /* The strip the bar costs the content, wherever that bar is drawn. */
   const safeTop = statusBarSafeAreaTop(statusBar, statusBarPlacement)
 
-  const screen = (
+  const screenAt = (surfaceZ: number) => (
     <DeviceScreen
       width={landscape ? display.height : display.width}
       height={landscape ? display.width : display.height}
       radius={display.radius}
-      position={[0, 0, (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006]}
+      position={[0, 0, surfaceZ]}
       rotation={landscape ? [0, 0, -Math.PI / 2] : [0, 0, 0]}
       {...resolveSurface(screenSlot, {
         surfaceBackground,
@@ -535,15 +549,22 @@ function FlipImpl({
             {punchHoleOverlay}
             {statusBarOverlay}
           </>
-        ) : mode === 'closed' ? (
+        ) : coverLit ? (
           // The two lens rings + flash live ON the cover screen - rendered as
           // a DOM overlay so they sit above your live content, like a cutout.
           // No pill behind them: the retail modules protrude individually.
+          //
+          // `x` is negated: the spec places them in the half's own frame, seen
+          // from the main-display side like every half-local coordinate (the
+          // 3D cluster on the half's back reads it that way), and the cover is
+          // that half's BACK. Unmirrored, the folded phone wore its lenses
+          // top-right while the half-open one wore them top-left - where the
+          // retail Flip has them with the hinge at the bottom.
           <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2147483647 }}>
             {cam.rings.map(({ x, y, r }, i) => (
               <div
                 key={i}
-                style={coverAt(x, y, r * 2, r * 2, {
+                style={coverAt(-x, y, r * 2, r * 2, {
                   borderRadius: '50%',
                   background: 'radial-gradient(circle at 38% 38%, #262f42 0%, #0a0c12 55%, #000 100%)',
                   boxShadow: 'inset 0 0 0 2px rgba(215, 222, 232, 0.35)',
@@ -551,7 +572,7 @@ function FlipImpl({
               />
             ))}
             <div
-              style={coverAt(cam.flash.x, cam.flash.y, cam.flash.r * 2, cam.flash.r * 2, {
+              style={coverAt(-cam.flash.x, cam.flash.y, cam.flash.r * 2, cam.flash.r * 2, {
                 borderRadius: '50%',
                 background: 'radial-gradient(circle at 45% 40%, #fdf7e4 0%, #d9d2bd 70%, #b7b19e 100%)',
               })}
@@ -563,6 +584,7 @@ function FlipImpl({
       {screenSlot?.children}
     </DeviceScreen>
   )
+  const frontZ = (mode !== 'closed' ? openBody.depth : half.depth) / 2 + 0.006
 
   if (shell.mode === 'flex') {
     // Each half pivots around a shared virtual axis at the fold line, sitting
@@ -703,7 +725,15 @@ function FlipImpl({
               {cameraCluster(-1, -half.depth / 2 - 0.002)}
               {rails}
               {endSeams([halfH / 2 - spec.endSeamInset], half.depth)}
-              {halfScreen('upper')}
+              {coverLit ? (
+                // Still lit early in the opening: the folded pose's cover
+                // screen, turned to face out of the back of this half.
+                <group position-z={-half.depth / 2 - 0.006} rotation-y={Math.PI}>
+                  {screenAt(0)}
+                </group>
+              ) : (
+                halfScreen('upper')
+              )}
             </group>
           </group>
 
@@ -718,7 +748,7 @@ function FlipImpl({
               </mesh>
               {freeEdgeKit(-halfH / 2)}
               {endSeams([-(halfH / 2 - spec.endSeamInset)], half.depth)}
-              {halfScreen('lower')}
+              {!coverLit && halfScreen('lower')}
             </group>
           </group>
 
@@ -821,7 +851,7 @@ function FlipImpl({
           {endSeams([openBody.height / 2 - spec.endSeamInset, -openBody.height / 2 + spec.endSeamInset], openBody.depth)}
 
           {freeEdgeKit(-openBody.height / 2)}
-          {screen}
+          {screenAt(frontZ)}
         </group>
       </group>
     )
@@ -839,7 +869,7 @@ function FlipImpl({
             <meshPhysicalMaterial color={frameColor} metalness={0.85} roughness={0.32} />
           </mesh>
           {rails}
-          {screen}
+          {screenAt(frontZ)}
         </group>
         <group position-z={-halfZ}>
           <mesh geometry={shell.lower}>

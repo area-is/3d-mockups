@@ -25,7 +25,7 @@ import {
 } from '../../screen/status-bar'
 import { createLogoGeometry } from '../logos'
 import { createWordmarkTexture } from '../wordmark'
-import { LensRing, UsbC, cutGeometry, stadiumCutter, USB_CUT_DEPTH } from '../details'
+import { FlashModule, LensRing, SensorWindow, UsbC, cutGeometry, stadiumCutter, USB_CUT_DEPTH } from '../details'
 import { collectSlots, createSlots, resolveSurface, type SurfaceProps } from '../../slots'
 
 type GroupProps = ThreeElements['group']
@@ -284,7 +284,8 @@ function TabletBody({
               rotation-y={Math.PI}
               position={[rearCamera.x, rearCamera.y, backZ - 0.002]}
             >
-              <meshPhysicalMaterial color={color} metalness={0.75} roughness={0.3} clearcoat={0.6} />
+              {/* the same bead-blasted aluminium as the back it rises from */}
+              <meshPhysicalMaterial color={color} metalness={0.15} roughness={0.5} envMapIntensity={1.2} />
             </mesh>
             {(() => {
               // Apple's drawing places every element on a 20.04 mm-centered pod
@@ -300,23 +301,20 @@ function TabletBody({
                   {/* 48MP wide - Ø10.83 opening, a flat black window with a
                       subtle dark collar (no bright metal ring on the retail pod) */}
                   <group position={[0.0939 * s, 0.0939 * s, 0]}>
-                    <LensRing r={0.0984 * s} proud={0.022} seat={0.02} frameColor="#15171b" pupil={0.62} matte />
+                    <LensRing r={0.0984 * s} proud={0.022} seat={0.02} frameColor="#15171b" pupil={0.4} matte sealed />
                   </group>
-                  {/* LiDAR scanner - Ø8.41 black glass circle */}
-                  <mesh rotation-x={Math.PI / 2} position={[0.0939 * s, -0.0939 * s, -0.004]}>
-                    <cylinderGeometry args={[0.0657 * s, 0.0657 * s, 0.01, 32]} />
-                    <meshPhysicalMaterial color="#0a0c11" metalness={0.35} roughness={0.14} clearcoat={1} envMapIntensity={0.5} />
-                  </mesh>
-                  {/* True Tone flash - Ø6.70 frosted window */}
-                  <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0, -0.004]}>
-                    <cylinderGeometry args={[0.0523 * s, 0.0523 * s, 0.01, 24]} />
-                    <meshPhysicalMaterial color="#e9e6df" emissive="#fff3d6" emissiveIntensity={0.12} roughness={0.35} clearcoat={0.6} />
-                  </mesh>
+                  {/* LiDAR scanner - Ø8.41 black glass, flush */}
+                  <group position={[0.0939 * s, -0.0939 * s, -0.001]}>
+                    <SensorWindow r={0.0657 * s} lip={color} />
+                  </group>
+                  {/* True Tone flash - Ø6.70 frosted Fresnel window, flush */}
+                  <group position={[-0.1059 * s, 0, -0.001]}>
+                    <FlashModule r={0.0523 * s} fresnel />
+                  </group>
                   {/* ambient light sensor - Ø3.60 */}
-                  <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, 0.1267 * s, -0.003]}>
-                    <cylinderGeometry args={[0.0281 * s, 0.0281 * s, 0.008, 20]} />
-                    <meshPhysicalMaterial color="#0b0d12" metalness={0.4} roughness={0.25} clearcoat={1} />
-                  </mesh>
+                  <group position={[-0.1059 * s, 0.1267 * s, -0.001]}>
+                    <SensorWindow r={0.0281 * s} lip={color} />
+                  </group>
                   {/* pinhole mic - Ø1.72 */}
                   <mesh rotation-x={Math.PI / 2} position={[-0.1059 * s, -0.1241 * s, -0.002]}>
                     <cylinderGeometry args={[0.0134, 0.0134, 0.008, 12]} />
@@ -340,11 +338,11 @@ function TabletBody({
             {rearCamera.boss && (
               <mesh rotation-x={Math.PI / 2} position={[rearCamera.x, rearCamera.y, backZ - 0.009]}>
                 <cylinderGeometry args={[rearCamera.boss * 0.96, rearCamera.boss, 0.019, 48]} />
-                <meshPhysicalMaterial color={color} metalness={0.55} roughness={0.32} clearcoat={0.5} />
+                <meshPhysicalMaterial color={color} metalness={0.15} roughness={0.5} envMapIntensity={1.2} />
               </mesh>
             )}
             <group position={[rearCamera.x, rearCamera.y, backZ - (rearCamera.boss ? 0.019 : 0)]}>
-              <LensRing r={rearCamera.r} proud={0.014} seat={0.03} frameColor={color} pupil={0.6} matte />
+              <LensRing r={rearCamera.r} proud={0.014} seat={0.03} frameColor={color} pupil={0.4} matte sealed />
             </group>
             <mesh rotation-x={Math.PI / 2} position={[rearCamera.mic.x, rearCamera.mic.y, backZ - 0.004]}>
               <cylinderGeometry args={[0.011, 0.011, 0.008, 12]} />

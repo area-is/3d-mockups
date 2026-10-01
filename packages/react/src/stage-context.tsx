@@ -1,4 +1,5 @@
 import * as React from 'react'
+import type { DelayCapture } from './core'
 
 /**
  * Whether the live screens are part of the page's accessibility tree.
@@ -18,6 +19,8 @@ export type ScreenAccessibility = 'hidden' | 'visible'
 /** Stage-wide settings a mockup's screens read from the canvas they are in. */
 export interface StageSettings {
   screenAccessibility: ScreenAccessibility
+  /** The canvas's `delayCapture`, which each screen holds while its content lands. */
+  delayCapture?: DelayCapture
 }
 
 /**

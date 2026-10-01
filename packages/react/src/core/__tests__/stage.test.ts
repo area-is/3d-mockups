@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Group, Mesh, PerspectiveCamera } from 'three'
-import { TumbleOrbit } from '../stage/tumble'
+import { TumbleOrbit, autoRotateSpeed, tumbleAutoRotateStep, turntablePosition } from '../stage/tumble'
+import { floatPose } from '../stage/float'
 import { createBackfaceCuller } from '../screen/backface'
 import { CANVAS_GL_DEFAULTS } from '../stage/stage'
 
@@ -111,5 +112,48 @@ describe('canvas defaults', () => {
   // A decorative element must not ask a dual-GPU laptop for its discrete GPU.
   it('does not request the high-performance GPU', () => {
     expect(CANVAS_GL_DEFAULTS.powerPreference).toBe('default')
+  })
+})
+
+/**
+ * A clock the caller owns (a video's frame counter): the stage's motion has
+ * to be a function of the time asked for, because a render draws frames out
+ * of order, in several tabs at once, and each must land on the same picture.
+ */
+describe('motion as a function of time', () => {
+  const start: [number, number, number] = [0, 0.5, 7.4]
+
+  it('turns the camera the way frame-by-frame auto-rotation does', () => {
+    const camera = new PerspectiveCamera(40, 1, 0.1, 100)
+    camera.position.set(...start)
+    const orbit = new TumbleOrbit()
+    orbit.setPolarLimits({ min: 0.5, max: Math.PI - 0.5 })
+    // One second at 60 fps, speed 3.
+    for (let i = 0; i < 60; i++) orbit.update(camera, tumbleAutoRotateStep(1 / 60, 3))
+    const [x, y, z] = turntablePosition(start, 1, 3)
+    expect(camera.position.x).toBeCloseTo(x, 9)
+    expect(camera.position.y).toBeCloseTo(y, 9)
+    expect(camera.position.z).toBeCloseTo(z, 9)
+  })
+
+  it('depends on the time alone, not on the frames before it', () => {
+    expect(turntablePosition(start, 0, 2)).toEqual(start)
+    // A full revolution at speed 1 takes a minute, and comes back round.
+    const [x, y, z] = turntablePosition(start, 60, 1)
+    expect(x).toBeCloseTo(start[0], 9)
+    expect(y).toBe(start[1])
+    expect(z).toBeCloseTo(start[2], 9)
+    expect(turntablePosition(start, 7.25, 1.5)).toEqual(turntablePosition(start, 7.25, 1.5))
+  })
+
+  it('reads the autoRotate prop as a speed', () => {
+    expect(autoRotateSpeed(true)).toBe(1)
+    expect(autoRotateSpeed(false)).toBe(0)
+    expect(autoRotateSpeed(undefined)).toBe(0)
+    expect(autoRotateSpeed(2.5)).toBe(2.5)
+  })
+
+  it('floats to the same pose at the same time', () => {
+    expect(floatPose(3.2, 0.7, 0)).toEqual(floatPose(3.2, 0.7, 0))
   })
 })

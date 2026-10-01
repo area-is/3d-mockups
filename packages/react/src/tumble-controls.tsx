@@ -5,6 +5,7 @@ import {
   KEYBOARD_ZOOM_FACTOR,
   ORBIT,
   TumbleOrbit,
+  autoRotateSpeed,
   tumbleAutoRotateStep,
 } from './core'
 import { usePrefersReducedMotion } from './use-reduced-motion'
@@ -45,6 +46,13 @@ export interface TumbleControlsProps {
    * (wheel, pinch or the +/− buttons) - drives the zoom readout.
    */
   onDistanceChange?: (distance: number) => void
+  /**
+   * Where `reset` (the Home key) puts the camera. Defaults to where the
+   * camera was when the controls mounted; `MockupCanvas` passes its `camera`
+   * prop, which can change after mount (a responsive framing), so Home
+   * returns to the framing in force rather than the first one.
+   */
+  home?: readonly [number, number, number]
 }
 
 /**
@@ -64,6 +72,7 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
       minDistance,
       maxDistance,
       onDistanceChange,
+      home: homePosition,
     },
     ref
   ) {
@@ -93,14 +102,20 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
       )
     }, [orbit, freeRotation])
 
+    const [homeX, homeY, homeZ] = homePosition ?? []
     const reset = React.useCallback(() => {
       orbit.halt()
       orbit.target.set(0, 0, 0)
-      camera.position.copy(home.position)
-      camera.up.copy(home.up)
+      if (homeX !== undefined && homeY !== undefined && homeZ !== undefined) {
+        camera.position.set(homeX, homeY, homeZ)
+        camera.up.set(0, 1, 0)
+      } else {
+        camera.position.copy(home.position)
+        camera.up.copy(home.up)
+      }
       camera.lookAt(orbit.target)
       invalidate()
-    }, [orbit, camera, home, invalidate])
+    }, [orbit, camera, home, homeX, homeY, homeZ, invalidate])
 
     React.useImperativeHandle(
       ref,
@@ -314,7 +329,7 @@ export const TumbleControls = React.forwardRef<TumbleControlsHandle, TumbleContr
     useFrame((_, delta) => {
       // Unprompted motion only. The drag path below is untouched - damping and
       // flick still run, because that spin is the visitor's own doing.
-      const requested = typeof autoRotate === 'number' ? autoRotate : autoRotate ? 1 : 0
+      const requested = autoRotateSpeed(autoRotate)
       const speed = reducedMotion ? 0 : requested
       const step = speed ? tumbleAutoRotateStep(delta, speed) : 0
       orbit.update(camera, step)

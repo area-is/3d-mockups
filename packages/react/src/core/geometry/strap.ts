@@ -126,6 +126,69 @@ export function flatStrapPath({ startY, z, length, direction }: FlatStrapOptions
   return (t) => ({ y: startY + direction * length * t, z, ny: 0, nz: 1 })
 }
 
+export interface BendAlongStrapOptions {
+  /** The strap the geometry rides on. */
+  path: StrapPath
+  /** True length of that strap, so local distances map onto `t`. */
+  length: number
+  /** Where along the strap (0→1) the geometry's local origin lands. */
+  at: number
+  /** How far off the strap's centre path the local origin stands, outward. */
+  stand?: number
+}
+
+/**
+ * Wrap a piece of strap hardware round the band it sits on. The geometry is
+ * authored flat, in strap-local terms - x across the strap, y outward from the
+ * wrist, z along it - and every vertex is carried onto the strap at its own
+ * distance along it, so a buckle frame or a keeper follows the band's curve
+ * instead of standing off it as a straight slab where the band bends away.
+ * Normals ride the same local frame. Mutates and returns `geometry`.
+ */
+export function bendAlongStrap(
+  geometry: BufferGeometry,
+  { path, length, at, stand = 0 }: BendAlongStrapOptions
+): BufferGeometry {
+  const position = geometry.getAttribute('position') as BufferAttribute
+  const normal = geometry.getAttribute('normal') as BufferAttribute | undefined
+  const across = new Vector3()
+  const out = new Vector3()
+  const along = new Vector3()
+  const step = 1e-4
+  for (let i = 0; i < position.count; i++) {
+    const x = position.getX(i)
+    const y = position.getY(i)
+    const z = position.getZ(i)
+    const t = at + z / length
+    const frame = path(t)
+    const ahead = path(t + step)
+    const behind = path(t - step)
+    out.set(0, frame.ny, frame.nz)
+    along.set(0, ahead.y - behind.y, ahead.z - behind.z).normalize()
+    // Across completes a right-handed frame with outward and along, so the
+    // bend is a rotation everywhere and triangle winding survives it.
+    across.crossVectors(out, along)
+    const v = y + stand
+    position.setXYZ(i, across.x * x, frame.y + frame.ny * v + across.y * x, frame.z + frame.nz * v + across.z * x)
+    if (normal) {
+      const nx = normal.getX(i)
+      const ny = normal.getY(i)
+      const nz = normal.getZ(i)
+      normal.setXYZ(
+        i,
+        across.x * nx + out.x * ny + along.x * nz,
+        across.y * nx + out.y * ny + along.y * nz,
+        across.z * nx + out.z * ny + along.z * nz
+      )
+    }
+  }
+  position.needsUpdate = true
+  if (normal) normal.needsUpdate = true
+  geometry.computeBoundingBox()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
 /** Per-position strap dimensions, sampled at `t` from 0 (start) to 1 (end). */
 export type StrapTaper = (t: number) => number
 

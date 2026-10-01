@@ -35,7 +35,7 @@
 
 import type { Orientation } from '../../orientation'
 import type { MockupFraming, MockupMetrics } from '../../regions'
-import { foldOpenAngle } from '../../regions'
+import { coverScreenLit, foldOpenAngle } from '../../regions'
 
 /** The rear camera cluster in one pose's own back-face coordinates. */
 interface FoldRearCamera {
@@ -65,10 +65,12 @@ interface FoldRearCamera {
    * How far the collars stand proud of the island, and where each collar's
    * metal ends and its cover glass begins (as a fraction of the ring radius).
    * Both default to the Galaxy rings' machined figures; the iPhone Duo's are
-   * the iPhone 17's taller, thin-rimmed glossy rings.
+   * the Air's taller polished rings, with their raised inner collar
+   * (`ringStep`, as on the iPhone spec).
    */
   ringProud?: number
   ringCollar?: number
+  ringStep?: { at: number; rise: number }
 }
 
 export interface FoldSpec {
@@ -438,30 +440,33 @@ const IPHONE_DUO: FoldSpec = {
     // Ø16.2 lens collars side by side on its centre line (15.1 and 32.8 mm
     // in from the free edge, on the 17's 17.7 mm pitch) and the mic grille
     // and Ø3.7 flash stacked at its inner end. No separate island: the
-    // collars stand straight on the plateau.
+    // collars stand straight on the plateau. Apple's close-ups show the Air's
+    // polished two-tier collars, with its amber and blue coatings.
     closed: {
       plateau: { x: 0.255, y: 1.196, width: 1.522, height: 0.581, radius: 0.29, raise: 0.065 },
       // Free edge inward: 48 MP Fusion main, 48 MP ultra-wide.
       rings: [
-        { x: 0.735, y: 1.196, r: 0.221, pupil: 0.5, glint: '#3f4f7a' },
-        { x: 0.252, y: 1.196, r: 0.221, pupil: 0.46, glint: '#4b4270' },
+        { x: 0.735, y: 1.196, r: 0.221, pupil: 0.3, glint: '#7a5836' },
+        { x: 0.252, y: 1.196, r: 0.221, pupil: 0.28, glint: '#3f4f7a' },
       ],
       mic: { x: -0.206, y: 1.309, width: 0.087, height: 0.038 },
       flash: { x: -0.206, y: 1.069, r: 0.05, seat: 'plateau' },
       ringProud: 0.045,
-      ringCollar: 0.86,
+      ringCollar: 0.85,
+      ringStep: { at: 0.917, rise: 0.21 },
     },
     // Unfolded: the same module riding the camera half (right of the spine).
     open: {
       plateau: { x: 1.353, y: 1.196, width: 1.522, height: 0.581, radius: 0.29, raise: 0.065 },
       rings: [
-        { x: 1.833, y: 1.196, r: 0.221, pupil: 0.5, glint: '#3f4f7a' },
-        { x: 1.35, y: 1.196, r: 0.221, pupil: 0.46, glint: '#4b4270' },
+        { x: 1.833, y: 1.196, r: 0.221, pupil: 0.3, glint: '#7a5836' },
+        { x: 1.35, y: 1.196, r: 0.221, pupil: 0.28, glint: '#3f4f7a' },
       ],
       mic: { x: 0.892, y: 1.309, width: 0.087, height: 0.038 },
       flash: { x: 0.892, y: 1.069, r: 0.05, seat: 'plateau' },
       ringProud: 0.045,
-      ringCollar: 0.86,
+      ringCollar: 0.85,
+      ringStep: { at: 0.917, rise: 0.21 },
     },
   },
   // The Touch ID side button alone on the free rail, 18.6 mm long and
@@ -511,11 +516,13 @@ export interface FoldPoseProps<V extends string = FoldVariant> {
   variant?: V
   openAngle?: boolean | number
   orientation?: Orientation
+  /** Hinge angle up to which the cover display stays lit (see `COVER_SCREEN_UNTIL`). */
+  coverScreenUntil?: number
 }
 
 /**
- * Live geometry of whichever panel is facing the viewer: the big inner
- * display when open, the tall cover display when closed.
+ * Live geometry of whichever panel is lit: the tall cover display from shut
+ * until the handoff angle (`coverScreenLit`), the big inner display after.
  *
  * Built per family so an omitted `variant` falls back to the family the
  * mockup belongs to - the Galaxy Z Fold and the iPhone Duo share the spec
@@ -527,9 +534,9 @@ export interface FoldPoseProps<V extends string = FoldVariant> {
 function foldMetrics<V extends string>(variants: Record<V, FoldSpec>, defaultVariant: NoInfer<V>) {
   return {
     mmPerUnit: FOLD_MM_PER_UNIT,
-    regions: ({ variant, openAngle, orientation }: FoldPoseProps<V>) => {
+    regions: ({ variant, openAngle, orientation, coverScreenUntil }: FoldPoseProps<V>) => {
       const spec = variants[variant ?? defaultVariant]
-      const { display, resolution } = foldOpenAngle(openAngle) < 0.5 ? spec.closed : spec.open
+      const { display, resolution } = coverScreenLit(openAngle, coverScreenUntil) ? spec.closed : spec.open
       const landscape = orientation === 'landscape'
       return {
         screen: {

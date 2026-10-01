@@ -144,7 +144,7 @@ export { CustomBox, type CustomBoxProps } from './objects/custom-box/custom-box'
 // next to the components. The FULL core (every spec constant, geometry helper,
 // screen/stage behavior) lives behind the `react-3d-mockups/core` subpath so its
 // internals can evolve without breaking this package's semver contract.
-export type { Orientation } from './core'
+export type { Orientation, DelayCapture } from './core'
 export {
   type RegionSpec,
   type CameraFraming,

@@ -6,6 +6,7 @@ import {
   IPHONE_DUO_COLORWAYS,
   findColorway,
   foldOpenAngle,
+  coverScreenLit,
   FLAT_EPSILON,
   railColor,
   FOLD_VARIANTS,
@@ -102,9 +103,18 @@ export interface FoldCommonProps extends Omit<GroupProps, 'children' | 'color'>,
   /**
    * CSS pixel width of the active display in the current orientation. Height
    * follows the panel aspect. Defaults to the device's logical resolution for
-   * whichever screen is showing (inner display when open, cover when closed).
+   * whichever screen is lit (see `coverScreenUntil`).
    */
   resolution?: number
+  /**
+   * The hinge angle, in degrees, up to which the cover display stays lit as
+   * the device opens; above it your content moves to the inner display.
+   * Defaults to 30 (`COVER_SCREEN_UNTIL`), where Android's reference foldable
+   * swaps. `90` keeps the cover on like the tent posture does, propped half
+   * open; `0` swaps the moment the hinge moves, as a Pixel does in the hand.
+   * Shut, the cover is always lit, and flat, the inner display.
+   */
+  coverScreenUntil?: number
 }
 
 /** The shared implementation's props: the spec to build and the catalog its `color` resolves against. */
@@ -170,6 +180,7 @@ function FoldBody({
   resolution,
   surfaceStyle,
   statusBar,
+  coverScreenUntil,
   ...groupProps
 }: FoldBodyProps) {
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
@@ -207,12 +218,23 @@ function FoldBody({
   const mode: 'open' | 'closed' | 'flex' =
     angle < 0.5 ? 'closed' : angle >= FLAT_EPSILON ? 'open' : 'flex'
   const isOpenFace = mode !== 'closed'
-  const state = isOpenFace ? spec.open : spec.closed
   const cam = isOpenFace ? spec.rearCamera.open : spec.rearCamera.closed
-  const { body, display } = state
+  const { body } = isOpenFace ? spec.open : spec.closed
+  /*
+   * Which display is lit is not the pose. Opening from shut, the cover
+   * display stays lit up to `coverScreenUntil` degrees and the inner one
+   * takes over after, so one of them is lit at every angle - the cover used
+   * to go dark at the first half-degree, while the inner display it lit
+   * instead was still facing itself, and the device read as switched off
+   * for the first third of every opening. Everything about the screen -
+   * size, resolution, camera hole, status bar - follows the lit face.
+   */
+  const coverLit = coverScreenLit(angle, coverScreenUntil)
+  const face = coverLit ? spec.closed : spec.open
+  const { display } = face
   const landscape = orientation === 'landscape'
   const aspect = display.height / display.width
-  const res = resolution ?? Math.round(state.resolution * (landscape ? aspect : 1))
+  const res = resolution ?? Math.round(face.resolution * (landscape ? aspect : 1))
   // Open pose: one body mesh. Closed pose: front (cover) + rear (camera) slabs.
   // Screens occlude against EVERY registered body, this device's own panels
   // included. Excluding them (to stop a grazing corner ray blacking out a
@@ -452,8 +474,8 @@ function FoldBody({
   // hole; the inner display may not - the iPhone Duo's inner camera sits
   // under the panel, so there is nothing to draw and nothing for the status
   // bar to clear.
-  const hole = isOpenFace ? spec.open.punchHole : spec.closed.punchHole
-  const holeX = (isOpenFace ? spec.open.punchHole?.offsetX : spec.closed.punchHole.offsetX) ?? 0
+  const hole = coverLit ? spec.closed.punchHole : spec.open.punchHole
+  const holeX = (coverLit ? spec.closed.punchHole.offsetX : spec.open.punchHole?.offsetX) ?? 0
   const holeOffsetY = hole?.offsetY ?? 0
   const holeR = hole?.radius ?? 0
 
@@ -516,7 +538,9 @@ function FoldBody({
             frameColor={frameColor}
             pupil={pupil}
             collar={cam.ringCollar}
+            step={cam.ringStep}
             glint={glint}
+            sealed={brand === 'apple'}
           />
         </group>
       ))}
@@ -539,7 +563,7 @@ function FoldBody({
           cam.flash.seat === 'plateau' ? backZ - cam.plateau.raise - 0.0015 : backZ - 0.002,
         ]}
       >
-        <FlashModule r={cam.flash.r} />
+        <FlashModule r={cam.flash.r} fresnel={brand === 'apple'} />
       </group>
     </>
   )
@@ -643,7 +667,7 @@ function FoldBody({
    */
   const statusBarPlacement = {
     platform: brand === 'apple' ? 'ios' : 'oneui',
-    formFactor: isOpenFace ? 'tablet' : 'phone',
+    formFactor: coverLit ? 'phone' : 'tablet',
     width: res,
     corner: px(display.radius),
     cutout:
@@ -685,10 +709,10 @@ function FoldBody({
   // off the body's centre line; the inner display is centred and uniform.
   const closedDisplay = spec.closed.display
   const screenRadius: number | [number, number, number, number] =
-    isOpenFace || closedDisplay.hingeRadius === undefined
+    !coverLit || closedDisplay.hingeRadius === undefined
       ? display.radius
       : [closedDisplay.hingeRadius, display.radius, display.radius, closedDisplay.hingeRadius]
-  const screenX = isOpenFace ? 0 : (closedDisplay.offsetX ?? 0)
+  const screenX = coverLit ? (closedDisplay.offsetX ?? 0) : 0
   const screen = (surfaceZ: number) => (
     <DeviceScreen
       width={landscape ? display.height : display.width}
@@ -847,6 +871,13 @@ function FoldBody({
                       <cylinderGeometry args={[coverPunchR, coverPunchR, 0.004, 20]} />
                       <meshPhysicalMaterial color="#1a2130" metalness={0.4} roughness={0.2} clearcoat={1} />
                     </mesh>
+                    {/* Still lit early in the opening: the same cover screen the
+                        folded pose draws, turned to face out of the back. */}
+                    {coverLit && (
+                      <group position-z={-b.depth / 2 - 0.006} rotation-y={Math.PI}>
+                        {screen(0)}
+                      </group>
+                    )}
                   </group>
                 )}
                 <EdgeSocket
@@ -862,7 +893,7 @@ function FoldBody({
                   </mesh>
                 ))}
               </group>
-              {halfScreen('left')}
+              {!coverLit && halfScreen('left')}
             </group>
           </group>
 
@@ -899,7 +930,7 @@ function FoldBody({
                   </mesh>
                 ))}
               </group>
-              {halfScreen('right')}
+              {!coverLit && halfScreen('right')}
             </group>
           </group>
 

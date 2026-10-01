@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mockupInfo } from '../metrics'
-import { IPHONE_VARIANTS } from '../devices/iphone/dimensions'
+import { IPHONE_MM_PER_UNIT, IPHONE_VARIANTS } from '../devices/iphone/dimensions'
 import { IPHONE_DUO_VARIANTS, FOLD_MM_PER_UNIT } from '../devices/fold/dimensions'
 import { LAPTOP_VARIANTS } from '../devices/laptop/dimensions'
 import { APPLE_WATCH_VARIANTS, WATCH_MM_PER_UNIT } from '../devices/watch/dimensions'
@@ -69,7 +69,6 @@ describe('iPhone 18 Pro and Pro Max', () => {
     const b = IPHONE_VARIANTS[prev]
     expect(a.body).toEqual(b.body)
     expect(a.display).toEqual(b.display)
-    expect(a.rearCamera).toEqual(b.rearCamera)
     // A quarter narrower (Apple's bezels: 15.57 vs 20.65 mm), the same
     // height and the same seat below the top edge.
     expect(a.island.width / b.island.width).toBeCloseTo(15.57 / 20.65, 2)
@@ -78,6 +77,38 @@ describe('iPhone 18 Pro and Pro Max', () => {
     expect(mockupInfo('iphone', { variant: next }).primary.px).toEqual(
       mockupInfo('iphone', { variant: prev }).primary.px
     )
+  })
+
+  it.each([
+    ['18pro', 'pro'],
+    ['18promax', 'promax'],
+  ] as const)('%s keeps the %s camera layout with a bigger module, per Apple’s drawings', (next, prev) => {
+    const a = IPHONE_VARIANTS[next].rearCamera
+    const b = IPHONE_VARIANTS[prev].rearCamera
+    const mm = (units: number) => units * IPHONE_MM_PER_UNIT
+    // Plateau 2.78 mm off the back (2.55); collars Ø16.58 x 2.11 mm (Ø16.20 x 1.88).
+    expect(mm(a.frame.raise!)).toBeCloseTo(2.78, 1)
+    expect(mm(b.frame.raise!)).toBeCloseTo(2.55, 1)
+    for (const lens of a.lenses) {
+      expect(mm(2 * lens.r)).toBeCloseTo(16.58, 1)
+      expect(mm(lens.h!)).toBeCloseTo(2.11, 1)
+    }
+    for (const lens of b.lenses) {
+      expect(mm(2 * lens.r)).toBeCloseTo(16.2, 1)
+      expect(mm(lens.h!)).toBeCloseTo(1.88, 1)
+    }
+    // The same rows and column; only the telephoto moves, 0.13 mm outboard.
+    a.lenses.forEach((lens, i) => {
+      expect(lens.y).toBe(b.lenses[i]!.y)
+      expect(mm(b.lenses[i]!.x - lens.x)).toBeCloseTo(i === 2 ? 0.13 : 0, 2)
+    })
+    expect(a.frame).toEqual({ ...b.frame, raise: a.frame.raise })
+    // Flash and LiDAR Ø6.90, the mic Ø1.15, in the same places.
+    expect(mm(2 * a.flash.r)).toBeCloseTo(6.9, 1)
+    for (const dot of a.dots!) expect(mm(2 * dot.r)).toBeCloseTo(dot.kind === 'sensor' ? 6.9 : 1.15, 1)
+    expect(a.dots!.map(({ x, y }) => [x, y])).toEqual(b.dots!.map(({ x, y }) => [x, y]))
+    // The main camera, bottom left from the back, has the six-blade iris.
+    expect(a.lenses.map((lens) => lens.iris)).toEqual([undefined, 6, undefined])
   })
 })
 

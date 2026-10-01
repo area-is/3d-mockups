@@ -64,7 +64,8 @@ out of the tab order with `controls={false}`.
 `autoRotate` and `float` stop for visitors whose system asks for
 `prefers-reduced-motion: reduce`, and the dot-matrix `LEDText` marquees hold on
 their first frame. Gestures still work - a drag, a pinch or a key press is the
-visitor's own request. Nothing is required of you; see
+visitor's own request. Nothing is required of you - unless you drive them
+from your own clock with `time`, which hands the decision to you; see
 [Reduced motion](/docs/api/mockup-canvas#reduced-motion) for the hook the
 library uses, if your page has motion of its own to gate.
 

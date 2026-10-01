@@ -167,3 +167,34 @@ export class TumbleOrbit {
 export function tumbleAutoRotateStep(deltaSeconds: number, speed: number): number {
   return ((2 * Math.PI) / 60) * speed * deltaSeconds
 }
+
+/** The `autoRotate` prop as a speed multiplier: `true` is 1, off is 0, a number is itself. */
+export function autoRotateSpeed(autoRotate: boolean | number | undefined): number {
+  return typeof autoRotate === 'number' ? autoRotate : autoRotate ? 1 : 0
+}
+
+/**
+ * Where auto-rotation has carried a camera `seconds` after it started at
+ * `position`: the turntable spin `TumbleOrbit.update` applies frame by frame,
+ * as one turn about the world's vertical through `target`.
+ *
+ * For a caller that owns the clock - a video's frame counter - so the camera
+ * is a function of the time asked for. Integrated frame by frame, it was a
+ * function of every frame drawn before, and a render that draws frames out
+ * of order, in several browser tabs at once, put the camera somewhere
+ * different in each.
+ */
+export function turntablePosition(
+  position: readonly [number, number, number],
+  seconds: number,
+  speed: number,
+  target: readonly [number, number, number] = [0, 0, 0]
+): [number, number, number] {
+  // TumbleOrbit.update turns the offset by -yaw about +Y; so does this.
+  const angle = -tumbleAutoRotateStep(seconds, speed)
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+  const x = position[0] - target[0]
+  const z = position[2] - target[2]
+  return [target[0] + x * cos + z * sin, position[1], target[2] - x * sin + z * cos]
+}
