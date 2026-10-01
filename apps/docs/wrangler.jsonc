@@ -9,6 +9,17 @@
   "compatibility_date": "2026-07-28",
   "compatibility_flags": ["nodejs_compat"],
 
+  // Wrangler bundles with esbuild's keep-names on by default, which wraps
+  // functions in `__name(...)`. fumadocs' theme script (next-themes) is a
+  // function the server stringifies into an inline <script>, so the wrapper
+  // went to the browser with it, where no `__name` exists: every docs page
+  // threw a ReferenceError before the saved theme was applied, and the theme
+  // only landed after hydration. `next start` never bundles with Wrangler,
+  // which is why only the deployed Worker showed it. The cost: nothing is
+  // minified, but a function esbuild renames to avoid a clash between modules
+  // (`foo` -> `foo2`) now reports the new name in stack traces.
+  "keep_names": false,
+
   // Everything Next emits as a static file is served straight off the edge by
   // Workers Assets and never counts against the Worker's own bundle size. That
   // matters here: the mockup scenes are `ssr: false` dynamic imports, so
