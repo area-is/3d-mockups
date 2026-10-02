@@ -11,10 +11,28 @@
  * family's pages here. Edit the shared file, re-run this, commit the result.
  *
  * Object mockups are 1:1 with their pages already, so they are untouched.
+ *
+ * The colorway check below reads the catalogs from the built package, so build
+ * it first (`npm run build:pkg` at the repo root) if `react-3d-mockups/core`
+ * does not resolve.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Color } from 'three'
+import {
+  APPLE_WATCH_COLORWAYS,
+  FLIP_COLORWAYS,
+  FOLD_COLORWAYS,
+  GALAXY_COLORWAYS,
+  GALAXY_TAB_COLORWAYS,
+  GALAXY_WATCH_COLORWAYS,
+  IPAD_COLORWAYS,
+  IPHONE_COLORWAYS,
+  IPHONE_DUO_COLORWAYS,
+  LAPTOP_COLORWAYS,
+  STUDIO_DISPLAY_COLORWAYS,
+} from 'react-3d-mockups/core'
 import { DEVICES } from '../lib/mockup-catalog.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -52,6 +70,21 @@ const BRANDS = {
   StudioDisplayMockup: 'Apple',
 }
 
+/** Each family's colorway catalog: keyed by variant, or one list for a single model. */
+const COLORWAYS = {
+  GalaxyMockup: GALAXY_COLORWAYS,
+  IPhoneMockup: IPHONE_COLORWAYS,
+  IPhoneDuoMockup: IPHONE_DUO_COLORWAYS,
+  FoldMockup: FOLD_COLORWAYS,
+  FlipMockup: FLIP_COLORWAYS,
+  LaptopMockup: LAPTOP_COLORWAYS,
+  IPadMockup: IPAD_COLORWAYS,
+  GalaxyTabMockup: GALAXY_TAB_COLORWAYS,
+  AppleWatchMockup: APPLE_WATCH_COLORWAYS,
+  GalaxyWatchMockup: GALAXY_WATCH_COLORWAYS,
+  StudioDisplayMockup: STUDIO_DISPLAY_COLORWAYS,
+}
+
 /**
  * The shared reference, cut down to the one variant this page is about.
  *
@@ -62,7 +95,7 @@ const BRANDS = {
  * with the page's own variant pinned onto their explorer so the example shows
  * the device you are reading about rather than the family default.
  */
-function forVariant(reference, variant) {
+function forVariant(reference, variant, component) {
   if (!variant) return reference
   // Split at every heading, not just `###`: a `##` that follows a variant
   // section is a sibling of it, not part of it, and must not be dropped along
@@ -93,8 +126,41 @@ function forVariant(reference, variant) {
       // multi-line and a single-line pattern over the text would take the first
       // of each, and the second of those is somebody else's example.
       .replace(/<MockupExplorer(?:\n(?:  [^\n]*\n)*?\/>|[^\n]*\/>)\n\n/, '')
+      // The reference's first snippet is written without a variant, so as
+      // copied it renders the family default. Pin this page's model onto both
+      // the mockup and the bare model in it, and say so.
+      .replace(/```tsx\n[\s\S]*?\n```/, (snippet) => {
+        const tag = new RegExp(`<(${component.replace(/Mockup$/, '')}(?:Mockup)?)(?=[\\s>])`, 'g')
+        return `To render this model, pass \`variant="${variant}"\`.\n\n${snippet.replace(tag, `<$1 variant="${variant}"`)}`
+      })
       .replace(/\n{3,}/g, '\n\n')
   )
+}
+
+/** Hex, `rgb()` / `hsl()`, or a CSS color name - anything that is a custom finish. */
+const isCssColor = (value) =>
+  /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value) ||
+  /^(rgb|hsl)a?\(/i.test(value) ||
+  value.toLowerCase() in Color.NAMES
+
+/**
+ * Every example on a device page renders that page's model, so a colorway id
+ * in one has to be one of that model's. Another model's id (`silvershadow` on
+ * the S26 Ultra) is not an error at runtime: three draws it white and says so
+ * only in the console. So it fails the run here instead.
+ */
+function checkColorways(page, device) {
+  const catalog = COLORWAYS[device.component]
+  const ids = (Array.isArray(catalog) ? catalog : catalog[device.variant]).map((entry) => entry.id)
+  for (const [explorer] of page.matchAll(/<MockupExplorer[\s\S]*?\/>/g)) {
+    for (const [, color] of explorer.matchAll(/\bcolor: '([^']+)'/g)) {
+      if (ids.includes(color) || isCssColor(color)) continue
+      throw new Error(
+        `${device.id}.mdx: an example passes color '${color}', which is neither a ${device.label} ` +
+          `colorway (${ids.join(', ')}) nor a CSS color. Fix it in content/family-reference/.`
+      )
+    }
+  }
 }
 
 /**
@@ -121,7 +187,7 @@ for (const device of DEVICES) {
   const reference = readFileSync(join(SHARED, `${family}.mdx`), 'utf8').trim()
   const variantAttr = device.variant ? ` variant="${device.variant}"` : ''
   const pinned = device.variant
-    ? `The explorer is pinned to \`variant="${device.variant}"\`; everything below applies to the whole family.`
+    ? `The explorer and every example below are pinned to \`variant="${device.variant}"\`; the props, regions and colorways apply to the whole family.`
     : 'Everything below applies to this component.'
 
   const page = `---
@@ -134,10 +200,11 @@ exactly what is being passed. ${pinned}
 
 <MockupExplorer component="${device.component}"${variantAttr} />
 
-${dropEmptyHeadings(forVariant(reference, device.variant))}
+${dropEmptyHeadings(forVariant(reference, device.variant, device.component))}
 
 <DeviceDisclaimer brands="${BRANDS[device.component] ?? 'the manufacturer'}" />
 `
+  checkColorways(page, device)
   writeFileSync(join(API, `${device.id}.mdx`), page)
   console.log('  write', `${device.id}.mdx`)
 }

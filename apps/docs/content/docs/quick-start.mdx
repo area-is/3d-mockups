@@ -1,11 +1,25 @@
 ---
 title: Quick start
-description: Render your first 3D phone with a single component.
-keywords: [getting started, first mockup, hello world, usage, example]
+description: Install the library, render your first 3D phone, then pick the model, its finish and where your content goes.
+keywords: [getting started, first mockup, hello world, usage, example, install, installation, variant, color, orientation, customize, regions, slots, typescript, props types]
 ---
 
-Drop a `GalaxyMockup` anywhere in a client component and give it a height. Your
-content becomes the phone's screen.
+## Install
+
+```bash
+npm install react-3d-mockups three @react-three/fiber @react-three/drei
+```
+
+React 19 is required (`^19.0.0`): react-three-fiber 9 and drei 10, which the
+library is built on, require it themselves. The
+[Introduction](/docs#installation) explains why `three` and the two
+react-three packages are peer dependencies, and what the supported versions
+are.
+
+## Your first mockup
+
+Drop a `GalaxyMockup` into a client component and give its wrapper a height.
+Its children become the phone's screen.
 
 ```tsx title="hero.tsx"
 'use client'
@@ -16,14 +30,32 @@ export function Hero() {
   return (
     <div style={{ height: 560 }}>
       <GalaxyMockup autoRotate float>
-        <YourApp /> {/* any React node */}
+        <div
+          style={{
+            height: '100%',
+            display: 'grid',
+            placeItems: 'center',
+            background: '#111',
+            color: '#fff',
+            fontSize: 32,
+          }}
+        >
+          Hello
+        </div>
       </GalaxyMockup>
     </div>
   )
 }
 ```
 
-The mockup fills its parent, so size the wrapper, not the component.
+The mockup fills its parent, so size the wrapper, not the component. A wrapper
+with no height leaves the mockup 0 px tall and nothing shows; in development
+the library logs a warning when that happens. A `height` or an `aspect-ratio`
+on the wrapper both work.
+
+The `<div>` above stands in for your own content: any React component, an
+`<iframe>` or a `<video>` works the same way. See
+[Screen content](/docs/screen-content).
 
 ## What you get out of the box
 
@@ -47,9 +79,106 @@ clicks, taps, scrolling and typing never reach it, because every gesture
 belongs to the orbit controls. If people need to use the app, render it on the
 page beside the mockup.
 
+## Customize
+
+Every model family is one component. `variant` picks the model, `color` its
+finish, and phones and tablets turn on their side with `orientation`:
+
+```tsx
+<IPhoneMockup variant="promax" color="cosmicorange" orientation="landscape">
+  <YourApp />
+</IPhoneMockup>
+```
+
+`color` takes one of the model's retail colorway ids (`cosmicorange` is the
+iPhone 17 Pro Max's Cosmic Orange) or any CSS color. The screen turns with the
+device: in landscape this one lays your content out in a 956×440 viewport,
+the size the real phone gives an app. Each model's page lists its variants and
+colorway ids - the [gallery](/docs/gallery) links to all of them.
+
+Every mockup also takes the stage props - `autoRotate`, `float`, `zoom`,
+`background`, `camera` and the rest. See
+[Shared mockup props](/docs/api#shared-mockup-props).
+
+## Regions and slots
+
+Bare children always fill a mockup's **primary region**: a phone's screen, a
+book's front cover. Every other surface a model has is a **slot**, a child
+component named after the region:
+
+```tsx
+<BookMockup>
+  <CoverArt /> {/* bare children fill the front cover */}
+  <BookMockup.Spine>
+    <SpineArt />
+  </BookMockup.Spine>
+  <BookMockup.Back>
+    <BackCoverArt />
+  </BookMockup.Back>
+</BookMockup>
+```
+
+The primary region has a slot too - `<BookMockup.Cover>`,
+`<GalaxyMockup.Screen>` - which you need only to give it settings of its own.
+A slot takes the same three surface props as the mockup (`surfaceBackground`,
+`resolution`, `surfaceStyle`) and overrides them for that one region:
+
+```tsx
+<GalaxyMockup>
+  <GalaxyMockup.Screen resolution={412} surfaceBackground="#0b0d12">
+    <YourApp />
+  </GalaxyMockup.Screen>
+</GalaxyMockup>
+```
+
+- **Slots must be direct children of their mockup.** Fragments are fine. A slot
+  rendered from inside one of your own components is not found; its content is
+  ignored and, in development, a warning names the slot.
+- **Your editor lists them.** Type `BookMockup.` and autocomplete shows every
+  slot the model has. Each model's page lists them under Regions.
+- **The bare model has the same slots**: `<Book.Spine>` inside your own scene.
+
+## TypeScript
+
+The library ships its own types. Every component exports its props type under
+its own name plus `Props` - `GalaxyMockupProps`, `GalaxyProps`,
+`BookMockupProps`, `MockupCanvasProps` (the bare `TVSet` takes `TVSetProps`, also exported as `TVProps`):
+
+```tsx
+import { GalaxyMockup, type GalaxyMockupProps } from 'react-3d-mockups'
+
+export function Phone(props: GalaxyMockupProps) {
+  return <GalaxyMockup float {...props} />
+}
+```
+
 ## Next.js and other frameworks
 
-WebGL only exists in the browser, so load the mockup client side only. See
-[Next.js and SSR](/docs/nextjs) for the App Router pattern, and
-[Other frameworks](/docs/frameworks) for Vite, React Router, Astro and the
-Pages Router.
+Importing a mockup directly into a `'use client'` component, as above, works
+in Next.js and server-renders the wrapper; the 3D picture is drawn after
+hydration, because WebGL only exists in the browser.
+`dynamic(..., { ssr: false })` is optional - use it to keep three.js out of the
+server bundle and the page's initial JavaScript. See
+[Next.js and SSR](/docs/nextjs) for both patterns and for measuring a mockup
+in a Server Component, and [Other frameworks](/docs/frameworks) for Vite,
+React Router, Astro and the Pages Router.
+
+## Next steps
+
+<Cards>
+  <Card title="Gallery" href="/docs/gallery">
+    Every device and object, with a link to its page.
+  </Card>
+  <Card title="Screen content" href="/docs/screen-content">
+    Components, iframes and video on the glass, the status bar, and the screen props.
+  </Card>
+  <Card title="Objects and print surfaces" href="/docs/objects">
+    Books, packaging, posters, vehicles, and custom-size panels and boxes.
+  </Card>
+  <Card title="Composing scenes" href="/docs/composing">
+    Several models in one canvas, or a bare model in your own react-three-fiber scene.
+  </Card>
+  <Card title="Components" href="/docs/api">
+    Every prop of every component.
+  </Card>
+</Cards>

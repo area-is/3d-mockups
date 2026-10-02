@@ -1,7 +1,7 @@
 ---
 title: GPU and performance
 description: How a mockup renders, what each part of it costs, and how to keep a page with several of them fast.
-keywords: [performance, perf, fps, frameloop, dpr, gpu, battery, slow, mobile, webgl contexts, lazy load]
+keywords: [performance, perf, fps, frameloop, dpr, gpu, powerPreference, gl, onCreated, pauseWhenOffscreen, battery, slow, mobile, webgl contexts, too many webgl contexts, context lost, lazy load]
 ---
 
 ## How a mockup renders
@@ -31,8 +31,10 @@ event can ask for it:
 - **Each canvas is a WebGL context.** Every one-liner `*Mockup` creates its
   own canvas, and browsers cap how many WebGL contexts a page can hold at once -
   as few as about eight on mobile Chrome. Past the cap the browser drops the
-  oldest context without asking, and that mockup goes blank ("Context Lost" in
-  the console).
+  oldest context without asking ("Context Lost" in the console). That mockup
+  clears to an empty box of the same size and, once it has scrolled out of
+  view and back, starts again on a fresh context - which may cost another
+  canvas its own.
 - **The contact shadow** is rendered into a texture of its own, but only when
   the model moves. A still mockup reuses the last one.
 - **Lighting** comes from a small environment map rendered once on the GPU when
@@ -90,15 +92,12 @@ run. They are worth it on a hero; on a page of ten mockups, leave them off.
 
 A canvas costs roughly in proportion to its pixel count, and `dpr` clamps the
 device pixel ratio to `[1, 2]` by default. On large canvases or weaker GPUs,
-lower the ceiling. `dpr` is a `MockupCanvas` prop, so compose the stage
-yourself to set it:
+lower the ceiling - on a mockup or on a `<MockupCanvas>` alike:
 
 ```tsx
-<MockupCanvas dpr={[1, 1.5]}>
-  <Galaxy>
-    <YourApp />
-  </Galaxy>
-</MockupCanvas>
+<GalaxyMockup dpr={[1, 1.5]}>
+  <YourApp />
+</GalaxyMockup>
 ```
 
 ### Use fewer canvases

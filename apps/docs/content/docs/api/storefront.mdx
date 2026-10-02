@@ -48,7 +48,7 @@ Beyond the [shared screen props](/docs/screen-content):
 | `color` | `string` | `'#2e4638'` | Shopfront paint: fascia surrounds, frames, door, stall risers. |
 | `windowColor` | `string` | `'#5a6d75'` | Glazing color - every display pane, the transom lights and the door leaf. Tints the reflection rather than painting the pane flat, so the glass keeps its mirror finish. Try `'#6b5a44'` bronze, `'#4d6b60'` green, or something darker for a shop that reads as closed. |
 | `surfaceBackground` | `string` | `'#ffffff'` | CSS background behind sign and poster content. |
-| `resolution` | `number` | `800` | Virtual fascia sign width in CSS px. Window panes use fixed widths (~420–480 px); override per pane with each slot's `resolution`. |
+| `resolution` | `number` | `800` | Virtual fascia sign width in CSS px, shared by all four signs. The panes keep fixed widths of their own - 480 and 460 px for the front display bays, 260 px for the door, 420 px for the side and rear panes; override one with its slot's `resolution`. |
 
 ## Regions
 
@@ -69,8 +69,13 @@ Every slot takes per-surface overrides - `surfaceBackground`,
 `resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<Storefront>`.
 
-The pavement sits `STOREFRONT.standHeight` below the origin - the mockup
-grounds the shadow there automatically.
+The pavement sits `STOREFRONT.standHeight` world units below the origin - the
+mockup grounds the shadow there automatically. The spec lives on the `/core`
+subpath, for placing a bare `<Storefront>` in a scene of your own:
+
+```ts
+import { STOREFRONT } from 'react-3d-mockups/core'
+```
 
 ## Mockup-able areas
 

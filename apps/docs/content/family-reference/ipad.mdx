@@ -7,8 +7,8 @@ back, or sunk into the rail on the A16), the Apple glyph as real vector
 geometry centered on the back, the model wordmark below it, drilled speaker
 clusters in both short edges, and the front camera in the landscape-top bezel.
 
-The virtual display swaps to 1376×1032 in landscape - real desktop-class
-layouts apply.
+In landscape the virtual display swaps to the variant's landscape grid -
+1376×1032 on the 13″ iPad Pro - so desktop-class layouts apply.
 
 <MockupExplorer
   component="IPadMockup"
@@ -39,17 +39,58 @@ import { MockupCanvas, IPad, IPadMockup } from 'react-3d-mockups'
 
 ## Props
 
-Beyond the [shared screen props](/docs/screen-content):
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'ipadpro13' \| 'ipadpro11' \| 'ipadair13' \| 'ipadair11' \| 'ipad11'` | `'ipadpro13'` | Which iPad: Pro 13"/11" (camera pod, Pencil strip, Face ID), Air 13"/11" (single lens, Touch ID top button), or the A16 iPad (single lens, edge Smart Connector). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display (for example 1376×1032 on the 13" Pro) with upright content. |
-| `statusBar` | `boolean \| StatusBarContent` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - iPadOS's, a 24pt strip with the clock at the leading inset and the meters at the trailing one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `statusBar` | `boolean \| StatusBarOption` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - iPadOS's, a 24pt strip with the clock at the leading inset and the meters at the trailing one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `color` | `string` | `'#2b292c'` | Body color. Takes a colorway id from `IPAD_COLORWAYS[variant]` (see [Colorways](#colorways)) or any CSS color. |
 | `resolution` | `number` | per variant | Defaults to the variant's logical grid: 1032×1376 (ipadpro13), 834×1210 (ipadpro11), 1024×1366 (ipadair13), 820×1180 (ipadair11, ipad11). |
-| `color` | `string` | per variant | Body color. Takes a retail colorway id from `IPAD_COLORWAYS` - Pro `spaceblack`/`silver`, Air `spacegray`/`starlight`/`purple`/`blue`, iPad `silver`/`blue`/`pink`/`yellow` - or any CSS color. |
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<IPadMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<IPad>`.
+
+## Colorways
+
+Pass a colorway id from `IPAD_COLORWAYS[variant]` for that model's retail
+finish, or any CSS color for a custom one. An id wins over a CSS color of the
+same name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| iPad Pro 13″, iPad Pro 11″ (`ipadpro13`, `ipadpro11`) | `spaceblack` (`#3a383c`), `silver` (`#d6d8da`) |
+| iPad Air 13″, iPad Air 11″ (`ipadair13`, `ipadair11`) | `spacegray` (`#7d7b80`), `starlight` (`#e7e2de`), `purple` (`#e4deea`), `blue` (`#d9e7e8`) |
+| iPad 11″ (`ipad11`) | `silver` (`#e9eaec`), `blue` (`#92b3d6`), `pink` (`#f9899c`), `yellow` (`#fbe778`) |
 
 ## This model
+
+### iPad Pro 13″
+
+The default model: the M5 iPad Pro's 13″ tandem OLED (1032×1376) in a 5.1 mm
+body, with the camera pod (wide lens, LiDAR, flash and mic), the Apple Pencil
+strip on the long edge and the Smart Connector's three dots on the back - in
+Space Black.
+
+<MockupExplorer
+  component="IPadMockup"
+  props={{ variant: 'ipadpro13', color: 'spaceblack', rotation: [0, -0.3, 0] }}
+/>
+
+### iPad Pro 11″
+
+The same Pro design language at the smaller true relative size, in Silver.
+
+<MockupExplorer
+  component="IPadMockup"
+  props={{ variant: 'ipadpro11', color: 'silver', rotation: [0, -0.3, 0] }}
+/>
 
 ### iPad Air 13″
 
@@ -61,6 +102,17 @@ button, Smart Connector dots on the back - in Starlight.
   props={{ variant: 'ipadair13', color: 'starlight', rotation: [0, -0.3, 0] }}
 />
 
+### iPad Air 11″
+
+The 13″ Air's camera module, buttons and Smart Connector on the smaller
+247.6 × 178.5 × 6.1 mm body, around a 10.86″ panel with an 820×1180 grid -
+in Purple.
+
+<MockupExplorer
+  component="IPadMockup"
+  props={{ variant: 'ipadair11', color: 'purple', rotation: [0, -0.3, 0] }}
+/>
+
 ### iPad (A16)
 
 The standard iPad in its punchy Blue, with the crisper chamfered rails and
@@ -69,15 +121,6 @@ the edge-mounted Smart Connector of the 10th-gen chassis.
 <MockupExplorer
   component="IPadMockup"
   props={{ variant: 'ipad11', color: 'blue', rotation: [0, -0.3, 0] }}
-/>
-
-### iPad Pro 11″
-
-The same Pro design language at the smaller true relative size, in Silver.
-
-<MockupExplorer
-  component="IPadMockup"
-  props={{ variant: 'ipadpro11', color: 'silver', rotation: [0, -0.3, 0] }}
 />
 
 ## Mockup-able areas

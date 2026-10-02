@@ -4,10 +4,10 @@ description: A rectangular box at any size you specify in millimeters, printable
 ---
 
 `<CustomBox>` and `<CustomBoxMockup>` render a rectangular box at ANY size -
-shipper, carton, counter display, crate. Pass real millimeters via `size`;
-the longest edge auto-normalizes to the stage while the mm dimensions keep
-the true proportions. All six faces are printable live DOM at one shared
-dpi.
+shipper, carton, counter display, crate. Pass real millimeters via the
+required `size` prop; the longest edge auto-normalizes to the stage while the
+mm dimensions keep the true proportions. All six faces are printable live DOM
+at one shared dpi.
 
 <MockupExplorer
   component="CustomBoxMockup"
@@ -16,21 +16,21 @@ dpi.
 
 ## `<CustomBox>` vs `<CustomBoxMockup>`
 
-<BareVsMockup object="CustomBox" kind="customBox" slot="Front" />
+<BareVsMockup object="CustomBox" kind="customBox" slot="Front" requiredProps="{ size: { width: 240, height: 320, depth: 80 } }" />
 
 ```tsx
 import { MockupCanvas, CustomBox, CustomBoxMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<CustomBoxMockup float style={{ height: 520 }}>
+<CustomBoxMockup size={{ width: 240, height: 320, depth: 80 }} float style={{ height: 520 }}>
   <YourApp />
 </CustomBoxMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <CustomBox rotation={[0, 0.4, 0]}>
+  <CustomBox size={{ width: 240, height: 320, depth: 80 }} rotation={[0, 0.4, 0]}>
     <YourApp />
   </CustomBox>
 </MockupCanvas>
@@ -47,8 +47,13 @@ Beyond the [shared screen props](/docs/screen-content):
 | `surfaceBackground` | `string` | `color` | CSS background behind each printed face - the stock itself unless you set it, so whatever the content leaves clear prints on `color`. |
 | `resolution` | `number` | `560` | Virtual front face width in CSS px; all faces share its dpi. |
 
-`customBoxScale(size)` is exported if you need the world-units-per-mm
-factor.
+`customBoxScale(size)` gives the world-units-per-mm factor (e.g. to position
+several boxes in one scene). It lives on the `/core` subpath, next to the rest
+of the specs:
+
+```ts
+import { customBoxScale } from 'react-3d-mockups/core'
+```
 
 ## Regions
 

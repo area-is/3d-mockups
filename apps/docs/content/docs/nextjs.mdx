@@ -1,50 +1,110 @@
 ---
 title: Next.js and SSR
-description: Load mockups client side in the App Router, since WebGL only exists in the browser.
-keywords: [nextjs, next, next.js, ssr, app router, server components, server side rendering, dynamic import, use client, hydration]
+description: Mockups in the App Router - import one in a client component, optionally load it client side only, and measure from Server Components.
+keywords: [nextjs, next, next.js, ssr, app router, server components, rsc, server side rendering, dynamic import, use client, hydration, mockupInfo, core, react-3d-mockups/core]
 ---
 
-The components ship with a `'use client'` banner, but WebGL itself only exists
-in the browser. In the App Router, load your mockup with `ssr: false` - and
-because `next/dynamic` only accepts `ssr: false` in a client component, do it
-from inside one:
+Every component module carries a `'use client'` directive, so a mockup is a
+client component. Importing one into your own client component works:
 
-```tsx title="mockup.tsx"
+```tsx title="hero.tsx"
 'use client'
 
 import { GalaxyMockup } from 'react-3d-mockups'
 
-export default function Mockup() {
+export function Hero() {
+  // A fixed height gives the mockup, which fills its parent, a size - and
+  // reserves the space, so the page does not shift when the canvas draws.
   return (
-    <GalaxyMockup float>
-      <YourApp />
-    </GalaxyMockup>
+    <div style={{ height: 560 }}>
+      <GalaxyMockup float>
+        <div
+          style={{
+            height: '100%',
+            display: 'grid',
+            placeItems: 'center',
+            background: '#111',
+            color: '#fff',
+            fontSize: 32,
+          }}
+        >
+          Hello
+        </div>
+      </GalaxyMockup>
+    </div>
   )
 }
 ```
+
+Render `<Hero />` from any page or layout, server components included. On the
+server the mockup renders its wrapper and an empty `<canvas>`; the 3D picture
+is drawn after hydration, because WebGL only exists in the browser. Nothing
+inside the canvas - the model or your screen content - runs on the server.
+
+## Loading it client side only
+
+`next/dynamic` with `ssr: false` is optional. Use it to keep three.js out of
+the server bundle and out of the page's initial JavaScript: the 3D chunk then
+downloads on its own, after hydration. `next/dynamic` only accepts
+`ssr: false` in a client component, so do it from inside one:
 
 ```tsx title="hero-client.tsx"
 'use client'
 
 import dynamic from 'next/dynamic'
 
-// WebGL only exists in the browser: load the scene client side only.
-const Mockup = dynamic(() => import('./mockup'), { ssr: false })
+// The `hero.tsx` above, loaded in the browser only.
+const Hero = dynamic(() => import('./hero').then((mod) => mod.Hero), { ssr: false })
 
-export function Hero() {
-  // A fixed height reserves the space, so the page does not shift when the
-  // canvas mounts - and gives the mockup, which fills its parent, a size.
+export function HeroClient() {
+  // The same height as Hero's own wrapper, so the space is held while the
+  // chunk downloads.
   return (
     <div style={{ height: 560 }}>
-      <Mockup />
+      <Hero />
     </div>
   )
 }
 ```
 
-Render `<Hero />` from any page or layout, server components included. Pass a
+Render `<HeroClient />` wherever you would have rendered `<Hero />`. Pass a
 `loading` component to `dynamic` if you want something on screen while the
 3D chunk downloads.
+
+## Measuring in a Server Component
+
+[`mockupInfo`](/docs/api/mockup-info), `MOCKUP_KINDS`, `findColorway`, the
+`*_COLORWAYS` catalogs and every spec constant are plain data and functions,
+so they run on the server too. Only the component modules are client
+modules: import these from `react-3d-mockups` or from
+`react-3d-mockups/core`, whichever you like, and call them in a Server
+Component.
+
+```tsx title="app/page.tsx"
+import { mockupInfo } from 'react-3d-mockups'
+import { Hero } from './hero'
+
+export default function Page() {
+  const { px } = mockupInfo('galaxy').primary // { width: 360, height: 780 }
+  return (
+    <main>
+      <p>
+        Screens are designed at {px.width}×{px.height} CSS px.
+      </p>
+      <Hero />
+    </main>
+  )
+}
+```
+
+A Server Component can render a mockup directly as well, as long as what it
+passes is serializable: `<GalaxyMockup><p>Hello</p></GalaxyMockup>` works,
+an event handler prop does not. Wrap it in a client component of your own,
+like `Hero` above, when the screen content needs state or handlers.
+
+Up to 0.1.1, `'use client'` sat on the whole main entry, so a Server
+Component had to import `mockupInfo` from `react-3d-mockups/core`. That
+import still works, and `/core` has no components in it at all.
 
 Using the Pages Router, Vite, React Router or Astro? See
 [Other frameworks](/docs/frameworks).

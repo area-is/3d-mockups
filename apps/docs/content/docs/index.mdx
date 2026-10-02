@@ -1,7 +1,7 @@
 ---
 title: Introduction
 description: GPU-accelerated 3D device mockups for React, with real live DOM on every screen.
-keywords: [introduction, overview, install, installation, npm, peer dependencies, react 19, what is]
+keywords: [introduction, overview, install, installation, npm, peer dependencies, react 19, three version, what is]
 ---
 
 `react-3d-mockups` renders procedurally generated 3D devices with WebGL and maps
@@ -48,8 +48,9 @@ no 3D asset files to host and nothing to download at runtime.
   photography - close enough for design work, not dimensionally exact, and
   not affiliated with their manufacturers. See
   [Trademarks and usage](/docs/trademarks).
-- **Not a server-side renderer.** WebGL exists only in the browser, so
-  mockups mount on the client. See [Next.js and SSR](/docs/nextjs) and
+- **Not a server-side renderer.** WebGL exists only in the browser, so the 3D
+  picture is drawn there; server rendering outputs only the mockup's empty
+  wrapper. See [Next.js and SSR](/docs/nextjs) and
   [Other frameworks](/docs/frameworks).
 - **Not an image exporter.** A canvas snapshot misses the screens, because the
   browser composites them. [Exporting images and video](/docs/exporting) shows
@@ -61,8 +62,14 @@ no 3D asset files to host and nothing to download at runtime.
 npm install react-3d-mockups three @react-three/fiber @react-three/drei
 ```
 
-React 19 or newer. (React 18 is not supported: react-three-fiber 9 and drei 10,
-which the library is built against, both require React 19 themselves.)
+React 19 is required (`^19.0.0`). React 18 is not supported: react-three-fiber 9
+and drei 10, which the library is built against, both require React 19
+themselves.
+
+The supported `three` range is `>=0.179.0 <0.187.0`, the releases the library
+has been tested against. If npm refuses the install because a newer three.js
+has become `latest`, install `three@0.186` instead - see
+[Troubleshooting](/docs/troubleshooting#unsupported-threejs-version).
 
 `three`, `@react-three/fiber`, and `@react-three/drei` are **peer** dependencies
 rather than bundled ones, because each has to exist exactly once in an app. Two

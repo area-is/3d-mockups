@@ -1,7 +1,7 @@
 ---
 title: Screen content
 description: Put components, whole pages, or video on the glass, and control how the screen behaves.
-keywords: [screen, content, iframe, video, react context, provider, display only, status bar, surfaceBackground, resolution, viewport]
+keywords: [screen, content, iframe, video, react context, provider, display only, status bar, safe area, safe-area-inset-top, notch, dynamic island, surfaceBackground, resolution, viewport, slots]
 ---
 
 Anything the browser can render can live on a device screen. The screen is a
@@ -55,9 +55,18 @@ Every device accepts the same three screen props:
 | `surfaceStyle` | `CSSProperties` | - | Extra styles merged onto the screen wrapper (for example a custom `fontFamily`). |
 
 Each is also a per-region override on any slot, spelled exactly the same way -
-one vocabulary, whichever element you hang it off:
+one vocabulary, whichever element you hang it off. A device's screen is a slot
+too, `<XMockup.Screen>`; an object with several surfaces has one slot per
+surface. [Regions and slots](/docs/quick-start#regions-and-slots) covers how
+slots work.
 
 ```tsx
+<GalaxyMockup>
+  <GalaxyMockup.Screen resolution={412} surfaceBackground="#0b0d12">
+    <Dashboard />
+  </GalaxyMockup.Screen>
+</GalaxyMockup>
+
 <AFrameSignMockup>
   <AFrameSignMockup.Front surfaceBackground="#20241f"><MenuBoard /></AFrameSignMockup.Front>
   <AFrameSignMockup.Back resolution={640}><HoursBoard /></AFrameSignMockup.Back>
@@ -103,10 +112,45 @@ display, whose hole is off-centre: the bar clears it rather than assuming a
 centred camera. In landscape there is no cutout in the way, so both platforms
 fall back to a plain strip along the top.
 
-It sits *over* your content, exactly as it does on a real device - laying out
-underneath it is your business. The Flip's cover screen does not get one (One
-UI's cover face has its own clock and no status bar), and neither do laptops,
-monitors, watches or any of the print objects.
+It sits *over* your content, exactly as it does on a real device. The Flip's
+cover screen does not get one (One UI's cover face has its own clock and no
+status bar), and neither do laptops, monitors, watches or any of the print
+objects. The bar is also exported as a component, `StatusBar`, for use outside
+a mockup - see [Advanced exports](/docs/api/advanced#status-bar).
+
+### Laying out under the status bar
+
+A wallpaper or a lock screen is meant to run under the bar; an app's toolbar
+is not. Each screen publishes the height of the strip the system draws over -
+what `env(safe-area-inset-top)` reports on the real device - in its own CSS
+pixels, so your content can inset itself by exactly that much. In CSS it is
+the `--mockup-safe-area-top` custom property:
+
+```tsx
+<IPhoneMockup statusBar>
+  <div style={{ height: '100%', boxSizing: 'border-box', paddingTop: 'var(--mockup-safe-area-top)' }}>
+    <Inbox />
+  </div>
+</IPhoneMockup>
+```
+
+In a component it is `safeAreaTop` from [`useSurface()`](/docs/api/mockup-info#usesurface):
+
+```tsx
+import { useSurface } from 'react-3d-mockups'
+
+function Toolbar() {
+  const { safeAreaTop } = useSurface()
+  return <header style={{ paddingTop: safeAreaTop + 8 }}>Inbox</header>
+}
+```
+
+The camera cutout counts even with `statusBar` off: a Dynamic Island or a
+punch hole is hardware, drawn either way, and it covers the same strip of the
+screen either way. A screen with no cutout in the way - a tablet, a phone in
+landscape - reserves only the bar itself, so there the value is `0` while
+`statusBar` is off. Laptops, monitors, watches, the Flip's cover screen and
+every print surface always report `0`.
 
 ## Why screens are display-only
 
@@ -141,6 +185,8 @@ library bridges it across. A theme, an i18n provider, a router or a data client
 around your page works on the glass without being repeated inside it.
 
 ```tsx
+const queryClient = new QueryClient()
+
 <QueryClientProvider client={queryClient}>
   <ThemeProvider theme="dark">
     <GalaxyMockup>

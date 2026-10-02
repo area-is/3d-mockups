@@ -60,32 +60,40 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `color` | `string` | `'#c8cbd0'` | Aluminum enclosure and stand. Takes a retail colorway id from `STUDIO_DISPLAY_COLORWAYS` (`silver`) or any CSS color for a custom finish. |
+| `color` | `string` | `'#c8cbd0'` | Aluminum enclosure and stand. Takes a colorway id from `STUDIO_DISPLAY_COLORWAYS` (see [Colorways](#colorways)) or any CSS color. |
 | `resolution` | `number` | `2560` | CSS pixel width of the virtual display; height follows the 16:9 panel. The default is the display's own logical grid - 2560×1440, which is 5120×2880 at 2x - so desktop breakpoints apply. |
 
-There is no `variant` and no `orientation`: one model, one pose.
+There is no `variant` and no `orientation` prop: one model, one pose.
 
 ## Regions
 
 One region: the screen (bare children). Use the explicit
 `<StudioDisplayMockup.Screen>` slot when you want per-surface overrides -
-`surfaceBackground`, `resolution`, `surfaceStyle`.
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<StudioDisplay>`.
 
 ## Colorways
 
-Silver `#c8cbd0` is the only retail finish. Any CSS color works for a custom
-one - `color="#e2e4e8"` reads as a brighter studio aluminum, something near
-`#3a3d42` as a space-black concept.
+Pass the colorway id from `STUDIO_DISPLAY_COLORWAYS` for the retail finish, or
+any CSS color for a custom one - `color="#e2e4e8"` reads as a brighter studio
+aluminum, something near `#3a3d42` as a space-black concept. An id wins over a
+CSS color of the same name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| Studio Display | `silver` (`#c8cbd0`) |
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <MockupExplorer component="StudioDisplayMockup" screen="chroma" />
 
 ## More examples
+
+Every example renders live: drag to spin it, and the screens are live DOM.
 
 ### A custom finish, on the turntable
 

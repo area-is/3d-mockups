@@ -1,8 +1,109 @@
 ---
 title: Troubleshooting
-description: Answers to the questions that come up most - blank screens, lost contexts, missing providers, slow phones, SSR errors and exports.
-keywords: [troubleshooting, faq, problems, errors, blank screen, click, context lost, too many webgl contexts, hydration, provider, slow, export]
+description: Answers to the questions that come up most - install conflicts, invisible mockups, canvas errors, blank screens, lost contexts, missing providers, slow phones, SSR and exports.
+keywords: [troubleshooting, faq, problems, errors, install, eresolve, peer dependencies, react 18, expo, legacy-peer-deps, three version, multiple instances of three.js, npm ls, overrides, dedupe, invisible, no height, container height, aspect-ratio, hooks can only be used within the canvas component, r3f, blank screen, click, context lost, too many webgl contexts, blank mockups, hydration, ssr, provider, slow, export]
 ---
+
+## `ERESOLVE` when installing
+
+npm checks peer dependencies, and the library needs React 19 (`^19.0.0`) - so
+do react-three-fiber 9 and drei 10, which it is built on. In a React 18
+project the install stops with an `ERESOLVE` error. The conflict npm names
+is not always React: it can be `expo`, which is an optional peer of
+`@react-three/fiber`, and that makes the error look unrelated. Check which
+React the project has:
+
+```bash
+npm ls react
+```
+
+If it lists `react@18`, upgrade `react` and `react-dom` to 19 together. Do not
+install with `--legacy-peer-deps` or `--force`: they skip the check instead of
+fixing it, and react-three-fiber 9 does not work on React 18.
+
+If the conflict names `three`, see the next section.
+
+## Unsupported three.js version
+
+The supported range is `three >=0.179.0 <0.187.0`, the releases the library
+has been tested against. When a newer three.js becomes the `latest` release on
+npm, `npm install react-3d-mockups three …` asks for that newer version and
+fails with `ERESOLVE`. Install the newest supported release instead:
+
+```bash
+npm install three@0.186
+```
+
+npm saves it as a `^0.186` range (for example `^0.186.1`), which stays inside
+the supported range. To find what pulled in a newer `three`, run
+`npm ls three`.
+
+## "Multiple instances of Three.js being imported"
+
+three.js logs `WARNING: Multiple instances of Three.js being imported.` when
+two copies of it load on one page - usually because another dependency asks
+for a version that does not match yours. Things that cross between the two
+copies then stop working: `instanceof` checks fail, and objects built by one
+copy are not recognised by code using the other.
+
+```bash
+npm ls three
+```
+
+Every line should show the same version (later ones marked `deduped`). If
+they differ, `npm dedupe` merges them when the ranges overlap; otherwise make
+every package use your copy with an override in `package.json`:
+
+```json title="package.json"
+{
+  "overrides": {
+    "three": "$three"
+  }
+}
+```
+
+`$three` means "the version in this file's `dependencies`", so `three` has to
+be a direct dependency. pnpm spells the same thing `pnpm.overrides`, Yarn
+`resolutions`. Keep the version you pin inside the supported range above.
+
+## The mockup is invisible, or very short
+
+A mockup fills its parent - width and height both `100%` - so it is exactly as
+tall as its wrapper. A wrapper with no height of its own, such as a plain
+`<div>` in normal flow, is 0 px tall, and so is the mockup: nothing shows. In
+development the library logs a warning when this happens:
+
+```text
+[react-3d-mockups] The mockup's container has no height, so nothing is visible. Give it one, e.g. <div style={{ height: 560 }}>.
+```
+
+Give the wrapper a height, or an `aspect-ratio` so it scales with its width:
+
+```tsx
+<div style={{ height: 560 }}>
+  <GalaxyMockup>…</GalaxyMockup>
+</div>
+
+<div style={{ aspectRatio: '4 / 3' }}>
+  <BookMockup>…</BookMockup>
+</div>
+```
+
+A percentage height (`height: '100%'`) only resolves when the wrapper's own
+parent has a height; otherwise it counts as no height at all. If the mockup
+shows but is far shorter than you meant, its wrapper is being sized by
+something else - typically a flex or grid layout around it - so set the
+wrapper's height explicitly.
+
+## `R3F: Hooks can only be used within the Canvas component!`
+
+A bare model - `<Galaxy>`, `<Book>`, any component without the `Mockup`
+suffix - was rendered outside a canvas. Bare models are geometry for a
+react-three-fiber scene that already exists, so on their own they throw. Use
+the one-liner instead (`<GalaxyMockup>`), which brings its own canvas, or put
+the model inside a [`<MockupCanvas>`](/docs/api/mockup-canvas) or your own
+react-three-fiber `<Canvas>`. The same goes for `TumbleControls`. See
+[Composing scenes](/docs/composing).
 
 ## Why can't I click the screen?
 
@@ -44,21 +145,27 @@ portals into `document.body` renders on the page, not on the screen. Keep
 anything that should appear on the glass inside the screen's own tree. See
 [React context on the screen](/docs/screen-content#react-context-on-the-screen).
 
-## "Too many active WebGL contexts" or "Context Lost"
+## Some mockups go blank when I render many
 
-Every one-liner `*Mockup` is its own canvas, and every canvas is a WebGL
-context. Browsers cap how many a page can hold - as few as about eight on
-mobile Chrome - and when the cap is passed they drop the oldest context, which
-leaves that mockup blank.
+The console says "Too many active WebGL contexts" or "Context Lost". Every
+one-liner `*Mockup` is its own canvas, and every canvas is a WebGL context.
+Browsers cap how many a page can hold - as few as about eight on mobile
+Chrome - and when the cap is passed they drop the oldest context, which
+leaves that mockup blank. It comes back on a fresh context after it scrolls
+out of view and in again, but with more canvases than the cap, some mockup is
+always the one that lost.
+[What costs what](/docs/performance#what-costs-what) explains the limit.
 
 - Put devices that appear together into **one** `<MockupCanvas>`. See
+  [Use fewer canvases](/docs/performance#use-fewer-canvases) and
   [Composing scenes](/docs/composing).
 - Mount canvases only while they are **near the viewport**, and unmount them
   after. See [Mount canvases near the viewport](/docs/performance#mount-canvases-near-the-viewport).
 
 ## It is slow on mobile
 
-- Lower the pixel-ratio ceiling: `<MockupCanvas dpr={[1, 1.5]}>`.
+- Lower the pixel-ratio ceiling: `dpr={[1, 1.5]}` on the mockup or on your
+  `<MockupCanvas>`.
 - Keep `frameloop="demand"` (the default), which renders only when something
   changes, and save `autoRotate` and `float` for one hero - they render every
   frame while they run.
@@ -66,15 +173,21 @@ leaves that mockup blank.
 
 [GPU and performance](/docs/performance) explains what each part costs.
 
-## Hydration warnings, or "window is not defined" with SSR
+## Server rendering, hydration and SSR errors
 
-WebGL exists only in the browser, so a mockup must not render on the server.
-Load it client side only - in the Next.js App Router with
+A mockup is not drawn on the server - WebGL needs a browser - but it is safe
+to render there: the server outputs the mockup's wrapper and an empty
+`<canvas>`, and the 3D picture is drawn after hydration. Nothing inside the
+canvas, the model or your screen content, runs on the server, so an error such
+as `window is not defined` comes from code outside the mockup.
+
+Loading the mockup client side only - in the Next.js App Router with
 `dynamic(() => import('./mockup'), { ssr: false })` from a client component -
-and give its wrapper a fixed height so the page does not shift when it mounts.
-[Next.js and SSR](/docs/nextjs) has the pattern, and
-[Other frameworks](/docs/frameworks) covers Vite, React Router, Astro and the
-Pages Router.
+is optional: it keeps three.js out of the server bundle and the page's initial
+JavaScript. Either way, give the wrapper a fixed height so the page does not
+shift when the canvas draws. [Next.js and SSR](/docs/nextjs) has both
+patterns, and [Other frameworks](/docs/frameworks) covers Vite, React Router,
+Astro and the Pages Router.
 
 ## How do I export a PNG or a video?
 

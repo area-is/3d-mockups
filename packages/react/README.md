@@ -5,7 +5,7 @@
 </p>
 
 **Live React components on procedural 3D devices - no GLB files.**
-[Docs, live demos and a gallery of all 51 models →](https://area.is/react-3d-mockups/docs/gallery)
+[Docs, live demos and a gallery of all 57 models →](https://area.is/react-3d-mockups/docs/gallery)
 
 GPU-accelerated **3D device mockups for React**. Put any content on the screen of a 3D
 device - real DOM, projected onto WebGL glass, so it stays live: text is vector crisp at
@@ -26,11 +26,21 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
   Galaxy Tab S11 / S11 Ultra, the Apple Watch Series 11, Series 12 and Ultra 4 and the
   Galaxy Watch 8, Watch 9 and Watch Ultra 2 on
   full wristbands, and a Studio Display-style 27" monitor, all procedurally generated
-  at runtime. No GLB files and nothing to host - importing one mockup costs about
-  11–56 KB gzipped (the whole library: 126 KB), peers excluded. The phones, foldables,
-  tablets, watches and laptops use a small CSG engine (`three-bvh-csg`, a regular
-  dependency) to machine their ports and speaker/mic holes into the chassis as real
-  cavities; every other mockup leaves it out.
+  at runtime. No GLB files and nothing to host. The phones, foldables, tablets,
+  watches and laptops use a small CSG engine (`three-bvh-csg`, a regular dependency)
+  to machine their ports and speaker/mic holes into the chassis as real cavities.
+- **Twenty-four objects** on the same live-surface API - books, magazines, brochures,
+  business cards and ID badges, packaging (product box, mailer box, gable-top milk
+  carton, shopping bag), custom-size panels and boxes at any millimeter dimensions,
+  posters, vinyl records, a greeting card, out-of-home formats (billboard, bus
+  shelter, double-sided DOOH totem, A-frame, roll-up banner, storefront), a TV, and
+  wrap-ready vehicles (transit bus, cargo van, 53 ft semi trailer). Each prints on
+  every face it has: a box on all six panels, a bus on both flanks, its tail and its
+  LED destination sign.
+- **Small imports** - each mockup is its own module, so an app ships only what it
+  imports: about 14–21 KB gzipped for an object, about 60 KB for a device (two thirds
+  of it the CSG engine, shared by every device), 139 KB for the whole library, peers
+  excluded.
 - **True-to-device screens** - each virtual display matches the real device's logical
   resolution in portrait *and* landscape (table below), so your layouts and breakpoints
   behave exactly like on the hardware.
@@ -41,10 +51,11 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
 - **Any content on screen** - pass React components, an `<iframe>` or a `<video>` as
   children. State, effects and media playback keep running, and every surface is masked
   per-pixel by the hardware in front of it.
-- **Composable** - use the one-liners `<GalaxyMockup>` / `<IPhoneMockup>` / `<IPhoneDuoMockup>` / `<LaptopMockup>`
-  / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>`, or
-  drop `<Galaxy>` / `<IPhone>` / `<Laptop>` / `<IPad>` / `<GalaxyTab>` / `<AppleWatch>` / `<GalaxyWatch>` /
-  `<StudioDisplay>` into your own react-three-fiber scene.
+- **Composable** - every model comes two ways: a one-liner `*Mockup` that brings its own
+  canvas, camera and lighting (`<GalaxyMockup>`, `<FoldMockup>`, `<LaptopMockup>`,
+  `<BookMockup>`, `<VanMockup>`…), and a bare model (`<Galaxy>`, `<Fold>`, `<Laptop>`,
+  `<Book>`, `<Van>`…) to drop into `<MockupCanvas>` beside others, or into your own
+  react-three-fiber scene.
 
 ## Install
 
@@ -74,17 +85,36 @@ export function Hero() {
   return (
     <div style={{ height: 560 }}>
       <GalaxyMockup autoRotate float>
-        <YourApp />
+        <div
+          style={{
+            height: '100%',
+            display: 'grid',
+            placeItems: 'center',
+            background: '#111',
+            color: '#fff',
+            fontSize: 32,
+          }}
+        >
+          Hello
+        </div>
       </GalaxyMockup>
     </div>
   )
 }
 ```
 
+The mockup fills its parent, so give the wrapper a height (or an `aspect-ratio`); with
+none, it is 0 px tall and a development warning says so. The `<div>` stands in for
+anything: your own components, an `<iframe>`, a `<video>`.
+
 Drag anywhere - body, background, or the screen itself - to orbit; with the canvas
-focused, the arrow keys turn it and Home resets it. In Next.js, load it client-side only
-(`dynamic(() => import('./mockup'), { ssr: false })`) and give the wrapper a fixed height
-so the page does not shift when the canvas mounts.
+focused, the arrow keys turn it and Home resets it.
+
+**Server rendering.** Importing a mockup into a `'use client'` component works in
+Next.js and server-renders the sized wrapper; the 3D picture is drawn after hydration,
+because WebGL needs a browser. `dynamic(() => import('./hero'), { ssr: false })` is
+optional: use it to keep three.js out of the server bundle and the page's initial
+JavaScript. See [Next.js and SSR](https://area.is/react-3d-mockups/docs/nextjs).
 
 ## Regions & slots
 
@@ -112,7 +142,7 @@ lands where the name says no matter what order you write the slots in:
 <BrochureMockup>
   <BrochureMockup.FrontLeft><Cover /></BrochureMockup.FrontLeft>
   <BrochureMockup.FrontCenter><Middle /></BrochureMockup.FrontCenter>
-  <BrochureMockup.BackLeft><Map /></BrochureMockup.BackLeft>
+  <BrochureMockup.BackLeft><RouteMap /></BrochureMockup.BackLeft>
 </BrochureMockup>
 ```
 
@@ -122,14 +152,15 @@ names come from each object's spec in the core.
 
 ## Components
 
-### `<GalaxyMockup>` / `<IPhoneMockup>` / `<LaptopMockup>` / `<IPadMockup>` / `<GalaxyTabMockup>` / `<AppleWatchMockup>` / `<GalaxyWatchMockup>` / `<StudioDisplayMockup>` - all-in-one
+### Every `*Mockup` (e.g. `<GalaxyMockup>`, `<FoldMockup>`, `<BookMockup>`) - all-in-one
 
-Every device appearance prop, plus `float` (idle floating animation) and the staging
-props from `<MockupCanvas>`: `controls`, `autoRotate`, `zoom`,
-`fullscreen`, `shadows`, `background`, `camera`, `frameloop`, `label`,
-`screenAccessibility`, `className`, `style`. The canvas props marked *canvas only*
-below tune the renderer rather than the picture and stay on `<MockupCanvas>`. Transforms are first-class: `position`, `rotation` and `scale` flow
-straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
+Every appearance prop of its model, plus `float` (idle floating animation) and the
+staging props from `<MockupCanvas>`: `controls`, `autoRotate`, `zoom`, `fullscreen`,
+`shadows`, `background`, `camera`, `frameloop`, `dpr`, `gl`, `onCreated`,
+`pauseWhenOffscreen`, `time`, `delayCapture`, `label`, `screenAccessibility`,
+`className`, `style`. The two canvas props marked *canvas only* below stay on
+`<MockupCanvas>`. Transforms are first-class: `position`, `rotation` and `scale` flow
+straight through to the model's group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 
 ### `<MockupCanvas>` - the stage
 
@@ -139,19 +170,22 @@ straight through to the device group (`<IPhoneMockup rotation={[0, 0.25, 0]}>`).
 | `freeRotation` | `boolean` | `false` | Allow full 360° vertical rotation (straight over the top); off = classic clamped orbit. Canvas only |
 | `autoRotate` | `boolean \| number` | `false` | Slowly orbit the camera. `true` is one revolution a minute; a number multiplies that (`autoRotate={2}` twice as fast) |
 | `zoom` | `boolean` | `false` | Scroll/pinch zoom (off so pages don't lose scroll) |
+| `fullscreen` | `boolean` | `false` | Show a button that takes the mockup fullscreen |
 | `shadows` | `boolean` | `true` | Soft contact shadow |
 | `shadowY` | `number` | `-2.05` | Y of the shadow plane (grounds the device). Canvas only - a mockup derives it from the object's framing |
 | `background` | `string` | - | CSS background of the canvas |
 | `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Camera override. Live: a new `position`/`fov` moves the camera there |
-| `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp. Canvas only |
+| `dpr` | `number \| [min, max]` | `[1, 2]` | Device-pixel-ratio clamp |
 | `frameloop` | `'demand' \| 'always' \| 'never'` | `'demand'` | When to draw. `'demand'` draws only when something changes; use `'always'` for your own `useFrame` animation in a composed scene |
-| `pauseWhenOffscreen` | `boolean` | `true` | Stop drawing while the canvas is off screen or its tab is hidden. Canvas only |
+| `pauseWhenOffscreen` | `boolean` | `true` | Stop drawing while the canvas is off screen or its tab is hidden |
 | `time` | `number` | - | Seconds on your own clock (a video's `frame / fps`): `autoRotate` and `float` follow it, so the same `time` draws the same picture |
 | `delayCapture` | `(reason) => () => void` | - | Hold a video render or screenshot until the frame is complete (renderer started, redraw done, screens placed). Wire it to Remotion's `delayRender`/`continueRender`; while set, the canvas never pauses |
-| `gl` | r3f `gl` | `{ antialias: true, alpha: true, powerPreference: 'default' }` | Renderer settings, merged over the defaults. Keep `alpha` on - screens show through transparent pixels. Canvas only |
-| `onCreated` | `(state) => void` | - | r3f's `onCreated`, e.g. to read `gl.info`. Canvas only |
+| `gl` | r3f `gl` | `{ antialias: true, alpha: true, powerPreference: 'default' }` | Renderer settings, merged over the defaults. Keep `alpha` on - screens show through transparent pixels |
+| `onCreated` | `(state) => void` | - | r3f's `onCreated`, e.g. to read `gl.info` |
 | `label` | `string` | per model | Accessible name; the canvas is exposed as `role="img"` ("3D mockup of an iPhone") |
 | `screenAccessibility` | `'hidden' \| 'visible'` | `'hidden'` | Screens are decorative, so by default they are `aria-hidden` and `inert`; `'visible'` exposes their content |
+| `className` | `string` | - | Class on the wrapper element |
+| `style` | `CSSProperties` | - | Style on the wrapper element, which fills its parent by default |
 
 ### `<Galaxy>` - the device
 
@@ -166,6 +200,7 @@ Render inside any r3f `<Canvas>`. Accepts all group props (`position`, `rotation
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device sideways and swaps the virtual display |
 | `resolution` | `number` | per variant | Virtual display width in CSS px (see resolution table) |
 | `surfaceStyle` | `CSSProperties` | - | Extra styles for the screen wrapper |
+| `statusBar` | `boolean \| StatusBarOption` | `false` | Draw One UI's status bar across the top of the screen: `true` for the defaults, or an object to set the clock, meters and ink. Lay your content out under it with `var(--mockup-safe-area-top)` |
 
 ### `<IPhone>` - iPhone 17 family and iPhone 18 Pro
 
@@ -194,6 +229,35 @@ desktop breakpoints apply). `color` sets the aluminum finish - a `LAPTOP_COLORWA
 (`'skyblue'`, `'starlight'`, `'midnight'`, the Neo's `'citrus'` and `'indigo'`) or any CSS
 color. The Neo (`'neo13'`) is the notchless one: its camera sits in the bezel above a
 square-cornered panel.
+
+### `<IPad>` - the iPad lineup · `<GalaxyTab>` - the Galaxy Tab S11 family
+
+Same screen API as the phones, plus `orientation`. `<IPad>` takes `variant`
+`'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11'`, and `<GalaxyTab>`
+takes `'tabs11' | 'tabs11ultra'`; each accepts only its own. Fully procedural and
+per-variant accurate: the Pro's camera pod (wide lens, LiDAR, flash) and Pencil
+charging window, the Air's and standard iPad's bare single lens with the Touch ID top
+button, back or edge Smart Connector dots and speaker drill rows; protruding camera
+rings, quad speaker slots, gold pogo contacts and (on the Ultra) the U-shaped display
+notch on the Galaxy Tabs; brand marks as real vector geometry (Apple glyph,
+edge-aligned SAMSUNG wordmark) and model wordmarks on the backs; landscape-edge front
+cameras, USB-C and machined edge buttons on all.
+
+### `<AppleWatch>` / `<GalaxyWatch>` - smartwatches · `<StudioDisplay>` - Studio Display-style
+
+Both watches add `bandColor` and skip orientation. Every device draws its front camera unconditionally - a punch hole, Dynamic Island or notch is hardware, and it obstructs your layout here exactly as it would on the real panel. `<AppleWatch>` is the Apple Watch family (`'series11' | 'series12' | 'ultra4'`):
+the Series' squircle case with the knurled Digital Crown, flush side button and sensor
+back, worn on the seamless Solo Loop - which has no closure, so it takes no `bandOpen` -
+and the Ultra 4's 49 mm titanium case with its raised lip, crown guard and orange Action
+button, on its ridged, buckled Ocean Band.
+`<GalaxyWatch>` is the Galaxy Watch family (`'watch8' | 'watch9' | 'watchultra2'`):
+cushion case, round display on its dial puck, flat keys (the 47 mm titanium
+Ultra 2 adds its orange Quick Button), BioActive puck, worn on a buckled
+two-strap band that `bandOpen` lays out flat. The monitor puts the
+2026 Studio Display's 27" 5K panel on its tilt stand - uniform bezel, centered
+camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive power
+cord's circular recess framed by the stand's cable hole and, faithfully, no power
+button.
 
 ## Screens are display-only
 
@@ -271,39 +335,25 @@ Every variant's screen defaults to the real device's logical resolution (CSS px)
 | Galaxy Watch Ultra 2 47mm | `watchultra2` | 249×249 | - | 498×498 round panel at ½ |
 | Studio Display 27" | - | - | 2560×1440 | 5120×2880 @ 2x point grid |
 
-### `<IPad>` / `<GalaxyTab>` - the iPad lineup / Galaxy Tab S11 family
+## Specs and measurements
 
-Shares the phones' screen/interaction API plus `orientation`, with a `variant` prop
-(`'ipadpro13' | 'ipadpro11' | 'ipadair13' | 'ipadair11' | 'ipad11' | 'tabs11' |
-'tabs11ultra'`). Fully procedural and per-variant accurate: the Pro's camera pod
-(wide lens, LiDAR, flash) and Pencil charging window, the Air's and standard iPad's
-bare single lens with the Touch ID top button, back or edge Smart Connector dots and
-speaker drill rows; protruding camera rings, quad speaker slots, gold pogo contacts
-and (on the Ultra) the U-shaped display notch on the Galaxy Tabs; brand marks as real
-vector geometry (Apple glyph, edge-aligned SAMSUNG wordmark) and model wordmarks on
-the backs; landscape-edge front cameras, USB-C and machined edge buttons on all.
+The numbers behind every model are plain data in the `react-3d-mockups/core` subpath:
+the device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPHONE_DUO_VARIANTS`,
+`FOLD_VARIANTS`, `FLIP_VARIANTS`, `LAPTOP_VARIANTS`, `IPAD_VARIANTS`,
+`GALAXY_TAB_VARIANTS`, `APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
+`STUDIO_DISPLAY`), the object specs (`BOOK`, `VAN`, `POSTER_FRAME`…), each model's
+region list and stage framing, and `mockupInfo`, which reports every live surface's
+size in CSS px and millimetres:
 
-### `<AppleWatch>` / `<GalaxyWatch>` - smartwatches · `<StudioDisplay>` - Studio Display-style
+```ts
+import { mockupInfo } from 'react-3d-mockups/core'
 
-Both watches add `bandColor` and skip orientation. Every device draws its front camera unconditionally - a punch hole, Dynamic Island or notch is hardware, and it obstructs your layout here exactly as it would on the real panel. `<AppleWatch>` is the Apple Watch family (`'series11' | 'series12' | 'ultra4'`):
-the Series' squircle case with the knurled Digital Crown, flush side button and sensor
-back, worn on the seamless Solo Loop - which has no closure, so it takes no `bandOpen` -
-and the Ultra 4's 49 mm titanium case with its raised lip, crown guard and orange Action
-button, on its ridged, buckled Ocean Band.
-`<GalaxyWatch>` is the Galaxy Watch family (`'watch8' | 'watch9' | 'watchultra2'`):
-cushion case, round display on its dial puck, flat keys (the 47 mm titanium
-Ultra 2 adds its orange Quick Button), BioActive puck, worn on a buckled
-two-strap band that `bandOpen` lays out flat. The monitor puts the
-2026 Studio Display's 27" 5K panel on its tilt stand - uniform bezel, centered
-camera, the tight rear 2× Thunderbolt 5 + 2× USB-C slot cluster, the captive power
-cord's circular recess framed by the stand's cable hole and, faithfully, no power
-button.
+const { primary } = mockupInfo('iphone', { variant: 'promax' })
+primary.px // { width: 440, height: 956 }
+```
 
-Renderer-agnostic device specs (`GALAXY_VARIANTS`, `IPHONE_VARIANTS`, `IPHONE_DUO_VARIANTS`,
-`IPAD_VARIANTS`, `APPLE_WATCH_VARIANTS`, `GALAXY_WATCH_VARIANTS`,
-`PHONE`, `IPHONE`, `LAPTOP`… plus each object's region registry and stage framing) are
-available from the `react-3d-mockups/core` subpath. It carries no `'use client'`
-directive, so a server component can import a spec for layout math.
+None of it needs a browser, so it works in a Server Component, a build script or
+Node. See [Measuring a mockup](https://area.is/react-3d-mockups/docs/api/mockup-info).
 
 ## Architecture
 
@@ -313,10 +363,15 @@ renderer-agnostic core that depends on `three` and never on React; the component
 the layer that renders it through react-three-fiber.
 
 The main entry re-exports a curated slice of the core (variants, colorways, size
-types); the full core surface is available from `react-3d-mockups/core`, which carries
-no `'use client'` directive so a server component can import a spec for layout math.
-See [ARCHITECTURE.md](https://github.com/area-is/react-3d-mockups/blob/main/ARCHITECTURE.md)
+types, `mockupInfo`); the full core surface is available from `react-3d-mockups/core`.
+Only the component modules carry `'use client'`, so both entries import cleanly into
+a Server Component. See
+[ARCHITECTURE.md](https://github.com/area-is/react-3d-mockups/blob/main/ARCHITECTURE.md)
 for the layering rule.
+
+The package is ESM-first. A CommonJS build is included for tools that still
+`require()` it, but three.js itself now warns when loaded through CommonJS
+(`THREE_CJS_DEPRECATED`), and the CommonJS build will go when three's does.
 
 ## Docs & demos
 

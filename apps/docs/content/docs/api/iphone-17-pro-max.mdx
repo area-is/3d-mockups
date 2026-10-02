@@ -4,7 +4,7 @@ description: The iPhone 17 Pro Max in WebGL, with a live prop explorer and the f
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="promax"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="promax"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="IPhoneMockup" variant="promax" />
 
@@ -21,19 +21,21 @@ Island, colour-matched back and larger camera module. For the foldable, see [iPh
 
 <BareVsMockup object="IPhone" kind="iphone" slot="Screen" />
 
+To render this model, pass `variant="promax"`.
+
 ```tsx
 import { MockupCanvas, IPhone, IPhoneMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<IPhoneMockup float style={{ height: 520 }}>
+<IPhoneMockup variant="promax" float style={{ height: 520 }}>
   <YourApp />
 </IPhoneMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <IPhone rotation={[0, 0.4, 0]}>
+  <IPhone variant="promax" rotation={[0, 0.4, 0]}>
     <YourApp />
   </IPhone>
 </MockupCanvas>
@@ -41,22 +43,37 @@ import { MockupCanvas, IPhone, IPhoneMockup } from 'react-3d-mockups'
 
 ## Props
 
-Same API as [`Galaxy`](/docs/api/galaxy-s26), except:
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'17' \| 'air' \| 'pro' \| 'promax' \| '18pro' \| '18promax'` | `'17'` | Which iPhone: 17 (two-lens pill), air (ultra-thin, single-lens bar), pro and promax (full-width plateau, flash + LiDAR), 18pro and 18promax (the same two Pro bodies with the narrower Dynamic Island and colour-matched back). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the device on its side and swaps the virtual display (for example 874×402 on the 17) with upright content. |
-| `statusBar` | `boolean \| StatusBarContent` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - iOS's, with the clock centred in the ear left of the Dynamic Island and the meters in the ear right of it; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `statusBar` | `boolean \| StatusBarOption` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - iOS's, with the clock centred in the ear left of the Dynamic Island and the meters in the ear right of it; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `color` | `string` | `'#1a1c20'` | Back glass. Takes a colorway id from `IPHONE_COLORWAYS[variant]` (see [Colorways](#colorways)), which brings that model's matching chassis rail with it, or any CSS color - the rail is then derived from it. |
 | `resolution` | `number` | per variant | Defaults to the variant's point grid: 402×874 (17, pro, 18pro), 420×912 (air), 440×956 (promax, 18promax). |
-| `color` | `string` | `'#1a1c20'` | Back glass. Takes a retail colorway id from `IPHONE_COLORWAYS[variant]` - 17 `black`, `white`, `lavender`, `mistblue`, `sage`; Air `spaceblack`, `cloudwhite`, `lightgold`, `skyblue`; 17 Pro/Pro Max `silver`, `cosmicorange`, `deepblue`; 18 Pro/Pro Max `black`, `silver`, `glacier`, `burgundy` - which brings that model's matching chassis rail with it, or any CSS color - the rail is then derived from it. |
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<IPhoneMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<IPhone>`.
 
 ## Colorways
 
-17: Lavender `#cfc4e6`, Mist Blue `#b7c9dd`, Sage `#aebfae`. Air: Sky Blue
-`#bfd4e6`, Light Gold `#e6d9c0`. 17 Pro: Cosmic Orange `#c96b34`, Deep Blue
-`#2b3a55`, Silver `#dfe0e2`. 18 Pro: Glacier `#c4d8e6`, Burgundy `#6a2b3e`,
-Black `#1e1f23`, Silver `#dfe0e2`.
+Pass a colorway id from `IPHONE_COLORWAYS[variant]` for that model's retail
+finish; it brings the matching chassis rail with it. Any CSS color works for a
+custom finish, and the rail is then derived from it. An id wins over a CSS
+color of the same name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| iPhone 17 (`17`) | `black` (`#1a1c20`), `white` (`#f2f2f4`), `lavender` (`#cfc4e6`), `mistblue` (`#b7c9dd`), `sage` (`#aebfae`) |
+| iPhone 17 Air (`air`) | `spaceblack` (`#232527`), `cloudwhite` (`#f0f0f2`), `lightgold` (`#e6d9c0`), `skyblue` (`#bfd4e6`) |
+| iPhone 17 Pro, iPhone 17 Pro Max (`pro`, `promax`) | `silver` (`#dfe0e2`), `cosmicorange` (`#c96b34`), `deepblue` (`#2b3a55`) |
+| iPhone 18 Pro, iPhone 18 Pro Max (`18pro`, `18promax`) | `black` (`#1e1f23`), `silver` (`#dfe0e2`), `glacier` (`#b7c5d5`), `burgundy` (`#552a32`) |
 
 ## This model
 
@@ -78,7 +95,5 @@ feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <MockupExplorer component="IPhoneMockup" variant="promax" screen="chroma" />
-
-
 
 <DeviceDisclaimer brands="Apple" />

@@ -8,14 +8,13 @@ keywords: [stage, canvas, frameloop, pauseWhenOffscreen, time, delayCapture, vid
 shot needs. Compose it with any device, for example
 `<MockupCanvas><Galaxy>...</Galaxy></MockupCanvas>`.
 
-The one-liner `*Mockup` components are built on this stage and forward most of
-these props, including the rendering and accessibility ones (`frameloop`,
-`pauseWhenOffscreen`, `time`, `delayCapture`, `gl`, `onCreated`, `label`,
-`screenAccessibility`).
-Three of them - `freeRotation`, `shadowY` and `dpr` - are canvas only: they tune the rendering rather than the picture, and a mockup already
-derives its shadow ground line from the object's own framing. Reach for
-`MockupCanvas` when you want that level of control, or when you are staging
-more than one device.
+The one-liner `*Mockup` components are built on this stage and accept its
+props, including the rendering and accessibility ones (`frameloop`,
+`pauseWhenOffscreen`, `dpr`, `time`, `delayCapture`, `gl`, `onCreated`,
+`label`, `screenAccessibility`). Two are canvas only: `freeRotation` and
+`shadowY`, because a mockup already derives its shadow ground line from the
+object's own framing. Reach for `MockupCanvas` when you want those, or when
+you are staging more than one device.
 
 The procedural studio light rig is always on. It is what gives every material
 its reflections, it costs no network requests (no HDR files are fetched), and a
@@ -47,7 +46,7 @@ the way a second object in a scene of your own would.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | - | Your scene, typically a device such as `Galaxy`. |
-| `controls` | `boolean` | `true` | Drag-to-rotate controls with the axis fixed at the stage center (pan is always disabled). Vertical rotation stays within the classic orbit clamp by default. |
+| `controls` | `boolean` | `true` | Drag-to-rotate controls around the stage center, plus the [keyboard controls](#keyboard-controls). Vertical rotation stays within the classic orbit clamp by default. With a mouse, a right or middle drag pans; `Home` puts the camera back. |
 | `freeRotation` | `boolean` | `false` | Allow the camera to rotate a full 360° vertically - vertical drags continue straight over the top and bottom of the device instead of clamping. |
 | `autoRotate` | `boolean \| number` | `false` | Slowly spin the camera around the device. `true` is one revolution a minute; a number multiplies that (`autoRotate={2}` twice as fast, `autoRotate={0.5}` half). Held still under [reduced motion](#reduced-motion). |
 | `zoom` | `boolean` | `false` | Pinch zoom on touch and on a trackpad (ctrl/⌘ with a mouse wheel), plus an overlay control: −, the level, +. A plain scroll always passes through to the page. Off by default; on, the canvas owns two-finger gestures on touch screens. |
@@ -55,7 +54,7 @@ the way a second object in a scene of your own would.
 | `shadows` | `boolean` | `true` | Soft contact shadow under the device. |
 | `shadowY` | `number` | `-2.05` | Y position (world units) of the shadow plane. Grounds the device on its shadow. The mockup wrappers compute this per device. |
 | `background` | `string` | - | CSS background of the canvas (color, gradient, or image). Transparent when unset - that is what the checkerboard behind each page's first example is showing through. |
-| `camera` | r3f camera | `[0, 0.5, 7.4]`, fov 40 | Override the default camera. Live: change `position` or `fov` later and the camera moves there, looking at the stage center - a dolly or a zoom driven from props. |
+| `camera` | r3f camera | per model | The camera pose. Each `*Mockup` starts from its own framing of its model, and `camera` replaces that framing; `MockupCanvas` on its own starts at `[0, 0.5, 7.4]`, fov 40. Live: change `position` or `fov` later and the camera moves there, looking at the stage center - a dolly or a zoom driven from props. |
 | `dpr` | `number \| [min, max]` | `[1, 2]` | Device pixel ratio clamp. Keeps hi-dpi GPU load predictable. |
 | `frameloop` | `'demand' \| 'always' \| 'never'` | `'demand'` | When the canvas draws. `'demand'` renders only when something changes (a drag and its damping, zoom, `autoRotate`, `float`, a prop change, a resize), so an idle mockup renders no frames. `'always'` renders every frame, for a `useFrame` animation of your own; `'never'` freezes the canvas. See [Rendering](#rendering). |
 | `pauseWhenOffscreen` | `boolean` | `true` | Stop rendering while the canvas is scrolled out of the viewport or the tab is hidden, and resume on return. |
@@ -122,11 +121,26 @@ handler, a texture that finished loading - keep the default and ask for a
 frame with react-three-fiber's `invalidate()`:
 
 ```tsx
-const invalidate = useThree((state) => state.invalidate)
+import { useRef } from 'react'
+import { useThree } from '@react-three/fiber'
+import type { MeshStandardMaterial } from 'three'
 
-function highlight() {
-  material.current.emissiveIntensity = 1
-  invalidate()
+function Beacon() {
+  const material = useRef<MeshStandardMaterial>(null!)
+  const invalidate = useThree((state) => state.invalidate)
+
+  // Call it from anywhere: a click, a timer, a texture's onLoad.
+  function highlight() {
+    material.current.emissiveIntensity = 1
+    invalidate()
+  }
+
+  return (
+    <mesh onClick={highlight}>
+      <sphereGeometry args={[0.2]} />
+      <meshStandardMaterial ref={material} emissive="#ff8a00" emissiveIntensity={0} />
+    </mesh>
+  )
 }
 ```
 

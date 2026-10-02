@@ -1,7 +1,7 @@
 ---
 title: Measuring a mockup
 description: Region sizes in world units, millimetres and CSS pixels - before you render, and from inside the screen.
-keywords: [measure, mockupInfo, size, aspect ratio, dimensions, px, mm, units, useSurface]
+keywords: [measure, mockupInfo, size, aspect ratio, dimensions, px, mm, units, useSurface, safeAreaTop, catalog, catalog.json, MOCKUP_KINDS, server components, core]
 ---
 
 Every mockup knows how big its live surfaces are. Four ways to ask, depending on
@@ -13,10 +13,11 @@ The framework-agnostic answer. Pure data in, pure data out - no renderer, no
 DOM, no React - so it works in a component, a build script or on a server.
 
 ```ts
-import { mockupInfo } from 'react-3d-mockups'
+import { mockupInfo } from 'react-3d-mockups/core'
 
 const info = mockupInfo('galaxy', { variant: 's26', orientation: 'landscape' })
 
+info.kind              // 'galaxy'
 info.primary.px        // { width: 780, height: 360 }  - CSS px your content lays out in
 info.primary.mm        // { width: 145.2, height: 67.1 } - the physical panel
 info.primary.units     // { width: 3.962, height: 1.829 } - three.js world units
@@ -24,10 +25,18 @@ info.primary.aspect    // 2.1662
 info.mmPerUnit         // 36.66
 ```
 
+`mockupInfo` is exported from both `react-3d-mockups` and
+`react-3d-mockups/core`, and either import works in a Server Component. See
+[Measuring in a Server Component](/docs/nextjs#measuring-in-a-server-component).
+
 `props` takes only the props that can actually move a surface - `variant`,
-`orientation`, `size`, `openAngle`, `mat`. Colors and transforms can't
-change a measurement, so they're not accepted. Omit `props` entirely and you get
-exactly what the bare component renders.
+`orientation`, `size`, `openAngle` and `coverScreenUntil` (the foldables:
+Fold, Flip and iPhone Duo), `mat` (the poster frame) and `coverage` (the bus
+and the van). Colors and transforms can't change a measurement, so they're not
+accepted. Omit `props` and you get exactly what the bare component renders
+with its defaults - except for the custom panel and custom box, whose `size`
+has no default, so `mockupInfo('customPanel', { size: { width: 600, height: 900 } })`
+needs it the same way `<CustomPanel>` does.
 
 ### Regions
 
@@ -60,6 +69,8 @@ variable number of slot children - every surface has its own name.
 
 | Field | What it is |
 | --- | --- |
+| `name` | The region's id, which is also its slot's name: `spine` is `<BookMockup.Spine>`. |
+| `label` | A short human label, e.g. `'Front cover'`. |
 | `units` | The live rect in three.js world units. |
 | `mm` | The same rect in millimetres - the real printed size. |
 | `px` | The CSS-pixel viewport your content lays out in, at the default resolution. |
@@ -91,37 +102,97 @@ am I, right now?" - from inside the content, after slot overrides are applied.
 Those are different questions the moment a slot changes anything:
 
 ```tsx
-function StatusBar() {
+function Header() {
   const { width, height, pxPerUnit, region } = useSurface()
   return <div style={{ width, height: Math.round(pxPerUnit * 0.1) }} />
 }
 
 <GalaxyMockup.Screen resolution={480}>
-  <StatusBar />   {/* useSurface() → 480x1040, not the device default 360x780 */}
+  <Header />   {/* useSurface() → 480x1040, not the device default 360x780 */}
 </GalaxyMockup.Screen>
 ```
 
 Because the values come from the surface being rendered rather than being
 re-derived, they're correct by construction. `useSurface()` throws outside a
 mockup surface; use `useSurfaceOptional()` for a component that renders both
-inside a mockup and on a normal page.
+inside a mockup and on a normal page - it returns `null` there.
+
+Both return a `SurfaceInfo`:
+
+| Field | What it is |
+| --- | --- |
+| `region` | Which region the content is rendering into (`'screen'`, `'cover'`…). |
+| `width`, `height` | The surface in CSS pixels - the viewport your layout sees. |
+| `units` | The same surface in three.js world units, `{ width, height }`. |
+| `pxPerUnit` | CSS pixels per world unit on this surface. |
+| `resolution` | The resolved `resolution` (CSS pixel width), slot override included. |
+| `radius` | Corner rounding in world units: one number, or four (top-left, top-right, bottom-right, bottom-left). |
+| `background` | The CSS background painted behind the content. |
+| `safeAreaTop` | The strip at the top the status bar and camera cutout cover, in CSS px; `0` on a surface with neither. Also set as the `--mockup-safe-area-top` CSS custom property. See [Laying out under the status bar](/docs/screen-content#laying-out-under-the-status-bar). |
 
 ## `react-3d-mockups/catalog.json`
 
-Every kind, variant and orientation, pre-measured at build time - the whole
-registry with `mockupInfo` already applied. Useful for docs tables, design-tool
-plugins and anything that isn't JavaScript.
+Every kind, pre-measured at build time - `mockupInfo` run over the whole
+registry. Useful for docs tables, design-tool plugins and anything that isn't
+JavaScript. It holds each device variant in each orientation (open and folded
+for the Fold, the Flip and the iPhone Duo), each TV design, the poster frame
+with and without a mat, the bus and the van at panel and full coverage, and
+every other object at its default size; the custom panel and box, which have
+no default size, appear once at an example size.
 
 ```ts
 import catalog from 'react-3d-mockups/catalog.json'
 
-catalog.entries.find((e) => e.kind === 'galaxy' && e.props.variant === 's26')
+const fold = catalog.entries.find(
+  (e) =>
+    e.kind === 'fold' &&
+    e.props.variant === 'fold7' &&
+    e.props.openAngle === false &&
+    e.props.orientation === 'portrait'
+)
+fold?.regions.find((r) => r.name === fold.primary)?.px // { width: 360, height: 835 } - the cover screen
+```
+
+That is a bundler import. Plain Node ESM - a build script run with `node` -
+needs the JSON import attribute:
+
+```ts
+import catalog from 'react-3d-mockups/catalog.json' with { type: 'json' }
+```
+
+An entry is a trimmed `MockupInfo`, not the object `mockupInfo` returns:
+`primary` is the primary region's *name*, and `regions` is the flat list in
+declaration order (what `info.list` holds), without `pxPerUnit` or `radius`.
+
+```ts
+interface Catalog {
+  version: number
+  kinds: MockupKind[]
+  entries: CatalogEntry[]
+}
+
+interface CatalogEntry {
+  kind: MockupKind
+  props: Record<string, unknown> // the props it was measured at, e.g. { variant: 'fold7', openAngle: false, orientation: 'portrait' }
+  mmPerUnit: number
+  primary: string // the primary region's name, e.g. 'screen'
+  regions: {
+    name: string
+    label: string
+    index: number
+    units: { width: number; height: number }
+    mm: { width: number; height: number }
+    px: { width: number; height: number }
+    resolution: number
+    aspect: number
+  }[]
+}
 ```
 
 ## Coverage
 
 `MOCKUP_KINDS` is the authoritative list of what can be measured. Every mockup
-in the catalog is measurable - 33 kinds.
+in the catalog is measurable - 35 kinds.
 
 Vehicles take a `coverage` prop, since a full wrap and a panel ad are different
 surfaces:
