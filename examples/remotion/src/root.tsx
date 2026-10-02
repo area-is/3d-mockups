@@ -5,11 +5,17 @@ import { Bench } from './probe/bench'
 import { DetailSheet, FoldSheet, WatchBackSheet, WatchSheet } from './sheets/model-sheet'
 import { Reel, REEL_DURATION } from './reel/reel'
 import { EnsembleShot } from './reel/ensemble-shot'
+import { GroveFilm, GROVE_DURATION } from './campaigns/grove/film'
+import { KiteFilm, KITE_DURATION } from './campaigns/kite/film'
+import { LumenFilm, LUMEN_DURATION } from './campaigns/lumen/film'
 
 export function Root() {
   return (
     <>
       <Composition id="MockupReel" component={Reel} durationInFrames={REEL_DURATION} fps={30} width={1920} height={1080} />
+      <Composition id="GroveFilm" component={GroveFilm} durationInFrames={GROVE_DURATION} fps={30} width={1920} height={1080} />
+      <Composition id="KiteFilm" component={KiteFilm} durationInFrames={KITE_DURATION} fps={30} width={1920} height={1080} />
+      <Composition id="LumenFilm" component={LumenFilm} durationInFrames={LUMEN_DURATION} fps={30} width={1920} height={1080} />
       <Composition
         id="Bench"
         component={Bench}

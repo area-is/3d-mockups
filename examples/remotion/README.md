@@ -1,7 +1,8 @@
 # react-3d-mockups × Remotion
 
 A [Remotion](https://www.remotion.dev) project that renders react-3d-mockups
-to video, over animated [Tabbied](https://tabbied.com) pattern backgrounds.
+to video: a reel over animated [Tabbied](https://tabbied.com) pattern
+backgrounds, and three campaign films that use no patterns at all.
 
 - **`MockupReel`**: a ~30 s reel at 1920×1080. It opens on a title card,
   then gives single mockups a shot each - an iPhone 18 Pro Max turning
@@ -23,6 +24,10 @@ to video, over animated [Tabbied](https://tabbied.com) pattern backgrounds.
   angles to see which display is lit at each. Render one frame:
   `npx remotion still WatchSheet out/ultra4.png --props='{"kind":"apple","variant":"ultra4"}'`.
 
+- **`GroveFilm`, `KiteFilm`, `LumenFilm`**: three ~25 s films, each a
+  campaign for a fictional brand carried across the objects and devices it
+  would really appear on. See [The campaign films](#the-campaign-films).
+
 It is not an npm workspace: it installs the package from `../../packages/react`
 the way an app would, so build the package first.
 
@@ -32,7 +37,78 @@ cd examples/remotion
 npm install
 npm run studio                     # preview in Remotion Studio
 npm run render                     # out/mockup-reel.mp4
+npm run render:grove               # out/grove.mp4 (also render:kite, render:lumen)
 ```
+
+## The campaign films
+
+Each film is one brand, told on the surfaces it would be printed or shown
+on, with a backdrop made of CSS and photographs rather than a pattern:
+
+- **Grove** (`src/campaigns/grove`), a cold-pressed juice: a gable-top
+  carton turning in a pool of morning light, the three-flavour range dropping
+  onto a table, a kraft bag swinging, the corner it is sold on (a bus shelter
+  with its LED board and a sidewalk A-frame on one stage, at their true
+  relative sizes), the delivery van in a full wrap, and a billboard shot from
+  below.
+- **KITE** (`src/campaigns/kite`), a running shoe's drop: the shoe tears
+  across the title, sits on an iPhone 18 Pro Max product page through its
+  three colourways and then lifts off the glass into the next shot; a Galaxy
+  Z Fold8 counts down on its cover display and opens on the lookbook; an
+  Apple Watch Ultra 4 gets the shipping note mid-run; the shoe box lands on
+  the shipper; and the whole drop lies on a desk at true scale, shot from
+  straight overhead before the camera cranes down.
+- **Lumen** (`src/campaigns/lumen`), a music festival in a glasshouse: the
+  invitation opening as a luna moth crosses it, the Z-fold programme
+  unfolding, the artist pass turning on its lanyard, the live record spinning
+  beside the zine, and the gate at night - a DOOH totem and two roll-up
+  banners under string lights, with lanterns swinging past the lens.
+
+`src/campaigns/kit.tsx` holds what they share: `Face` (a printed surface
+laid out in container units, so one design holds at any `resolution`),
+`Cut` and `Drift` (a cut-out on a surface, or in the frame in front of or
+behind the transparent canvas, blurred for depth of field), a `CameraRig`
+keyed by frame, and a `Floor` that fades into the CSS backdrop so a stage
+has ground for its contact shadow.
+
+### The photographs
+
+Every photograph in the films - fruit, a farmer, the shoe in three colours,
+runners, musicians, plants, a moth, a lantern - is a cut-out on a transparent
+ground in `public/art`, generated with OpenAI's GPT Image 2.5
+(`gpt-image-2.5-sunburst`, `quality: "low"`, `background: "transparent"`).
+`scripts/generate-art.py` holds every prompt and regenerates any of them:
+
+```bash
+OPENAI_API_KEY=... npm run art                   # only the missing ones
+OPENAI_API_KEY=... npm run art -- kite-runner    # just these
+```
+
+Two things it learned. Asked for a transparent background alone, the model
+stood a lemon on an opaque white studio floor; naming every kind of ground it
+must leave out (floor, shadow, backdrop, reflection, glow) gave clean
+cut-outs. And the shoe's sky and ember colourways and its three-quarter view
+are edits of the volt image rather than fresh generations, so all four are
+the same shoe. The script needs Python 3 with Pillow and requests.
+
+### Notes from making them
+
+- **Slots must be direct children.** A component that returns
+  `<CustomBox.Top>` and friends is not a slot; a function that returns a
+  fragment of them is (`shoeboxFaces(colourway)`).
+- **A foldable's content follows the lit display.** Below 30 degrees the
+  cover screen is lit, so the Fold shot renders the countdown below it and
+  the lookbook above it.
+- **A greeting card's spread faces away from the default camera.** Turning
+  it by `-π` plus half the fold (`(180 - openAngle) / 2`) keeps the cover
+  square to the lens while it is shut and lands on the inside spread when it
+  is open.
+- **A mailer's `tapeColor` reaches the printed faces only.** The tape on an
+  unprinted end stays kraft, so the KITE shipper prints both ends.
+- **Lifting something off a screen** is a DOM cut-out placed where the
+  on-glass one sits on the lift frame (measured from a still), with the
+  on-glass copy hidden from that frame on. The phone holds still and square
+  for it, which is why that shot has no idle `float`.
 
 WebGL in headless Chrome needs a GPU backend. `remotion.config.ts` asks for
 `swangle` (SwiftShader under ANGLE, on the CPU), which works anywhere and is
