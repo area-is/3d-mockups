@@ -50,8 +50,18 @@ export interface RegionInfo {
   aspect: number
 }
 
-/** Everything known about a configured mockup. */
-export interface MockupInfo {
+/** A region name → its info, as `MockupInfo.regions` holds them. */
+export type RegionInfoMap = { readonly [name: string]: RegionInfo | RegionInfo[] | undefined }
+
+/**
+ * Everything known about a configured mockup.
+ *
+ * `R` types `regions` by name: `mockupInfo('book')` returns
+ * `MockupInfo<MockupRegions<'book'>>`, so `.regions.cover.px` typechecks and
+ * `.regions.covr` does not. Left at its default it is the loose map
+ * `describeMockup` returns for any spec.
+ */
+export interface MockupInfo<R extends RegionInfoMap = Record<string, RegionInfo | RegionInfo[]>> {
   /** The mockup kind this describes. */
   kind: MockupKind
   /** Millimetres per world unit for this family. */
@@ -66,7 +76,7 @@ export interface MockupInfo {
    * distinct surfaces (the van's two licence plates) holds an array, one entry
    * per surface - whether or not those surfaces are the same size.
    */
-  regions: Record<string, RegionInfo | RegionInfo[]>
+  regions: R
   /** Every region in declaration order, multi-surface regions flattened. */
   list: RegionInfo[]
 }

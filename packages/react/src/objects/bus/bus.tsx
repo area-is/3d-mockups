@@ -367,18 +367,24 @@ function BusImpl({
   // vanishing at rear-quarter views). The shell stays registered so it
   // still occludes every other mockup in the scene.
 
-  // The ad rect the DeviceScreens cover: the classic king-size panel, or the
-  // whole side elevation with the operational glass carved out via clip-path.
+  // The ad rects the DeviceScreens cover: the classic panels - a king
+  // street-side, a queen curb-side, clear of the doors - or the whole side
+  // elevation with the operational glass carved out via clip-path.
   const fullWrap = coverage !== 'panel'
   // Perforated film runs the graphic over the glass; a plain full wrap carves it out.
   const overGlass = coverage === 'perforated'
   const side = fullWrap
     ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, x: BUS_FULL_SIDE.x, y: BUS_FULL_SIDE.y, radius: 0 }
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
+  const curb = fullWrap ? side : BUS.curbAd
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
   const surfaceDefaults = { surfaceBackground, surfaceStyle }
-  const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
+  // The curb panel prints at the street side's dpi, like the tail.
+  const curbSurface = resolveSurface(regions.curbSide, {
+    ...surfaceDefaults,
+    resolution: Math.round(curb.width * (sideResolution / side.width)),
+  })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
   const rearSurface = resolveSurface(regions.rear, {
@@ -1100,14 +1106,14 @@ function BusImpl({
         </React.Fragment>
       ))}
 
-      {/* the live ads: king-size panels (or full transit wraps) on both
-          sides, tail ad (or full tail wrap) on the rear */}
+      {/* the live ads: a queen curb-side and a king street-side (or full
+          transit wraps on both), tail ad (or full tail wrap) on the rear */}
       <DeviceScreen
-        width={side.width}
-        height={side.height}
-        radius={side.radius}
+        width={curb.width}
+        height={curb.height}
+        radius={curb.radius}
         {...curbSurface}
-        position={[side.x, side.y, hw + 0.008]}
+        position={[curb.x, curb.y, hw + 0.008]}
         {...sideScreenOcclusion(sideOccluderGeometries?.curb)}
         screenStyle={curbStyle}
       >

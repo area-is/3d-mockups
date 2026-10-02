@@ -15,7 +15,7 @@ import {
   type FlipVariant,
   roundedRectShape,
 } from '../../core'
-import { checkDeviceVariant } from '../../core/lifecycle'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -157,6 +157,7 @@ function FlipImpl({
   ...groupProps
 }: FlipProps) {
   checkDeviceVariant('flip', variant, 'Flip')
+  checkColorway(FLIP_COLORWAYS, variant, colorProp, 'Flip')
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FLIP_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
@@ -664,6 +665,12 @@ function FlipImpl({
             surfaceStyle,
           })}
           safeAreaTop={upper ? safeTop : 0}
+          // Content windows onto the whole display; say so to useSurface().
+          surface={{
+            width: landscape ? display.height : display.width,
+            height: landscape ? display.width : display.height,
+            resolution: res,
+          }}
           overlay={
             <>
               {upper ? punchHoleOverlay : null}

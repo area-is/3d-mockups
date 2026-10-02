@@ -301,3 +301,32 @@ export function checkDeviceVariant<K extends DeviceKind>(kind: K, variant: Devic
   // eslint-disable-next-line no-console
   console.warn(`[react-3d-mockups] ${deprecationMessage(where, deviceLifecycle(kind, variant))}`)
 }
+
+/**
+ * The colorway mistake that fails silently: a `color` that is a colorway id
+ * of ANOTHER variant of the family. `findColorway` misses it in this
+ * variant's catalog, the id is then read as a CSS color, three.js logs
+ * "Unknown color" at best, and the device renders grey -
+ * `<GalaxyMockup variant="s26ultra" color="icyblue">` (an S26-only finish).
+ * In development this names the variants that do have it, once per id.
+ */
+export function checkColorway(
+  catalogs: Readonly<Record<string, readonly { id: string }[]>>,
+  variant: string,
+  color: string | undefined,
+  where: string
+): void {
+  if (!DEV || !color) return
+  const own = catalogs[variant] ?? []
+  if (own.some((c) => c.id === color)) return
+  const elsewhere = Object.keys(catalogs).filter((v) => catalogs[v]!.some((c) => c.id === color))
+  if (elsewhere.length === 0) return
+  const key = `color:${where}:${variant}:${color}`
+  if (warned.has(key)) return
+  warned.add(key)
+  console.warn(
+    `[react-3d-mockups] ${where}: color="${color}" is a colorway of ${elsewhere.map((v) => `variant="${v}"`).join(', ')}, ` +
+      `not of variant="${variant}", so it was read as a CSS color. This variant's colorways: ` +
+      `${own.map((c) => `"${c.id}"`).join(', ') || 'none'} - or pass any CSS color, such as a hex value.`
+  )
+}

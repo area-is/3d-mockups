@@ -38,9 +38,17 @@ export {
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
-export { type Size, type RegionInfo, type MockupInfo, type MeasurableMockup, describeMockup } from './measure'
+export {
+  type Size,
+  type RegionInfo,
+  type RegionInfoMap,
+  type MockupInfo,
+  type MeasurableMockup,
+  describeMockup,
+} from './measure'
 export {
   type MockupPropsMap,
+  type MockupRegions,
   type MockupKind,
   MOCKUP_KINDS,
   mockupInfo,

@@ -11,7 +11,7 @@ import {
   type GalaxyVariant,
   roundedRectShape,
 } from '../../core'
-import { checkDeviceVariant } from '../../core/lifecycle'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -101,6 +101,7 @@ function GalaxyImpl({
   ...groupProps
 }: GalaxyProps) {
   checkDeviceVariant('galaxy', variant, 'Galaxy')
+  checkColorway(GALAXY_COLORWAYS, variant, colorProp, 'Galaxy')
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = GALAXY_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to

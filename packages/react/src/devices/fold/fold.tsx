@@ -20,7 +20,7 @@ import {
   type IPhoneDuoVariant,
   roundedRectShape,
 } from '../../core'
-import { checkDeviceVariant } from '../../core/lifecycle'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -811,6 +811,12 @@ function FoldBody({
             surfaceStyle,
           })}
           safeAreaTop={safeTop}
+          // Content windows onto the whole display; say so to useSurface().
+          surface={{
+            width: landscape ? display.height : display.width,
+            height: landscape ? display.width : display.height,
+            resolution: res,
+          }}
         >
           {/* one full-size window onto the shared virtual display, offset so
               this pane shows its own half plus the overhang's continuation.
@@ -1182,6 +1188,7 @@ export interface FoldProps extends FoldCommonProps {
  */
 function FoldImpl({ variant = FOLD_DEFAULT_VARIANT, ...props }: FoldProps) {
   checkDeviceVariant('fold', variant, 'Fold')
+  checkColorway(FOLD_COLORWAYS, variant, props.color, 'Fold')
   return <FoldBody spec={FOLD_VARIANTS[variant]} catalog={FOLD_COLORWAYS[variant]} {...props} />
 }
 FoldImpl.displayName = 'Fold'
@@ -1209,6 +1216,7 @@ export interface IPhoneDuoProps extends FoldCommonProps {
  */
 function IPhoneDuoImpl({ variant = IPHONE_DUO_DEFAULT_VARIANT, ...props }: IPhoneDuoProps) {
   checkDeviceVariant('iphoneDuo', variant, 'IPhoneDuo')
+  checkColorway(IPHONE_DUO_COLORWAYS, variant, props.color, 'IPhoneDuo')
   return (
     <FoldBody spec={IPHONE_DUO_VARIANTS[variant]} catalog={IPHONE_DUO_COLORWAYS[variant]} {...props} />
   )

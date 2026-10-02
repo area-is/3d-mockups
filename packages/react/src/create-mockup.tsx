@@ -7,6 +7,7 @@ import {
   type MockupInfo,
   type MockupKind,
   type MockupPropsMap,
+  type MockupRegions,
   type RegionSpec,
 } from './core'
 import { MockupCanvas, type MockupCanvasProps } from './mockup-canvas'
@@ -56,22 +57,26 @@ const CANVAS_KEYS: ReadonlySet<string> = new Set([
 
 /**
  * The stage props a one-liner mockup advertises: the ones that change what the
- * mockup LOOKS like on the page, or what a visitor can do with it.
+ * mockup LOOKS like on the page, what a visitor can do with it, and how it
+ * renders.
  *
- * `frameloop`, `label` and `screenAccessibility` are here too: when a mockup
+ * `frameloop`, `label` and `screenAccessibility` are here: when a mockup
  * draws, and what assistive tech is told about it, are decisions about the
  * page rather than about the renderer. So are `time` and `delayCapture`:
  * whose clock the motion runs on, and whether the page is being photographed
  * (a video render, a screenshot), are the page's business - and a one-liner
  * is exactly what a video scene reaches for first.
  *
- * The rest of `MockupCanvasProps` tunes the rendering machinery rather than the
- * picture - `freeRotation` (a niche orbit constraint), `shadowY` (framing math
- * the mockup already derives from its core spec), `dpr` (a GPU-load clamp
- * that is already right), and the renderer plumbing (`gl`, `onCreated`,
- * `pauseWhenOffscreen`). Leaving those off this type keeps a mockup's
- * autocomplete to decisions worth making; compose `<MockupCanvas>` directly
- * when you want the rest.
+ * So is the renderer plumbing - `gl`, `onCreated`, `dpr` and
+ * `pauseWhenOffscreen`. They used to be left off as machinery, but the
+ * performance guide reaches for them on a one-liner (`gl={{ powerPreference:
+ * 'high-performance' }}`, a `dpr` clamp on phones), they were always routed to
+ * the canvas at runtime, and the only effect of leaving them off the type was
+ * that TypeScript rejected documented code.
+ *
+ * Two stay canvas-only: `freeRotation` (a niche orbit constraint) and
+ * `shadowY` (framing math the mockup already derives from its core spec).
+ * Compose `<MockupCanvas>` directly when you want those.
  */
 type MockupStageProps = Pick<
   CanvasOnlyProps,
@@ -83,6 +88,10 @@ type MockupStageProps = Pick<
   | 'background'
   | 'camera'
   | 'frameloop'
+  | 'dpr'
+  | 'gl'
+  | 'onCreated'
+  | 'pauseWhenOffscreen'
   | 'time'
   | 'delayCapture'
   | 'label'
@@ -139,12 +148,37 @@ export interface CreateMockupOptions<P, S extends Record<string, Slot<SlotProps>
  * ```
  */
 export interface MockupStatics<K extends MockupKind> {
-  /** Measure this mockup at the given props, without rendering it. */
-  info: (props?: MockupPropsMap[K]) => MockupInfo
+  /**
+   * Measure this mockup at the given props, without rendering it. The props
+   * are required exactly when the kind's are (the custom panel and box need a
+   * `size`), as for `mockupInfo`.
+   */
+  info: (
+    ...[props]: Record<never, never> extends MockupPropsMap[K]
+      ? [props?: MockupPropsMap[K]]
+      : [props: MockupPropsMap[K]]
+  ) => MockupInfo<MockupRegions<K>>
   /** The live regions this mockup exposes, in declaration order. */
   regions: readonly RegionSpec[]
 }
 
+/**
+ * Given a `kind` and its `metrics`, the mockup carries `.info()` and
+ * `.regions` - typed as present, which every built-in is. Without them the
+ * statics are absent, and typed optional.
+ */
+export function createMockup<
+  P extends object,
+  S extends Record<string, Slot<SlotProps>> = Record<never, never>,
+  K extends MockupKind = MockupKind,
+>(
+  options: CreateMockupOptions<P, S, K> & { kind: K; metrics: NonNullable<CreateMockupOptions<P, S, K>['metrics']> }
+): React.FC<MockupProps<P>> & S & MockupStatics<K>
+export function createMockup<
+  P extends object,
+  S extends Record<string, Slot<SlotProps>> = Record<never, never>,
+  K extends MockupKind = MockupKind,
+>(options: CreateMockupOptions<P, S, K>): React.FC<MockupProps<P>> & S & Partial<MockupStatics<K>>
 export function createMockup<
   P extends object,
   S extends Record<string, Slot<SlotProps>> = Record<never, never>,
@@ -189,12 +223,13 @@ export function createMockup<
     )
   }
   Mockup.displayName = displayName ?? `${ObjectComponent.displayName ?? ObjectComponent.name}Mockup`
-  const statics =
+  const statics: Partial<MockupStatics<K>> =
     kind === undefined || metrics === undefined
       ? {}
       : {
-          info: (infoProps?: MockupPropsMap[K]) =>
-            describeMockup({ kind, regions: regions ?? [], metrics }, infoProps),
+          // The same answer as `mockupInfo(kind)`, typed by the same region map.
+          info: ((infoProps?: MockupPropsMap[K]) =>
+            describeMockup({ kind, regions: regions ?? [], metrics }, infoProps)) as unknown as MockupStatics<K>['info'],
           regions: regions ?? [],
         }
   return Object.assign(Mockup as React.FC<MockupProps<P>>, slots ?? ({} as S), statics)

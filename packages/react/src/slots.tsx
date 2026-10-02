@@ -124,11 +124,25 @@ export type SlotsFor<R extends readonly RegionSpec[]> = {
   [K in R[number] as Capitalize<K['name']>]: Slot
 }
 
+/**
+ * Which mockup a slot belongs to, by its whole region list. Matching slots by
+ * region name alone let a slot cross mockups whenever the names happened to
+ * agree: `<AFrameSignMockup.Back>` inside `<BookMockup>` landed on the book's
+ * back cover. Keyed by the list's contents rather than its identity, so the
+ * devices, which share one `screen` region list, still share their slots.
+ */
+const OWNER = Symbol.for('react-3d-mockups.slot-owner')
+const ownerKey = (regions: readonly RegionSpec[]) => regions.map((region) => region.name).join(' ')
+const slotName = (region: string) => region.charAt(0).toUpperCase() + region.slice(1)
+
 /** Build the compound-slot record for a region list from core. */
 export function createSlots<const R extends readonly RegionSpec[]>(regions: R): SlotsFor<R> {
+  const owner = ownerKey(regions)
   const out: Record<string, Slot> = {}
   for (const region of regions) {
-    out[region.name.charAt(0).toUpperCase() + region.name.slice(1)] = createSlot(region.name)
+    const slot = createSlot(region.name)
+    ;(slot as unknown as Record<symbol, string>)[OWNER] = owner
+    out[slotName(region.name)] = slot
   }
   return out as SlotsFor<R>
 }
@@ -138,11 +152,12 @@ export type CollectedSlots<R extends readonly RegionSpec[]> = {
   [K in R[number] as K['name']]?: CollectedSlot
 }
 
-function regionOf(type: unknown): string | undefined {
+function tagOf(type: unknown, tag: symbol): string | undefined {
   return typeof type === 'function' || (typeof type === 'object' && type !== null)
-    ? (type as Record<symbol, string | undefined>)[REGION]
+    ? (type as Record<symbol, string | undefined>)[tag]
     : undefined
 }
+const regionOf = (type: unknown) => tagOf(type, REGION)
 
 /**
  * Split a mockup's children into regions. Slot elements land under their
@@ -155,6 +170,7 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
   regions: R
 ): CollectedSlots<R> {
   const specs = new Map(regions.map((region) => [region.name, region]))
+  const own = ownerKey(regions)
   const out: Record<string, SlotProps> = {}
   const primary: React.ReactNode[] = []
 
@@ -172,8 +188,12 @@ export function collectSlots<const R extends readonly RegionSpec[]>(
       const region = regionOf(node.type)
       if (region !== undefined) {
         const spec = specs.get(region)
-        if (!spec) {
-          warnDev(`<${String(region)}> is not a region of this mockup - it renders nothing here.`)
+        const owner = tagOf(node.type, OWNER)
+        if (!spec || (owner !== undefined && owner !== own)) {
+          warnDev(
+            `<${slotName(region)}> is a slot of another mockup, not this one - it renders nothing here. ` +
+              `This one's slots: ${regions.map((r) => `<${slotName(r.name)}>`).join(', ')}.`
+          )
           return
         }
         if (out[region]) {

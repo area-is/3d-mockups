@@ -5,6 +5,7 @@ import {
   DEVICE_KINDS,
   DEVICE_LINEUP,
   REMOVED_DEVICES,
+  checkColorway,
   checkDeviceVariant,
   deprecationMessage,
   deviceLifecycle,
@@ -329,5 +330,38 @@ describe('checkDeviceVariant', () => {
     expect(deprecationMessage('Fold', fold7)).toMatch(
       /Use variant="fold8" \(Galaxy Z Fold 8\) or variant="fold8ultra" \(Galaxy Z Fold 8 Ultra\) instead\.$/
     )
+  })
+})
+
+describe('checkColorway', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('names the variants that have a colorway this one lacks, once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const catalogs = { s26: [{ id: 'icyblue' }, { id: 'navy' }], s26ultra: [{ id: 'titaniumgray' }] }
+    checkColorway(catalogs, 's26ultra', 'icyblue', 'Galaxy')
+    checkColorway(catalogs, 's26ultra', 'icyblue', 'Galaxy')
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]![0]).toMatch(
+      /Galaxy: color="icyblue" is a colorway of variant="s26", not of variant="s26ultra".*"titaniumgray"/
+    )
+  })
+
+  it('stays quiet for its own colorways and for plain CSS colors', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const catalogs = { a: [{ id: 'red-ish' }], b: [{ id: 'blue-ish' }] }
+    checkColorway(catalogs, 'a', 'red-ish', 'X')
+    checkColorway(catalogs, 'a', '#ff0000', 'X')
+    checkColorway(catalogs, 'a', 'rebeccapurple', 'X')
+    checkColorway(catalogs, 'a', undefined, 'X')
+    expect(warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('the TV', () => {
+  it('names an unknown design instead of falling back to the default', () => {
+    expect(() => mockupInfo('tv', { variant: 'wall' as never })).toThrow(/TVSet: unknown variant "wall"\. Known variants: "legs"/)
   })
 })

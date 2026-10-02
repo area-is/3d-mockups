@@ -33,7 +33,7 @@
 import type { Orientation } from './orientation'
 import type { RegionMetrics, RegionSpec } from './regions'
 import { SCREEN_REGIONS } from './regions'
-import { describeMockup, type MockupInfo, type RegionInfo, type Size } from './measure'
+import { describeMockup, type MockupInfo, type RegionInfo, type RegionInfoMap, type Size } from './measure'
 import { assertDeviceVariant } from './lifecycle'
 
 import { GALAXY_METRICS, type GalaxyVariant } from './devices/galaxy/dimensions'
@@ -95,7 +95,7 @@ import { CUSTOM_BOX_METRICS, CUSTOM_BOX_REGIONS, type CustomBoxSizeMm } from './
 
 
 export { describeMockup, type MeasurableMockup } from './measure'
-export type { MockupInfo, RegionInfo, Size } from './measure'
+export type { MockupInfo, RegionInfo, RegionInfoMap, Size } from './measure'
 
 /**
  * The props each mockup kind's geometry depends on. Only the plain-data props
@@ -161,8 +161,11 @@ interface Entry {
  * The registry every measurement is read from. Adding a device or object means
  * adding one row here - and a binding, a docs page or the generated catalog
  * picks it up without further edits.
+ *
+ * `satisfies` rather than a type annotation, so each row keeps its own
+ * region list and resolver types: `MockupRegions` reads them.
  */
-const REGISTRY: Record<MockupKind, Entry> = {
+const REGISTRY = {
   galaxy: { regions: SCREEN_REGIONS, metrics: GALAXY_METRICS },
   iphone: { regions: SCREEN_REGIONS, metrics: IPHONE_METRICS },
   laptop: { regions: SCREEN_REGIONS, metrics: LAPTOP_METRICS },
@@ -198,6 +201,31 @@ const REGISTRY: Record<MockupKind, Entry> = {
   shoppingBag: { regions: SHOPPING_BAG_REGIONS, metrics: SHOPPING_BAG_METRICS },
   customPanel: { regions: CUSTOM_PANEL_REGIONS, metrics: CUSTOM_PANEL_METRICS },
   customBox: { regions: CUSTOM_BOX_REGIONS, metrics: CUSTOM_BOX_METRICS },
+} satisfies Record<MockupKind, Entry>
+
+type Registry = typeof REGISTRY
+
+/** What a kind's resolver returns, by region name. */
+type Resolved<K extends MockupKind> = ReturnType<Registry[K]['metrics']['regions']>
+
+/**
+ * One region's info: an array for a region painted onto several surfaces
+ * (the van's licence plates), possibly absent where the resolver can leave it
+ * out, and a plain `RegionInfo` wherever the resolver's type does not say.
+ */
+type RegionValue<K extends MockupKind, N extends string> = N extends keyof Resolved<K>
+  ?
+      | (NonNullable<Resolved<K>[N]> extends readonly unknown[] ? RegionInfo[] : RegionInfo)
+      | (undefined extends Resolved<K>[N] ? undefined : never)
+  : RegionInfo
+
+/**
+ * The regions `mockupInfo(kind)` reports, by name - the kind's region list,
+ * typed. `mockupInfo('book').regions.cover.px` typechecks, a misspelt region
+ * name does not, and `mockupInfo('van').regions.licensePlate` is an array.
+ */
+export type MockupRegions<K extends MockupKind> = {
+  [N in Registry[K]['regions'][number]['name']]: RegionValue<K, N>
 }
 
 /** Every measurable mockup kind, in a stable order (devices first). */
@@ -238,8 +266,8 @@ export function mockupInfo<K extends MockupKind>(
   ...[props]: Record<never, never> extends MockupPropsMap[K]
     ? [props?: MockupPropsMap[K]]
     : [props: MockupPropsMap[K]]
-): MockupInfo {
-  const entry = REGISTRY[kind]
+): MockupInfo<MockupRegions<K>> {
+  const entry: Entry | undefined = REGISTRY[kind]
   if (!entry) {
     throw new Error(
       `[react-3d-mockups] mockupInfo: unknown mockup kind "${String(kind)}". Known kinds: ${MOCKUP_KINDS.join(', ')}.`
@@ -248,5 +276,7 @@ export function mockupInfo<K extends MockupKind>(
   // A removed or misspelt device variant fails here by name, pointing at its
   // replacement, rather than as a TypeError from inside the metrics resolver.
   assertDeviceVariant(kind, (props as { variant?: unknown } | undefined)?.variant, `mockupInfo("${kind}")`)
-  return describeMockup({ kind, regions: entry.regions, metrics: entry.metrics }, props)
+  return describeMockup({ kind, regions: entry.regions, metrics: entry.metrics }, props) as unknown as MockupInfo<
+    MockupRegions<K>
+  >
 }

@@ -16,7 +16,7 @@ import {
   type TabletVariant,
   roundedRectShape,
 } from '../../core'
-import { checkDeviceVariant } from '../../core/lifecycle'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -622,6 +622,7 @@ export interface IPadProps extends TabletCommonProps {
  */
 function IPadImpl({ variant = IPAD_DEFAULT_VARIANT, ...props }: IPadProps) {
   checkDeviceVariant('ipad', variant, 'IPad')
+  checkColorway(IPAD_COLORWAYS, variant, props.color, 'IPad')
   return <TabletBody variant={variant} catalog={IPAD_COLORWAYS[variant]} {...props} />
 }
 IPadImpl.displayName = 'IPad'
@@ -648,6 +649,7 @@ export interface GalaxyTabProps extends TabletCommonProps {
  */
 function GalaxyTabImpl({ variant = GALAXY_TAB_DEFAULT_VARIANT, ...props }: GalaxyTabProps) {
   checkDeviceVariant('galaxyTab', variant, 'GalaxyTab')
+  checkColorway(GALAXY_TAB_COLORWAYS, variant, props.color, 'GalaxyTab')
   return <TabletBody variant={variant} catalog={GALAXY_TAB_COLORWAYS[variant]} {...props} />
 }
 GalaxyTabImpl.displayName = 'GalaxyTab'

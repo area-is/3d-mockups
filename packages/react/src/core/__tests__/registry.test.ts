@@ -129,3 +129,16 @@ describe('sizes', () => {
     expect(mockupInfo('book', { size: { width: 216 } }).primary.mm.width).toBeCloseTo(216, 0)
   })
 })
+
+describe('the mailer box', () => {
+  /*
+   * `resolution` is the lid's CSS width, as the component lays it out. The
+   * metrics once measured it across the whole body and reported 513 px for a
+   * lid rendered at 520.
+   */
+  it('reports the lid at its default resolution, and every panel at the lid’s density', () => {
+    const info = mockupInfo('mailerBox')
+    expect(info.regions.top.px.width).toBe(520)
+    for (const region of info.list) expect(region.pxPerUnit).toBeCloseTo(info.regions.top.pxPerUnit, 0)
+  })
+})

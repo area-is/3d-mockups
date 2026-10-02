@@ -216,6 +216,20 @@ const STUDIO = STUDIO_LIGHTFORMERS.map((lf, i) => (
 /** How far outside the viewport a canvas starts drawing again. */
 const PAUSE_MARGIN = '120px'
 
+// Typed locally: this is browser code and does not take node's types.
+declare const process: { env: { NODE_ENV?: string } }
+
+/** Literal `process.env.NODE_ENV`, so bundlers drop dev checks; the try covers an unbundled page. */
+const DEV = (() => {
+  try {
+    return process.env.NODE_ENV !== 'production'
+  } catch {
+    return false
+  }
+})()
+let warnedNoHeight = false
+let warnedContextLost = false
+
 /**
  * A visible focus ring for the keyboard-focusable canvas. Inset, because r3f's
  * container clips its overflow and would cut an outer outline off. Rendered as
@@ -413,6 +427,28 @@ export function MockupCanvas({
   // transparent-by-default canvas transparent the rest of the time).
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = React.useState(false)
+
+  /*
+   * The wrapper fills its container (`height: 100%`), so a container with no
+   * height of its own - the first thing anyone writes, `<div><GalaxyMockup /></div>`
+   * - gives the canvas none: the mockup renders nothing, and nothing said why.
+   * Checked a frame after mount, in development, once per page, and only for a
+   * container that is laid out: a hidden tab panel has no height either, and
+   * legitimately.
+   */
+  React.useEffect(() => {
+    if (!DEV || warnedNoHeight) return
+    const frame = requestAnimationFrame(() => {
+      const el = wrapperRef.current
+      if (!el || warnedNoHeight || el.offsetParent === null || el.clientWidth === 0 || el.clientHeight > 0) return
+      warnedNoHeight = true
+      console.warn(
+        "[react-3d-mockups] The mockup's container has no height, so nothing is visible. " +
+          'Give it one, e.g. <div style={{ height: 560 }}>.'
+      )
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
   React.useEffect(() => {
     if (!fullscreen) return
     const onChange = () => {
@@ -477,7 +513,57 @@ export function MockupCanvas({
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   // A paused canvas draws nothing, so it would hold a capture forever.
-  const drawing = useWorthDrawing(canvasRef, pauseWhenOffscreen && !capturing)
+  // Observed through the wrapper, which outlives a renderer that is replaced
+  // after a lost context (see `contextLost`) and covers the same box.
+  const drawing = useWorthDrawing(wrapperRef, pauseWhenOffscreen && !capturing)
+
+  /*
+   * A dropped WebGL context. Browsers cap live contexts per page (16 in
+   * Chromium) and silently take the oldest when a new one is made, so the
+   * twentieth mockup on a page blanked the first - a white box with a
+   * broken-image icon, for good. A lost canvas now unmounts (its screens with
+   * it) behind an empty placeholder, and comes back as a fresh renderer when
+   * it next scrolls into view. Not straight away: a canvas lost while visible
+   * would take another visible canvas's context to come back, which would take
+   * its own back, and so on.
+   */
+  const [contextLost, setContextLost] = React.useState(false)
+  const [rendererGeneration, setRendererGeneration] = React.useState(0)
+  const backInView = useWorthDrawing(wrapperRef, contextLost)
+  const leftView = React.useRef(false)
+  React.useEffect(() => {
+    if (!contextLost) return
+    if (!backInView) {
+      leftView.current = true
+    } else if (leftView.current) {
+      leftView.current = false
+      setContextLost(false)
+      setRendererGeneration((generation) => generation + 1)
+    }
+  }, [contextLost, backInView])
+  const onCreatedRef = React.useRef(onCreated)
+  React.useLayoutEffect(() => {
+    onCreatedRef.current = onCreated
+  })
+  const handleCreated = React.useCallback<NonNullable<CanvasProps['onCreated']>>((state) => {
+    state.gl.domElement.addEventListener(
+      'webglcontextlost',
+      () => {
+        if (DEV && !warnedContextLost) {
+          warnedContextLost = true
+          console.warn(
+            '[react-3d-mockups] The browser dropped a mockup\'s WebGL context - too many live canvases on one ' +
+              'page. It is redrawn when it scrolls back into view. To stay under the limit, render fewer ' +
+              'mockups at once or compose several in one <MockupCanvas>: ' +
+              'https://area.is/react-3d-mockups/docs/performance#use-fewer-canvases'
+          )
+        }
+        setContextLost(true)
+      },
+      { once: true }
+    )
+    onCreatedRef.current?.(state)
+  }, [])
 
   // An image to assistive tech, named for what it shows. r3f spreads its own
   // props onto the container rather than the canvas, and the container also
@@ -488,7 +574,7 @@ export function MockupCanvas({
     if (!element) return
     element.setAttribute('role', 'img')
     element.setAttribute('aria-label', label)
-  }, [label])
+  }, [label, contextLost, rendererGeneration])
 
   const glProps = React.useMemo<CanvasProps['gl']>(
     () =>
@@ -506,8 +592,12 @@ export function MockupCanvas({
   // small number keeps the mockup from towering over the host page.
   const overlayZ = 2
 
-  const canvas = (
+  const canvas = contextLost ? (
+    // Holds the mockup's place while its renderer is gone (see `contextLost`).
+    <div aria-hidden="true" style={{ width: '100%', height: '100%' }} />
+  ) : (
     <Canvas
+      key={rendererGeneration}
       ref={canvasRef}
       className={className}
       // pan-y keeps pages scrollable on touch: vertical swipes scroll past the
@@ -517,7 +607,7 @@ export function MockupCanvas({
       dpr={dpr}
       camera={cameraOptions}
       gl={glProps}
-      onCreated={onCreated}
+      onCreated={handleCreated}
       frameloop={drawing ? frameloop : 'never'}
     >
       <StageContext.Provider value={stage}>
@@ -587,7 +677,7 @@ export function MockupCanvas({
   //
   // This wrapper is also the stacking context that confines the screen
   // z-index band (see SCREEN_Z_RANGE): it holds the canvas AND every screen
-  // drei portals next to it, so isolating it here - statically, in the same
+  // portalled next to it, so isolating it here - statically, in the same
   // render that creates them - settles the question before any screen mounts.
   // DeviceScreen still derives a host at runtime for a foreign <Canvas>, but
   // inside a MockupCanvas it only ever re-finds this element.

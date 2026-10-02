@@ -12,7 +12,7 @@ import {
   type IPhoneVariant,
   roundedRectShape,
 } from '../../core'
-import { checkDeviceVariant } from '../../core/lifecycle'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -104,6 +104,7 @@ function IPhoneImpl({
   ...groupProps
 }: IPhoneProps) {
   checkDeviceVariant('iphone', variant, 'IPhone')
+  checkColorway(IPHONE_COLORWAYS, variant, colorProp, 'IPhone')
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = IPHONE_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to

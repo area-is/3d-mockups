@@ -98,7 +98,7 @@ export function SurfaceProvider({
  * are correct by construction rather than re-derived.
  *
  * ```tsx
- * function StatusBar() {
+ * function Header() {
  *   const { width, pxPerUnit } = useSurface()
  *   return <div style={{ width, height: Math.round(pxPerUnit * 0.1) }} />
  * }

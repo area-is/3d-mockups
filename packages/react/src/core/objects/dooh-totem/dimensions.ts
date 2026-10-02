@@ -25,6 +25,9 @@ export interface DoohTotemSize {
   height?: number
 }
 
+/** `DoohTotemSize` spelled like its component, `DOOHTotem`; both names work. */
+export type DOOHTotemSize = DoohTotemSize
+
 /**
  * Build a DOOH totem spec for any enclosure size (millimeters). The default
  * is the JCDecaux/Clear Channel digital 6-sheet class (1300 x 2800 mm). The

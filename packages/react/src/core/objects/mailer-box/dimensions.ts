@@ -91,7 +91,8 @@ export const MAILER_BOX_METRICS = {
     const { resolution } = MAILER_BOX
     const inset = body.radius * 2
     const flat = { width: body.width - inset, height: body.height - inset, depth: body.depth - inset }
-    const pxPerUnit = resolution / body.width
+    // `resolution` is the lid's width, as the component lays it out.
+    const pxPerUnit = resolution / flat.width
     const face = (width: number, height: number) => ({
       width,
       height,
@@ -109,8 +110,15 @@ export const MAILER_BOX_METRICS = {
   },
 } as const satisfies MockupMetrics<{ size?: MailerBoxSizeMm }>
 
+/**
+ * A three-quarter view from ~25 degrees up. The lid is the primary region -
+ * where bare children print - and from the old eye-level camera it was edge
+ * on: `<MailerBoxMockup><App /></MailerBoxMockup>` showed a plain brown side
+ * and an `<App />` one pixel tall. The docs demos had been rotating the box
+ * to hide it.
+ */
 export const MAILER_BOX_FRAMING = {
-  camera: { position: [0, 0.8, 7.6], fov: 40 },
+  camera: { position: [-3.32, 3.23, 6.07], fov: 40 },
   floatIntensity: 0.6,
   extent: ({ size }) => mailerBoxLayout(size).body.height / 2,
 } as const satisfies MockupFraming<{ size?: MailerBoxSizeMm }>

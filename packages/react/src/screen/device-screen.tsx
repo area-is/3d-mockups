@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type * as THREE from 'three'
 import { Group, ShapeGeometry } from 'three'
-import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { FiberProvider, useContextBridge } from 'its-fine'
 import {
@@ -17,22 +16,24 @@ import {
   type ScreenRadius,
 } from '../core'
 import { SurfaceProvider } from './use-surface'
+import { ScreenPortal } from './screen-portal'
 import { StageContext } from '../stage-context'
 
 export type { ScreenRadius }
 
 /**
- * Every DeviceScreen passes this zIndexRange to drei's <Html>: screens layer
+ * Every DeviceScreen passes this zIndexRange to its `ScreenPortal`: screens layer
  * in the lower half of the band, with the canvas itself at the midpoint, so
  * their DOM always composites UNDER the canvas.
  *
- * The range is enormous because drei spreads it LINEARLY over the camera's
+ * The range is enormous because the portal spreads it LINEARLY over the camera's
  * whole near..far span, and screens have to sort against each other by that
  * z-index alone - the DOM is what you actually see through the hole the depth
  * mask cuts, so two overlapping screens stack by z-index, not by the depth
  * buffer. A greeting card's cover and its inside face are ~25 mm apart in a
- * 1000-unit frustum; on drei's default band both rounded to the same integer
- * and the inside face painted straight over the cover. A million steps
+ * 1000-unit frustum; on drei's default band (16.7 million wide, but a
+ * different split) both rounded to the same integer and the inside face
+ * painted straight over the cover. A million steps
  * resolves a few thousandths of a unit, which is finer than any two surfaces
  * on one object. `isolateScreenStack` below keeps the big numbers from ever
  * reaching the page.
@@ -40,9 +41,8 @@ export type { ScreenRadius }
 const SCREEN_Z_RANGE: [number, number] = [2_000_000, 0]
 
 /**
- * The z-index drei raises the WebGL canvas to while a screen is live
- * (zIndexRange[0] / 2 - OUR range, not drei's default), putting every screen's
- * DOM below the canvas.
+ * The z-index the portal raises the WebGL canvas to while a screen is live
+ * (zIndexRange[0] / 2), putting every screen's DOM below the canvas.
  */
 const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
 
@@ -53,7 +53,7 @@ const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
  * z-indexes; without it a canvas raised to a million covers the whole page.
  *
  * It has to be the element holding BOTH, so it is derived as their nearest
- * common ancestor rather than guessed at. drei portals a screen into r3f's
+ * common ancestor rather than guessed at. A screen is portalled into r3f's
  * event target, which is an ANCESTOR of the canvas's own container, not that
  * container - isolate the canvas's immediate parent by mistake and the canvas
  * is sealed into a subtree whose own z-index is `auto`, while the screens,
@@ -61,14 +61,14 @@ const BLENDING_CANVAS_Z = Math.floor(SCREEN_Z_RANGE[0] / 2)
  * every screen paints over the hardware from every angle.
  *
  * The ancestor is re-derived every frame and the isolation MOVES with it,
- * because the tree it is read from is not stable at mount: drei portals into
- * `portal ?? events.connected ?? gl.domElement.parentNode`, and on a busy
- * commit `events.connected` can still be unset, so the first frames put the
- * screen INSIDE the canvas's own container. Isolate that and leave it
- * isolated, and once r3f connects and drei re-portals the screen out to the
- * event target, the canvas is sealed in a z-index:auto subtree with every
- * screen stacked above it - the failure this whole function exists to
- * prevent, arrived at from the other direction. Only isolation this function
+ * because the tree it is read from can change after mount: a screen whose
+ * events never connected falls back to the canvas's own container, and an
+ * event source can be swapped later. Isolate the first host and leave it
+ * isolated, and once the screen moves out to a new target the canvas is
+ * sealed in a z-index:auto subtree with every screen stacked above it - the
+ * failure this whole function exists to prevent, arrived at from the other
+ * direction. (drei's `<Html>`, which the screens used to mount through,
+ * portalled into the canvas's container first on every mount.) Only isolation this function
  * applied is ever released (marked with `dataset.areaMockupsIsolated`), so a
  * page that isolates the host itself keeps it.
  */
@@ -106,34 +106,7 @@ function releaseScreenStack(host: HTMLElement | null): void {
  */
 export const SCREEN_MASK_INSET = 0.004
 
-/*
- * A stable key per element drei portals a screen into, for the <Html> below.
- *
- * drei keeps ONE wrapper element for the life of an <Html>, and when its
- * target changes it unmounts that wrapper's React root and creates a new root
- * on the same element. Every canvas changes the target once: drei reads
- * `events.connected` before r3f's Provider has connected the events, so a
- * screen portals into the canvas's container first and into the event target
- * a moment later. That was harmless while the old root finished unmounting on
- * the spot. @react-three/fiber 9.8 mounts the scene inside <Canvas>'s own
- * layout effect - inside React DOM's commit - where `root.unmount()` cannot
- * flush, so the old root's teardown commits AFTER the new root has rendered
- * the screen, and clearing "its" container wipes the live screen out from
- * under the new root, which never puts it back: a blank screen, for good.
- * Keying the <Html> by its target makes a new target a new <Html>, with a
- * fresh wrapper for the new root, so the late teardown only empties the old,
- * detached one.
- */
-const portalTargetKeys = new WeakMap<object, number>()
-let nextPortalTargetKey = 0
-function portalTargetKey(target: object | null | undefined): number {
-  if (!target) return 0
-  let key = portalTargetKeys.get(target)
-  if (key === undefined) portalTargetKeys.set(target, (key = ++nextPortalTargetKey))
-  return key
-}
-
-// Staggered retry thresholds for the drei <Html> mount race (see below):
+// Staggered retry thresholds for the portal's mount race (see below):
 // screens created back-to-back get different frame counts, so their
 // remounts land in separate commits instead of re-racing each other.
 let retryPhase = 0
@@ -246,6 +219,15 @@ export interface DeviceScreenProps {
   /** Device-specific overlay (punch hole, notch…) rendered above the content. */
   overlay?: React.ReactNode
   /**
+   * What `useSurface()` reports inside this screen, when that is not the
+   * screen's own rect: a foldable's half pane is a window onto the WHOLE
+   * display - its content lays out at the full display's size and is offset -
+   * so the content is told the full display's surface, exactly what it sees
+   * with the device open flat, rather than the pane's fractional slice
+   * (`width: 414.40032197477865` on a half-open Fold).
+   */
+  surface?: { width: number; height: number; resolution: number }
+  /**
    * The strip of the surface that overlay covers at the top, in the surface's
    * own CSS px - see `statusBarSafeAreaTop`. Published to the content as
    * `--mockup-safe-area-top` and as `useSurface().safeAreaTop`; never applied
@@ -258,7 +240,8 @@ export interface DeviceScreenProps {
 
 /**
  * The live screen shared by every device: real DOM, CSS3D-transformed onto the
- * display glass via drei's `<Html transform>`, composited per-pixel against the
+ * display glass by `ScreenPortal` (adapted from drei's `<Html transform>`),
+ * composited per-pixel against the
  * depth buffer so hardware in front of the screen covers it exactly.
  *
  * Screens are decorative - the DOM stacks under the canvas, which is what makes
@@ -301,18 +284,29 @@ function BridgedScreen({
   screenStyle,
   overlay,
   safeAreaTop = 0,
+  surface: reported,
   children,
 }: DeviceScreenProps) {
   const gl = useThree((state) => state.gl)
   const scene = useThree((state) => state.scene)
   const invalidate = useThree((state) => state.invalidate)
-  // drei's own portal target (`portal || events.connected || canvas parent`;
-  // no `portal` is passed here). See `portalTargetKey`.
-  const connected = useThree((state) => state.events.connected)
-  const htmlKey = portalTargetKey(connected || gl.domElement.parentNode)
+  /*
+   * Where the screen's DOM goes: r3f's event target, once r3f has connected
+   * its events - the element that holds both the canvas and the screens. The
+   * portal is not mounted until then, so it lands in its final place on the
+   * first try. Portalling into the canvas's own container first and moving
+   * out a moment later (drei's default, before the events connect) remounted
+   * every screen's React root on every mount. A canvas whose events never
+   * connect - a custom `events` that never calls `connect` - falls back to the
+   * canvas's parent after `waitFrames`.
+   */
+  const connected = useThree((state) => state.events.connected) as HTMLElement | null | undefined
+  const [waitedForEvents, setWaitedForEvents] = React.useState(false)
+  const waitFrames = React.useRef(0)
+  const portalTarget = connected || (waitedForEvents ? (gl.domElement.parentElement as HTMLElement | null) : null)
   const { screenAccessibility, delayCapture } = React.useContext(StageContext)
   /*
-   * drei's <Html> renders its children into a SEPARATE React root, and a new
+   * The portal renders its children into a SEPARATE React root, and a new
    * root starts with no context at all - so a theme, an i18n provider, a
    * router or a query client above the mockup was invisible to the component
    * on the glass, which then threw or rendered unstyled. The bridge re-provides
@@ -348,7 +342,7 @@ function BridgedScreen({
   }, [gl, size, resolution, cssHeight])
 
   // The depth mask that makes the canvas transparent over the screen so the
-  // DOM beneath shows through. drei's default is a plain rectangle, which on
+  // DOM beneath shows through. drei's default was a plain rectangle, which on
   // any screen the DOM rounds off - a watch face, a round record label -
   // clears the canvas out past the artwork and the PAGE shows through the
   // corners. Build it from the screen's own silhouette instead, the same
@@ -379,31 +373,24 @@ function BridgedScreen({
   React.useEffect(() => () => silhouette?.dispose(), [silhouette])
   const blendGeometry = occluderGeometry ?? silhouette
 
-  // drei's 'blending' mode turns the CANVAS to pointer-events:none so DOM
-  // stacked under it stays clickable - which silently kills orbit drags on
-  // the empty background. Mockups want the opposite trade: the canvas keeps
-  // ALL input, so drag-to-orbit works everywhere, over the screen included.
-  // Parent layout effects run after the child Html's, so this override wins
-  // on mount.
-  React.useLayoutEffect(() => {
-    gl.domElement.style.pointerEvents = 'auto'
-  }, [gl])
-
   React.useEffect(() => warnIfOpaque(gl, scene), [gl, scene])
 
-  // drei's blending setup is a per-<Html> layout effect that mutates GLOBAL
-  // canvas style, and r3f can reconnect and re-stamp it. Re-assert the
-  // config from the frame loop so it always holds, whatever the mount order.
+  // The blending setup mutates the canvas's style, which every screen on it
+  // shares and r3f can reconnect and re-stamp. Re-assert it from the frame
+  // loop so it always holds, whatever the mount order. The canvas keeps ALL
+  // input (drei's blending mode turned it to pointer-events:none, which
+  // killed orbit drags on the empty background), so drag-to-orbit works
+  // everywhere, over the screen included.
   const blendingCanvasZ = String(BLENDING_CANVAS_Z)
 
   // Backface culling for the DOM plane - hide it whenever its normal points
-  // away from the camera (CSS backface-visibility can't see drei's chain).
+  // away from the camera (CSS backface-visibility can't see the portal's chain).
   const anchorRef = React.useRef<Group>(null!)
   const contentRef = React.useRef<HTMLDivElement | null>(null)
   /*
    * The content element, and the frame it needs to land in.
    *
-   * drei positions a screen from its own frame callback, but its root commits
+   * The portal positions a screen from its own frame callback, but its root commits
    * the screen's DOM asynchronously - AFTER the frame that mounted it. A canvas
    * rendering every frame never noticed; one rendering on demand has no next
    * frame coming, and the screen sat unplaced (full-canvas size, untransformed)
@@ -417,9 +404,9 @@ function BridgedScreen({
     },
     [invalidate]
   )
-  // Retry epoch + bookkeeping for the drei <Html> mount race (see the
-  // frame loop): bumping the epoch re-commits the <Html> subtree, which
-  // re-runs drei's dependency-less render effect on its existing root.
+  // Retry epoch + bookkeeping for the portal's mount race (see the frame
+  // loop): bumping the epoch re-commits the portal, which re-runs its
+  // dependency-less render effect on its existing root.
   const [, setHtmlEpoch] = React.useState(0)
   const retryState = React.useRef({ frames: 0, retries: 0 })
   const retryThreshold = React.useMemo(nextRetryThreshold, [])
@@ -436,7 +423,7 @@ function BridgedScreen({
   /*
    * Capture holds (see `delayCapture` on MockupCanvas). The content is a
    * React root of its own: it commits after this component does, and on
-   * mount it then waits a frame for drei to place it on the glass. The
+   * mount it then waits a frame for the portal to place it on the glass. The
    * canvas's own holds end at its draw, which can come first - a capture
    * right after it photographed a bare hole on a new screen, or the previous
    * frame's content on a live one.
@@ -472,18 +459,24 @@ function BridgedScreen({
   )
 
   useFrame(({ camera }) => {
+    if (!portalTarget) {
+      // Waiting for r3f to connect its events (see `portalTarget`). Frames
+      // only come on request on a demand-rendered canvas, so ask for them.
+      if (++waitFrames.current >= 30) setWaitedForEvents(true)
+      else invalidate()
+      return
+    }
     const canvas = gl.domElement.style
     if (canvas.zIndex !== blendingCanvasZ) canvas.zIndex = blendingCanvasZ
     if (canvas.position !== 'absolute') canvas.position = 'absolute'
     if (canvas.pointerEvents !== 'auto') canvas.pointerEvents = 'auto'
-    // Self-healing for a drei <Html> mount race: Html renders its DOM
-    // through its own nested ReactDOM root, and when several screens mount
-    // in the same busy commit, all but the first can lose that root's
-    // initial flush and stay empty shells forever - a whole side of a bus,
-    // or nine of the store's ten panes, simply never appear. drei's render
-    // effect has no dependency array, so ANY re-commit of the <Html>
-    // subtree calls root.render() again on the existing root and lands the
-    // lost content. If our content div hasn't materialized after a few
+    // Self-healing for a mount race: the portal renders its DOM through its
+    // own nested ReactDOM root, and when several screens mount in the same
+    // busy commit, all but the first could lose that root's initial flush
+    // and stay empty shells forever - a whole side of a bus, or nine of the
+    // store's ten panes, simply never appeared. The portal's render effect
+    // has no dependency array, so ANY re-commit of it calls root.render()
+    // again on the existing root and lands the lost content. If our content div hasn't materialized after a few
     // frames, bump a state to force that re-commit (staggered so retrying
     // screens don't all re-race in one commit).
     if (!contentRef.current) {
@@ -508,8 +501,8 @@ function BridgedScreen({
       isolatedHost.current = host
     }
     cullBackface(anchorRef.current, content, camera)
-    // drei placed `content` in its own frame callback, which runs before this
-    // one, and the draw follows in this same task.
+    // The portal placed `content` in its own frame callback, which runs
+    // before this one, and the draw follows in this same task.
     placedContent.current = content
     if (holds.pending && committedToken.current === wantedToken.current) queueMicrotask(holds.release)
   })
@@ -554,10 +547,10 @@ function BridgedScreen({
     >
       <SurfaceProvider
         region={region}
-        width={width}
-        height={height}
+        width={reported?.width ?? width}
+        height={reported?.height ?? height}
         radius={radius}
-        resolution={resolution}
+        resolution={reported?.resolution ?? resolution}
         background={background}
         safeAreaTop={safeAreaTop}
       >
@@ -569,22 +562,21 @@ function BridgedScreen({
 
   return (
     <group ref={anchorRef} position={position} rotation={rotation}>
-      <Html
-        key={htmlKey}
-        transform
-        occlude="blending"
-        geometry={blendGeometry ? <primitive object={blendGeometry} attach="geometry" /> : undefined}
-        // The bridge scales its OUTERMOST child onto the glass, which is the
-        // shrunken box whenever one is in play - so the screen covers the same
-        // world units however few pixels it is painted at.
-        distanceFactor={screenDistanceFactor(width, resolution * rasterScale)}
-        zIndexRange={SCREEN_Z_RANGE}
-        wrapperClass={SCREEN_LAYER_CLASS}
-        // Keep drei's inner transform div from hit-testing. It spans the
-        // screen rect and would otherwise sit in front of user content that
-        // legitimately wants to paint over the mockup.
-        pointerEvents="none"
-      >
+      {portalTarget && blendGeometry && (
+        <ScreenPortal
+          target={portalTarget}
+          geometry={blendGeometry}
+          // The bridge scales its OUTERMOST child onto the glass, which is the
+          // shrunken box whenever one is in play - so the screen covers the
+          // same world units however few pixels it is painted at.
+          distanceFactor={screenDistanceFactor(width, resolution * rasterScale)}
+          zIndexRange={SCREEN_Z_RANGE}
+          wrapperClass={SCREEN_LAYER_CLASS}
+          // Keep the inner transform div from hit-testing. It spans the screen
+          // rect and would otherwise sit in front of user content that
+          // legitimately wants to paint over the mockup.
+          pointerEvents="none"
+        >
         <style href={SCREEN_LAYER_STYLE_HREF} precedence="default">
           {SCREEN_LAYER_CSS}
         </style>
@@ -616,7 +608,8 @@ function BridgedScreen({
           )}
           <CommitSignal token={renderToken} onCommit={onContentCommit} />
         </ContextBridge>
-      </Html>
+        </ScreenPortal>
+      )}
     </group>
   )
 }
