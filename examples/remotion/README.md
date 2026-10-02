@@ -109,6 +109,19 @@ the same shoe. The script needs Python 3 with Pillow and requests.
   on-glass one sits on the lift frame (measured from a still), with the
   on-glass copy hidden from that frame on. The phone holds still and square
   for it, which is why that shot has no idle `float`.
+- **Keep transitions flat.** `slide`, `wipe`, `iris`, `clockWipe` and
+  `pushCut` move or clip the outgoing shot in 2D and are fine. `flip` puts
+  it in a CSS 3D perspective, which compounds with the 3D transforms that
+  place each screen's DOM on the glass: the printed faces came off the
+  geometry they belong to, and the half-way frame was black.
+- **Render one film at a time, without `fromSurface`.** Rendered while
+  another render (or a batch of stills) shared the CPU, a few frames in
+  every thousand came out with a whole canvas, or one surface, missing for
+  a single frame - Remotion's own screenshot code notes a frame drop under
+  pressure with Chrome's `fromSurface` capture. So render one at a time,
+  with `DISABLE_FROM_SURFACE=1` (which `remotion.config.ts` sets). To check a
+  render, look for a frame that differs from both of its neighbours far more
+  than they differ from each other.
 
 WebGL in headless Chrome needs a GPU backend. `remotion.config.ts` asks for
 `swangle` (SwiftShader under ANGLE, on the CPU), which works anywhere and is

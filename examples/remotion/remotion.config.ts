@@ -34,6 +34,12 @@ Config.setJpegQuality(92)
 // Cold mounts compile shaders and build CSG geometry on the CPU.
 Config.setDelayRenderTimeoutInMilliseconds(120_000)
 
+// Capture frames without Chrome's `fromSurface` path. Under CPU pressure it
+// occasionally photographed a frame before the WebGL canvas had reached the
+// compositor - a whole mockup, or one of its screens, missing for one frame.
+// Remotion's renderer reads this variable at capture time.
+process.env.DISABLE_FROM_SURFACE ??= '1'
+
 // Use a local Chrome Headless Shell when one is provided (CI images, sandboxes
 // without access to Remotion's download host).
 if (process.env.REMOTION_BROWSER_EXECUTABLE) {

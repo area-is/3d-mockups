@@ -2,9 +2,9 @@ import * as React from 'react'
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions'
 import { fade } from '@remotion/transitions/fade'
-import { flip } from '@remotion/transitions/flip'
 import { iris } from '@remotion/transitions/iris'
 import { slide } from '@remotion/transitions/slide'
+import { wipe } from '@remotion/transitions/wipe'
 import '@fontsource/instrument-serif'
 import '@fontsource/instrument-serif/400-italic.css'
 import '@fontsource-variable/instrument-sans'
@@ -449,7 +449,7 @@ export function LumenFilm() {
         <TransitionSeries.Sequence durationInFrames={LUMEN_SHOTS.programme}>
           <ProgrammeShot />
         </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={flip({ direction: 'from-right' })} timing={timing} />
+        <TransitionSeries.Transition presentation={wipe({ direction: 'from-right' })} timing={timing} />
         <TransitionSeries.Sequence durationInFrames={LUMEN_SHOTS.pass}>
           <PassShot />
         </TransitionSeries.Sequence>
