@@ -49,6 +49,8 @@ name: Release react-3d-mockups
 # Publishing that first version from a laptop instead (`npm publish -w
 # react-3d-mockups` on main) also works: dispatch this workflow afterwards with
 # dry_run unticked and it finds the version on npm, and only tags and releases.
+# The tag goes on the commit npm recorded for that version (its `gitHead`), not
+# on whatever main has moved on to since, so it marks the source that shipped.
 #
 # The publish job deliberately declares no `environment:`. Adding one is a
 # reasonable upgrade (it gives a deployment record and an optional approval
@@ -86,6 +88,7 @@ jobs:
       first: ${{ steps.plan.outputs.first }}
       publish: ${{ steps.plan.outputs.publish }}
       tag: ${{ steps.plan.outputs.tag }}
+      target: ${{ steps.plan.outputs.target }}
     steps:
       - uses: actions/checkout@v5
 
@@ -121,12 +124,28 @@ jobs:
           tag=false
           git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null || tag=true
 
+          # The commit to tag. When this run publishes, that is this commit. When
+          # the version is already on npm (published from a laptop, or by a run
+          # that died before tagging), it is the commit npm recorded, provided
+          # this repository has it; the fetch is how that is checked.
+          target="$GITHUB_SHA"
+          if [ "$publish" = false ] && [ "$tag" = true ]; then
+            head="$(curl -s --retry 3 "https://registry.npmjs.org/react-3d-mockups/$version" \
+              | node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(0, "utf8")).gitHead || "")')"
+            if [ -n "$head" ] && git fetch -q --depth=1 origin "$head"; then
+              target="$head"
+            else
+              echo "::warning::npm has no commit for react-3d-mockups@$version that this repository knows (gitHead: '${head:-none}'). Tagging $GITHUB_SHA instead."
+            fi
+          fi
+
           {
             echo "version=$version"
             echo "live=$live"
             echo "first=$first"
             echo "publish=$publish"
             echo "tag=$tag"
+            echo "target=$target"
           } >> "$GITHUB_OUTPUT"
 
           if [ "$publish" = false ] && [ "$tag" = false ]; then
@@ -152,6 +171,7 @@ jobs:
       FIRST: ${{ needs.plan.outputs.first }}
       PUBLISH: ${{ needs.plan.outputs.publish }}
       TAG: ${{ needs.plan.outputs.tag }}
+      TARGET: ${{ needs.plan.outputs.target }}
     steps:
       - uses: actions/checkout@v5
 
@@ -244,8 +264,9 @@ jobs:
         run: npm publish --provenance --access public --tag "$DIST_TAG"
 
       # Creating the release creates the tag, on exactly the commit that was
-      # published. A tag pushed with this workflow's token triggers no other
-      # workflow, which is fine: nothing listens for tags any more.
+      # published (see `target` in the plan job). A tag pushed with this
+      # workflow's token triggers no other workflow, which is fine: nothing
+      # listens for tags any more.
       - name: Tag and write the GitHub Release
         if: env.LIVE == 'true' && env.TAG == 'true'
         env:
@@ -255,7 +276,7 @@ jobs:
           [ "$DIST_TAG" = next ] && prerelease=(--prerelease)
           gh release create "v$VERSION" "${prerelease[@]}" \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --target "$TARGET" \
             --title "react-3d-mockups v$VERSION" \
             --notes-file "$RUNNER_TEMP/notes.md"
 

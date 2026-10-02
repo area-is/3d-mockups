@@ -7,7 +7,13 @@ breaking change can ship in a minor release, and is always listed under
 
 ## Unreleased
 
-## 0.1.0 - 2026-10-01
+### Changed
+
+- **The README, which is the package's npm page, says the package is in active
+  development** and that its API may change over the next few weeks. 0.1.0
+  shipped without that notice.
+
+## 0.1.0 - 2026-10-02
 
 First release: 33 procedurally generated devices and 24 objects (print,
 packaging, out-of-home formats, vehicles, a TV, and custom-size panels and
