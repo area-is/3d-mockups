@@ -22,7 +22,7 @@ import {
 import { APPLE_WATCH_FRAMING, CUSTOM_BOX_FRAMING, LAPTOP_FRAMING, MAILER_BOX_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Cut, Drift, Floor, FontGate, orbitAt, RIG_START, useEnvelope, useStage } from '../kit'
+import { CameraRig, Cut, Drift, Floor, FontGate, landing, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage } from '../kit'
 import {
   COLOURWAYS,
   CountdownScreen,
@@ -142,9 +142,9 @@ function TitleShot() {
           />
         )
       })}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 90 * u, display: 'flex', justifyContent: 'center', gap: 28 * u, alignItems: 'center', opacity: kicker, color: KITE.chalk, fontFamily: SANS, fontWeight: 800, fontSize: 26 * u, letterSpacing: '0.3em' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 90 * u, display: 'flex', justifyContent: 'center', gap: 28 * u, alignItems: 'center', opacity: kicker, color: KITE.chalk, fontFamily: SANS, fontWeight: 700, fontSize: 32 * u, letterSpacing: '-0.01em' }}>
         <KiteLogo size={44 * u} color={KITE.chalk} glyph={KITE.volt} />
-        <span>DROP 10.09</span>
+        <span>Drop 10.09</span>
       </div>
     </AbsoluteFill>
   )
@@ -197,8 +197,8 @@ function PhoneShot() {
         <br />
         <span style={{ color: 'transparent', WebkitTextStroke: `${3 * u}px ${current.ink}` }}>SHOE.</span>
       </Shout>
-      <div style={{ position: 'absolute', left: 124 * u, top: 860 * u, fontFamily: SANS, fontWeight: 800, fontSize: 28 * u, letterSpacing: '0.24em', color: current.ink }}>
-        {current.name.toUpperCase()} · $160
+      <div style={{ position: 'absolute', left: 124 * u, top: 860 * u, fontFamily: SANS, fontWeight: 700, fontSize: 34 * u, letterSpacing: '-0.01em', color: current.ink }}>
+        {current.name} · $160
       </div>
       {/* the lift: the shoe comes off the glass and fills the frame on its way to the next shot */}
       {frame >= LIFT && (
@@ -265,8 +265,8 @@ function WatchShot() {
       <div style={{ position: 'absolute', left: 60 * u, top: 120 * u, fontFamily: DISPLAY, fontSize: 380 * u, lineHeight: 0.85, color: 'rgba(13,14,17,0.08)' }}>
         TEMPO
       </div>
-      <Cut name="kite-runner" style={{ left: (300 - frame * 0.8) * u, top: 70 * u, height: 1010 * u, filter: `drop-shadow(${30 * u}px ${30 * u}px ${30 * u}px rgba(0,0,0,0.2))` }} />
-      <AppleWatchMockup {...stage} variant="ultra4" color="black" camera={camera} position={[1.75, -0.05, 0]} rotation={[0.08, tween(frame, 0, durationInFrames, 0.75, -0.25), 0]}>
+      <Cut name="kite-runner" style={{ left: (150 - frame * 0.8) * u, top: 70 * u, height: 1010 * u, filter: `drop-shadow(${30 * u}px ${30 * u}px ${30 * u}px rgba(0,0,0,0.2))` }} />
+      <AppleWatchMockup {...stage} variant="ultra4" color="black" camera={camera} position={[2.1, -0.05, 0]} rotation={[0.08, tween(frame, 0, durationInFrames, 0.75, -0.25), 0]}>
         <WorkoutScreen notifyAt={52} />
       </AppleWatchMockup>
       <div style={{ position: 'absolute', right: 110 * u, bottom: 90 * u, textAlign: 'right', fontFamily: DISPLAY, fontSize: 64 * u, lineHeight: 1, color: KITE.graphite, opacity: kicker }}>
@@ -292,6 +292,9 @@ const MAILER_MM = mockupInfo('mailerBox').mmPerUnit
 const SHOEBOX_ON_MAILER = mockupInfo('customBox', { size: SHOEBOX }).mmPerUnit / MAILER_MM
 const MAILER_EXTENT = MAILER_BOX_FRAMING.extent({})
 const BOX_GROUND = -MAILER_EXTENT
+const SHIPPER_TURN = 0.2
+/** How far above the lid the shoe box is let go. */
+const SHOEBOX_DROP = 4.5
 
 /** Every printed face of a shoe box, as slots (they must be the box's direct children, so this returns a fragment). */
 function shoeboxFaces(colourway: Colourway) {
@@ -322,8 +325,11 @@ function BoxesShot() {
   const u = width / 1920
   const delayCapture = useMockupCapture()
   const volt = COLOURWAYS[0]!
-  const drop = spring({ frame: frame - 14, fps, config: { damping: 13, stiffness: 150, mass: 1 } })
-  const shoeboxY = MAILER_EXTENT + CUSTOM_BOX_FRAMING.extent({ size: SHOEBOX }) * SHOEBOX_ON_MAILER + (1 - drop) * 4.5
+  // The shoe box drops onto the shipper's lid and bounces off it - never into it - and
+  // only turns while it is in the air, so it lands square: centred, and turned so
+  // little against the shipper that its whole base sits on the lid.
+  const lift = landing(frame, fps, 14, SHOEBOX_DROP, { damping: 13, stiffness: 150, mass: 1 })
+  const shoeboxY = MAILER_EXTENT + CUSTOM_BOX_FRAMING.extent({ size: SHOEBOX }) * SHOEBOX_ON_MAILER + 0.003 + lift
   const orbit = orbitAt(frame, [
     { frame: 0, target: [0, 0.5, 0], distance: 11.5, azimuth: -0.7, elevation: 0.3, fov: 38 },
     { frame: 130, target: [0, 0.6, 0], distance: 9.6, azimuth: 0.45, elevation: 0.55, fov: 38 },
@@ -334,7 +340,8 @@ function BoxesShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={BOX_GROUND} label="The KITE shipper and shoe box">
         <CameraRig orbit={orbit} />
         <Floor y={BOX_GROUND} color="#d3d0c8" radius={14} />
-        <MailerBox color="#1a1b1e" tapeColor={KITE.volt} rotation={[0, 0.2, 0]}>
+        <OverlapProbe names={['shipper', 'shoebox']} frame={frame} />
+        <MailerBox name="shipper" color="#1a1b1e" tapeColor={KITE.volt} rotation={[0, SHIPPER_TURN, 0]}>
           <MailerBox.Top>
             <MailerLid />
           </MailerBox.Top>
@@ -352,7 +359,7 @@ function BoxesShot() {
             <MailerEnd />
           </MailerBox.Right>
         </MailerBox>
-        <CustomBox size={SHOEBOX} color={volt.ground} position={[0.15, shoeboxY, 0.1]} rotation={[0, -0.18 + (1 - drop) * 0.5, 0]} scale={SHOEBOX_ON_MAILER}>
+        <CustomBox name="shoebox" size={SHOEBOX} color={volt.ground} position={[0, shoeboxY, 0]} rotation={[0, SHIPPER_TURN - 0.08 + (lift / SHOEBOX_DROP) * 0.5, 0]} scale={SHOEBOX_ON_MAILER}>
           {shoeboxFaces(volt)}
         </CustomBox>
       </MockupCanvas>
@@ -400,10 +407,12 @@ function DeskShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={DESK} label="The KITE drop on a desk">
         <CameraRig orbit={orbit} />
         <Floor y={DESK} color="#1e2025" radius={16} hold={0.5} />
-        <Laptop variant="pro14" color="spaceblack" openAngle={LAPTOP_OPEN} position={[0, DESK + LAPTOP_FRAMING.extent({ variant: 'pro14' }), 0]}>
+        <OverlapProbe names={['laptop', 'phone', 'watch', 'shoebox']} frame={frame} />
+        <Laptop name="laptop" variant="pro14" color="spaceblack" openAngle={LAPTOP_OPEN} position={[0, DESK + LAPTOP_FRAMING.extent({ variant: 'pro14' }), 0]}>
           <StoreScreen />
         </Laptop>
         <IPhone
+          name="phone"
           variant="18pro"
           color="black"
           statusBar
@@ -413,10 +422,10 @@ function DeskShot() {
         >
           <ProductScreen pick={0} />
         </IPhone>
-        <AppleWatch variant="ultra4" color="black" scale={WATCH_SCALE} position={[2.55, DESK + APPLE_WATCH_FRAMING.extent({ variant: 'ultra4' }) * WATCH_SCALE, -1.05]} rotation={[0, -0.5, 0]}>
+        <AppleWatch name="watch" variant="ultra4" color="black" scale={WATCH_SCALE} position={[3.1, DESK + APPLE_WATCH_FRAMING.extent({ variant: 'ultra4' }) * WATCH_SCALE, -1.25]} rotation={[0, -0.5, 0]}>
           <WorkoutScreen notifyAt={-20} />
         </AppleWatch>
-        <CustomBox size={SHOEBOX} color={ember.ground} scale={BOX_SCALE} position={[-4.3, DESK + CUSTOM_BOX_FRAMING.extent({ size: SHOEBOX }) * BOX_SCALE, -2.2]} rotation={[0, 0.3, 0]}>
+        <CustomBox name="shoebox" size={SHOEBOX} color={ember.ground} scale={BOX_SCALE} position={[-4.95, DESK + CUSTOM_BOX_FRAMING.extent({ size: SHOEBOX }) * BOX_SCALE, 0.1]} rotation={[0, 0.18, 0]}>
           {shoeboxFaces(ember)}
         </CustomBox>
       </MockupCanvas>
@@ -444,8 +453,8 @@ function Outro() {
         <KiteGlyph size={150 * u} color={KITE.volt} />
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: 210 * u, lineHeight: 1, marginTop: 10 * u, opacity: swing }}>KITE</div>
-      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 30 * u, letterSpacing: '0.32em', marginTop: 24 * u, opacity: line }}>
-        AERO 2 · <span style={{ color: KITE.volt }}>10.09</span> · IN THE KITE APP
+      <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 34 * u, letterSpacing: '-0.01em', marginTop: 24 * u, opacity: line }}>
+        Aero 2 · <span style={{ color: KITE.volt }}>10.09</span> · in the KITE app
       </div>
       <Drift name="kite-sky" x={1680} y={250} width={420} rotate={-14 + frame * 0.05} blur={6} opacity={0.9} />
       <Drift name="kite-ember" x={250} y={860} width={460} rotate={10 - frame * 0.05} blur={6} opacity={0.9} flip />

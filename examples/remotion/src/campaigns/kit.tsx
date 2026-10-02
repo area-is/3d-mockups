@@ -1,8 +1,8 @@
 import * as React from 'react'
 import * as THREE from 'three'
 import type { PerspectiveCamera } from 'three'
-import { useThree } from '@react-three/fiber'
-import { AbsoluteFill, Img, staticFile, useCurrentFrame, useDelayRender, useVideoConfig } from 'remotion'
+import { useFrame, useThree } from '@react-three/fiber'
+import { AbsoluteFill, Img, spring, staticFile, useCurrentFrame, useDelayRender, useVideoConfig, type SpringConfig } from 'remotion'
 import { useMockupCapture } from '../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../reel/motion'
 
@@ -39,7 +39,6 @@ export type ArtName =
   | 'lumen-orchid'
   | 'lumen-fern'
   | 'lumen-moth'
-  | 'lumen-lantern'
 
 export const art = (name: ArtName) => staticFile(`art/${name}.webp`)
 
@@ -169,6 +168,77 @@ export function CameraRig({ orbit }: { orbit: Orbit }) {
   return null
 }
 
+/**
+ * How high above its resting place something dropped onto a surface is, at
+ * `frame`: it falls from `height`, lands at `start`-ish, and bounces off the
+ * surface, each bounce lower. Never below zero - a spring's overshoot would
+ * carry the object into whatever it lands on.
+ */
+export function landing(frame: number, fps: number, start: number, height: number, config?: Partial<SpringConfig>): number {
+  const fall = spring({ frame: frame - start, fps, config: { damping: 11, stiffness: 140, mass: 0.9, ...config } })
+  return height * Math.abs(1 - fall)
+}
+
+/**
+ * Logs any two named objects in a scene whose geometry interpenetrates: every
+ * vertex of one is tested against the other's bounding box in that object's
+ * own (rotated) frame, shrunk a hair so faces that merely touch - a box set
+ * on a box - do not count. Off unless the render is given
+ * `REMOTION_OVERLAP_PROBE=1`; it checks the frame it is drawn on.
+ */
+export function OverlapProbe({ names, frame }: { names: string[]; frame: number }) {
+  const scene = useThree((state) => state.scene)
+  const enabled = typeof process !== 'undefined' && process.env.REMOTION_OVERLAP_PROBE === '1'
+  const key = names.join(', ')
+  React.useEffect(() => {
+    if (enabled) console.warn(`[overlap] probing ${key}`)
+  }, [enabled, key])
+  useFrame(() => {
+    if (!enabled) return
+    scene.updateMatrixWorld(true)
+    const objects = names.map((name) => scene.getObjectByName(name)).filter((o): o is THREE.Object3D => !!o)
+    if (objects.length !== names.length) console.warn(`[overlap] frame ${frame}: missing ${names.filter((n) => !scene.getObjectByName(n)).join(', ')}`)
+    for (let i = 0; i < objects.length; i++) {
+      for (let j = 0; j < objects.length; j++) {
+        if (i === j) continue
+        const hits = verticesInside(objects[i]!, objects[j]!)
+        if (hits > 0) console.warn(`[overlap] frame ${frame}: ${objects[i]!.name} enters ${objects[j]!.name} (${hits} vertices)`)
+      }
+    }
+  })
+  return null
+}
+
+const MARGIN = 0.004
+
+function verticesInside(a: THREE.Object3D, b: THREE.Object3D): number {
+  const toB = b.matrixWorld.clone().invert()
+  const box = new THREE.Box3()
+  const relative = new THREE.Matrix4()
+  b.traverseVisible((node) => {
+    const mesh = node as THREE.Mesh
+    if (!mesh.isMesh) return
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox()
+    relative.multiplyMatrices(toB, mesh.matrixWorld)
+    box.union(mesh.geometry.boundingBox!.clone().applyMatrix4(relative))
+  })
+  if (box.isEmpty()) return 0
+  box.expandByScalar(-MARGIN)
+  const point = new THREE.Vector3()
+  let hits = 0
+  a.traverseVisible((node) => {
+    const mesh = node as THREE.Mesh
+    const position = mesh.isMesh ? mesh.geometry.getAttribute('position') : undefined
+    if (!position) return
+    relative.multiplyMatrices(toB, mesh.matrixWorld)
+    for (let k = 0; k < position.count; k++) {
+      point.fromBufferAttribute(position, k).applyMatrix4(relative)
+      if (box.containsPoint(point)) hits++
+    }
+  })
+  return hits
+}
+
 /** Where react-three-fiber first puts a rigged camera; `CameraRig` moves it on the first commit. */
 export const RIG_START = { position: [0, 2, 12] as Vec3, fov: 40 }
 
@@ -274,8 +344,10 @@ export function Words({
       {text.split(' ').map((word, i) => {
         const t = tween(frame, start + i * stagger, start + i * stagger + duration, 0, 1, easeOut)
         return (
-          <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', paddingBottom: '0.08em', ...style }}>
-            <span style={{ display: 'inline-block', transform: `translateY(${(1 - t) * 105}%)`, opacity: t > 0 ? 1 : 0 }}>
+          // The mask reaches 0.3em under the line, cancelled in layout by the margin: a
+          // descender (an italic g, a q) hangs that far below the baseline and was clipped.
+          <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', padding: '0 0.04em 0.3em', margin: '0 -0.04em -0.3em', ...style }}>
+            <span style={{ display: 'inline-block', transform: `translateY(${(1 - t) * 140}%)`, opacity: t > 0 ? 1 : 0 }}>
               {word}
               {' '}
             </span>

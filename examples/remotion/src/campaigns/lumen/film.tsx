@@ -22,7 +22,7 @@ import {
 import { DOOH_TOTEM_FRAMING, MAGAZINE_FRAMING, ROLLUP_BANNER_FRAMING, VINYL_RECORD_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Cut, Drift, Floor, FontGate, orbitAt, RIG_START, useEnvelope, useStage, Vignette } from '../kit'
+import { CameraRig, Cut, Drift, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage, Vignette } from '../kit'
 import {
   ARTISTS,
   GateScreen,
@@ -53,7 +53,7 @@ import {
  * invitation opening as a moth crosses it, the programme unfolding, the
  * artist pass turning on its lanyard, the live record spinning beside the
  * zine, and the gate at night - a screen and two banners under string
- * lights, with lanterns swinging past the lens.
+ * lights.
  */
 
 export const LUMEN_SHOTS = { invite: 150, programme: 120, pass: 110, record: 140, gate: 180, outro: 80, transition: 12 }
@@ -162,20 +162,6 @@ function Moth({ frame, path, width = 220, blur = 0 }: { frame: number; path: (f:
   )
 }
 
-/** A lantern hanging into the top of the frame, swinging on its chain. */
-function Lantern({ frame, x, length, width, blur, phase = 0 }: { frame: number; x: number; length: number; width: number; blur: number; phase?: number }) {
-  const { width: frameWidth } = useVideoConfig()
-  const u = frameWidth / 1920
-  const swing = Math.sin(frame * 0.05 + phase) * 4
-  return (
-    <div style={{ position: 'absolute', left: x * u, top: -40 * u, transformOrigin: '50% 0%', transform: `rotate(${swing}deg)`, filter: blur ? `blur(${blur * u}px)` : undefined }}>
-      <div style={{ width: 3 * u, height: length * u, margin: '0 auto', background: '#3b2f1d' }} />
-      <Cut name="lumen-lantern" style={{ position: 'relative', width: width * u, marginTop: -6 * u }} />
-      <div style={{ position: 'absolute', left: '50%', bottom: '18%', width: width * 1.6 * u, height: width * 1.6 * u, transform: 'translate(-50%, 50%)', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,190,90,0.45), rgba(255,190,90,0) 65%)' }} />
-    </div>
-  )
-}
-
 function Line({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   const { width } = useVideoConfig()
   const u = width / 1920
@@ -223,7 +209,8 @@ function InviteShot() {
         <br />
         after dark.
       </Line>
-      <Moth frame={frame} path={(f) => ({ x: -120 + f * 15, y: 820 - f * 4.2 + Math.sin(f * 0.12) * 60 })} width={230} />
+      {/* across the top of the frame and out, clear of the card and the leaf */}
+      <Moth frame={frame} path={(f) => ({ x: -120 + f * 13, y: 110 - Math.max(0, -120 + f * 13 - 600) * 0.35 + Math.sin(f * 0.15) * 15 })} width={200} />
       <Drift name="lumen-fern" x={150 + frame * 0.4} y={980} width={560} rotate={-60} blur={14} />
     </AbsoluteFill>
   )
@@ -318,7 +305,7 @@ function PassShot() {
  */
 const RECORD_GROUND = -VINYL_RECORD_FRAMING.extent()
 const ZINE_SCALE = mockupInfo('magazine').mmPerUnit / mockupInfo('vinylRecord').mmPerUnit
-const ZINE_AT: Vec3 = [2.3, RECORD_GROUND + MAGAZINE_FRAMING.extent({}) * ZINE_SCALE, 0.7]
+const ZINE_AT: Vec3 = [3.0, RECORD_GROUND + MAGAZINE_FRAMING.extent({}) * ZINE_SCALE, 0.5]
 
 function RecordShot() {
   const frame = useCurrentFrame()
@@ -333,7 +320,8 @@ function RecordShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={RECORD_GROUND} label="The live record and the festival zine">
         <CameraRig orbit={orbit} />
         <Floor y={RECORD_GROUND} color="#163128" radius={12} />
-        <VinylRecord color="#e9e2d4" vinylColor="#1b1b1b" position={[-0.6, 0, 0]} rotation={[0, 0.3, 0]}>
+        <OverlapProbe names={['record', 'zine']} frame={frame} />
+        <VinylRecord name="record" color="#e9e2d4" vinylColor="#1b1b1b" position={[-0.6, 0, 0]} rotation={[0, 0.3, 0]}>
           <VinylRecord.Cover>
             <RecordSleeve />
           </VinylRecord.Cover>
@@ -341,14 +329,12 @@ function RecordShot() {
             <RecordLabel turn={frame * 6.6} />
           </VinylRecord.Label>
         </VinylRecord>
-        <Magazine glossy position={ZINE_AT} rotation={[0, -0.38, 0]} scale={ZINE_SCALE}>
+        <Magazine name="zine" glossy position={ZINE_AT} rotation={[0, -0.38, 0]} scale={ZINE_SCALE}>
           <Magazine.Cover>
             <ZineCover />
           </Magazine.Cover>
         </Magazine>
       </MockupCanvas>
-      <Lantern frame={frame} x={250} length={220} width={150} blur={7} />
-      <Lantern frame={frame} x={1640} length={120} width={190} blur={10} phase={1.4} />
     </AbsoluteFill>
   )
 }
@@ -382,21 +368,19 @@ function GateShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={GATE_GROUND} label="The festival gate at night">
         <CameraRig orbit={orbit} />
         <Floor y={GATE_GROUND} color="#1b2b26" radius={20} />
-        <DOOHTotem>
+        <OverlapProbe names={['totem', 'welcome', 'wayfinding']} frame={frame} />
+        <DOOHTotem name="totem">
           <DOOHTotem.Front>
             <GateScreen hold={50} />
           </DOOHTotem.Front>
         </DOOHTotem>
-        <RollupBanner position={[-2.7, BANNER_Y, 0.9]} rotation={[0, 0.35, 0]} scale={BANNER_SCALE}>
+        <RollupBanner name="welcome" position={[-2.7, BANNER_Y, 0.9]} rotation={[0, 0.35, 0]} scale={BANNER_SCALE}>
           <WelcomeBanner />
         </RollupBanner>
-        <RollupBanner position={[2.7, BANNER_Y, 0.9]} rotation={[0, -0.35, 0]} scale={BANNER_SCALE}>
+        <RollupBanner name="wayfinding" position={[2.7, BANNER_Y, 0.9]} rotation={[0, -0.35, 0]} scale={BANNER_SCALE}>
           <WayfindingBanner />
         </RollupBanner>
       </MockupCanvas>
-      <Lantern frame={frame} x={180} length={140} width={210} blur={12} />
-      <Lantern frame={frame} x={1720} length={60} width={240} blur={14} phase={2} />
-      <Moth frame={frame} path={(f) => ({ x: 2050 - f * 9, y: 300 + Math.sin(f * 0.09) * 90 })} width={150} blur={1} />
       <Line style={{ left: 0, right: 0, bottom: 70 * u, textAlign: 'center', fontSize: 84 * u, opacity: caption }}>
         Doors at dusk. <span style={{ fontStyle: 'italic', color: LUMEN.amber }}>Bring someone.</span>
       </Line>
@@ -429,7 +413,7 @@ function Outro() {
         <Mark size={`${260 * u}px`} color={LUMEN.ivory} />
       </div>
       <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: 64 * u, color: LUMEN.ivory, marginTop: 30 * u, opacity: line }}>Three nights in the Glasshouse</div>
-      <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: 26 * u, letterSpacing: '0.3em', color: LUMEN.amber, marginTop: 26 * u, opacity: line }}>14 — 16 NOVEMBER · VICTORIA GARDENS</div>
+      <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: 32 * u, letterSpacing: '-0.005em', color: LUMEN.amber, marginTop: 26 * u, opacity: line }}>14–16 November · Victoria Gardens</div>
       <Moth frame={Math.min(frame, 46)} path={land} width={130} />
     </AbsoluteFill>
   )

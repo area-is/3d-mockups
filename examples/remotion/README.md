@@ -62,19 +62,20 @@ on, with a backdrop made of CSS and photographs rather than a pattern:
   invitation opening as a luna moth crosses it, the Z-fold programme
   unfolding, the artist pass turning on its lanyard, the live record spinning
   beside the zine, and the gate at night - a DOOH totem and two roll-up
-  banners under string lights, with lanterns swinging past the lens.
+  banners under string lights.
 
 `src/campaigns/kit.tsx` holds what they share: `Face` (a printed surface
 laid out in container units, so one design holds at any `resolution`),
 `Cut` and `Drift` (a cut-out on a surface, or in the frame in front of or
-behind the transparent canvas, blurred for depth of field), a `CameraRig`
-keyed by frame, and a `Floor` that fades into the CSS backdrop so a stage
-has ground for its contact shadow.
+behind the transparent canvas, blurred for depth of field, and kept clear of
+the mockups), a `CameraRig` keyed by frame, a `Floor` that fades into the
+CSS backdrop so a stage has ground for its contact shadow, `landing` (a drop
+that bounces off what it lands on) and `OverlapProbe` (see below).
 
 ### The photographs
 
 Every photograph in the films - fruit, a farmer, the shoe in three colours,
-runners, musicians, plants, a moth, a lantern - is a cut-out on a transparent
+runners, musicians, plants, a moth - is a cut-out on a transparent
 ground in `public/art`, generated with OpenAI's GPT Image 2.5
 (`gpt-image-2.5-sunburst`, `quality: "low"`, `background: "transparent"`).
 `scripts/generate-art.py` holds every prompt and regenerates any of them:
@@ -93,6 +94,25 @@ the same shoe. The script needs Python 3 with Pillow and requests.
 
 ### Notes from making them
 
+- **Nothing lands inside anything.** A spring's overshoot carried a dropped
+  carton below the table (the floor clipped its foot) and the shoe box into
+  the shipper. `landing()` reflects the overshoot instead - the object
+  bounces off the surface, each bounce lower - and a falling carton spins
+  about its upright axis rather than tipping, because a tipped carton leans
+  into its neighbour.
+- **Check a stage for collisions.** Every multi-object stage names its
+  objects and mounts an `OverlapProbe`; render with
+  `REMOTION_OVERLAP_PROBE=1` and it logs any frame where one object's
+  vertices are inside another's bounds (in that object's own rotated frame):
+  `[overlap] frame 50: shoebox enters laptop (973 vertices)`. A scaled-down
+  render is enough: `--scale=0.25 --sequence --image-format=jpeg`.
+- **Print on the stock, not over it.** A face drawn straight over a kraft
+  bag read as a sticker. The bag's ink layer multiplies into the board, is
+  mottled through a noise mask and a hair soft at the edges, and the paper -
+  grain, the turned-over hem, the shading of a bag that is not quite flat -
+  is laid over everything (`OnKraft` in `grove/art.tsx`).
+- **Small type is set in sentence case,** at the face's own spacing, never
+  in tracked capitals.
 - **Slots must be direct children.** A component that returns
   `<CustomBox.Top>` and friends is not a slot; a function that returns a
   fragment of them is (`shoeboxFaces(colourway)`).

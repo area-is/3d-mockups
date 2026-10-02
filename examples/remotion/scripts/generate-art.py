@@ -72,7 +72,6 @@ ART = {
     'lumen-orchid': (PORTRAIT, 'A white moth orchid stem arching with six open blooms and two buds.'),
     'lumen-fern': (PORTRAIT, 'A single long green fern frond, gently curved.'),
     'lumen-moth': (SQUARE, 'A luna moth with pale green wings spread wide, long tails, seen from directly above.'),
-    'lumen-lantern': (PORTRAIT, 'A vintage brass and glass hanging lantern with a short chain and a glowing candle inside.'),
 }
 
 

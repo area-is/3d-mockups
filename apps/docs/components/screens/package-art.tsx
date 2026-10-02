@@ -898,6 +898,90 @@ function shop(material: string): { ink: string } {
   return { ink: t.text === INK ? INK : '#ffffff' }
 }
 
+/**
+ * Uneven ink: fibre takes ink unevenly, so a solid on kraft is mottled rather
+ * than flat. A tile of fractal noise, mapped to between about 70 and 100 %
+ * coverage, masks the ink layer.
+ */
+const MOTTLE = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.6 0 0 0 1.15'/></filter><rect width='240' height='240' filter='url(%23m)'/></svg>")`
+
+/**
+ * Ink on the bag's board, the way it prints. Drawn straight over the board,
+ * the face read as a sticker: a block of flat ink at full strength, sharp on
+ * a perfectly even brown. A one-ink carrier is a print on fibre, so:
+ *
+ * - the ink multiplies into the board instead of covering it - the near-black
+ *   comes out a deep warm brown-black on kraft, and the plate's fine lines
+ *   soften into the stock - except white ink on a dark board, which sits on
+ *   top as white ink does, a little translucent;
+ * - it is mottled (`MOTTLE`) and its edges a hair soft, because fibre takes
+ *   ink unevenly and lets it spread;
+ * - the paper is laid over everything, ink included: fibre grain, the
+ *   turned-over hem along the mouth, and the soft fall-off of a bag that is
+ *   not perfectly flat.
+ *
+ * The board is painted here too, under the ink, so the blend has the stock
+ * to multiply into whatever the surface's own background is.
+ */
+function OnBoard({ material, children }: { material: string; children: ReactNode }) {
+  const dark = materialTone(material).text !== INK
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: material, overflow: 'hidden', isolation: 'isolate' }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          mixBlendMode: dark ? 'normal' : 'multiply',
+          opacity: dark ? 0.88 : 0.86,
+          WebkitMaskImage: MOTTLE,
+          maskImage: MOTTLE,
+          WebkitMaskSize: '240px 240px',
+          maskSize: '240px 240px',
+          filter: 'blur(0.25px)',
+        }}
+      >
+        {children}
+      </div>
+      <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', mixBlendMode: 'multiply', opacity: dark ? 0.45 : 0.3, pointerEvents: 'none' }}>
+        <filter id="bag-board-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={3} seed={11} stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="linear" slope={0.5} intercept={0.55} />
+            <feFuncG type="linear" slope={0.5} intercept={0.55} />
+            <feFuncB type="linear" slope={0.5} intercept={0.55} />
+          </feComponentTransfer>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#bag-board-grain)" />
+      </svg>
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          height: '7cqh',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.05))',
+          borderBottom: '0.3cqw solid rgba(60,40,20,0.25)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          mixBlendMode: 'multiply',
+          background:
+            'linear-gradient(90deg, rgba(80,55,30,0.1) 0%, rgba(80,55,30,0) 18%, rgba(80,55,30,0) 80%, rgba(80,55,30,0.12) 100%), linear-gradient(180deg, rgba(80,55,30,0) 70%, rgba(80,55,30,0.1) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 /** The florist's mark: a marigold, an engraving printed in the one ink (see `Plate`). */
 const MARIGOLD = asset('/art/marigold.webp')
 
@@ -935,18 +1019,20 @@ export function BagFront({ material }: { material: string }) {
   const { ink } = shop(material)
   const t = materialTone(material)
   return (
-    <Sheet tone={t} style={{ flexDirection: 'column', alignItems: 'center', padding: '8cqw 10cqw 7cqw', color: ink, textAlign: 'center' }}>
-      <div style={{ flex: 1.3 }} />
-      {/* 800 x 1302 in the file */}
-      <Plate src={MARIGOLD} ink={ink} style={{ width: '36cqw', height: '58.6cqw' }} />
-      <div style={{ marginTop: '6cqw' }}>
-        <Wordmark size="7cqw" />
-      </div>
-      <div style={{ width: '6cqw', height: '0.28cqw', background: ink, opacity: 0.7, marginTop: '3.6cqw', flex: 'none' }} />
-      <Line style={{ marginTop: '3cqw', opacity: 0.8 }}>Fleuriste · Est. 2016</Line>
-      <div style={{ flex: 1, minHeight: '6cqw' }} />
-      <Line style={{ fontSize: '2cqw', opacity: 0.7 }}>34 Elm Street · Northampton, Massachusetts</Line>
-    </Sheet>
+    <OnBoard material={material}>
+      <Sheet tone={t} style={{ flexDirection: 'column', alignItems: 'center', padding: '8cqw 10cqw 7cqw', color: ink, textAlign: 'center' }}>
+        <div style={{ flex: 1.3 }} />
+        {/* 800 x 1302 in the file */}
+        <Plate src={MARIGOLD} ink={ink} style={{ width: '36cqw', height: '58.6cqw' }} />
+        <div style={{ marginTop: '6cqw' }}>
+          <Wordmark size="7cqw" />
+        </div>
+        <div style={{ width: '6cqw', height: '0.28cqw', background: ink, opacity: 0.7, marginTop: '3.6cqw', flex: 'none' }} />
+        <Line style={{ marginTop: '3cqw', opacity: 0.8 }}>Fleuriste · Est. 2016</Line>
+        <div style={{ flex: 1, minHeight: '6cqw' }} />
+        <Line style={{ fontSize: '2cqw', opacity: 0.7 }}>34 Elm Street · Northampton, Massachusetts</Line>
+      </Sheet>
+    </OnBoard>
   )
 }
 
@@ -962,25 +1048,27 @@ export function BagBack({ material }: { material: string }) {
   const { ink } = shop(material)
   const t = materialTone(material)
   return (
-    <Sheet tone={t} style={{ flexDirection: 'column', alignItems: 'center', padding: '8cqw 10cqw 7cqw', color: ink, textAlign: 'center' }}>
-      <div style={{ flex: 1.3 }} />
-      <RoundSeal
-        size="34cqw"
-        legend="MARIGOLD & MOSS · FLEURISTE · "
-        color={ink}
-        ring={false}
-        center={<Plate src={MARIGOLD} ink={ink} style={{ width: '100%', height: '100%' }} />}
-      />
-      <div style={{ marginTop: '6cqw' }}>
-        <Wordmark size="5cqw" />
-      </div>
-      <Line style={{ marginTop: '4cqw', fontSize: '2.8cqw', opacity: 0.85 }}>
-        Grown slow. Cut this morning.
-        <br />
-        Wrapped by hand.
-      </Line>
-      <div style={{ flex: 1, minHeight: '6cqw' }} />
-      <Line style={{ fontSize: '2cqw', opacity: 0.7 }}>Flowers · Plants · Workshops · marigoldandmoss.com</Line>
-    </Sheet>
+    <OnBoard material={material}>
+      <Sheet tone={t} style={{ flexDirection: 'column', alignItems: 'center', padding: '8cqw 10cqw 7cqw', color: ink, textAlign: 'center' }}>
+        <div style={{ flex: 1.3 }} />
+        <RoundSeal
+          size="34cqw"
+          legend="MARIGOLD & MOSS · FLEURISTE · "
+          color={ink}
+          ring={false}
+          center={<Plate src={MARIGOLD} ink={ink} style={{ width: '100%', height: '100%' }} />}
+        />
+        <div style={{ marginTop: '6cqw' }}>
+          <Wordmark size="5cqw" />
+        </div>
+        <Line style={{ marginTop: '4cqw', fontSize: '2.8cqw', opacity: 0.85 }}>
+          Grown slow. Cut this morning.
+          <br />
+          Wrapped by hand.
+        </Line>
+        <div style={{ flex: 1, minHeight: '6cqw' }} />
+        <Line style={{ fontSize: '2cqw', opacity: 0.7 }}>Flowers · Plants · Workshops · marigoldandmoss.com</Line>
+      </Sheet>
+    </OnBoard>
   )
 }

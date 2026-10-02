@@ -23,7 +23,7 @@ import {
 import { A_FRAME_SIGN_FRAMING, BILLBOARD_FRAMING, BUS_SHELTER_FRAMING, MILK_CARTON_FRAMING, VAN_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Clouds, Drift, Floor, FontGate, orbitAt, RIG_START, useEnvelope, useStage, Vignette, Words } from '../kit'
+import { CameraRig, Clouds, Drift, Floor, FontGate, landing, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage, Vignette, Words } from '../kit'
 import {
   BagBack,
   BagFront,
@@ -35,6 +35,7 @@ import {
   CartonStory,
   FLAVOURS,
   GROVE,
+  KRAFT,
   MenuBoard,
   MenuBoardBack,
   SANS,
@@ -136,9 +137,9 @@ function HeroShot() {
       <MilkCartonMockup {...stage} color={blood.ground} resolution={720} position={[1.75, -0.12, 0]} rotation={[0.04, turn, 0]} scale={scale}>
         {cartonFaces(blood)}
       </MilkCartonMockup>
-      {/* near set: big, soft, fast - the depth of field puts the carton in focus */}
-      <Drift name="grove-blood-orange" x={1820 - frame * 1.6} y={1010 - frame * 0.4} width={620} rotate={-12 + frame * 0.05} blur={14} />
-      <Drift name="grove-slice" x={1040 + frame * 1.2} y={-40 + frame * 0.9} width={300} rotate={40 - frame * 0.4} blur={10} />
+      {/* near set: big, soft, fast - and kept to the corners, never across the carton */}
+      <Drift name="grove-blood-orange" x={170 - frame * 0.6} y={1070} width={460} rotate={-12 + frame * 0.05} blur={14} />
+      <Drift name="grove-slice" x={420 - frame * 0.8} y={40 + frame * 0.4} width={300} rotate={40 - frame * 0.4} blur={10} />
       <div style={{ position: 'absolute', left: 130 * u, top: 300 * u, color: GROVE.green }}>
         <div style={{ opacity: kicker, transform: `translateY(${(1 - kicker) * 16 * u}px)`, marginBottom: 26 * u }}>
           <Wordmark size={`${64 * u}px`} color={GROVE.green} />
@@ -163,13 +164,15 @@ function HeroShot() {
 /* ------------------------------------------------------------------ */
 
 const CARTON_GROUND = -MILK_CARTON_FRAMING.extent({})
+/** How far above the table the cartons are let go. */
+const DROP = 7.5
 
 function LineupShot() {
   const frame = useCurrentFrame()
   const { fps, width } = useVideoConfig()
   const u = width / 1920
   const delayCapture = useMockupCapture()
-  const xs = [-2.45, 0, 2.45]
+  const xs = [-2.6, 0, 2.6]
   const orbit = orbitAt(frame, [
     { frame: 0, target: [0, 0.4, 0], distance: 11.6, azimuth: -0.18, elevation: 0.16, fov: 38 },
     { frame: 140, target: [0, 0.2, 0], distance: 9.9, azimuth: 0.14, elevation: 0.1, fov: 38 },
@@ -197,21 +200,26 @@ function LineupShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={CARTON_GROUND} label="Three Grove cartons">
         <CameraRig orbit={orbit} />
         <Floor y={CARTON_GROUND} color="#28503a" radius={12} />
+        <OverlapProbe names={FLAVOURS.map((f) => f.id)} frame={frame} />
         {FLAVOURS.map((f, i) => {
-          // Each carton drops onto the table a beat after the last, and settles.
-          const drop = spring({ frame: frame - 8 - i * 10, fps, config: { damping: 12, stiffness: 140, mass: 0.9 } })
+          // Each carton drops onto the table a beat after the last and bounces to rest -
+          // off the table, never into it. In the air it spins about its own upright
+          // axis, never tips: a tipped carton leans into its neighbour, while a spinning
+          // one stays inside a circle (its footprint's diagonal, 2.45 units) narrower
+          // than the spacing between them.
+          const lift = landing(frame, fps, 8 + i * 10, DROP)
           const turn = tween(frame, 78 + i * 6, 128 + i * 6, 0, -0.62)
-          const y = (1 - drop) * 7.5
-          const wobble = (1 - drop) * 0.4 * (i % 2 ? 1 : -1)
+          const spin = (lift / DROP) * 0.9 * (i % 2 ? 1 : -1)
           return (
-            <MilkCarton key={f.id} color={f.ground} position={[xs[i]!, y, 0]} rotation={[0, turn - 0.08 * (i - 1), wobble]}>
+            <MilkCarton key={f.id} name={f.id} color={f.ground} position={[xs[i]!, lift, 0]} rotation={[0, turn - 0.08 * (i - 1) + spin, 0]}>
               {cartonFaces(f)}
             </MilkCarton>
           )
         })}
       </MockupCanvas>
-      <Drift name="grove-slice" x={260 + frame * 0.8} y={-120 + frame * 6.2} width={230} rotate={frame * 2} blur={9} />
-      <Drift name="grove-slice" x={1700 - frame * 0.5} y={-300 + frame * 7.4} width={300} rotate={-frame * 1.6} blur={12} />
+      {/* slices falling past the lens, down the margins either side of the range */}
+      <Drift name="grove-slice" x={150 + frame * 0.3} y={-120 + frame * 6.2} width={200} rotate={frame * 2} blur={9} />
+      <Drift name="grove-slice" x={1780 - frame * 0.2} y={-300 + frame * 7.4} width={240} rotate={-frame * 1.6} blur={12} />
       <div
         style={{
           position: 'absolute',
@@ -251,7 +259,7 @@ function BagShot() {
     <AbsoluteFill style={{ background: `radial-gradient(ellipse 80% 90% at 62% 45%, #d8452c 0%, ${GROVE.blood} 55%, #7c140f 100%)` }}>
       {/* a slice for a sun, turning behind the bag */}
       <Drift name="grove-slice" x={1180} y={520} width={980} rotate={frame * 0.35} opacity={0.95} />
-      <ShoppingBagMockup {...stage} handleColor="#2a2016" resolution={640} position={[1.3, -0.5 + bob, 0]} rotation={rotation} scale={0.88}>
+      <ShoppingBagMockup {...stage} color={KRAFT} handleColor="#2a2016" resolution={640} position={[1.3, -0.5 + bob, 0]} rotation={rotation} scale={0.88}>
         <ShoppingBagMockup.Front>
           <BagFront />
         </ShoppingBagMockup.Front>
@@ -259,7 +267,7 @@ function BagShot() {
           <BagBack />
         </ShoppingBagMockup.Back>
       </ShoppingBagMockup>
-      <Drift name="grove-leaves" x={1840 - frame * 1.4} y={150 + frame * 0.5} width={420} rotate={160 + frame * 0.2} blur={12} />
+      <Drift name="grove-leaves" x={1860 - frame * 0.3} y={120 + frame * 0.3} width={340} rotate={160 + frame * 0.2} blur={12} />
       <Drift name="grove-leaves" x={120 + frame * 0.9} y={980 - frame * 0.6} width={360} rotate={-20} blur={10} />
       <Headline style={{ left: 130 * u, top: 360 * u, color: GROVE.cream, fontSize: 150 * u }}>
         <Words text="Good" start={6} />
@@ -304,7 +312,8 @@ function StreetShot() {
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={STREET_GROUND} label="A bus shelter and a sidewalk sign">
         <CameraRig orbit={orbit} />
         <Floor y={STREET_GROUND} color="#e3d6c3" radius={26} />
-        <BusShelter color="#2b3a33">
+        <OverlapProbe names={['shelter', 'sign']} frame={frame} />
+        <BusShelter name="shelter" color="#2b3a33">
           <BusShelter.Poster>
             <ShelterPoster />
           </BusShelter.Poster>
@@ -315,7 +324,7 @@ function StreetShot() {
             <LEDText mode="rows" text={['12  Orchard Rd   2 min', '40  Market St    6 min', 'N3  Harbour     11 min']} />
           </BusShelter.Arrivals>
         </BusShelter>
-        <AFrameSign color="#3b2a1d" position={SIGN_AT} rotation={[0, -0.35, 0]} scale={SIGN_SCALE}>
+        <AFrameSign name="sign" color="#3b2a1d" position={SIGN_AT} rotation={[0, -0.35, 0]} scale={SIGN_SCALE}>
           <AFrameSign.Front>
             <MenuBoard />
           </AFrameSign.Front>

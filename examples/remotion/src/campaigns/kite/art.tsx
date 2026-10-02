@@ -105,8 +105,8 @@ export function ProductScreen({ pick, shoeOpacity = 1 }: { pick: number; shoeOpa
             </div>
           )
         })}
-        <div style={{ position: 'absolute', left: 18, top: 16, background: KITE.graphite, color: KITE.volt, fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', padding: '6px 10px', borderRadius: 999 }}>
-          DROP 10.09
+        <div style={{ position: 'absolute', left: 18, top: 16, background: KITE.graphite, color: KITE.volt, fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', padding: '6px 11px', borderRadius: 999 }}>
+          Drop 10.09
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 20 }}>
@@ -168,7 +168,7 @@ export function CountdownScreen({ seconds }: { seconds: number }) {
   return (
     <div style={{ position: 'absolute', inset: 0, background: KITE.graphite, color: KITE.chalk, fontFamily: SANS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
       <KiteLogo size={34} color={KITE.chalk} glyph={KITE.volt} />
-      <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.2em', color: KITE.volt, marginTop: 40 }}>AERO 2 DROPS IN</div>
+      <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.01em', color: KITE.volt, marginTop: 40 }}>Aero 2 drops in</div>
       <div style={{ fontFamily: DISPLAY, fontSize: 210, lineHeight: 0.9, fontVariantNumeric: 'tabular-nums' }}>00:0{Math.max(0, Math.ceil(seconds))}</div>
       <Cut name="kite-hero" style={{ position: 'relative', width: 300, marginTop: 30, filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.5))' }} />
     </div>
@@ -227,7 +227,7 @@ export function WorkoutScreen({ notifyAt }: { notifyAt: number }) {
   const note = interpolate(frame, [notifyAt, notifyAt + 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   return (
     <div style={{ position: 'absolute', inset: 0, background: '#000', color: '#fff', fontFamily: SANS, padding: '30px 16px 12px' }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: KITE.volt, letterSpacing: '0.04em' }}>TEMPO RUN</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KITE.volt, letterSpacing: '-0.01em' }}>Tempo run</div>
       <div style={{ fontFamily: DISPLAY, fontSize: 64, lineHeight: 1, marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>
         4:38<span style={{ fontFamily: SANS, fontSize: 15, fontWeight: 700, color: '#9aa0a8', marginLeft: 4 }}>/KM</span>
       </div>
@@ -288,7 +288,7 @@ export function StoreScreen() {
       </div>
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 30, padding: '36px 40px 36px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.16em', color: '#5d6168' }}>DROP 10.09 · 10:00 ET</div>
+          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', color: '#5d6168' }}>Drop 10.09 · 10:00 ET</div>
           <div style={{ fontFamily: DISPLAY, fontSize: 210, lineHeight: 0.88, marginTop: 14 }}>
             AERO
             <br />2
@@ -314,8 +314,8 @@ export function StoreScreen() {
           </div>
           <Cut name="kite-hero" style={{ left: '10%', top: '10%', width: '82%', filter: 'drop-shadow(0 40px 34px rgba(0,0,0,0.3))', transform: `rotate(${-4 + frame * 0.03}deg)` }} />
           {sold >= 1 && (
-            <div style={{ position: 'absolute', right: 28, top: 28, background: KITE.graphite, color: KITE.volt, fontWeight: 900, fontSize: 22, padding: '10px 18px', borderRadius: 999, letterSpacing: '0.06em' }}>
-              SOLD OUT
+            <div style={{ position: 'absolute', right: 28, top: 28, background: KITE.graphite, color: KITE.volt, fontWeight: 800, fontSize: 24, padding: '10px 18px', borderRadius: 999, letterSpacing: '-0.01em' }}>
+              Sold out
             </div>
           )}
         </div>
@@ -334,7 +334,7 @@ export function MailerLid() {
     <Face ink={KITE.volt} font={DISPLAY} style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
       <KiteGlyph size="13cqw" color={KITE.volt} />
       <div style={{ fontSize: '24cqw', lineHeight: 0.9, marginTop: '3cqh' }}>KITE</div>
-      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: '3cqw', letterSpacing: '0.24em', marginTop: '4cqh' }}>HANDLE LIKE A PERSONAL BEST</div>
+      <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '3.8cqw', letterSpacing: '-0.01em', marginTop: '4cqh' }}>Handle like a personal best.</div>
     </Face>
   )
 }
@@ -342,7 +342,7 @@ export function MailerLid() {
 export function MailerSide() {
   return (
     <Face ink={KITE.volt} font={DISPLAY} style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: '17cqh', letterSpacing: '0.08em' }}>RUN LIGHTER · KITE · RUN LIGHTER</div>
+      <div style={{ fontSize: '17cqh', letterSpacing: '0.01em' }}>RUN LIGHTER · KITE · RUN LIGHTER</div>
     </Face>
   )
 }
@@ -380,7 +380,7 @@ export function ShoeboxLabel({ colourway: c }: { colourway: Colourway }) {
           <span>AERO 2</span>
           <span>US 9</span>
         </div>
-        <div style={{ fontSize: '3.6cqw', fontWeight: 700, marginTop: '3cqh' }}>{c.name.toUpperCase()} · KT-0219-{c.id === 'volt' ? '701' : c.id === 'sky' ? '402' : '806'}</div>
+        <div style={{ fontSize: '3.6cqw', fontWeight: 700, marginTop: '3cqh' }}>{c.name} · KT-0219-{c.id === 'volt' ? '701' : c.id === 'sky' ? '402' : '806'}</div>
         <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5cqw', height: '22cqh' }}>
           {Array.from({ length: 38 }, (_, i) => (
             <div key={i} style={{ width: `${[0.4, 0.9, 0.3, 0.6, 1.1][i % 5]}cqw`, background: KITE.graphite }} />

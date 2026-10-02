@@ -115,12 +115,13 @@ const small = (size: string, extra?: React.CSSProperties): React.CSSProperties =
   ...extra,
 })
 
-const caps = (size: string, extra?: React.CSSProperties): React.CSSProperties => ({
+/** A small label: sentence case and the face's own spacing, never tracked capitals. */
+const label = (size: string, extra?: React.CSSProperties): React.CSSProperties => ({
   fontFamily: SANS,
   fontSize: size,
-  fontWeight: 700,
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
+  fontWeight: 600,
+  letterSpacing: '-0.005em',
+  lineHeight: 1.3,
   ...extra,
 })
 
@@ -135,7 +136,7 @@ export function CartonFront({ flavour: f }: { flavour: Flavour }) {
       <div aria-hidden style={{ position: 'absolute', left: '-14cqw', top: '47cqh', width: '128cqw', aspectRatio: 1, borderRadius: '50%', background: f.sun }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
         <Wordmark size="21cqw" color={f.ink} leaf={f.id === 'apple' ? '#a9d66e' : GROVE.leaf} />
-        <div style={caps('3.2cqw', { textAlign: 'right', lineHeight: 1.3, marginTop: '1.4cqw' })}>
+        <div style={label('3.4cqw', { textAlign: 'right', marginTop: '1.4cqw' })}>
           No. {f.number}
           <br />
           Cold-pressed
@@ -164,7 +165,7 @@ export function CartonFront({ flavour: f }: { flavour: Flavour }) {
         }}
       >
         <span style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: '6.4cqw', fontWeight: 500, letterSpacing: '-0.02em' }}>Squeezed this morning</span>
-        <span style={caps('3.4cqw', { letterSpacing: '0.08em' })}>1.75 L</span>
+        <span style={label('3.6cqw')}>1.75 L</span>
       </div>
     </Face>
   )
@@ -174,7 +175,7 @@ export function CartonFront({ flavour: f }: { flavour: Flavour }) {
 export function CartonStory({ flavour: f }: { flavour: Flavour }) {
   return (
     <Face ground={GROVE.cream} ink={GROVE.green} font={SERIF} style={{ padding: '10cqw 9cqw 0' }}>
-      <div style={caps('3.4cqw', { color: f.ground === '#f2c230' ? GROVE.green : f.ground })}>Pressed at dawn</div>
+      <div style={label('3.4cqw', { color: f.ground === '#f2c230' ? GROVE.green : f.ground })}>Pressed at dawn</div>
       <div style={{ fontSize: '10.2cqw', fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', marginTop: '4cqw' }}>
         Picked Monday.
         <br />
@@ -246,7 +247,7 @@ export function CartonBack({ flavour: f }: { flavour: Flavour }) {
         <br />
         <span style={{ fontStyle: 'italic', fontWeight: 420 }}>No hurry.</span>
       </div>
-      <div style={caps('3.2cqw', { marginTop: '8cqh', opacity: 0.85 })}>Ingredients</div>
+      <div style={label('3.2cqw', { marginTop: '8cqh', opacity: 0.85 })}>Ingredients</div>
       <div style={small('4.2cqw', { marginTop: '1.6cqw' })}>{f.notes}</div>
       <Cut name="grove-leaves" style={{ right: '-16cqw', bottom: '-6cqh', width: '86cqw', transform: 'rotate(-24deg)' }} />
     </Face>
@@ -258,7 +259,7 @@ export function CartonGable({ flavour: f }: { flavour: Flavour }) {
   return (
     <Face ground={f.ground} ink={f.ink} font={SERIF} style={{ alignItems: 'flex-start', justifyContent: 'center', padding: '6cqh 6cqw 0' }}>
       <Wordmark size="10.5cqw" color={f.ink} leaf={f.id === 'apple' ? '#a9d66e' : GROVE.leaf} />
-      <div style={caps('2.6cqw', { marginTop: '5cqh' })}>Shake well</div>
+      <div style={label('2.6cqw', { marginTop: '5cqh' })}>Shake well</div>
     </Face>
   )
 }
@@ -267,30 +268,89 @@ export function CartonGable({ flavour: f }: { flavour: Flavour }) {
 /*  The bag                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Kraft shows through: one green ink, the crate, one line. */
+/** The bag's kraft stock: the face's ground, and the bag's own `color`. */
+export const KRAFT = '#c49a68'
+
+/**
+ * Uneven ink: fibre takes ink unevenly, so a solid on kraft is mottled rather
+ * than flat. A tile of fractal noise, mapped to between about 70 and 100 %
+ * coverage, masks the ink layer.
+ */
+const MOTTLE = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.6 0 0 0 1.15'/></filter><rect width='240' height='240' filter='url(%23m)'/></svg>")`
+
+/**
+ * Print on kraft. A face drawn straight over the stock read as a sticker:
+ * ink sits flat and opaque on a screen, but on brown board it soaks in. So
+ * the ink layer multiplies into the stock (the brown shows through the
+ * green, the photograph goes muted the way process colour does on kraft),
+ * it is mottled (`MOTTLE`) and a hair soft at the edges, and the paper is
+ * laid over everything: fibre grain, the turned-over hem at the top, and the
+ * soft shading of a bag that is not perfectly flat.
+ */
+function OnKraft({ children }: { children: React.ReactNode }) {
+  return (
+    <Face ground={KRAFT} ink={GROVE.green} font={SERIF}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          mixBlendMode: 'multiply',
+          opacity: 0.9,
+          WebkitMaskImage: MOTTLE,
+          maskImage: MOTTLE,
+          WebkitMaskSize: '240px 240px',
+          maskSize: '240px 240px',
+          filter: 'blur(0.25px)',
+        }}
+      >
+        {children}
+      </div>
+      <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', mixBlendMode: 'multiply', opacity: 0.3 }}>
+        <filter id="grove-kraft-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={3} seed={7} stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="linear" slope={0.5} intercept={0.55} />
+            <feFuncG type="linear" slope={0.5} intercept={0.55} />
+            <feFuncB type="linear" slope={0.5} intercept={0.55} />
+          </feComponentTransfer>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grove-kraft-grain)" />
+      </svg>
+      {/* the hem: the top edge turned over and glued, a band with a fold line under it */}
+      <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, top: 0, height: '7cqh', background: 'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.05))', borderBottom: '0.35cqw solid rgba(70,45,20,0.28)' }} />
+      <div aria-hidden style={{ position: 'absolute', inset: 0, mixBlendMode: 'multiply', background: 'linear-gradient(90deg, rgba(90,60,30,0.10) 0%, rgba(90,60,30,0) 18%, rgba(90,60,30,0) 80%, rgba(90,60,30,0.12) 100%), linear-gradient(180deg, rgba(90,60,30,0) 70%, rgba(90,60,30,0.10) 100%)' }} />
+    </Face>
+  )
+}
+
+/** The front: the mark, a line under it, a small crate, and the sign-off - with room around all of it. */
 export function BagFront() {
   return (
-    <Face ink={GROVE.green} font={SERIF} style={{ alignItems: 'center', padding: '11cqw 8cqw 0', textAlign: 'center' }}>
-      <Wordmark size="30cqw" color={GROVE.green} />
-      <div style={caps('3.2cqw', { marginTop: '5cqw' })}>Cold-pressed juice · since 2019</div>
-      <Cut name="grove-crate" style={{ left: '11cqw', bottom: '16cqh', width: '78cqw' }} />
-      <div style={{ position: 'absolute', bottom: '6cqh', left: 0, right: 0, fontStyle: 'italic', fontSize: '7.6cqw', fontWeight: 420, letterSpacing: '-0.02em' }}>
-        Good mornings, carried home.
+    <OnKraft>
+      <div style={{ position: 'absolute', inset: '15cqh 15cqw 9cqh', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        <Wordmark size="21cqw" color={GROVE.green} />
+        <div style={label('3.7cqw', { fontWeight: 500, marginTop: '4.5cqh' })}>Cold-pressed juice, since 2019</div>
+        <Cut name="grove-crate" style={{ position: 'relative', width: '50cqw', marginTop: '9cqh', filter: 'saturate(1.15) brightness(1.06)' }} />
+        <div style={{ marginTop: 'auto', fontStyle: 'italic', fontSize: '5.2cqw', fontWeight: 420, letterSpacing: '-0.01em' }}>Good mornings, carried home.</div>
       </div>
-    </Face>
+    </OnKraft>
   )
 }
 
 export function BagBack() {
   return (
-    <Face ink={GROVE.green} font={SERIF} style={{ padding: '12cqw 9cqw' }}>
-      <div style={{ fontSize: '12cqw', fontWeight: 640, lineHeight: 0.95, letterSpacing: '-0.035em' }}>
-        Grown by people
-        <br />
-        <span style={{ fontStyle: 'italic', fontWeight: 420 }}>who know your name.</span>
+    <OnKraft>
+      <div style={{ position: 'absolute', inset: '17cqh 15cqw 10cqh', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        <div style={{ fontSize: '8cqw', fontWeight: 600, lineHeight: 1.05, letterSpacing: '-0.025em' }}>
+          Grown by people
+          <br />
+          <span style={{ fontStyle: 'italic', fontWeight: 420 }}>who know your name.</span>
+        </div>
+        <Cut name="grove-leaves" style={{ position: 'relative', width: '36cqw', marginTop: '8cqh', filter: 'saturate(1.1) brightness(1.05)' }} />
+        <Wordmark size="11cqw" color={GROVE.green} style={{ marginTop: 'auto' }} />
       </div>
-      <Cut name="grove-farmer" style={{ left: '18cqw', bottom: 0, width: '70cqw' }} />
-    </Face>
+    </OnKraft>
   )
 }
 
@@ -313,7 +373,7 @@ export function ShelterPoster() {
       </div>
       <Cut name="grove-farmer" style={{ right: '-10cqw', bottom: 0, width: '84cqw' }} />
       <Cut name="grove-glass" style={{ left: '6cqw', bottom: '6cqh', width: '24cqw', filter: 'drop-shadow(0 1cqw 1.6cqw rgba(0,0,0,0.3))' }} />
-      <div style={caps('2.8cqw', { position: 'absolute', left: '8cqw', top: '93cqh' })}>On shelves by noon</div>
+      <div style={label('2.8cqw', { position: 'absolute', left: '8cqw', top: '93cqh' })}>On shelves by noon</div>
     </Face>
   )
 }
@@ -322,7 +382,7 @@ export function ShelterPoster() {
 export function ShelterInner() {
   return (
     <Face ground={GROVE.blood} ink={GROVE.cream} font={SERIF} style={{ padding: '9cqw 8cqw' }}>
-      <div style={caps('3.2cqw')}>Today's batch</div>
+      <div style={label('3.2cqw')}>Today's batch</div>
       <div style={{ fontSize: '30cqw', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: 0.9, marginTop: '4cqw' }}>412</div>
       <div style={{ fontSize: '9cqw', fontStyle: 'italic', fontWeight: 420, lineHeight: 1 }}>bottles, pressed at 5:40 am.</div>
       <Cut name="grove-slice" style={{ left: '30cqw', top: '50cqh', width: '80cqw', transform: 'rotate(12deg)' }} />
@@ -341,7 +401,7 @@ export function MenuBoard() {
   ]
   return (
     <Face ground={GROVE.green} ink={GROVE.cream} font={SERIF} style={{ padding: '10cqw 9cqw' }}>
-      <div style={caps('3.4cqw', { color: GROVE.sun })}>Fresh-pressed today</div>
+      <div style={label('3.4cqw', { color: GROVE.sun })}>Fresh-pressed today</div>
       <div style={{ fontSize: '17cqw', fontWeight: 640, lineHeight: 0.92, letterSpacing: '-0.04em', marginTop: '3cqw' }}>
         Juice,
         <br />
@@ -366,7 +426,7 @@ export function MenuBoardBack() {
     <Face ground={GROVE.cream} ink={GROVE.green} font={SERIF} style={{ padding: '12cqw 9cqw', alignItems: 'center', textAlign: 'center' }}>
       <Wordmark size="24cqw" color={GROVE.green} />
       <div style={{ fontSize: '12cqw', fontStyle: 'italic', marginTop: '10cqw', lineHeight: 1 }}>Open 7am</div>
-      <div style={caps('3.6cqw', { marginTop: '4cqw' })}>till the juice runs out</div>
+      <div style={label('3.6cqw', { marginTop: '4cqw' })}>till the juice runs out</div>
       <Cut name="grove-crate" style={{ left: '6cqw', bottom: '4cqh', width: '88cqw' }} />
     </Face>
   )
@@ -441,7 +501,7 @@ export function Billboard() {
         <span style={{ fontStyle: 'italic', fontWeight: 420 }}>this morning.</span>
       </div>
       <Wordmark size="17cqh" color={GROVE.green} style={{ position: 'absolute', left: '4cqw', bottom: '10cqh' }} />
-      <div style={caps('4.4cqh', { position: 'absolute', left: '19cqw', bottom: '12cqh' })}>Cold-pressed in small batches</div>
+      <div style={label('4.4cqh', { position: 'absolute', left: '19cqw', bottom: '12cqh' })}>Cold-pressed in small batches</div>
       <Cut name="grove-lemon-ginger" style={{ left: '48cqw', top: '34cqh', height: '60cqh' }} />
       <Cut name="grove-green-apple" style={{ left: '80cqw', top: '36cqh', height: '58cqh' }} />
       <Cut name="grove-glass" style={{ left: '68cqw', top: '6cqh', height: '90cqh', filter: 'drop-shadow(0 2cqh 3cqh rgba(0,0,0,0.25))' }} />

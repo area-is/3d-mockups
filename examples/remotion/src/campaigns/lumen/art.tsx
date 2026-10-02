@@ -39,12 +39,13 @@ export const ARTISTS: Artist[] = [
   { name: 'Theo Marlowe', role: 'Electronic', night: 'Sunday 16', art: 'lumen-producer', ground: '#2c3a6b' },
 ]
 
-const caps = (size: string, extra?: React.CSSProperties): React.CSSProperties => ({
+/** A small label: sentence case and the face's own spacing, never tracked capitals. */
+const label = (size: string, extra?: React.CSSProperties): React.CSSProperties => ({
   fontFamily: SANS,
   fontSize: size,
   fontWeight: 600,
-  letterSpacing: '0.2em',
-  textTransform: 'uppercase',
+  letterSpacing: '-0.005em',
+  lineHeight: 1.3,
   ...extra,
 })
 
@@ -67,7 +68,7 @@ export function InviteFront() {
     <Face ground={LUMEN.glass} ink={LUMEN.ivory} font={SERIF} style={{ padding: '10cqw 9cqw', background: `radial-gradient(ellipse 90% 70% at 50% 30%, ${LUMEN.moss} 0%, ${LUMEN.glass} 70%)` }}>
       <Cut name="lumen-monstera" style={{ right: '-30cqw', top: '-14cqw', width: '96cqw', transform: 'rotate(160deg)', opacity: 0.95 }} />
       <Cut name="lumen-fern" style={{ left: '-26cqw', bottom: '-10cqw', width: '70cqw', transform: 'rotate(20deg)' }} />
-      <div style={caps('3.4cqw', { color: LUMEN.amber, position: 'relative' })}>You are invited</div>
+      <div style={label('3.4cqw', { color: LUMEN.amber, position: 'relative' })}>You are invited</div>
       <Mark size="30cqw" color={LUMEN.ivory} style={{ marginTop: '30cqh', position: 'relative' }} />
       <div style={{ fontSize: '8.6cqw', fontStyle: 'italic', lineHeight: 1.05, marginTop: '4cqw', position: 'relative' }}>
         Three nights
@@ -75,7 +76,7 @@ export function InviteFront() {
         in the Glasshouse
       </div>
       <Cut name="lumen-orchid" style={{ right: '4cqw', bottom: '2cqh', width: '34cqw' }} />
-      <div style={caps('3cqw', { marginTop: 'auto', position: 'relative' })}>14 — 16 November</div>
+      <div style={label('3cqw', { marginTop: 'auto', position: 'relative' })}>14 — 16 November</div>
     </Face>
   )
 }
@@ -84,7 +85,7 @@ export function InviteInsideLeft() {
   const lead = ARTISTS[0]!
   return (
     <Face ground={lead.ground} ink={LUMEN.ivory} font={SERIF} style={{ padding: '9cqw', background: `linear-gradient(180deg, #e39b45 0%, ${lead.ground} 60%, #8a4c18 100%)` }}>
-      <div style={caps('3cqw')}>Opening night</div>
+      <div style={label('3cqw')}>Opening night</div>
       <div style={{ fontSize: '15cqw', lineHeight: 0.92, marginTop: '3cqw', position: 'relative', zIndex: 1 }}>{lead.name}</div>
       <Cut name={lead.art} style={{ left: '2cqw', bottom: 0, width: '100cqw' }} />
     </Face>
@@ -94,10 +95,10 @@ export function InviteInsideLeft() {
 export function InviteInsideRight() {
   return (
     <Face ground={LUMEN.ivory} ink={LUMEN.ink} font={SERIF} style={{ padding: '10cqw 9cqw' }}>
-      <div style={caps('3cqw', { color: LUMEN.moss })}>The line-up</div>
+      <div style={label('3cqw', { color: LUMEN.moss })}>The line-up</div>
       {ARTISTS.map((a) => (
         <div key={a.name} style={{ marginTop: '7cqw', borderTop: `0.3cqw solid ${LUMEN.ink}22`, paddingTop: '3cqw' }}>
-          <div style={caps('2.6cqw', { color: LUMEN.ember })}>{a.night} November</div>
+          <div style={label('2.6cqw', { color: LUMEN.ember })}>{a.night} November</div>
           <div style={{ fontSize: '10cqw', lineHeight: 1, marginTop: '1.6cqw' }}>{a.name}</div>
           <div style={{ fontSize: '5cqw', fontStyle: 'italic', opacity: 0.7 }}>{a.role}</div>
         </div>
@@ -126,7 +127,7 @@ export function InviteBack() {
 export function ProgrammeCover() {
   return (
     <Face ground={LUMEN.night} ink={LUMEN.ivory} font={SERIF} style={{ padding: '12cqw 10cqw', background: `linear-gradient(180deg, ${LUMEN.night} 0%, ${LUMEN.glass} 100%)` }}>
-      <div style={caps('4.4cqw', { color: LUMEN.amber })}>Programme</div>
+      <div style={label('4.4cqw', { color: LUMEN.amber })}>Programme</div>
       <Mark size="36cqw" color={LUMEN.ivory} style={{ marginTop: '6cqh' }} />
       <Cut name="lumen-orchid" style={{ left: '8cqw', top: '34cqh', width: '92cqw' }} />
       <div style={{ marginTop: 'auto', fontSize: '11cqw', fontStyle: 'italic', lineHeight: 1 }}>14 — 16 Nov</div>
@@ -144,7 +145,7 @@ export function ProgrammeNight({ artist, index }: { artist: Artist; index: numbe
   ]
   return (
     <Face ground={LUMEN.ivory} ink={LUMEN.ink} font={SERIF} style={{ padding: '11cqw 9cqw' }}>
-      <div style={caps('4cqw', { color: LUMEN.ember })}>Night {['one', 'two', 'three'][index]}</div>
+      <div style={label('4cqw', { color: LUMEN.ember })}>Night {['one', 'two', 'three'][index]}</div>
       <div style={{ fontSize: '17cqw', lineHeight: 0.95, marginTop: '3cqw' }}>{artist.night.split(' ')[0]}</div>
       <div style={{ fontSize: '9cqw', fontStyle: 'italic' }}>{artist.night.split(' ')[1]} November</div>
       <div style={{ position: 'relative', height: '34cqh', margin: '4cqh -9cqw 0', background: artist.ground, overflow: 'hidden' }}>
@@ -169,7 +170,7 @@ export function ProgrammeMap() {
   ]
   return (
     <Face ground={LUMEN.glass} ink={LUMEN.ivory} font={SERIF} style={{ padding: '11cqw 9cqw' }}>
-      <div style={caps('4cqw', { color: LUMEN.amber })}>Finding your way</div>
+      <div style={label('4cqw', { color: LUMEN.amber })}>Finding your way</div>
       <div style={{ fontSize: '14cqw', lineHeight: 0.95, marginTop: '3cqw' }}>The gardens</div>
       <div style={{ position: 'relative', flex: 1, marginTop: '6cqw' }}>
         {houses.map(([name, x, y, w]) => (
@@ -197,13 +198,13 @@ export function PassFront() {
       <Cut name={artist.art} style={{ left: '50%', top: '22cqw', height: '56cqh', transform: 'translateX(-50%)' }} />
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <Mark size="13cqw" color={LUMEN.ivory} />
-        <span style={caps('3.4cqw', { color: LUMEN.amber })}>2026</span>
+        <span style={label('3.4cqw', { color: LUMEN.amber })}>2026</span>
       </div>
       <div style={{ marginTop: 'auto', position: 'relative' }}>
         <div style={{ fontSize: '12cqw', lineHeight: 1 }}>{artist.name}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4cqw' }}>
-          <span style={{ ...caps('4.6cqw'), background: LUMEN.amber, color: LUMEN.night, padding: '1.6cqw 3cqw', borderRadius: '1cqw', fontWeight: 700 }}>Artist</span>
-          <span style={caps('3.4cqw')}>All areas</span>
+          <span style={{ ...label('4.6cqw'), background: LUMEN.amber, color: LUMEN.night, padding: '1.6cqw 3cqw', borderRadius: '1cqw', fontWeight: 700 }}>Artist</span>
+          <span style={label('3.4cqw')}>All areas</span>
         </div>
       </div>
     </Face>
@@ -214,7 +215,7 @@ export function PassBack() {
   const zones = ['Palm House', 'Fern House', 'Orchid House', 'Green room', 'Backstage', 'Roof garden']
   return (
     <Face ground={LUMEN.ivory} ink={LUMEN.ink} font={SERIF} style={{ padding: '22cqw 9cqw 9cqw' }}>
-      <div style={caps('3.6cqw', { color: LUMEN.ember })}>Access</div>
+      <div style={label('3.6cqw', { color: LUMEN.ember })}>Access</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.4cqw', marginTop: '4cqw' }}>
         {zones.map((z, i) => (
           <div key={z} style={{ border: `0.5cqw solid ${LUMEN.ink}`, borderRadius: '2cqw', padding: '3cqw', background: i < 5 ? LUMEN.amber : 'transparent', fontFamily: SANS, fontSize: '4.2cqw', fontWeight: 600 }}>
@@ -247,7 +248,7 @@ export function RecordSleeve() {
         <br />
         <span style={{ fontStyle: 'italic' }}>Glasshouse</span>
       </div>
-      <div style={caps('2.6cqw', { position: 'relative', marginTop: '3cqw', color: LUMEN.amber })}>{artist.name}</div>
+      <div style={label('2.6cqw', { position: 'relative', marginTop: '3cqw', color: LUMEN.amber })}>{artist.name}</div>
       <Mark size="9cqw" color={LUMEN.ivory} style={{ position: 'absolute', left: '7cqw', bottom: '7cqw' }} />
     </Face>
   )
@@ -258,7 +259,7 @@ export function RecordLabel({ turn }: { turn: number }) {
   return (
     <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', transform: `rotate(${turn}deg)`, background: `radial-gradient(circle, ${LUMEN.ivory} 0 26%, ${LUMEN.amber} 26% 100%)`, color: LUMEN.night, fontFamily: SERIF }}>
       <div style={{ position: 'absolute', top: '14%', left: 0, right: 0, textAlign: 'center', fontSize: 22 }}>Lumen</div>
-      <div style={{ position: 'absolute', bottom: '14%', left: 0, right: 0, textAlign: 'center', fontFamily: SANS, fontSize: 9, fontWeight: 700, letterSpacing: '0.18em' }}>SIDE A · 33⅓</div>
+      <div style={{ position: 'absolute', bottom: '14%', left: 0, right: 0, textAlign: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 600, letterSpacing: '-0.005em' }}>Side A · 33⅓</div>
     </div>
   )
 }
@@ -270,7 +271,7 @@ export function ZineCover() {
     <Face ground="#e9dcc6" ink={LUMEN.ink} font={SERIF} style={{ padding: '6cqw 6cqw' }}>
       <div style={{ position: 'absolute', left: 0, right: 0, top: '4cqw', textAlign: 'center', fontSize: '40cqw', lineHeight: 0.8, color: LUMEN.ember, letterSpacing: '-0.02em' }}>Lumen</div>
       <Cut name={artist.art} style={{ left: '50%', bottom: 0, height: '84cqh', transform: 'translateX(-46%)' }} />
-      <div style={{ position: 'absolute', left: '6cqw', top: '44cqh', width: '30cqw', ...caps('2.6cqw', { letterSpacing: '0.12em', lineHeight: 1.5 }) }}>
+      <div style={{ position: 'absolute', left: '6cqw', top: '44cqh', width: '30cqw', ...label('3cqw', { lineHeight: 1.4 }) }}>
         Issue 03
         <br />
         Winter 2026
@@ -305,10 +306,10 @@ export function GateScreen({ hold = 40 }: { hold?: number }) {
               <Cut name={artist.art} style={{ left: '50%', bottom: '18cqh', height: '64cqh', transform: `translateX(-50%) scale(${1 + drift * 0.002})` }} />
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <Mark size="14cqw" color={LUMEN.ivory} />
-                <span style={caps('3.4cqw', { color: LUMEN.amber })}>Tonight</span>
+                <span style={label('3.4cqw', { color: LUMEN.amber })}>Tonight</span>
               </div>
               <div style={{ marginTop: 'auto', position: 'relative' }}>
-                <div style={caps('3.6cqw', { color: LUMEN.amber })}>{artist.night} Nov · {artist.role}</div>
+                <div style={label('3.6cqw', { color: LUMEN.amber })}>{artist.night} Nov · {artist.role}</div>
                 <div style={{ fontSize: '14cqw', lineHeight: 0.95, marginTop: '2cqw' }}>{artist.name}</div>
               </div>
             </Face>
@@ -322,7 +323,7 @@ export function GateScreen({ hold = 40 }: { hold?: number }) {
 export function WelcomeBanner() {
   return (
     <Face ground={LUMEN.glass} ink={LUMEN.ivory} font={SERIF} style={{ padding: '12cqw 10cqw', background: `linear-gradient(180deg, ${LUMEN.night} 0%, ${LUMEN.glass} 60%, ${LUMEN.moss} 100%)` }}>
-      <div style={caps('4cqw', { color: LUMEN.amber })}>Welcome</div>
+      <div style={label('4cqw', { color: LUMEN.amber })}>Welcome</div>
       <div style={{ fontSize: '22cqw', lineHeight: 0.9, marginTop: '4cqw' }}>
         to the
         <br />
