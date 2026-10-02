@@ -11,10 +11,13 @@
  * world units:
  *
  * - the EMV contact plate over the ISO/IEC 7816-2 contact field (its first
- *   contact 10.25 mm in from the left edge and 19.23 mm down from the top);
- * - the embossed lines of ISO/IEC 7811-1 - the number in Farrington 7B with
- *   its baseline 21.42 mm above the bottom edge, the expiry and the name below
- *   it in the smaller gothic, raised up to 0.46 mm;
+ *   contact 10.25 mm in from the left edge and 19.23 mm down from the top),
+ *   sized and etched after a photographed card's module;
+ * - the embossed lines of ISO/IEC 7811-1 - the number in Farrington 7B
+ *   centred 21.42 mm above the bottom edge (its top may stand no higher than
+ *   24.03 mm), the expiry and the name below it in the smaller gothic, in the
+ *   name-and-address area 2.41-14.53 mm above the bottom edge, raised up to
+ *   0.46 mm;
  * - the magnetic stripe of ISO/IEC 7811-2 on the back, 12.7 mm tall from
  *   5.54 mm below the top edge, and a signature panel under it.
  *
@@ -49,7 +52,23 @@ export interface CreditCardPrintLine extends StrokeTextLine {
   text: string
 }
 
+/**
+ * One groove etched into the contact plate, as a polyline in plate units:
+ * x across from -0.5 (left edge) to 0.5, y up from -0.5 (bottom) to 0.5.
+ */
+export type CreditCardChipGroove = readonly (readonly [number, number])[]
+
 const NUMBER_X_MM = 10.18
+const NUMBER_HEIGHT_MM = 4.32
+/** ISO/IEC 7811-1 line 1: the number's centreline, measured from the bottom edge. */
+const NUMBER_CENTRE_MM = 21.42
+/**
+ * The expiry and the name, as a photographed Mastercard debit card sets them
+ * (baselines measured off the card): inside the name-and-address area, clear
+ * of the bottom edge and of the number.
+ */
+const EXPIRY_BASELINE_MM = 11.4
+const NAME_BASELINE_MM = 7.0
 const EXPIRY_X_MM = 40
 const NAME_X_MM = 7.65
 /** Clear margin the embossing keeps from the right edge when a long line condenses. */
@@ -73,25 +92,44 @@ export const CREDIT_CARD = {
    */
   faceOffset: 0.003,
   /**
-   * The EMV contact plate: about 11 x 8.5 mm, centred on the six-contact field
-   * of ISO/IEC 7816-2 (C1-C3 and C5-C7; C4 and C8 are unused on payment cards,
-   * which is why the plate is shorter than the full eight-contact field). The
-   * pads are three per side with a full-height centre pad between them, split
-   * by thin grooves that show the darker substrate.
+   * The EMV module: a contact plate 13 x 11.4 mm with generous corners, set in
+   * a milled cavity whose dark rim shows around it - both measured off a
+   * photographed debit card, whose module sits squarely over the ISO/IEC
+   * 7816-2 contact field. The plate is one sheet of plated metal; what reads
+   * as separate pads are grooves etched through it to the dark substrate:
+   * three contacts down each side, a centre pad between them, and bands along
+   * the top and bottom edges ticked into segments.
    */
   chip: {
-    x: fromLeft(15.06),
-    y: fromTop(22.62),
-    width: mm(11),
-    height: mm(8.5),
-    radius: mm(1.25),
-    /** Width of the grooves between the pads. */
-    groove: mm(0.3),
-    /** Width of the centre pad. */
-    centerWidth: mm(3),
-    /** Pads per side column. */
-    rows: 3,
-    /** Rise of the plate over the face; the pads stand a hair above it. */
+    x: fromLeft(14.77),
+    y: fromTop(22.61),
+    width: mm(13),
+    height: mm(11.4),
+    radius: mm(2.1),
+    /** Width of the cavity's dark rim around the plate. */
+    rim: mm(0.35),
+    /** Width of the etched grooves. */
+    groove: mm(0.24),
+    grooves: [
+      // the bands along the top and bottom edges
+      [[-0.5, 0.39], [0.5, 0.39]],
+      [[-0.5, -0.39], [0.5, -0.39]],
+      [[-0.13, 0.39], [-0.13, 0.5]],
+      [[0.13, 0.39], [0.13, 0.5]],
+      [[-0.13, -0.39], [-0.13, -0.5]],
+      [[0.13, -0.39], [0.13, -0.5]],
+      // the centre pad between the two columns of contacts
+      [[-0.17, 0.39], [-0.17, -0.39]],
+      [[0.17, 0.39], [0.17, -0.39]],
+      // three contacts down each side, and the strips along the side edges
+      [[-0.5, 0.13], [-0.17, 0.13]],
+      [[-0.5, -0.13], [-0.17, -0.13]],
+      [[0.17, 0.13], [0.5, 0.13]],
+      [[0.17, -0.13], [0.5, -0.13]],
+      [[-0.41, 0.39], [-0.41, -0.39]],
+      [[0.41, 0.39], [0.41, -0.39]],
+    ] satisfies readonly CreditCardChipGroove[],
+    /** Rise of the plate over the face. */
     lift: 0.0008,
   },
   /** The embossed lines, front side. The back carries their mirrored impressions. */
@@ -99,8 +137,8 @@ export const CREDIT_CARD = {
     /** The card number: Farrington 7B at 7 characters per inch, 4.32 mm tall. */
     number: {
       x: fromLeft(NUMBER_X_MM),
-      baseline: fromBottom(21.42),
-      height: mm(4.32),
+      baseline: fromBottom(NUMBER_CENTRE_MM - NUMBER_HEIGHT_MM / 2),
+      height: mm(NUMBER_HEIGHT_MM),
       width: mm(2.7),
       pitch: mm(3.63),
       stroke: mm(0.72),
@@ -110,7 +148,7 @@ export const CREDIT_CARD = {
     /** The expiry: the small gothic at 10 characters per inch, mid-card. */
     expiry: {
       x: fromLeft(EXPIRY_X_MM),
-      baseline: fromBottom(10.6),
+      baseline: fromBottom(EXPIRY_BASELINE_MM),
       height: mm(2.92),
       width: mm(2),
       pitch: mm(2.54),
@@ -121,7 +159,7 @@ export const CREDIT_CARD = {
     /** The cardholder's name, at the foot of the name-and-address area. */
     name: {
       x: fromLeft(NAME_X_MM),
-      baseline: fromBottom(4.9),
+      baseline: fromBottom(NAME_BASELINE_MM),
       height: mm(2.92),
       width: mm(2),
       pitch: mm(2.54),
@@ -131,6 +169,18 @@ export const CREDIT_CARD = {
     },
   } satisfies Record<string, CreditCardEmbossLine>,
   /**
+   * Printed rather than embossed (`emboss="flat"`), the same lines are set in
+   * a hairline: the stroke shrinks to this share of the embossed one, the way
+   * a laser-printed or thermal-printed number is a thin monoline.
+   */
+  printedStroke: 0.55,
+  /**
+   * The embossed crest's flat top, as a share of the stroke: the face the die
+   * pushes flat, and the only part the tipping foil is stamped on. The rest of
+   * the stroke is the shoulder sloping down to the card.
+   */
+  crest: 0.5,
+  /**
    * The "VALID THRU" legend printed flat to the left of the expiry, two short
    * lines of tiny capitals centred on the expiry's height.
    */
@@ -138,7 +188,7 @@ export const CREDIT_CARD = {
     {
       text: 'VALID',
       x: fromLeft(EXPIRY_X_MM - 5.6),
-      baseline: fromBottom(10.6 + 1.62),
+      baseline: fromBottom(EXPIRY_BASELINE_MM + 1.62),
       height: mm(1.05),
       width: mm(0.78),
       pitch: mm(0.98),
@@ -148,7 +198,7 @@ export const CREDIT_CARD = {
     {
       text: 'THRU',
       x: fromLeft(EXPIRY_X_MM - 5.6),
-      baseline: fromBottom(10.6 + 0.12),
+      baseline: fromBottom(EXPIRY_BASELINE_MM + 0.12),
       height: mm(1.05),
       width: mm(0.78),
       pitch: mm(0.98),
@@ -171,9 +221,30 @@ export const CREDIT_CARD = {
     height: mm(7),
     radius: mm(0.4),
   },
+  /**
+   * The cut edge: a payment card is printed sheets laminated over a white PVC
+   * core, so its edge shows white whatever the print - the thin pale line
+   * round a dark card.
+   */
+  edgeColor: '#f1efe9',
   /** Default CSS px width of the virtual face (~150 dpi of the physical card). */
   resolution: 520,
 } as const
+
+/** Contact plate finishes for `chip`. */
+export const CREDIT_CARD_CHIP = {
+  gold: { plate: '#e9cd84', groove: '#4a3c1f' },
+  silver: { plate: '#d2d5d9', groove: '#3c3f44' },
+} as const
+
+/** `chip`: a plated finish, `true` for gold, or `false` for no chip. */
+export type CreditCardChip = boolean | keyof typeof CREDIT_CARD_CHIP
+
+/** `emboss`: raised relief, `'flat'` for print with no relief, or `false` for no lettering. */
+export type CreditCardEmboss = boolean | 'flat'
+
+/** `finish`: the laminate over the print. */
+export type CreditCardFinish = 'gloss' | 'matte'
 
 /** Crest foil presets for `tipping`. Any other CSS colour is used as given. */
 export const CREDIT_CARD_TIPPING = {

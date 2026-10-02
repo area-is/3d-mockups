@@ -197,4 +197,7 @@ export type {
   MilkCartonSizeMm,
   ShoppingBagSizeMm,
   CreditCardTipping,
+  CreditCardChip,
+  CreditCardEmboss,
+  CreditCardFinish,
 } from './core'

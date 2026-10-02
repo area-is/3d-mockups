@@ -62,10 +62,17 @@ export type Control =
       /** Pair the slider with a typable box (see `NumberField`). */
       editable?: boolean
     }
-  | { kind: 'enum'; options: string[] }
+  /**
+   * A union of literals: `'a' | 'b'`, with `boolean` spelled out as its two
+   * values (`boolean | 'flat'`). A trailing `| string` - presets plus any
+   * value, like a foil colour - lists the presets.
+   */
+  | { kind: 'enum'; options: EnumOption[] }
   | { kind: 'vector'; axes: Axis[]; min: number; max: number; step: number }
   | { kind: 'dimensions'; axes: Axis[]; unit: string }
   | { kind: 'camera' }
+
+export type EnumOption = string | boolean
 
 export interface EditableProp {
   name: string
@@ -95,11 +102,33 @@ const allNumbers = (text: string): number[] =>
 
 const hex = (text: string): string | undefined => text.match(/#[0-9a-f]{3,8}/i)?.[0]
 
-/** `'legs' | 'pedestal' | 'frame'` - a union of string literals, or nothing. */
-const enumOptions = (type: string): string[] | undefined => {
-  if (!/^'[^']*'(\s*\|\s*'[^']*')*$/.test(type.trim())) return undefined
-  return [...type.matchAll(/'([^']*)'/g)].map((m) => m[1])
+/**
+ * `'legs' | 'pedestal' | 'frame'` - a union of string literals, or nothing.
+ * `boolean` joins as its two values (`boolean | 'flat'`), and a `string`
+ * member is the free-form tail of a set of presets (`'silver' | 'gold' |
+ * string`): the presets are the options. At least one string literal is
+ * needed - a bare `boolean` is a switch.
+ */
+const enumOptions = (type: string): EnumOption[] | undefined => {
+  const options: EnumOption[] = []
+  let literals = 0
+  for (const member of type.split('|').map((m) => m.trim())) {
+    const literal = member.match(/^'([^']*)'$/)
+    if (literal) {
+      options.push(literal[1])
+      literals++
+    } else if (member === 'boolean') options.push(true, false)
+    else if (member !== 'string') return undefined
+  }
+  return literals > 0 ? options : undefined
 }
+
+/** A table default read as one of an enum's options: `'flat'`, `true`, `false`. */
+const enumDefault = (stated: string | undefined): EnumOption | undefined =>
+  stated === 'true' ? true : stated === 'false' ? false : stated?.replace(/'/g, '')
+
+/** An enum option as a `<select>` carries it, and back. */
+export const enumKey = (option: unknown) => (typeof option === 'boolean' ? `{${option}}` : String(option))
 
 /** `{ width?, height?, thickness? }` - the keys of a size object, or nothing. */
 const objectKeys = (type: string): string[] | undefined => {
@@ -213,7 +242,7 @@ export function editableProp(doc: PropDoc): EditableProp | null {
   // becoming a select that cannot change anything.
   const options = enumOptions(type)
   if (options && options.length > 1) {
-    return of({ kind: 'enum', options }, stated?.replace(/'/g, '') ?? options[0])
+    return of({ kind: 'enum', options }, enumDefault(stated) ?? options[0])
   }
 
   const keys = objectKeys(type)
@@ -288,7 +317,9 @@ export function acceptValue(prop: EditableProp, value: unknown): unknown {
     case 'number':
       return finite(value) ? clamp(value, control.min, control.max) : undefined
     case 'enum':
-      return typeof value === 'string' && control.options.includes(value) ? value : undefined
+      return (typeof value === 'string' || typeof value === 'boolean') && control.options.includes(value)
+        ? value
+        : undefined
     case 'vector':
       return Array.isArray(value) && value.length === control.axes.length && value.every(finite)
         ? value
@@ -345,8 +376,10 @@ export function propAttribute(prop: EditableProp, value: unknown): string {
       return value === true ? name : `${name}="${String(value)}"`
     case 'number':
       return `${name}={${num(Number(value))}}`
-    case 'color':
     case 'enum':
+      if (typeof value === 'boolean') return value ? name : `${name}={false}`
+      return `${name}="${String(value)}"`
+    case 'color':
       return `${name}="${String(value)}"`
     case 'vector': {
       const axis = (value as number[]).map(num)

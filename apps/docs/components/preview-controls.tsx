@@ -351,7 +351,18 @@ const MODELS = new Map<unknown, ModelControls>([
     CreditCardMockup,
     {
       controls: [
-        toggle('emboss', 'embossed', true),
+        {
+          prop: 'emboss',
+          label: 'lettering',
+          kind: 'select',
+          options: [
+            { value: 'raised', label: 'embossed' },
+            { value: 'flat', label: 'printed flat' },
+            { value: 'none', label: 'none' },
+          ],
+          parse: (value) => (value === 'raised' ? true : value === 'none' ? false : value),
+          preset: 'raised',
+        },
         {
           prop: 'tipping',
           label: 'tipping',
@@ -363,7 +374,29 @@ const MODELS = new Map<unknown, ModelControls>([
           ],
           preset: 'silver',
         },
-        toggle('chip', 'chip', true),
+        {
+          prop: 'chip',
+          label: 'chip',
+          kind: 'select',
+          options: [
+            { value: 'gold', label: 'gold' },
+            { value: 'silver', label: 'silver' },
+            { value: 'none', label: 'none' },
+          ],
+          parse: (value) => (value === 'none' ? false : value),
+          preset: 'gold',
+        },
+        {
+          prop: 'finish',
+          label: 'finish',
+          kind: 'select',
+          options: [
+            { value: 'gloss', label: 'gloss' },
+            { value: 'matte', label: 'matte' },
+          ],
+          preset: 'gloss',
+        },
+        swatch('edgeColor', 'edge'),
         toggle('stripe', 'stripe', true),
         toggle('signature', 'signature panel', true),
       ],

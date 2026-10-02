@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   CREDIT_CARD,
+  CREDIT_CARD_CHIP,
   CREDIT_CARD_DEFAULT_TEXT,
   CREDIT_CARD_MM_PER_UNIT,
   CREDIT_CARD_TIPPING,
@@ -50,8 +51,24 @@ describe('the hardware over the print', () => {
     expect(fromLeft(chip.x + chip.width / 2)).toBeGreaterThanOrEqual(19.87)
     expect(fromTop(chip.y + chip.height / 2)).toBeLessThanOrEqual(19.23)
     expect(fromTop(chip.y - chip.height / 2)).toBeGreaterThanOrEqual(26.01)
-    expect(chip.width * MM).toBeCloseTo(11, 6)
-    expect(chip.height * MM).toBeCloseTo(8.5, 6)
+    // The module measured off a photographed card: 13 x 11.4 mm, centred
+    // 14.77 mm in and 22.61 mm down.
+    expect(chip.width * MM).toBeCloseTo(13, 6)
+    expect(chip.height * MM).toBeCloseTo(11.4, 6)
+    expect(fromLeft(chip.x)).toBeCloseTo(14.77, 6)
+    expect(fromTop(chip.y)).toBeCloseTo(22.61, 6)
+  })
+
+  it('etches the contacts within the plate', () => {
+    for (const groove of chip.grooves) {
+      for (const [x, y] of groove) {
+        expect(Math.abs(x)).toBeLessThanOrEqual(0.5)
+        expect(Math.abs(y)).toBeLessThanOrEqual(0.5)
+      }
+    }
+    // three contacts down each side: two grooves across each column
+    const across = chip.grooves.filter((g) => g.length === 2 && g[0]![1] === g[1]![1] && Math.abs(g[0]![1]) < 0.39)
+    expect(across).toHaveLength(4)
   })
 
   it('runs the magnetic stripe 12.7 mm tall from 5.54 mm below the top edge', () => {
@@ -72,10 +89,28 @@ describe('the hardware over the print', () => {
 })
 
 describe('the embossed lines (ISO/IEC 7811-1)', () => {
-  it('sets the number baseline 21.42 mm above the bottom edge, 4.32 mm tall, no higher than 0.46 mm', () => {
-    expect(fromBottom(emboss.number.baseline)).toBeCloseTo(21.42, 6)
-    expect(emboss.number.height * MM).toBeCloseTo(4.32, 6)
+  it('centres the number 21.42 mm above the bottom edge, 4.32 mm tall, no higher than 0.46 mm', () => {
+    // 21.42 mm is line 1's centreline: as a baseline, the number's top would
+    // stand above the 24.03 mm the standard allows it.
+    const { number } = emboss
+    expect(fromBottom(number.baseline + number.height / 2)).toBeCloseTo(21.42, 6)
+    expect(fromBottom(number.baseline + number.height)).toBeLessThanOrEqual(24.03)
+    expect(number.height * MM).toBeCloseTo(4.32, 6)
     for (const line of Object.values(emboss)) expect(line.relief * MM).toBeLessThanOrEqual(0.46 + 1e-9)
+  })
+
+  it('keeps the expiry and the name in the name-and-address area, 2.41-14.53 mm above the bottom edge', () => {
+    for (const line of [emboss.expiry, emboss.name]) {
+      expect(fromBottom(line.baseline)).toBeGreaterThanOrEqual(2.41)
+      expect(fromBottom(line.baseline + line.height)).toBeLessThanOrEqual(14.53)
+    }
+  })
+
+  it('stamps foil on a flat crest narrower than the stroke, and prints flat in a hairline', () => {
+    expect(CREDIT_CARD.crest).toBeGreaterThan(0)
+    expect(CREDIT_CARD.crest).toBeLessThan(1)
+    expect(CREDIT_CARD.printedStroke).toBeGreaterThan(0)
+    expect(CREDIT_CARD.printedStroke).toBeLessThan(1)
   })
 
   it('sits the number just below the middle of the card', () => {
@@ -196,6 +231,19 @@ describe('tipping', () => {
     expect(creditCardTippingColor('gold')).toBe(CREDIT_CARD_TIPPING.gold)
     expect(creditCardTippingColor('#b87333')).toBe('#b87333')
     expect(creditCardTippingColor('none')).toBeNull()
+  })
+})
+
+describe('chip plating', () => {
+  it('comes in gold and silver, each with a darker substrate in its grooves', () => {
+    for (const { plate, groove } of Object.values(CREDIT_CARD_CHIP)) {
+      const luminance = (hex: string) => {
+        const n = parseInt(hex.slice(1), 16)
+        return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)
+      }
+      expect(luminance(groove)).toBeLessThan(luminance(plate) / 2)
+    }
+    expect(Object.keys(CREDIT_CARD_CHIP)).toEqual(['gold', 'silver'])
   })
 })
 

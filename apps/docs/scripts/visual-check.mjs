@@ -91,6 +91,9 @@ const CASES = [
   // close up and raking, where the embossing's relief, foil and contact
   // shadow have to read as raised characters, not a print of them
   ['creditcard-emboss', 'device=creditcard&screen=art&art=LarkmoorCard&color=%231f2b46&ry=-38&rx=-28&dist=2.6'],
+  // printed flat on a matte card with a silver chip: hairline type lying on
+  // the face, no laminate sweep, and the other plating
+  ['creditcard-flat', `device=creditcard&screen=art&art=LarkmoorCard&color=%231f2b46&ry=-20&rx=-10&dist=3.2&props=${encodeURIComponent(JSON.stringify({ emboss: 'flat', chip: 'silver', finish: 'matte' }))}`],
 
   // --- devices: one screen each, but they exercise orientation + poses ---
   ['galaxy', 'device=phone&pvariant=s26&ry=24'],

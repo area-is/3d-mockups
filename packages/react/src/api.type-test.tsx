@@ -225,6 +225,13 @@ const _cardUsage = (
     </CreditCardMockup.Back>
   </CreditCardMockup>
 )
+// Lettering embossed, printed flat or left off; a chip in either plating; the laminate's finish.
+const _cardFlat = <CreditCardMockup emboss="flat" chip="silver" finish="matte" edgeColor="#111" />
+const _cardPlain = <CreditCardMockup emboss={false} chip={false} />
+// @ts-expect-error - `emboss` is a boolean or 'flat'
+const _cardBadEmboss = <CreditCardMockup emboss="raised" />
+// @ts-expect-error - the chip comes in gold or silver
+const _cardBadChip = <CreditCardMockup chip="platinum" />
 
 // ---- statics on the component --------------------------------------------------------
 // Every built-in carries both statics, typed as present - no `?.` needed.

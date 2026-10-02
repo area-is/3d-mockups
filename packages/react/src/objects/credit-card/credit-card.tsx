@@ -4,6 +4,7 @@ import type { ThreeElements } from '@react-three/fiber'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import {
   CREDIT_CARD,
+  CREDIT_CARD_CHIP,
   CREDIT_CARD_DEFAULT_TEXT,
   CREDIT_CARD_REGIONS,
   STAGE_KEY_LIGHT,
@@ -11,9 +12,11 @@ import {
   layoutStrokeText,
   normalizeStrokeText,
   roundedRectShape,
-  roundedRectShapeCorners,
+  type CreditCardChip,
+  type CreditCardEmboss,
+  type CreditCardEmbossLine,
+  type CreditCardFinish,
   type CreditCardTipping,
-  type StrokeTextLine,
 } from '../../core'
 import { DeviceScreen } from '../../screen/device-screen'
 import { collectSlots, createSlots, resolveSurface, warnDev, type SurfaceProps } from '../../slots'
@@ -31,10 +34,16 @@ export interface CreditCardProps extends Omit<GroupProps, 'children' | 'color' |
    */
   children?: React.ReactNode
   /**
-   * Card stock color - the edges, an unprinted back, and the print's ground
-   * wherever the art leaves it clear.
+   * Card stock color - an unprinted back, and the print's ground wherever the
+   * art leaves it clear.
    */
   color?: string
+  /**
+   * The cut edge. A PVC card is printed sheets laminated over a white core,
+   * so its edge shows white whatever the print; set this for a coloured core
+   * or a metal card.
+   */
+  edgeColor?: string
   /**
    * The embossed card number, in Farrington 7B. Spaces are kept as typed; a
    * number longer than the line condenses to fit. Every embossed line takes
@@ -51,19 +60,33 @@ export interface CreditCardProps extends Omit<GroupProps, 'children' | 'color' |
    */
   expiry?: string
   /**
-   * Raise the number, name and expiry as real embossed relief, with their
-   * mirrored impressions on the back. `false` leaves the card flat, for art
-   * that prints its own number (most cards issued today print it flat).
+   * How the number, name and expiry are set:
+   * - `true` (the default): embossed - raised as real relief, each stroke a
+   *   flat crest carrying the `tipping` foil on shoulders that slope down to
+   *   the card, with their mirrored impressions on the back;
+   * - `'flat'`: printed flat in a hairline, with no relief and nothing on the
+   *   back, the way most cards issued today carry them;
+   * - `false`: left off, for art that sets its own.
    */
-  emboss?: boolean
+  emboss?: CreditCardEmboss
   /**
    * Foil on the embossed crests: `'silver'`, `'gold'`, any CSS color, or
    * `'none'` for untipped crests that show the print they were pushed up
-   * through.
+   * through. With `emboss="flat"` the lines are printed in this colour, or
+   * with `'none'` in a plain ink that suits the stock.
    */
   tipping?: CreditCardTipping
-  /** The EMV chip's gold contact plate on the front. */
-  chip?: boolean
+  /**
+   * The EMV chip's contact plate on the front: `'gold'` (or `true`),
+   * `'silver'`, or `false` for none.
+   */
+  chip?: CreditCardChip
+  /**
+   * The laminate over the print. `'gloss'` catches the studio's highlights as
+   * the card turns, as a laminated card does; `'matte'` keeps the print
+   * flat, for soft-touch cards.
+   */
+  finish?: CreditCardFinish
   /** The magnetic stripe across the top of the back. */
   stripe?: boolean
   /** The signature panel on the back, under the stripe. */
@@ -74,62 +97,155 @@ export interface CreditCardProps extends Omit<GroupProps, 'children' | 'color' |
 /*  Embossing geometry                                                 */
 /* ------------------------------------------------------------------ */
 
-/**
- * Share of a bead's elliptical profile sunk below the face. A bead sitting on
- * the face with its full half-ellipse meets it at a vertical tangent and
- * reads as a wire glued onto the card; sunk, it rises out of the face at a
- * slope, the way PVC pushed up by a die does.
- */
-const BEAD_SINK = 0.3
-
 /** Polylines laid out by `layoutStrokeText`. */
 type Strokes = [number, number][][]
 
+/** Steps down an embossed stroke's shoulder, from the crest's edge to its foot. */
+const SHOULDER_STEPS = 4
 /**
- * The raised relief of a laid-out line: every stroke a rounded bead - half a
- * squashed cylinder per segment, a squashed dome at every point, so joints
- * and ends come out round - merged into one geometry. Built at z = 0 on the
- * face; the crests stand `relief` proud of it.
+ * How far the shoulder runs on below the face past its foot, as a share of
+ * the relief: buried, so the stroke rises out of the card with no seam.
  */
-function beadGeometry(strokes: Strokes, radius: number, relief: number): THREE.BufferGeometry | null {
-  if (strokes.length === 0) return null
-  const semiAxis = relief / (1 - BEAD_SINK)
-  const squash = semiAxis / radius
-  const sink = -semiAxis * BEAD_SINK
-  const parts: THREE.BufferGeometry[] = []
+const FOOT_SINK = 0.25
+/** Segments around a stroke's joints and ends. */
+const ROUND = 16
+
+/** Triangles being built: flat arrays, so a whole line is one geometry. */
+interface MeshData {
+  positions: number[]
+  normals: number[]
+  index: number[]
+}
+
+function vertex(m: MeshData, x: number, y: number, z: number, n: [number, number, number]): number {
+  m.positions.push(x, y, z)
+  m.normals.push(...n)
+  return m.positions.length / 3 - 1
+}
+
+/** A triangle, wound to face +z, the side of the face it sits on. */
+function triangle(m: MeshData, a: number, b: number, c: number): void {
+  const p = m.positions
+  const cross =
+    (p[b * 3]! - p[a * 3]!) * (p[c * 3 + 1]! - p[a * 3 + 1]!) - (p[b * 3 + 1]! - p[a * 3 + 1]!) * (p[c * 3]! - p[a * 3]!)
+  if (cross >= 0) m.index.push(a, b, c)
+  else m.index.push(a, c, b)
+}
+
+function toGeometry(m: MeshData): THREE.BufferGeometry | null {
+  if (m.index.length === 0) return null
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(m.positions, 3))
+  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(m.normals, 3))
+  geometry.setIndex(m.index)
+  return geometry
+}
+
+/**
+ * Every stroke as a flat band `halfWidth` either side of its centreline, at
+ * height `z`: a disc at every point, a strip along every segment. It is the
+ * embossed crest (the flat top the die leaves, where the foil goes), and at
+ * z = 0 it is printed type: the "VALID THRU" legend, a flat-printed number,
+ * the chip's etched grooves.
+ */
+function ribbonGeometry(strokes: Strokes, halfWidth: number, z: number): THREE.BufferGeometry | null {
+  const m: MeshData = { positions: [], normals: [], index: [] }
+  const up: [number, number, number] = [0, 0, 1]
   for (const run of strokes) {
     for (const [x, y] of run) {
-      // the upper hemisphere, its pole turned from +y to face out of the card
-      const dome = new THREE.SphereGeometry(radius, 12, 4, 0, Math.PI * 2, 0, Math.PI / 2)
-      dome.rotateX(Math.PI / 2)
-      dome.scale(1, 1, squash)
-      dome.translate(x, y, sink)
-      parts.push(dome)
+      const center = vertex(m, x, y, z, up)
+      const ring = Array.from({ length: ROUND }, (_, k) => {
+        const a = (k / ROUND) * Math.PI * 2
+        return vertex(m, x + Math.cos(a) * halfWidth, y + Math.sin(a) * halfWidth, z, up)
+      })
+      for (let k = 0; k < ROUND; k++) triangle(m, center, ring[k]!, ring[(k + 1) % ROUND]!)
     }
     for (let i = 0; i + 1 < run.length; i++) {
       const [ax, ay] = run[i]!
       const [bx, by] = run[i + 1]!
       const length = Math.hypot(bx - ax, by - ay)
       if (length < 1e-9) continue
-      // the half of a y-axis cylinder facing +z, turned onto the segment
-      const tube = new THREE.CylinderGeometry(radius, radius, length, 12, 1, true, -Math.PI / 2, Math.PI)
-      tube.scale(1, 1, squash)
-      tube.rotateZ(Math.atan2(by - ay, bx - ax) - Math.PI / 2)
-      tube.translate((ax + bx) / 2, (ay + by) / 2, sink)
-      parts.push(tube)
+      const nx = (-(by - ay) / length) * halfWidth
+      const ny = ((bx - ax) / length) * halfWidth
+      const a0 = vertex(m, ax + nx, ay + ny, z, up)
+      const a1 = vertex(m, ax - nx, ay - ny, z, up)
+      const b0 = vertex(m, bx + nx, by + ny, z, up)
+      const b1 = vertex(m, bx - nx, by - ny, z, up)
+      triangle(m, a0, a1, b1)
+      triangle(m, a0, b1, b0)
     }
   }
-  const merged = mergeGeometries(parts)
-  for (const part of parts) part.dispose()
-  return merged
+  return toGeometry(m)
 }
 
 /**
- * The bead geometry pressed flat onto the face, with every normal set to
+ * The shoulders of embossed strokes: from the edge of the flat crest
+ * (`crestHalf` from the centreline, `relief` high) down to the face at
+ * `footHalf`, on a cosine so the crest's edge is crisp but rounded and the
+ * foot meets the card tangentially - the slope a die leaves in PVC, not the
+ * vertical wall of a wire glued on. Swept along every segment and turned
+ * round every point, so joints and ends come out round.
+ */
+function shoulderGeometry(strokes: Strokes, crestHalf: number, footHalf: number, relief: number): THREE.BufferGeometry | null {
+  const run = footHalf - crestHalf
+  // The profile, crest edge outward: distance from the centreline, height,
+  // and the slope's normal as [outward, up].
+  const profile = Array.from({ length: SHOULDER_STEPS + 2 }, (_, i) => {
+    if (i > SHOULDER_STEPS) return { r: footHalf + run * 0.3, z: -relief * FOOT_SINK, n: [0, 1] as const }
+    const t = i / SHOULDER_STEPS
+    const slope = (-relief * 0.5 * Math.PI * Math.sin(Math.PI * t)) / run
+    const length = Math.hypot(slope, 1)
+    return { r: crestHalf + run * t, z: relief * (0.5 + 0.5 * Math.cos(Math.PI * t)), n: [-slope / length, 1 / length] as const }
+  })
+  const m: MeshData = { positions: [], normals: [], index: [] }
+  for (const points of strokes) {
+    for (const [x, y] of points) {
+      const rings = profile.map(({ r, z, n }) =>
+        Array.from({ length: ROUND }, (_, k) => {
+          const a = (k / ROUND) * Math.PI * 2
+          const c = Math.cos(a)
+          const sn = Math.sin(a)
+          return vertex(m, x + c * r, y + sn * r, z, [c * n[0], sn * n[0], n[1]])
+        })
+      )
+      for (let i = 0; i + 1 < rings.length; i++) {
+        for (let k = 0; k < ROUND; k++) {
+          const k1 = (k + 1) % ROUND
+          triangle(m, rings[i]![k]!, rings[i + 1]![k]!, rings[i + 1]![k1]!)
+          triangle(m, rings[i]![k]!, rings[i + 1]![k1]!, rings[i]![k1]!)
+        }
+      }
+    }
+    for (let i = 0; i + 1 < points.length; i++) {
+      const [ax, ay] = points[i]!
+      const [bx, by] = points[i + 1]!
+      const length = Math.hypot(bx - ax, by - ay)
+      if (length < 1e-9) continue
+      for (const side of [-1, 1]) {
+        const dx = (side * -(by - ay)) / length
+        const dy = (side * (bx - ax)) / length
+        const rows = profile.map(({ r, z, n }) => {
+          const normal: [number, number, number] = [dx * n[0], dy * n[0], n[1]]
+          return [vertex(m, ax + dx * r, ay + dy * r, z, normal), vertex(m, bx + dx * r, by + dy * r, z, normal)] as const
+        })
+        for (let j = 0; j + 1 < rows.length; j++) {
+          const [a0, b0] = rows[j]!
+          const [a1, b1] = rows[j + 1]!
+          triangle(m, a0, a1, b1)
+          triangle(m, a0, b1, b0)
+        }
+      }
+    }
+  }
+  return toGeometry(m)
+}
+
+/**
+ * Geometry pressed flat onto the face, with every normal set to
  * `normal(n)`. Flat because whatever it shades is under it: the print of the
- * back face for the debossed impressions, the face itself for printed type.
+ * back face, for the embossing's debossed impressions.
  *
- * `facingBack` rewinds the triangles to face -z. A flattened bead faces +z,
+ * `facingBack` rewinds the triangles to face -z. A flattened stroke faces +z,
  * and three.js turns a back-facing triangle's normal around before lighting
  * it - which would quietly undo the hand-set normals of an impression seen
  * from behind.
@@ -158,19 +274,19 @@ function flattenedGeometry(
 }
 
 /**
- * A soft contact shadow under a line of foil-tipped beads: full strength
- * across the bead's footprint (where the opaque bead hides it anyway),
+ * A soft contact shadow under a line of foil-tipped strokes: full strength
+ * across the stroke's footprint (where the opaque crest hides it anyway),
  * fading to nothing `spread` beyond it. Built from the same capsules as the
- * beads, as flat strips and fans with the strength in vertex alpha, and drawn
- * with MAX blending so where two capsules overlap the shadow is the deeper of
- * the two rather than their sum - no dark knots at the joints.
+ * strokes, as flat strips and fans with the strength in vertex alpha, and
+ * drawn with MAX blending so where two capsules overlap the shadow is the
+ * deeper of the two rather than their sum - no dark knots at the joints.
  */
 function haloGeometry(strokes: Strokes, inner: number, outer: number): THREE.BufferGeometry | null {
   if (strokes.length === 0) return null
   const positions: number[] = []
   const alphas: number[] = []
   const index: number[] = []
-  const vertex = (x: number, y: number, alpha: number) => {
+  const point = (x: number, y: number, alpha: number) => {
     positions.push(x, y, 0)
     alphas.push(0, 0, 0, alpha)
     return positions.length / 3 - 1
@@ -178,13 +294,13 @@ function haloGeometry(strokes: Strokes, inner: number, outer: number): THREE.Buf
   const SEGMENTS = 16
   for (const run of strokes) {
     for (const [x, y] of run) {
-      const center = vertex(x, y, 1)
+      const center = point(x, y, 1)
       const ring: [number, number][] = []
       for (let k = 0; k < SEGMENTS; k++) {
         const a = (k / SEGMENTS) * Math.PI * 2
         ring.push([
-          vertex(x + Math.cos(a) * inner, y + Math.sin(a) * inner, 1),
-          vertex(x + Math.cos(a) * outer, y + Math.sin(a) * outer, 0),
+          point(x + Math.cos(a) * inner, y + Math.sin(a) * inner, 1),
+          point(x + Math.cos(a) * outer, y + Math.sin(a) * outer, 0),
         ])
       }
       for (let k = 0; k < SEGMENTS; k++) {
@@ -202,8 +318,8 @@ function haloGeometry(strokes: Strokes, inner: number, outer: number): THREE.Buf
       const nx = -(by - ay) / length
       const ny = (bx - ax) / length
       const row = (d: number, alpha: number) => [
-        vertex(ax + nx * d, ay + ny * d, alpha),
-        vertex(bx + nx * d, by + ny * d, alpha),
+        point(ax + nx * d, ay + ny * d, alpha),
+        point(bx + nx * d, by + ny * d, alpha),
       ]
       const rows = [row(-outer, 0), row(-inner, 1), row(inner, 1), row(outer, 0)]
       for (let r = 0; r + 1 < rows.length; r++) {
@@ -220,20 +336,31 @@ function haloGeometry(strokes: Strokes, inner: number, outer: number): THREE.Buf
   return geometry
 }
 
-/** One line's geometry, rebuilt only when its own text changes. */
-function useStrokeLine(text: string, line: StrokeTextLine, relief: number, enabled: boolean) {
+/** One line's geometry, rebuilt only when its own text or style changes. */
+function useStrokeLine(text: string, line: CreditCardEmbossLine, emboss: CreditCardEmboss) {
   const built = React.useMemo(() => {
-    if (!enabled || text === '') return null
+    if (emboss === false || text === '') return null
     const { strokes } = layoutStrokeText(text, line)
-    const radius = line.stroke / 2
-    const bead = beadGeometry(strokes, radius, relief)
-    if (!bead) return null
-    return { bead, radius, halo: haloGeometry(strokes, radius * 0.9, radius * 2.4) }
-  }, [enabled, text, line, relief])
+    if (strokes.length === 0) return null
+    const half = line.stroke / 2
+    if (emboss === 'flat') {
+      const print = ribbonGeometry(strokes, half * CREDIT_CARD.printedStroke, 0)
+      return print ? { kind: 'flat' as const, print } : null
+    }
+    const crest = ribbonGeometry(strokes, half * CREDIT_CARD.crest, line.relief)
+    const shoulders = shoulderGeometry(strokes, half * CREDIT_CARD.crest, half, line.relief)
+    if (!crest || !shoulders) return null
+    return { kind: 'raised' as const, crest, shoulders, radius: half, halo: haloGeometry(strokes, half * 0.85, half * 1.8) }
+  }, [emboss, text, line])
   React.useEffect(
     () => () => {
-      built?.bead.dispose()
-      built?.halo?.dispose()
+      if (!built) return
+      if (built.kind === 'flat') built.print.dispose()
+      else {
+        built.crest.dispose()
+        built.shoulders.dispose()
+        built.halo?.dispose()
+      }
     },
     [built]
   )
@@ -260,7 +387,7 @@ function useStrokeLine(text: string, line: StrokeTextLine, relief: number, enabl
  * holds over transparent canvas: over an opaque stock it would do nothing, so
  * an unprinted back gets lit geometry in the stock instead (see the card).
  *
- * Front faces only, so a raised bead's far wall never shades its near one.
+ * Front faces only, so a raised stroke's far wall never shades its near one.
  */
 function createReliefMaterial(
   faceNormal: [number, number, number],
@@ -313,6 +440,39 @@ function createReliefMaterial(
     blending: THREE.CustomBlending,
     blendEquation: THREE.MaxEquation,
   })
+}
+
+/**
+ * The clear gloss film a card is laminated in, over a printed face. The print
+ * is DOM under the canvas and reflects nothing, yet the studio's softboxes
+ * sliding across the laminate as a card turns are most of what makes it read
+ * as plastic rather than paper. So the film is a real, physically lit gloss
+ * surface - black, so it adds no colour of its own, and glossy, so it
+ * reflects the studio with the Fresnel rise of any clear coat (faint head on,
+ * strong at a grazing angle) - drawn as light only: its alpha is set to the
+ * reflection's own brightness, so over the print it brightens where it
+ * reflects something and leaves the print untouched where it does not.
+ */
+function createLaminateMaterial(): THREE.MeshPhysicalMaterial {
+  const material = new THREE.MeshPhysicalMaterial({
+    color: '#000000',
+    metalness: 0,
+    roughness: 0.16,
+    transparent: true,
+    depthWrite: false,
+    // the reflection is light added to the print: premultiplied, so the
+    // canvas carries it as-is and the print shows through by its alpha
+    premultipliedAlpha: true,
+  })
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <dithering_fragment>',
+      `#include <dithering_fragment>
+      gl_FragColor.a = clamp(max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b)), 0.0, 1.0);`
+    )
+  }
+  material.customProgramCacheKey = () => 'react-3d-mockups-card-laminate'
+  return material
 }
 
 /* ------------------------------------------------------------------ */
@@ -380,12 +540,13 @@ function warnUnembossable(prop: string, text: string): void {
 
 /**
  * A procedurally built payment card: an ISO/IEC 7810 ID-1 blank with live
- * full-bleed DOM on the front - and, optionally, the back - and the hardware
- * a real card carries over its print: the EMV chip's contact plate, the
- * number, name and expiry embossed as raised, foil-tipped relief (with their
- * mirrored impressions on the back), the magnetic stripe and the signature
- * panel. The lettering is a stroke font swept into geometry: no font files,
- * no 3D asset files.
+ * full-bleed DOM on the front - and, optionally, the back - under a gloss
+ * laminate, and the hardware a real card carries over its print: the EMV
+ * module's etched contact plate, the number, name and expiry embossed as
+ * raised relief with foil-tipped crests (with their mirrored impressions on
+ * the back) or printed flat, the magnetic stripe and the signature panel,
+ * all round a white PVC core. The lettering is a stroke font swept into
+ * geometry: no font files, no 3D asset files.
  *
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  *
@@ -399,6 +560,7 @@ function warnUnembossable(prop: string, text: string): void {
 function CreditCardImpl({
   children,
   color = '#1f2b46',
+  edgeColor = CREDIT_CARD.edgeColor,
   number: numberText = CREDIT_CARD_DEFAULT_TEXT.number,
   name: nameText = CREDIT_CARD_DEFAULT_TEXT.name,
   expiry: expiryText = CREDIT_CARD_DEFAULT_TEXT.expiry,
@@ -407,6 +569,7 @@ function CreditCardImpl({
   chip = true,
   stripe = true,
   signature = true,
+  finish = 'gloss',
   // Printed straight onto the stock: whatever the content leaves clear is `color`.
   surfaceBackground = color,
   resolution = CREDIT_CARD.resolution,
@@ -419,9 +582,10 @@ function CreditCardImpl({
   const faceZ = body.thickness / 2 + faceOffset
   const foil = creditCardTippingColor(tipping)
   const backPrinted = regions.back != null
+  const plating = chip === false ? null : CREDIT_CARD_CHIP[chip === true ? 'gold' : chip]
 
   React.useEffect(() => {
-    if (!emboss) return
+    if (emboss === false) return
     warnUnembossable('number', numberText)
     warnUnembossable('name', nameText)
     warnUnembossable('expiry', expiryText)
@@ -447,41 +611,42 @@ function CreditCardImpl({
   }, [body])
   React.useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry])
 
-  /* --- embossing --- */
+  /* --- the lettering --- */
 
-  const numberLine = useStrokeLine(numberText, lines.number, lines.number.relief, emboss)
-  const expiryLine = useStrokeLine(expiryText, lines.expiry, lines.expiry.relief, emboss)
-  const nameLine = useStrokeLine(nameText, lines.name, lines.name.relief, emboss)
-  const embossed = [numberLine, expiryLine, nameLine].filter((line) => line !== null)
+  const numberLine = useStrokeLine(numberText, lines.number, emboss)
+  const expiryLine = useStrokeLine(expiryText, lines.expiry, emboss)
+  const nameLine = useStrokeLine(nameText, lines.name, emboss)
+  const strokeLines = [numberLine, expiryLine, nameLine].filter((line) => line !== null)
 
-  // "VALID THRU" is printed, not embossed: the same strokes pressed flat.
+  // "VALID THRU" is printed, embossed card or not.
   const labelGeometry = React.useMemo(() => {
-    if (!emboss || normalizeStrokeText(expiryText).text.trim() === '') return null
+    if (emboss === false || normalizeStrokeText(expiryText).text.trim() === '') return null
     const parts = expiryLabel
-      .map((line) => beadGeometry(layoutStrokeText(line.text, line).strokes, line.stroke / 2, line.stroke / 4))
+      .map((line) => ribbonGeometry(layoutStrokeText(line.text, line).strokes, line.stroke / 2, 0))
       .filter((part) => part !== null)
     if (parts.length === 0) return null
     const merged = mergeGeometries(parts)
     for (const part of parts) part.dispose()
-    return flattenedGeometry(merged, () => [0, 0, 1])
+    return merged
   }, [emboss, expiryText, expiryLabel])
   React.useEffect(() => () => labelGeometry?.dispose(), [labelGeometry])
 
-  // The reverse of each line: the bead pressed flat with its normals turned
-  // inside out (a wall that faces +x on a raised stroke faces -x in the
-  // groove it leaves behind), seen from the back - so mirrored, as it is.
+  // The reverse of each embossed line: its shoulders pressed flat with their
+  // normals turned inside out (a slope that faces +x on a raised stroke faces
+  // -x in the groove it leaves behind), seen from the back - so mirrored, as
+  // it is. The crest's flat top leaves a flat floor, which needs no shading.
   const impressions = React.useMemo(
     () =>
       [numberLine, expiryLine, nameLine].flatMap((line) =>
-        line ? [flattenedGeometry(line.bead, (x, y, z) => [-x, -y, -z], true)] : []
+        line?.kind === 'raised' ? [flattenedGeometry(line.shoulders, (x, y, z) => [-x, -y, -z], true)] : []
       ),
     [numberLine, expiryLine, nameLine]
   )
   React.useEffect(() => () => impressions.forEach((geometry) => geometry.dispose()), [impressions])
 
-  // Untipped crests carry the whole relief in shading, so they shade hard; an
-  // impression is a shallower thing seen from the wrong side, so it is quiet.
-  const untippedMaterial = React.useMemo(
+  // The shoulders carry the print they were pushed up through, so they shade
+  // it; an impression is a shallower thing seen from the wrong side, so quiet.
+  const shoulderMaterial = React.useMemo(
     () => createReliefMaterial([0, 0, 1], { shade: 0.85, light: 0.5, glint: 0.6 }),
     []
   )
@@ -489,84 +654,59 @@ function CreditCardImpl({
     () => createReliefMaterial([0, 0, -1], { shade: 0.34, light: 0.3, glint: 0.3 }),
     []
   )
+  // An untipped crest is the print itself: it draws nothing, but it still
+  // has to hide the shoulders under it, or their shading would show through.
+  const crestDepthMaterial = React.useMemo(() => new THREE.MeshBasicMaterial({ colorWrite: false }), [])
   const haloMaterial = React.useMemo(
     () =>
       new THREE.MeshBasicMaterial({
         color: '#000000',
         vertexColors: true,
         transparent: true,
-        opacity: 0.32,
+        opacity: 0.2,
         depthWrite: false,
         blending: THREE.CustomBlending,
         blendEquation: THREE.MaxEquation,
       }),
     []
   )
+  const laminate = React.useMemo(() => createLaminateMaterial(), [])
   React.useEffect(
     () => () => {
-      untippedMaterial.dispose()
+      shoulderMaterial.dispose()
       impressionMaterial.dispose()
+      crestDepthMaterial.dispose()
       haloMaterial.dispose()
+      laminate.dispose()
     },
-    [untippedMaterial, impressionMaterial, haloMaterial]
+    [shoulderMaterial, impressionMaterial, crestDepthMaterial, haloMaterial, laminate]
   )
 
   /* --- chip --- */
 
   const chipGeometry = React.useMemo(() => {
-    const { width, height, radius, groove, centerWidth, rows } = CREDIT_CARD.chip
-    const plate = new THREE.ShapeGeometry(roundedRectShapeCorners(width, height, [radius, radius, radius, radius]), 12)
-    // Pads inside a groove-wide rim; outer corners follow the plate's rounding.
-    const left = -width / 2 + groove
-    const right = width / 2 - groove
-    const top = height / 2 - groove
-    const bottom = -height / 2 + groove
-    const rowHeight = (top - bottom - groove * (rows - 1)) / rows
-    const inner = Math.max(0, radius - groove)
-    const small = groove * 0.6
-    const pad = (x0: number, x1: number, y0: number, y1: number, corners: [number, number, number, number]) => {
-      const g = new THREE.ShapeGeometry(roundedRectShapeCorners(x1 - x0, y1 - y0, corners), 8)
-      g.translate((x0 + x1) / 2, (y0 + y1) / 2, 0)
-      return g
-    }
-    const parts: THREE.BufferGeometry[] = [
-      pad(-centerWidth / 2 + groove / 2, centerWidth / 2 - groove / 2, bottom, top, [small, small, small, small]),
-    ]
-    for (const side of [-1, 1] as const) {
-      const [x0, x1] = side < 0 ? [left, -centerWidth / 2 - groove / 2] : [centerWidth / 2 + groove / 2, right]
-      for (let r = 0; r < rows; r++) {
-        const y1 = top - r * (rowHeight + groove)
-        const y0 = y1 - rowHeight
-        const isTop = r === 0
-        const isBottom = r === rows - 1
-        const outerTop = isTop ? inner : small
-        const outerBottom = isBottom ? inner : small
-        // CSS order: top-left, top-right, bottom-right, bottom-left
-        parts.push(
-          pad(
-            x0,
-            x1,
-            y0,
-            y1,
-            side < 0 ? [outerTop, small, small, outerBottom] : [small, outerTop, outerBottom, small]
-          )
-        )
-      }
-    }
-    const pads = mergeGeometries(parts)
-    for (const part of parts) part.dispose()
-    return { plate, pads }
+    const { width, height, radius, rim, groove, grooves } = CREDIT_CARD.chip
+    const cavity = new THREE.ShapeGeometry(roundedRectShape(width + rim * 2, height + rim * 2, radius + rim), 12)
+    const plate = new THREE.ShapeGeometry(roundedRectShape(width, height, radius), 12)
+    const etched = ribbonGeometry(
+      grooves.map((line) => line.map(([x, y]) => [x * width, y * height] as [number, number])),
+      groove / 2,
+      0
+    )!
+    return { cavity, plate, etched }
   }, [])
   React.useEffect(
     () => () => {
+      chipGeometry.cavity.dispose()
       chipGeometry.plate.dispose()
-      chipGeometry.pads.dispose()
+      chipGeometry.etched.dispose()
     },
     [chipGeometry]
   )
 
-  /* --- back hardware --- */
+  /* --- the laminate, and the back hardware --- */
 
+  const faceGeometry = React.useMemo(() => new THREE.ShapeGeometry(roundedRectShape(face.width, face.height, face.radius), 12), [face])
   const signatureGeometry = React.useMemo(() => {
     const { width, height, radius } = CREDIT_CARD.signature
     return new THREE.ShapeGeometry(roundedRectShape(width, height, radius), 6)
@@ -574,10 +714,11 @@ function CreditCardImpl({
   const signatureTint = React.useMemo(() => signatureTexture(), [])
   React.useEffect(
     () => () => {
+      faceGeometry.dispose()
       signatureGeometry.dispose()
       signatureTint.dispose()
     },
-    [signatureGeometry, signatureTint]
+    [faceGeometry, signatureGeometry, signatureTint]
   )
 
   /* --- faces --- */
@@ -593,17 +734,46 @@ function CreditCardImpl({
     radius: face.radius,
   }
   const { chip: chipSpec, stripe: stripeSpec, signature: signatureSpec } = CREDIT_CARD
+  const glossy = finish === 'gloss'
   const stockMaterial = (
-    <meshPhysicalMaterial color={color} metalness={0} roughness={0.45} clearcoat={0.5} clearcoatRoughness={0.3} />
+    <meshPhysicalMaterial
+      color={color}
+      metalness={0}
+      roughness={glossy ? 0.45 : 0.75}
+      clearcoat={glossy ? 0.5 : 0}
+      clearcoatRoughness={0.3}
+    />
   )
+  // Part metal, like the chip: the crest is flat now, and a flat full mirror
+  // only shows what it faces - head on, the dark studio behind the camera,
+  // so the foil read black. Hot-stamped foil is a metallised film that stays
+  // bright from any side.
   const foilMaterial = foil ? (
-    <meshPhysicalMaterial color={foil} metalness={1} roughness={0.3} clearcoat={0.4} clearcoatRoughness={0.2} />
+    <meshPhysicalMaterial
+      color={foil}
+      metalness={0.45}
+      roughness={0.32}
+      clearcoat={0.6}
+      clearcoatRoughness={0.15}
+    />
   ) : null
+  // Flat lettering is metallic ink in the foil's colour, or plain ink: flat,
+  // full foil would mirror the studio and turn black at the angles a flat
+  // chip does.
+  const inkMaterial = foil ? (
+    <meshStandardMaterial color={foil} metalness={0.45} roughness={0.42} />
+  ) : (
+    <meshBasicMaterial color={inkOn(color)} />
+  )
 
   return (
     <group {...groupProps}>
-      {/* the PVC blank: faces in the stock color, edges the same core */}
-      <mesh geometry={bodyGeometry}>{stockMaterial}</mesh>
+      {/* the PVC blank: faces in the stock color, the cut edge its white core
+          (ExtrudeGeometry material group 0 is the caps, group 1 the sides) */}
+      <mesh geometry={bodyGeometry}>
+        {React.cloneElement(stockMaterial, { attach: 'material-0' })}
+        <meshPhysicalMaterial attach="material-1" color={edgeColor} metalness={0} roughness={0.6} />
+      </mesh>
 
       {/* live front face */}
       <DeviceScreen {...faceProps} {...resolveSurface(regions.front, surfaceDefaults)} position={[0, 0, faceZ]}>
@@ -622,66 +792,77 @@ function CreditCardImpl({
         </DeviceScreen>
       )}
 
-      {/* EMV contact plate, essentially flush: the substrate shows in the
-          grooves between the gold pads */}
-      {chip && (
+      {/* the gloss laminate over the print (an unprinted back is the stock
+          itself, already lit with a clearcoat) */}
+      {glossy && <mesh geometry={faceGeometry} material={laminate} position-z={faceZ + 0.0002} />}
+      {glossy && backPrinted && (
+        <mesh geometry={faceGeometry} material={laminate} position-z={-faceZ - 0.0002} rotation={[0, Math.PI, 0]} />
+      )}
+
+      {/* the EMV module: one plated sheet in its milled cavity, the contacts
+          etched apart through to the dark substrate */}
+      {plating && (
         <group position={[chipSpec.x, chipSpec.y, faceZ]}>
-          <mesh geometry={chipGeometry.plate} position-z={chipSpec.lift}>
-            <meshPhysicalMaterial color="#6b5629" metalness={0.45} roughness={0.55} />
+          <mesh geometry={chipGeometry.cavity} position-z={chipSpec.lift * 0.5}>
+            <meshStandardMaterial color="#1b1814" metalness={0} roughness={0.7} />
           </mesh>
           {/* Not fully metallic: a flat mirror is only as bright as whatever
               it happens to face, and at some angles that is the dark part of
-              the studio - the plate went black. Real contact gold is brushed
-              enough to keep its colour from anywhere. */}
-          <mesh geometry={chipGeometry.pads} position-z={chipSpec.lift * 1.75}>
+              the studio - the plate went black. Real contact plating is
+              brushed enough to keep its colour from anywhere. */}
+          <mesh geometry={chipGeometry.plate} position-z={chipSpec.lift}>
             <meshPhysicalMaterial
-              color="#f3d78e"
+              color={plating.plate}
               metalness={0.5}
               roughness={0.3}
               clearcoat={0.35}
               clearcoatRoughness={0.25}
             />
           </mesh>
+          <mesh geometry={chipGeometry.etched} position-z={chipSpec.lift * 1.6}>
+            <meshStandardMaterial color={plating.groove} metalness={0} roughness={0.8} />
+          </mesh>
         </group>
       )}
 
-      {/* the embossed lines: foil-tipped beads over a soft contact shadow, or
-          untipped relief shading the print it was pushed up through */}
-      {embossed.length > 0 && (
+      {/* the lettering: embossed strokes - a foil-stamped crest on shoulders
+          that shade the print they were pushed up through - or flat print */}
+      {(strokeLines.length > 0 || labelGeometry) && (
         <group position-z={faceZ}>
-          {embossed.map((line, i) =>
-            foil ? (
+          {strokeLines.map((line, i) =>
+            line.kind === 'flat' ? (
+              <mesh key={i} geometry={line.print} position-z={0.0006}>
+                {inkMaterial}
+              </mesh>
+            ) : (
               <React.Fragment key={i}>
-                <mesh geometry={line.bead}>{foilMaterial}</mesh>
-                {line.halo && (
+                {foil ? (
+                  <mesh geometry={line.crest}>{foilMaterial}</mesh>
+                ) : (
+                  <mesh geometry={line.crest} material={crestDepthMaterial} />
+                )}
+                <mesh geometry={line.shoulders} material={shoulderMaterial} />
+                {foil && line.halo && (
                   <mesh
                     geometry={line.halo}
                     material={haloMaterial}
                     // a hair off the face, and nudged away from the key light
-                    position={[-line.radius * 0.25, -line.radius * 0.35, 0.0006]}
+                    position={[-line.radius * 0.3, -line.radius * 0.4, 0.0006]}
                   />
                 )}
               </React.Fragment>
-            ) : (
-              <mesh key={i} geometry={line.bead} material={untippedMaterial} />
             )
           )}
-          {/* the legend is metallic ink, not foil: flat, it would mirror the
-              studio and turn black at the same angles a flat chip does */}
           {labelGeometry && (
             <mesh geometry={labelGeometry} position-z={0.0006}>
-              {foil ? (
-                <meshStandardMaterial color={foil} metalness={0.45} roughness={0.42} />
-              ) : (
-                <meshBasicMaterial color={inkOn(color)} />
-              )}
+              {inkMaterial}
             </mesh>
           )}
         </group>
       )}
 
       {/* the embossing's reverse, debossed into the back: shading over the
-          back's print, or the stock itself pressed in on an unprinted back */}
+          back's print, or the stock itself pressed in on an unprinted one */}
       {impressions.length > 0 && (
         <group position-z={-faceZ - 0.0006}>
           {impressions.map((geometry, i) =>

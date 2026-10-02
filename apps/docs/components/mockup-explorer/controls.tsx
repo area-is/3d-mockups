@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { propSummary, type EditableProp } from './prop-controls'
+import { enumKey, propSummary, type EditableProp } from './prop-controls'
 
 /**
  * The inspector's widgets: the hand-written rows for the props every mockup
@@ -423,6 +423,11 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
   }
 
   if (control.kind === 'enum') {
+    // A value a page set outside the presets (a `| string` prop's own colour)
+    // is still the one in force, so it stays listed and selected.
+    const options = control.options.some((option) => option === value)
+      ? control.options
+      : [...control.options, value as string]
     return (
       <div className="mx-row" title={doc.description}>
         <span className="mx-prop">{name}</span>
@@ -430,12 +435,12 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
           <select
             className="mx-select"
             aria-label={name}
-            value={String(value)}
-            onChange={(e) => onChange(e.target.value)}
+            value={enumKey(value)}
+            onChange={(e) => onChange(options.find((option) => enumKey(option) === e.target.value))}
           >
-            {control.options.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {options.map((option) => (
+              <option key={enumKey(option)} value={enumKey(option)}>
+                {String(option)}
               </option>
             ))}
           </select>

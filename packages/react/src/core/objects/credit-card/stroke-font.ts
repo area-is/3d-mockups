@@ -6,9 +6,10 @@
  * of near-constant width. So the honest description of an embossed glyph is
  * its centrelines, and that is what this is: every glyph a handful of
  * polylines on a 4 x 6 grid (x right, y up from the baseline), which the
- * scene component sweeps into rounded beads. No font file, no network, and
+ * scene component sweeps into raised strokes. No font file, no network, and
  * the same data works for the raised front, the debossed reverse and the
- * flat-printed "VALID THRU" label.
+ * flat print - the "VALID THRU" label, or a number printed rather than
+ * embossed.
  *
  * The digits follow Farrington 7B, the OCR face card numbers are embossed in:
  * square, seven-segment-like forms with a few tells (the 4's open top and
@@ -117,7 +118,7 @@ export interface StrokeTextLine {
   width: number
   /** Advance from one character to the next. */
   pitch: number
-  /** Stroke width - the diameter of the bead the centrelines are swept into. */
+  /** Stroke width - how wide each centreline is swept, foot to foot. */
   stroke: number
   /**
    * The longest the line's ink may run. A longer text condenses (pitch and
@@ -144,7 +145,7 @@ export interface StrokeTextLayout {
  * (see `normalizeStrokeText`), so this never throws on input it cannot set.
  *
  * The grid maps onto the character's ink box inset by half a stroke on every
- * side, so the swept bead - not just its centreline - lands inside the box
+ * side, so the swept stroke - not just its centreline - lands inside the box
  * the line describes.
  */
 export function layoutStrokeText(text: string, line: StrokeTextLine): StrokeTextLayout {
