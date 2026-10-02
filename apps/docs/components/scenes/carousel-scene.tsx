@@ -444,11 +444,17 @@ const DEVICES: Entry[] = [
     ),
   },
   {
-    id: 'apple-watch-series-11',
-    res: pxRes('appleWatch'),
-    colorways: APPLE_WATCH_COLORWAYS.series11,
+    // The Ultra, for its ridged Ocean Band: the one strap in the range with
+    // relief, and it catches the studio light as the watch turns.
+    id: 'apple-watch-ultra-4',
+    res: pxRes('appleWatch', { variant: 'ultra4' }),
+    colorways: APPLE_WATCH_COLORWAYS.ultra4,
     content: () => <SwissDialA />,
-    render: ({ color, screen, surface, surfaceStyle, resolution }) => <AppleWatch color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle} resolution={resolution}>{screen}</AppleWatch>,
+    render: ({ color, screen, surface, surfaceStyle, resolution }) => (
+      <AppleWatch variant="ultra4" color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle} resolution={resolution}>
+        {screen}
+      </AppleWatch>
+    ),
   },
   {
     id: 'galaxy-watch-8',
@@ -826,7 +832,7 @@ const ORDER = [
   'macbook-air-13',
   'ipad-pro-13',
   'galaxy-tab-s11',
-  'apple-watch-series-11',
+  'apple-watch-ultra-4',
   'galaxy-watch-8',
   'studio-display',
   'bus',

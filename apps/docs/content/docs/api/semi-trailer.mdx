@@ -59,8 +59,13 @@ Every slot takes per-surface overrides - `surfaceBackground`,
 `resolution`, `surfaceStyle` - over the mockup-level defaults. The
 same slots exist on the bare `<SemiTrailer>`.
 
-The road sits `SEMI_TRAILER.groundY` below the origin - the mockup grounds
-the shadow there automatically.
+The road is at `y = SEMI_TRAILER.groundY`, below the box center at the
+origin - the mockup grounds the shadow there automatically. The spec lives on
+the `/core` subpath, for placing a bare `<SemiTrailer>` in a scene of your own:
+
+```ts
+import { SEMI_TRAILER } from 'react-3d-mockups/core'
+```
 
 ## Mockup-able areas
 

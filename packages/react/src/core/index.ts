@@ -38,14 +38,38 @@ export {
 } from './regions'
 
 // The measurement API: region geometry in world units, millimetres and CSS px.
-export { type Size, type RegionInfo, type MockupInfo, type MeasurableMockup, describeMockup } from './measure'
+export {
+  type Size,
+  type RegionInfo,
+  type RegionInfoMap,
+  type MockupInfo,
+  type MeasurableMockup,
+  describeMockup,
+} from './measure'
 export {
   type MockupPropsMap,
+  type MockupRegions,
   type MockupKind,
   MOCKUP_KINDS,
   mockupInfo,
   mockupRegions,
 } from './metrics'
+
+// Device lifecycle: product lines, which models newer ones have superseded,
+// and which are scheduled for removal.
+export {
+  type DeviceKind,
+  type DeviceVariant,
+  type DeviceRelease,
+  type DeviceDeprecation,
+  type DeviceStatus,
+  type DeviceLifecycle,
+  type RemovedDevice,
+  DEVICE_LINEUP,
+  DEVICE_KINDS,
+  REMOVED_DEVICES,
+  deviceLifecycle,
+} from './lifecycle'
 
 // Geometry math.
 export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'

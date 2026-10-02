@@ -4,7 +4,7 @@ description: The Apple Watch Ultra 4 in WebGL, with a live prop explorer and the
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="ultra4"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="ultra4"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="AppleWatchMockup" variant="ultra4" />
 
@@ -41,19 +41,21 @@ here, which is why this component has no `bandOpen` prop. For a band that lays o
 
 <BareVsMockup object="AppleWatch" kind="appleWatch" slot="Screen" />
 
+To render this model, pass `variant="ultra4"`.
+
 ```tsx
 import { MockupCanvas, AppleWatch, AppleWatchMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<AppleWatchMockup float style={{ height: 520 }}>
+<AppleWatchMockup variant="ultra4" float style={{ height: 520 }}>
   <YourApp />
 </AppleWatchMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <AppleWatch rotation={[0, 0.4, 0]}>
+  <AppleWatch variant="ultra4" rotation={[0, 0.4, 0]}>
     <YourApp />
   </AppleWatch>
 </MockupCanvas>
@@ -61,18 +63,40 @@ import { MockupCanvas, AppleWatch, AppleWatchMockup } from 'react-3d-mockups'
 
 ## Props
 
-Beyond the [shared screen props](/docs/screen-content):
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'series11' \| 'series12' \| 'ultra4'` | `'series11'` | Which Apple Watch to render. The Series 12 is the Series 11's case a millimetre wider, with the generation's finishes; the Ultra 4 is the 49 mm titanium case with the crown guard and the Action button. |
-| `color` | `string` | `'#1c1d21'` | Case. Takes a retail colorway id from `APPLE_WATCH_COLORWAYS[variant]` (Series 11 `jetblack`, `spacegray`, `rosegold`, `silver`; Series 12 `darkbronze`, `lightgold`, `black`, `spacegray`, `radiantgold`, `natural`, `pearlwhite`, `nightblue`; Ultra 4 `natural`, `black`) or any CSS color. |
+| `color` | `string` | `'#1c1d21'` | Case. Takes a colorway id from `APPLE_WATCH_COLORWAYS[variant]` (see [Colorways](#colorways)) or any CSS color. |
 | `bandColor` | `string` | `'#2a2c31'` | Band colorway - the Solo Loop on the Series, the Ocean Band on the Ultra. |
 | `resolution` | `number` | per variant | Virtual display width - each model's own point grid (208 on the Series, 211 on the Ultra), so watchOS-sized layouts apply. |
 
-There is no `orientation` prop, and no `bandOpen`.
+There is no `orientation` prop and no `bandOpen`: a watch has one pose, and
+neither band unfastens.
 
-## The models
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<AppleWatchMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<AppleWatch>`.
+
+## Colorways
+
+Pass a colorway id from `APPLE_WATCH_COLORWAYS[variant]` for that model's
+retail case finish, or any CSS color for a custom one. The catalog covers the
+case; `bandColor` takes any CSS color. An id wins over a CSS color of the same
+name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| Apple Watch Series 11 (`series11`) | `jetblack` (`#1c1d21`), `spacegray` (`#7a7d82`), `rosegold` (`#e7c4bb`), `silver` (`#e2e3e5`) |
+| Apple Watch Series 12 (`series12`) | `darkbronze` (`#5a4636`), `lightgold` (`#e6d9c0`), `black` (`#1c1d21`), `spacegray` (`#7a7d82`), `radiantgold` (`#d9b986`), `natural` (`#c9c8c3`), `pearlwhite` (`#efeeea`), `nightblue` (`#232c45`) |
+| Apple Watch Ultra 4 (`ultra4`) | `natural` (`#cdc6bd`), `black` (`#2b2c2e`) |
+
+## This model
 
 ### Apple Watch Ultra 4
 
@@ -91,7 +115,7 @@ crown; the case itself is 41.4 mm across, per Apple's bezel drawing. Retail fini
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 

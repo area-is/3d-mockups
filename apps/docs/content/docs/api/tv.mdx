@@ -52,7 +52,14 @@ Beyond the [shared screen props](/docs/screen-content):
 | `color` | `string` | `'#15171b'` | Enclosure colorway (frame, back, stand). |
 | `resolution` | `number` | `1920` | Virtual display width; 1920 gives 1920×1080. |
 
-There is no `orientation` prop; it lives on a media stand.
+There is no `orientation` prop: a TV has one pose.
+
+## Regions
+
+One region: the screen (bare children). Use the explicit
+`<TVSetMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<TVSet>`.
 
 ## The three designs
 

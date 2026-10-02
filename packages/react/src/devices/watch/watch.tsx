@@ -25,6 +25,7 @@ import {
   WATCH_OPEN_START_Y,
   type StrapPath,
 } from '../../core'
+import { checkColorway, checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import { SideKey, cutGeometry, stadiumCutter, holeCutter, EdgeSocket } from '../details'
 import { CaseBack } from './case-back'
@@ -1005,6 +1006,8 @@ export interface AppleWatchProps extends WatchCommonProps {
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
 function AppleWatchImpl({ variant = APPLE_WATCH_DEFAULT_VARIANT, ...props }: AppleWatchProps) {
+  checkDeviceVariant('appleWatch', variant, 'AppleWatch')
+  checkColorway(APPLE_WATCH_COLORWAYS, variant, props.color, 'AppleWatch')
   return <WatchBody variant={variant} catalog={APPLE_WATCH_COLORWAYS[variant]} {...props} />
 }
 AppleWatchImpl.displayName = 'AppleWatch'
@@ -1045,6 +1048,8 @@ export interface GalaxyWatchProps extends WatchCommonProps {
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
 function GalaxyWatchImpl({ variant = GALAXY_WATCH_DEFAULT_VARIANT, ...props }: GalaxyWatchProps) {
+  checkDeviceVariant('galaxyWatch', variant, 'GalaxyWatch')
+  checkColorway(GALAXY_WATCH_COLORWAYS, variant, props.color, 'GalaxyWatch')
   return <WatchBody variant={variant} catalog={GALAXY_WATCH_COLORWAYS[variant]} {...props} />
 }
 GalaxyWatchImpl.displayName = 'GalaxyWatch'

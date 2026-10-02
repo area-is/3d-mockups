@@ -4,7 +4,7 @@ description: The Galaxy Tab S11 in WebGL, with a live prop explorer and the full
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="tabs11"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="tabs11"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="GalaxyTabMockup" variant="tabs11" />
 
@@ -23,19 +23,21 @@ edge in portrait and the top center in landscape, just like the physical panel.
 
 <BareVsMockup object="GalaxyTab" kind="galaxyTab" slot="Screen" />
 
+To render this model, pass `variant="tabs11"`.
+
 ```tsx
 import { MockupCanvas, GalaxyTab, GalaxyTabMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<GalaxyTabMockup float style={{ height: 520 }}>
+<GalaxyTabMockup variant="tabs11" float style={{ height: 520 }}>
   <YourApp />
 </GalaxyTabMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <GalaxyTab rotation={[0, 0.4, 0]}>
+  <GalaxyTab variant="tabs11" rotation={[0, 0.4, 0]}>
     <YourApp />
   </GalaxyTab>
 </MockupCanvas>
@@ -43,25 +45,47 @@ import { MockupCanvas, GalaxyTab, GalaxyTabMockup } from 'react-3d-mockups'
 
 ## Props
 
-Beyond the [shared screen props](/docs/screen-content):
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'tabs11' \| 'tabs11ultra'` | `'tabs11'` | Tab S11 (single camera ring) or Tab S11 Ultra (dual rings, 14.6" panel with the U-shaped notch). |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Landscape lays the tablet on its side and swaps the virtual display with upright content. |
-| `statusBar` | `boolean \| StatusBarContent` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - One UI's tablet bar, with the clock at the leading inset and the meters at the trailing one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `statusBar` | `boolean \| StatusBarOption` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - One UI's tablet bar, with the clock at the leading inset and the meters at the trailing one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `color` | `string` | `'#2b292c'` | Body color. Takes a colorway id from `GALAXY_TAB_COLORWAYS[variant]` (see [Colorways](#colorways)) or any CSS color. |
 | `resolution` | `number` | per variant | Defaults to the variant's logical grid: 800×1280 (tabs11), 924×1480 (tabs11ultra). |
-| `color` | `string` | per variant | Body color. Takes a retail colorway id from `GALAXY_TAB_COLORWAYS` (`gray`, `silver`) or any CSS color. |
 
-## Galaxy Tab S11 Ultra in portrait
+## Regions
 
-The U-shaped notch sits on the right edge in portrait, exactly like the
-hardware; spin it to catch the dual camera rings and the wordmark.
+One region: the screen (bare children). Use the explicit
+`<GalaxyTabMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<GalaxyTab>`.
+
+## Colorways
+
+Pass a colorway id from `GALAXY_TAB_COLORWAYS[variant]` for that model's
+retail finish, or any CSS color for a custom one. An id wins over a CSS color
+of the same name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| Galaxy Tab S11, Galaxy Tab S11 Ultra (`tabs11`, `tabs11ultra`) | `gray` (`#63656a`), `silver` (`#d3d4d8`) |
+
+## This model
+
+### Galaxy Tab S11
+
+The default model: an 11″ AMOLED (800×1280) under a uniform bezel with no
+notch - the front camera sits in the landscape-top bezel - in a 5.5 mm body
+with a single rear camera ring and flash, the S Pen mount on the long side and
+USB-C on the portrait-top edge. In Silver.
 
 <MockupExplorer
   component="GalaxyTabMockup"
   variant="tabs11"
-  props={{ color: 'gray', float: true, rotation: [0, 0.3, 0] }}
+  props={{ color: 'silver', rotation: [0, -0.3, 0] }}
 />
 
 ## Mockup-able areas

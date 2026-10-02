@@ -4,8 +4,10 @@
  * one-box silhouette with no hood, a near-vertical lightly-raked front, a
  * dark upper fascia band holding the LED destination sign, a window band
  * covering almost half the body height, two full-glass curb-side doors, a
- * flat roof with an HVAC pod, and the classic king-size advertising panel
- * (30" x 144") between the wheels.
+ * flat roof with an HVAC pod, and the classic advertising panels: a
+ * king-size (30" x 144") between the wheels on the street side, and a
+ * queen-size (30" x 88") between the rear door and the front wheel on the
+ * curb side, where the doors leave no room for a king.
  *
  * Normalized to ~1900 mm per world unit: 12.19 x 3.20 x 2.59 m becomes
  * 6.4 x 1.68 x 1.36 units. The group origin sits mid-height at the body
@@ -87,10 +89,19 @@ export const BUS = {
    */
   hvac: { length: 1.579, height: 0.12, width: 1.079, x: -0.632 },
   /**
-   * Live king-size ad panels (30" x 144" = 762 x 3658 mm) on both sides,
+   * Live king-size ad panel (30" x 144" = 762 x 3658 mm) on the street side,
    * between the wheel arches, top edge tucked under the window sill.
    */
   ad: { width: 1.925, height: 0.401, x: 0.2, y: -0.47, radius: 0.012 },
+  /**
+   * Live queen-size ad panel (30" x 88" = 762 x 2235 mm) on the curb side, in
+   * the bay between the rear door (ending at x 0.157) and the front wheel arch
+   * (starting at 1.444), ~100 mm clear of each. It used to be the street
+   * side's king, mirrored - which ran straight across the rear door, so the
+   * door glass covered the left third of whatever the ad showed. Transit
+   * operators sell exactly this: kings street-side, queens curb-side.
+   */
+  curbAd: { width: 1.176, height: 0.401, x: 0.8, y: -0.47, radius: 0.012 },
   /** Live tail ad (21" x 70" = 533 x 1778 mm) on the engine door. */
   rearAd: { width: 0.936, height: 0.281, y: -0.28, radius: 0.012 },
   /**
@@ -149,9 +160,10 @@ export type BusCoverage = 'panel' | 'full' | 'perforated'
 /**
  * Live geometry of both flanks, the tail and the destination sign.
  *
- * `coverage` decides the flank and tail rects: `panel` is the king-size ad
- * board, `full` is the whole elevation. The tail always shares the flank's
- * dpi, so a wrap prints at one density all the way round.
+ * `coverage` decides the flank and tail rects: `panel` is the ad boards (a
+ * king street-side, a queen curb-side), `full` is the whole elevation. Every
+ * surface shares the street side's dpi, so a campaign prints at one density
+ * all the way round.
  */
 export const BUS_METRICS = {
   mmPerUnit: BUS_MM_PER_UNIT,
@@ -161,12 +173,12 @@ export const BUS_METRICS = {
     const side = full
       ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, radius: 0 }
       : { width: BUS.ad.width, height: BUS.ad.height, radius: BUS.ad.radius }
+    const curb = full ? side : { width: BUS.curbAd.width, height: BUS.curbAd.height, radius: BUS.curbAd.radius }
     const rear = full ? BUS.rearFull : BUS.rearAd
     const resolution = full ? BUS.fullResolution : BUS.resolution
-    const flank = { ...side, resolution }
     return {
-      curbSide: flank,
-      streetSide: flank,
+      curbSide: { ...curb, resolution: Math.round(curb.width * (resolution / side.width)) },
+      streetSide: { ...side, resolution },
       rear: {
         width: rear.width,
         height: rear.height,

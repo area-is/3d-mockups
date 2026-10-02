@@ -5,10 +5,10 @@ description: A flat rectangular sheet at any size you specify in millimeters.
 
 `<CustomPanel>` and `<CustomPanelMockup>` render a flat rectangular sheet at
 ANY size - foam board, acrylic sign, art print, table card. Pass real
-millimeters via `size`; the longest edge auto-normalizes to the stage, so a
-100×150 mm card and a 1000×1500 mm board both fill the default camera while
-keeping their true aspect ratio and relative thickness. Front and back are
-live DOM.
+millimeters via the required `size` prop; the longest edge auto-normalizes to
+the stage, so a 100×150 mm card and a 1000×1500 mm board both fill the default
+camera while keeping their true aspect ratio and relative thickness. Front and
+back are live DOM.
 
 <MockupExplorer
   component="CustomPanelMockup"
@@ -17,21 +17,21 @@ live DOM.
 
 ## `<CustomPanel>` vs `<CustomPanelMockup>`
 
-<BareVsMockup object="CustomPanel" kind="customPanel" slot="Front" />
+<BareVsMockup object="CustomPanel" kind="customPanel" slot="Front" requiredProps="{ size: { width: 600, height: 900 } }" />
 
 ```tsx
 import { MockupCanvas, CustomPanel, CustomPanelMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<CustomPanelMockup float style={{ height: 520 }}>
+<CustomPanelMockup size={{ width: 600, height: 900, thickness: 5 }} float style={{ height: 520 }}>
   <YourApp />
 </CustomPanelMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <CustomPanel rotation={[0, 0.4, 0]}>
+  <CustomPanel size={{ width: 600, height: 900, thickness: 5 }} rotation={[0, 0.4, 0]}>
     <YourApp />
   </CustomPanel>
 </MockupCanvas>

@@ -6,8 +6,9 @@ keywords: [browsers, browser support, compatibility, safari, ios, firefox, chrom
 
 ## Requirements
 
-- **WebGL 2.** The library renders with three.js r185, and three.js has
-  required WebGL 2 since r163 - there is no WebGL 1 fallback. Every current
+- **WebGL 2.** The library renders with three.js 0.179 to 0.186 (the
+  supported `three` range is `>=0.179.0 <0.187.0`), and three.js has required
+  WebGL 2 since r163 - there is no WebGL 1 fallback. Every current
   desktop and mobile browser ships it, but it can still be missing: disabled
   by policy, a GPU driver the browser blocklists, some virtual machines and
   remote desktops. There the canvas cannot be created, so wrap mockups in an

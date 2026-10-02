@@ -23,7 +23,7 @@ about shipping.
 | --- | --- |
 | [`packages/react`](packages/react) | `react-3d-mockups` - the published package, the whole library. |
 | `packages/react/src/core` | Specs, geometry math, screen & stage behaviors. Imports `three` at most, never React. Published as the `react-3d-mockups/core` subpath. |
-| `packages/react/src` (the rest) | react-three-fiber scene components, canvas, drei `<Html>` screen bridge. |
+| `packages/react/src` (the rest) | react-three-fiber scene components, canvas, the HTML screen bridge (`ScreenPortal`, adapted from drei's `<Html>`). |
 | [`apps/docs`](apps/docs) | Next.js docs & live demos site. |
 
 ## The layering rule
@@ -72,6 +72,12 @@ What that puts in the core today:
   procedural studio light rig (`STUDIO_LIGHTFORMERS`), the idle float animation
   (`floatPose`), touch-action policy, zoom math (`orbitZoomBy`), fullscreen helpers
   and the overlay-button chrome.
+- **Lifecycle** (`src/core/lifecycle.ts`) - every device variant's product
+  line and announcement month (`DEVICE_LINEUP`), from which `deviceLifecycle`
+  derives whether a newer model has superseded it, plus scheduled
+  deprecations and the tombstones of removed models (`REMOVED_DEVICES`). Each
+  device scene component checks its `variant` here, which is what turns a
+  removed or misspelt one into an error that names it.
 
 What stays in the React layer (note that `src/core/screen` and `src/screen`
 are different directories - the core half is the math, the React half is the
@@ -83,8 +89,10 @@ mirror each other):
   motion-tracked contact shadow in `stage-shadows.tsx`, and `TumbleControls`
   over the core `TumbleOrbit`).
 - The **HTML screen bridge**: portaling framework content onto the display glass
-  (`screen/device-screen.tsx` over drei `<Html transform occlude="blending">`),
-  calling the core's backface culler, confining drei's z-index band to the
+  (`screen/device-screen.tsx` over `screen/screen-portal.tsx`, our trimmed
+  port of drei's `<Html transform occlude="blending">` that gives every mount
+  its own React root), calling the core's backface culler, confining the
+  portal's z-index band to the
   mockup's own stacking context, bridging React context into the screen's
   separate root (its-fine), and keeping the screen out of the accessibility
   tree unless asked (`stage-context.tsx`).
@@ -113,7 +121,7 @@ is built on:
    `OVERLAY_BUTTON_STYLE` + the icon paths (`orbitZoomBy` and `toggleFullscreen`
    already do the work).
 2. **Screen** - a `DeviceScreen` equivalent over the renderer's HTML bridge
-   (drei's `<Html transform>` in React): wrapper class
+   (`ScreenPortal` in React, a port of drei's `<Html transform>`): wrapper class
    `SCREEN_LAYER_CLASS`, inject `SCREEN_LAYER_CSS`, scale by `screenDistanceFactor`,
    style the content div with `screenSurfaceStyle`, put the bridge in the renderer's
    depth-blending mode with the screen silhouette as its occluder geometry, and run
@@ -144,9 +152,10 @@ or a resize. Everything else that moves has to ask, and each does:
 - `TumbleControls` - on every pointer, wheel, gesture and key event, and from
   its frame loop for as long as the orbit is `settling` or `autoRotate` runs;
 - `FloatGroup` - every frame while it floats;
-- `DeviceScreen` - when its content element arrives (drei's `<Html>` commits it
-  after the frame that mounted it, so without a request the screen would sit
-  unplaced), and every frame while it waits out drei's mount race;
+- `DeviceScreen` - when its content element arrives (the portal's own React
+  root commits it after the frame that mounted it, so without a request the
+  screen would sit unplaced), and every frame while it waits for r3f's event
+  layer or retries a root that lost its first render;
 - `StageShadows` - never asks; it re-renders the shadow map on frames that
   happen anyway, and only when a mesh's world matrix or geometry has changed.
 
@@ -168,13 +177,27 @@ so it can be imported two ways:
 - `import { GALAXY_VARIANTS } from 'react-3d-mockups/core'` - the specs alone,
   with no components pulled in.
 
-That second entry makes the subpath's **RSC boundary** part of the package
-contract. The core carries no `'use client'` directive, so a server component
-can import a spec for layout math; a client directive there would turn every
-exported constant into a client reference the server cannot read. `banner` is a
-whole-build esbuild option, so the package builds its two entries as *two* tsup
-configs and stamps the directive on the components entry only - read the
-comments in `packages/react/tsup.config.ts` before merging them back together.
+The ESM build writes **one file per source module** rather than one bundle
+per entry, for two reasons:
+
+- **Tree-shaking.** `"sideEffects": false` lets an app's bundler drop whole
+  files, never statements inside one. As a single `dist/index.js`, importing
+  `BookMockup` shipped every model. `npm run size:check` bundles each
+  component from the built `dist/` and fails when one grows more than 10% past
+  the import-cost table in `docs/devices.mdx` (`npm run size:write` rewrites
+  it).
+- **The RSC boundary.** The directive goes where it belongs: every component
+  module carries `'use client'`; the core modules and the entry that
+  re-exports everything (`src/index.ts`) carry none. So a server component can
+  call `mockupInfo` or read a spec through either entry, and still render the
+  components, which stay client references through their own modules. A
+  client directive on a whole entry turns every exported constant into a
+  client reference the server cannot read.
+
+`banner` is a whole-build esbuild option, so the components and the rest are
+two tsup configs. CommonJS stays one bundle per entry, since `require` cannot
+tree-shake anyway. Read the comments in `packages/react/tsup.config.ts` before
+merging configs back together.
 
 The library was previously split across two workspace packages
 (`@react-3d-mockups/core` + `react-3d-mockups`), with the core bundled into the
@@ -219,6 +242,14 @@ tables.
    call. Passing `metrics` directly rather than looking it up by `kind` is
    deliberate: a registry lookup would make every mockup reference every spec, so
    importing one component would pull in all of them.
+
+A device variant takes one more row: its product line and the month it was
+announced, in `DEVICE_LINEUP` (`src/core/lifecycle.ts`). The table is keyed by
+the variant type, so a variant without a row does not typecheck. A new model in
+an existing line supersedes the older ones with no edit to theirs - the docs
+sidebar and gallery fold those away on their own. Deprecating and removing a
+model is a process of its own, in
+[CONTRIBUTING.md](CONTRIBUTING.md#deprecating-and-removing-a-device).
 
 A region that resolves to an **array** of rects means exactly one thing: a
 single slot painted onto several distinct surfaces, like the van's nose and

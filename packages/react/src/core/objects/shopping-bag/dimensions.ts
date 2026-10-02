@@ -19,6 +19,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export const SHOPPING_BAG = {
   /** The bag: width (x), height (y), gusset depth (z). The walls are cut
@@ -65,6 +66,7 @@ export interface ShoppingBagLayout {
  * the bag so small totes and deep grocery bags both read right.
  */
 export function shoppingBagLayout(size: ShoppingBagSizeMm = SHOPPING_BAG_SIZE_MM): ShoppingBagLayout {
+  checkSizeMm('ShoppingBag', size, 'width: 320, height: 420, depth: 140')
   const scale = SHOPPING_BAG.body.height / Math.max(size.width, size.height, size.depth)
   const width = size.width * scale
   const height = size.height * scale

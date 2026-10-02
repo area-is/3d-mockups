@@ -1,0 +1,436 @@
+---
+title: Advanced exports
+description: The building blocks behind the mockups - createMockup, the slot helpers, TumbleControls, LEDText, the status bar, the colorway catalogs and the shared types.
+keywords: [advanced, createMockup, custom mockup, createSlots, createSlot, collectSlots, resolveSurface, slots, TumbleControls, orbit controls, LEDText, led sign, dot matrix, StatusBar, renderStatusBar, statusBarSafeAreaTop, STATUS_BAR_DEFAULTS, colorways, findColorway, Colorway, MockupFraming, RegionSpec, types]
+---
+
+Everything on this page is exported from `react-3d-mockups` and is public API.
+Most pages never need it: these are the parts the built-in mockups are made
+of, exported so you can build a mockup of your own around an existing model,
+stage a model in a canvas of your own, or reuse a part somewhere else.
+
+## `createMockup`
+
+The factory every built-in `*Mockup` comes from. It takes a model component
+and returns a one-liner: a component with its own canvas, the studio light rig,
+a ground shadow, orbit controls and a camera framed on the model.
+
+```ts
+declare function createMockup<
+  P extends object,
+  S extends Record<string, Slot> = Record<never, never>,
+  K extends MockupKind = MockupKind,
+>(options: CreateMockupOptions<P, S, K>): React.FC<MockupProps<P>> & S
+// …plus .info() and .regions when it is given kind and metrics
+```
+
+| Option | Type | What it does |
+| --- | --- | --- |
+| `object` | `ComponentType<P>` | The model to stage. Required. Every prop the mockup receives that is not a stage prop is passed to it, transforms (`position`, `rotation`, `scale`) included. |
+| `framing` | `MockupFraming<P>` | The camera pose, the float animation's strength, and how far the model reaches below its origin, which is where the contact shadow sits. Without it the canvas defaults apply: the camera at `[0, 0.5, 7.4]`, fov 40, and the shadow at `y = -2.05`. |
+| `slots` | `S` | Slot components to attach to the mockup, so `<YourMockup.Back>` works. |
+| `label` | `string` | The canvas's default accessible name, e.g. `'3D mockup of a table card'`. A `label` prop wins. |
+| `displayName` | `string` | The component's name in React devtools. |
+| `kind`, `regions`, `metrics` | | Attach the measurement statics `.info()` and `.regions` - see below. |
+
+The component it returns takes `MockupProps<P>`: the model's own props, `float`,
+and the stage props every mockup takes (see
+[Shared mockup props](/docs/api#shared-mockup-props)). It sorts them for you:
+stage props go to the canvas, everything else to the model.
+
+The library does not export the component that puts live DOM onto a surface,
+so a mockup of your own wraps a model that already has live surfaces rather
+than new geometry. `CustomPanel` and `CustomBox` take any size in millimetres,
+which covers most flat and boxed objects. This one fixes a panel's size to make
+a 4 × 6 in table card:
+
+```tsx title="table-card-mockup.tsx"
+'use client'
+
+import { createMockup, CustomPanel, type CustomPanelProps } from 'react-3d-mockups'
+import { customPanelScale } from 'react-3d-mockups/core'
+
+// 4 × 6 in on 1.5 mm board.
+const CARD = { width: 101.6, height: 152.4, thickness: 1.5 }
+
+function TableCard(props: Omit<CustomPanelProps, 'size'>) {
+  return <CustomPanel color="#ffffff" {...props} size={CARD} />
+}
+
+export const TableCardMockup = createMockup({
+  object: TableCard,
+  slots: { Front: CustomPanel.Front, Back: CustomPanel.Back },
+  framing: {
+    camera: { position: [0, 0.5, 7.4], fov: 40 },
+    // The panel's origin is its center, so its bottom edge - where the
+    // shadow goes - is half its height below.
+    extent: () => (CARD.height * customPanelScale(CARD)) / 2,
+  },
+  label: '3D mockup of a table card',
+  displayName: 'TableCardMockup',
+})
+```
+
+```tsx
+<div style={{ height: 520 }}>
+  <TableCardMockup float rotation={[0, -0.3, 0]}>
+    <Menu /> {/* bare children fill the front */}
+    <TableCardMockup.Back>
+      <Specials />
+    </TableCardMockup.Back>
+  </TableCardMockup>
+</div>
+```
+
+The file needs `'use client'` in the App Router: `createMockup` comes from the
+client entry, so it can only be called in a client module.
+
+### Measurement statics
+
+A built-in mockup carries `.info()` and `.regions`
+([Measuring a mockup](/docs/api/mockup-info#mockupinfo-and-mockupregions)),
+which `createMockup` attaches when it is given `kind` (a built-in kind, such as
+`'customPanel'`), `metrics` (that kind's `*_METRICS` from
+`react-3d-mockups/core`) and `regions` (its `*_REGIONS`). Their type is
+`MockupStatics<K>`: `info(props)` takes the props `mockupInfo(kind, props)`
+takes and returns the same answer, and `regions` is the kind's
+`readonly RegionSpec[]`.
+
+Without them the mockup has no statics; measure it with `mockupInfo`. The table
+card is a custom panel at a fixed size, so
+`mockupInfo('customPanel', { size: CARD })` describes it exactly.
+
+## Slot helpers
+
+Slots are how a mockup's regions become child elements: `<BookMockup.Spine>`
+is a slot, and so is `<GalaxyMockup.Screen>`. Four functions make and read
+them.
+
+```ts
+declare function createSlot<P extends SlotProps = SlotProps>(region: string, displayName?: string): Slot<P>
+declare function createSlots<const R extends readonly RegionSpec[]>(regions: R): SlotsFor<R>
+declare function collectSlots<const R extends readonly RegionSpec[]>(children: ReactNode, regions: R): CollectedSlots<R>
+declare function resolveSurface(
+  slot: (SlotProps & { region?: string }) | undefined,
+  defaults: SurfaceProps & { resolution: number },
+): ResolvedSurface
+```
+
+- **`createSlots(regions)`** makes one slot component per region, named in
+  PascalCase: `[{ name: 'front', … }, { name: 'back', … }]` gives
+  `{ Front, Back }` (typed `SlotsFor<R>`). `createSlot(region)` makes one.
+  A slot renders nothing itself; if it is rendered anywhere other than as a
+  direct child of its model, it warns in development and its content is
+  ignored.
+- **`collectSlots(children, regions)`** is what a model calls on its children.
+  It flattens fragments, lifts each slot element out under its region name,
+  and puts every other child into the first region in the list - the primary
+  one. A region nobody filled is absent. In development it warns about a
+  duplicate slot (the last one wins), about bare children given alongside an
+  explicit primary slot (the slot wins), and about a slot whose region this
+  model does not have.
+- **`resolveSurface(slot, defaults)`** merges one collected slot's
+  `surfaceBackground`, `resolution` and `surfaceStyle` over the model's
+  defaults - `surfaceStyle` key by key - and returns a `ResolvedSurface`:
+  `{ background, resolution, screenStyle, region }`.
+
+The types: `RegionSpec` is `{ name, label }`, and the first region in a list
+is the primary one. `SurfaceProps` is the three surface settings,
+`SlotProps` adds `children`, and `Slot<P>` is a component taking `P`.
+`CollectedSlots<R>` maps each region name to the props its slot was given.
+`SCREEN_REGIONS` is the one-region list every device uses,
+`[{ name: 'screen', label: 'Screen' }]`.
+
+Inside a model of your own they route content to the live surfaces of the
+models it is made of. A diptych - two panels with a slot each:
+
+```tsx title="diptych.tsx"
+'use client'
+
+import type { ReactNode } from 'react'
+import type { ThreeElements } from '@react-three/fiber'
+import {
+  collectSlots,
+  createMockup,
+  createSlots,
+  CustomPanel,
+  resolveSurface,
+  type SurfaceProps,
+} from 'react-3d-mockups'
+
+const DIPTYCH_REGIONS = [
+  { name: 'left', label: 'Left panel' }, // first, so bare children land here
+  { name: 'right', label: 'Right panel' },
+] as const
+
+const diptychSlots = createSlots(DIPTYCH_REGIONS) // { Left, Right }
+
+interface DiptychProps extends SurfaceProps, Pick<ThreeElements['group'], 'position' | 'rotation' | 'scale'> {
+  children?: ReactNode
+}
+
+function DiptychModel({ children, surfaceBackground, resolution = 420, surfaceStyle, ...group }: DiptychProps) {
+  const slots = collectSlots(children, DIPTYCH_REGIONS)
+  const panel = (side: 'left' | 'right', x: number) => {
+    const surface = resolveSurface(slots[side], { surfaceBackground, resolution, surfaceStyle })
+    return (
+      <CustomPanel
+        size={{ width: 300, height: 400 }}
+        position={[x, 0, 0]}
+        surfaceBackground={surface.background}
+        resolution={surface.resolution}
+        surfaceStyle={surface.screenStyle}
+      >
+        {slots[side]?.children}
+      </CustomPanel>
+    )
+  }
+  return (
+    <group {...group}>
+      {panel('left', -1.75)}
+      {panel('right', 1.75)}
+    </group>
+  )
+}
+
+export const Diptych = Object.assign(DiptychModel, diptychSlots)
+
+export const DiptychMockup = createMockup({
+  object: Diptych,
+  slots: diptychSlots,
+  framing: { camera: { position: [0, 0.3, 9.5], fov: 40 }, extent: () => 2.2 },
+  label: '3D mockup of two panels',
+  displayName: 'DiptychMockup',
+})
+```
+
+`<DiptychMockup><LeftArt /><DiptychMockup.Right><RightArt /></DiptychMockup.Right></DiptychMockup>`
+fills both panels, and the bare `<Diptych>` works in a canvas of your own with
+the same slots.
+
+## `TumbleControls`
+
+The drag-to-orbit camera controls. `MockupCanvas` mounts them itself while
+`controls` is on; render them yourself in a react-three-fiber `<Canvas>` of
+your own, inside the canvas.
+
+```tsx
+'use client'
+
+import { useRef } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { Galaxy, TumbleControls, type TumbleControlsHandle } from 'react-3d-mockups'
+
+export function Scene() {
+  const controls = useRef<TumbleControlsHandle>(null)
+  return (
+    <>
+      <div style={{ height: 560 }}>
+        <Canvas camera={{ position: [0, 0.5, 7.4], fov: 40 }}>
+          <ambientLight intensity={0.7} />
+          <directionalLight position={[4, 8, 6]} intensity={1.4} />
+          <Galaxy>
+            <YourApp />
+          </Galaxy>
+          <TumbleControls ref={controls} zoom autoRotate />
+        </Canvas>
+      </div>
+      <button onClick={() => controls.current?.reset()}>Reset view</button>
+    </>
+  )
+}
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `enabled` | `boolean` | `true` | Pointer and keyboard control. Off, the controls ignore input and do not make the canvas focusable. |
+| `zoom` | `boolean` | `false` | Pinch zoom: two fingers on touch, a trackpad pinch, or ctrl/⌘ with a mouse wheel. A plain wheel always passes through to the page. |
+| `autoRotate` | `boolean \| number` | `false` | Turn slowly: `true` is one revolution a minute, a number multiplies that. Held still under reduced motion. |
+| `freeRotation` | `boolean` | `false` | Let vertical drags carry on over the top and bottom instead of stopping at the orbit clamp. |
+| `minDistance`, `maxDistance` | `number` | - | The closest and farthest the camera can zoom to. |
+| `onDistanceChange` | `(distance: number) => void` | - | Called when the camera's distance settles on a new value. |
+| `home` | `[x, y, z]` | where the camera started | Where `reset()` and the `Home` key put the camera. |
+
+The camera orbits the scene origin. A drag turns and tilts it; with a mouse, a
+right or middle drag pans the view off center. While enabled, the controls
+make the canvas focusable, so the arrow keys turn and tilt, `+` and `-` zoom
+(with `zoom` on) and `Home` puts the camera back, centered again. The ref's `TumbleControlsHandle` has
+`zoomBy(factor)`, which multiplies the camera's distance, and `reset()`.
+
+Like a bare model, `TumbleControls` throws outside a canvas. Its props type is
+`TumbleControlsProps`.
+
+## `LEDText`
+
+The dot-matrix sign renderer. The bus's destination sign and the bus
+shelter's arrivals board use it for plain-string content - pass
+`<BusMockup.DestinationSign>42 Downtown</BusMockup.DestinationSign>` and you
+get an LED sign. Render it yourself to put the same look on any surface:
+
+```tsx
+<StorefrontMockup>
+  <LEDText text="Open until 22:00" mode="marquee" color="#ff9d1e" />
+</StorefrontMockup>
+```
+
+It fills its parent and sizes its type to the parent's height, so it reads
+the same on a 67 px fascia sign and a full screen.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `text` | `string \| readonly string[]` | required | One line, or several: pages that alternate, or rows of a board, depending on `mode`. |
+| `mode` | `'auto' \| 'marquee' \| 'static' \| 'cycle' \| 'rows'` | `'auto'` | `'auto'` scrolls a single line only when it overflows and cycles an array page by page. `'marquee'` always scrolls, `'static'` never does, `'cycle'` flips through the strings, `'rows'` stacks them as a board (each row still scrolls if it overflows). |
+| `color` | `string` | `'#ffb424'` | Lit-LED color. |
+| `background` | `string` | `'#0a0a08'` | Unlit panel color, also the grid between the dots. |
+| `speed` | `number` | `70` | Marquee speed in CSS px per second. |
+| `interval` | `number` | `2.8` | Seconds each page holds in `'cycle'` mode. |
+| `dotSize` | `number` | `4` | Dot pitch of the matrix in CSS px; `0` turns the dots off. |
+| `align` | `'left' \| 'center' \| 'right'` | `'center'` | Alignment of a line that fits without scrolling. |
+| `style` | `CSSProperties` | - | Extra styles on the panel. |
+
+Its props type is `LEDTextProps`. The animation is CSS, so it needs no canvas
+frames, and it holds still for visitors who ask for reduced motion.
+
+## Status bar
+
+Phones, foldables and tablets draw their status bar from the `statusBar`
+prop ([Status bar](/docs/screen-content#status-bar)). The pieces behind that
+prop are exported too.
+
+`StatusBar` is the bar itself, as a component. It is absolutely positioned at
+the top of its nearest positioned ancestor and hidden from assistive
+technology. Outside a mockup it draws a flat system bar, for a 2D screenshot
+frame or a design review:
+
+```tsx
+import { StatusBar } from 'react-3d-mockups'
+
+<div style={{ position: 'relative', width: 402, height: 874, background: '#000' }}>
+  <StatusBar platform="ios" formFactor="phone" width={402} time="10:30" battery={0.6} />
+  <YourApp />
+</div>
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `platform` | `'ios' \| 'oneui'` | Whose bar. They differ in layout, not only in styling. Required. |
+| `formFactor` | `'phone' \| 'tablet'` | Phone or tablet metrics. Required. |
+| `width` | `number` | Width of the surface in CSS px. Required. |
+| `cutout` | `{ halfWidth, centerY, offsetX }` | The front-camera cutout in CSS px, for the bar to centre on. The type is `StatusBarCutout` in `react-3d-mockups/core`. |
+| `corner` | `number` | The display's corner radius in CSS px, so the clusters clear the curve. |
+| `color` | `string` | Ink. Default `'#ffffff'`. |
+
+Its props type is `StatusBarProps`. It also takes every field of the
+`statusBar` object - `time`, `date`, `signal`, `wifi`, `wifiGeneration`,
+`battery`, `batteryState`, `batteryPercent`, `carrier` - with the meanings
+and defaults listed under [Status bar](/docs/screen-content#status-bar).
+
+The rest of the family:
+
+- **`StatusBarOption`** is the `statusBar` prop's type:
+  `boolean | (StatusBarContent & { color?: string })`.
+- **`StatusBarContent`** is what the bar says - the fields above.
+  `StatusBarPlatform`, `StatusBarFormFactor` and `StatusBarBattery`
+  (`'normal' | 'charging' | 'low'`) are its parts.
+- **`StatusBarPlacement`** is where a device puts its bar:
+  `{ platform, formFactor, width, cutout?, corner? }`.
+- **`renderStatusBar(option, placement)`** turns a `statusBar` prop value into
+  the element a device overlays, or `null` when the bar is off.
+- **`statusBarSafeAreaTop(option, placement)`** is how many CSS px at the top
+  of the surface the bar and the cutout cover - the number a device publishes
+  as `--mockup-safe-area-top` and `useSurface().safeAreaTop`. A cutout counts
+  even with the bar off. See
+  [Laying out under the status bar](/docs/screen-content#laying-out-under-the-status-bar).
+- **`STATUS_BAR_DEFAULTS`** holds the defaults:
+  `{ time: '9:41', signal: 4, wifi: 3, battery: 1, batteryState: 'normal', batteryPercent: false }`.
+  On top of these, One UI shows the battery percentage unless told not to,
+  and an iPad's clock reads `'9:41 AM'`.
+
+## Colorways
+
+Every device family's retail finishes are exported as data, the same catalogs
+the `color` prop resolves ids against:
+
+```ts
+interface Colorway {
+  id: string          // what the `color` prop takes, e.g. 'cosmicorange'
+  name: string        // the retail name, e.g. 'Cosmic Orange'
+  color: string       // body / back color
+  frameColor?: string // the measured frame, button and camera-ring color, on devices with a metal frame
+}
+```
+
+`GALAXY_COLORWAYS`, `IPHONE_COLORWAYS`, `IPHONE_DUO_COLORWAYS`,
+`FOLD_COLORWAYS`, `FLIP_COLORWAYS`, `LAPTOP_COLORWAYS`, `IPAD_COLORWAYS`,
+`GALAXY_TAB_COLORWAYS`, `APPLE_WATCH_COLORWAYS` and `GALAXY_WATCH_COLORWAYS`
+are keyed by variant, each holding that model's list:
+`IPHONE_COLORWAYS.promax` is the iPhone 17 Pro Max's three finishes.
+`STUDIO_DISPLAY_COLORWAYS` is a plain list, since there is one model. Ids
+belong to a variant: pass `color` an id from the list of the variant you
+render.
+
+`findColorway(catalog, id)` looks an id up in one list and returns the
+`Colorway`, or `undefined`:
+
+```ts
+import { findColorway, IPHONE_COLORWAYS } from 'react-3d-mockups'
+
+findColorway(IPHONE_COLORWAYS.promax, 'deepblue')?.name // 'Deep Blue'
+```
+
+A finish picker is a map over one list:
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+import { IPhoneMockup, IPHONE_COLORWAYS } from 'react-3d-mockups'
+
+const FINISHES = IPHONE_COLORWAYS.promax
+
+export function FinishPicker() {
+  const [finish, setFinish] = useState(FINISHES[0]?.id)
+  return (
+    <>
+      <div style={{ height: 520 }}>
+        <IPhoneMockup variant="promax" color={finish} />
+      </div>
+      {FINISHES.map((c) => (
+        <button key={c.id} aria-pressed={c.id === finish} onClick={() => setFinish(c.id)}>
+          <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 6, background: c.color }} />{' '}
+          {c.name}
+        </button>
+      ))}
+    </>
+  )
+}
+```
+
+In a Server Component, import the catalogs and `findColorway` from
+`react-3d-mockups/core`, which also has `railColor` - the frame color the
+library derives for a custom body color.
+
+## Types
+
+The rest of the exported types, for code that wraps or extends the components:
+
+| Type | What it is |
+| --- | --- |
+| `MockupProps<P>` | A `createMockup` component's props: the stage props, `P` and `float`. Each built-in's `XMockupProps` is `MockupProps<XProps>`. |
+| `CreateMockupOptions<P, S, K>` | `createMockup`'s options, above. |
+| `MockupStatics<K>` | `.info()` and `.regions`, above. |
+| `MockupKind`, `MOCKUP_KINDS` | Every measurable kind, as a union and as a list. |
+| `MockupPropsMap` | For each kind, the props `mockupInfo` takes. |
+| `MockupInfo`, `RegionInfo`, `RegionMetrics`, `Size` | Measurements - see [Measuring a mockup](/docs/api/mockup-info). |
+| `SurfaceInfo` | What `useSurface()` returns - see [`useSurface()`](/docs/api/mockup-info#usesurface). |
+| `RegionSpec`, `SCREEN_REGIONS` | A region's `{ name, label }`, and the devices' one-region list. |
+| `CameraFraming` | `{ position: [x, y, z], fov }`. |
+| `MockupFraming<P>` | `{ camera?, floatIntensity?, extent(props), contactGap? }`: `extent` is how far the model reaches below its origin, in world units, and `contactGap` the gap between it and the shadow. |
+| `TabletCommonProps`, `WatchCommonProps`, `FoldCommonProps` | The props both tablet families, both watch families, and the Fold and iPhone Duo share; each family's props add its own `variant`. |
+| `Orientation` | `'portrait' \| 'landscape'`. |
+| `DelayCapture` | The `delayCapture` prop's type: `(reason: string) => () => void`. See [Exporting](/docs/exporting#video-with-remotion). |
+| `GalaxyVariant`, `IPhoneVariant`, `IPhoneDuoVariant`, `FoldVariant`, `FlipVariant`, `LaptopVariant`, `IPadVariant`, `GalaxyTabVariant`, `AppleWatchVariant`, `GalaxyWatchVariant`, `TVVariant` | Each family's `variant` union. |
+| `BookSize`, `MagazineSize`, `BrochureSize`, `PosterFrameSize`, `RollupBannerSize`, `DoohTotemSize`, `ProductBoxSizeMm`, `MailerBoxSizeMm`, `MilkCartonSizeMm`, `ShoppingBagSizeMm`, `CustomSizeMm`, `CustomBoxSizeMm` | The `size` prop of each object that takes one (`CustomSizeMm` is the custom panel's). |
+
+`usePrefersReducedMotion()` is documented under
+[Reduced motion](/docs/api/mockup-canvas#reduced-motion).

@@ -7,6 +7,111 @@ breaking change can ship in a minor release, and is always listed under
 
 ## Unreleased
 
+### Added
+
+- **Device lifecycle, and a way to retire old models.** Every device variant
+  now belongs to a product line in `DEVICE_LINEUP`
+  (`react-3d-mockups/core`), with the month it was announced, and
+  `deviceLifecycle(kind, variant)` says where it stands:
+  - `current`: the newest model in its line;
+  - `superseded`: a newer model in its line is in the catalog. Today that is
+    the iPhone 17 Pro and Pro Max, the Galaxy Z Fold 7 and Z Flip 7, Apple
+    Watch Series 11 and Galaxy Watch 8. Superseded models are fully supported;
+  - `deprecated`: scheduled for removal, with the release that removes it.
+
+  A deprecated model logs one development warning naming its replacement. A
+  removed one throws an error that points to its replacement, through
+  `REMOVED_DEVICES`. Nothing is deprecated yet. CONTRIBUTING.md has the
+  deprecation and removal process. The docs sidebar and gallery now show the
+  newest model of each line, with the older ones one click away.
+
+- **`TVSetProps` and `DOOHTotemSize`**, named after their components.
+  `TVProps` and `DoohTotemSize` stay as aliases. `MockupRegions<K>` is the
+  region map `mockupInfo(kind)` returns for a kind.
+- **More warnings in development**, each logged once:
+  - a mockup whose container has no height, which leaves it 0 px tall and
+    invisible;
+  - a `color` that is a colorway id of another variant (`color="coralred"` on
+    a Flip 8), naming the variants that have it;
+  - a slot of another mockup (`<AFrameSignMockup.Back>` inside
+    `<BookMockup>`), which used to land on any region with the same name and
+    is now ignored;
+  - a canvas whose WebGL context the browser dropped (see below).
+
+### Changed (breaking)
+
+- **`BusMockup`'s curb-side ad is a queen-size panel**, 586×200 by default
+  (was 960×200). The curb side used to mirror the street side's king-size
+  panel, which ran across the rear door, so the door's glass drew over the
+  left third of the art. The queen panel sits between the rear door and the
+  front wheel arch, at the street side's print density. Lay curb-side art out
+  for 586×200, or use `coverage="full"`, which is unchanged.
+- **`catalog.json` is version 2.** The Fold and Flip rows carry `openAngle`
+  (version 1 named a nonexistent `open` prop, so every folded row measured
+  the open screen), the iPhone Duo is enumerated open and folded in both
+  orientations, and the TV by variant: 95 rows. Code that filtered on
+  `props.open` should filter on `props.openAngle`.
+- **`mockupInfo(kind).regions` is typed per kind.** `mockupInfo('book')
+  .regions.cover.px` typechecks, a misspelt region name is a type error, and a
+  region with several surfaces (the van's `licensePlate`) is an array. Code
+  that narrowed the old `RegionInfo | RegionInfo[]` union by hand may need
+  the narrowing removed.
+- **`XMockup.info()` and `XMockup.regions` are no longer optional** on the
+  built-in mockups, and `info()` requires its argument where the kind needs a
+  size (`CustomPanelMockup.info({ size })`); calling it without one used to
+  typecheck and then throw.
+
+### Changed
+
+- **Importing one mockup ships only that mockup.** The ESM build is one file
+  per module instead of one bundle, so `"sideEffects": false` lets an app's
+  bundler drop everything an import does not reach. Importing `BookMockup`
+  used to ship the whole library (~135 KB gzip); it is now about 15 KB, and a
+  device about 60 KB, most of it the CSG engine the devices share. The docs'
+  import-cost table is measured from the published build.
+- **The main entry works in a Server Component.** Only the component modules
+  carry `'use client'`, so `mockupInfo`, the colorways and the specs import
+  from `react-3d-mockups` into server code as well as from
+  `react-3d-mockups/core`. They used to be client references the server could
+  not call.
+- **`gl`, `onCreated`, `dpr` and `pauseWhenOffscreen` are mockup props.** They
+  always reached the canvas at runtime, but TypeScript rejected them on a
+  `*Mockup`.
+- **`BusShelterMockup` and `MailerBoxMockup` frame the surface your content
+  is on.** The shelter's camera used to face the inner poster, so bare
+  children were on the face turned away; the mailer's looked at its lid edge
+  on. Both now show the primary region at the default pose.
+- **`MailerBoxMockup` prints every panel at one density**, `resolution` being
+  the lid's width, and `mockupInfo` reports the 520 px the lid renders (it
+  said 513).
+- **Sourcemaps no longer embed the sources**, which were 4.5 MB of the
+  package's 7.7 MB.
+
+### Fixed
+
+- **An unknown `variant` throws an error that names it.** A misspelt variant
+  on a device component, or passed to `mockupInfo`, used to throw a TypeError
+  from inside the scene or the metrics resolver. It now throws `unknown
+  variant "…"` and lists the variants that exist. The TV, which used to fall
+  back to its default design, does the same.
+- **No console errors when a screen mounts.** Every screen logged "Attempted
+  to synchronously unmount a root while React was already rendering" in
+  development, twice under StrictMode, because drei's `<Html>` unmounted its
+  React root inside React's commit. Screens now mount through their own
+  portal (adapted from drei's `<Html>`), which gives every mount its own root
+  and unmounts an outgoing one after the commit.
+- **A canvas whose WebGL context is lost comes back.** Browsers drop the
+  oldest contexts when a page holds too many; such a canvas stayed blank. It
+  now shows an empty placeholder and starts a fresh renderer the next time it
+  scrolls into view.
+- **A bad millimetre `size` fails by name.** `CustomPanel` and `CustomBox`
+  without a `size`, or any object given a zero, negative or non-finite
+  dimension, used to render nothing and measure `Infinity`. They throw an
+  error naming the component and showing a valid size.
+- **A foldable's half pane reports the whole display to `useSurface()`**, not
+  the fraction of it that half shows, so content laid out from it spans the
+  fold correctly while the device is partly open.
+
 ## 0.1.1 - 2026-10-02
 
 ### Changed

@@ -68,8 +68,16 @@ export const BUS_SHELTER_METRICS = {
   },
 } as const satisfies MockupMetrics
 
+/**
+ * From the front-right, where the lightbox's outward face - the primary
+ * region - faces the camera. The lightbox stands as the shelter's end panel
+ * facing along the sidewalk, as real 6-sheet panels do, so from straight in
+ * front the camera saw its INNER face: `<BusShelterMockup><App /></BusShelterMockup>`
+ * showed a blank white lightbox with the content facing away. The docs demos
+ * had been rotating the shelter to hide it.
+ */
 export const BUS_SHELTER_FRAMING = {
-  camera: { position: [0, 0.4, 11.4], fov: 40 },
+  camera: { position: [5.96, 0.4, 9.72], fov: 40 },
   floatIntensity: 0.35,
   extent: () => BUS_SHELTER.standHeight,
 } as const satisfies MockupFraming

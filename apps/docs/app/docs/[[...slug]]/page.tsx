@@ -6,6 +6,8 @@ import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb'
 import { source } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
 import { MockupBreadcrumb } from '@/components/mockup-breadcrumb'
+import { ModelStatusNotice } from '@/components/model-status-notice'
+import { OLDER_MODELS } from '@/lib/model-lifecycle'
 import { DEVICES, OBJECTS } from '@/lib/mockup-catalog.mjs'
 import { BASE_PATH } from '@/lib/base-path.mjs'
 import { SITE_URL, jsonLd, pageMetadata } from '@/lib/site'
@@ -76,6 +78,8 @@ export default async function Page(props: PageParams) {
 
   const MDX = page.data.body
   const isMockupPage = MOCKUP_PAGES.has(page.url)
+  const model = MOCKUP_PAGES.get(page.url)
+  const lifecycle = OLDER_MODELS[page.url]
 
   return (
     <DocsPage
@@ -93,6 +97,7 @@ export default async function Page(props: PageParams) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbData(page)) }} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      {model && lifecycle && <ModelStatusNotice entry={model} lifecycle={lifecycle} />}
       <DocsBody>
         <MDX
           components={getMDXComponents({

@@ -103,14 +103,14 @@ const read = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : '')
  * stage props a mockup forwards wholesale. `children` appears in more than
  * one, so it is settled here.
  *
- * Three rows of the MockupCanvas table are NOT part of that forwarded set:
- * `freeRotation`, `shadowY` and `dpr` tune the rendering machinery rather than
- * the picture, and the Components overview says so in as many words - a mockup
- * does not advertise them, and `MockupProps` leaves them off the type. Listing
- * them as props of a mockup would send a reader to code that does not compile;
- * they belong to MockupCanvas, and the MockupCanvas page documents them.
+ * Two rows of the MockupCanvas table are NOT part of that forwarded set:
+ * `freeRotation` and `shadowY` tune the machinery rather than the picture, and
+ * the Components overview says so in as many words - a mockup does not
+ * advertise them, and `MockupProps` leaves them off the type. Listing them as
+ * props of a mockup would send a reader to code that does not compile; they
+ * belong to MockupCanvas, and the MockupCanvas page documents them.
  */
-const CANVAS_ONLY_MACHINERY = new Set(['freeRotation', 'shadowY', 'dpr'])
+const CANVAS_ONLY_MACHINERY = new Set(['freeRotation', 'shadowY'])
 
 const shared = []
 const seen = new Set()

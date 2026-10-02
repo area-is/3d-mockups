@@ -1,12 +1,17 @@
 ---
 title: Composing scenes
 description: Use the ready-made stage with your own arrangement, or drop devices into an existing canvas.
-keywords: [scene, canvas, multiple devices, several devices, react three fiber, r3f, compose, custom canvas]
+keywords: [scene, canvas, multiple devices, several devices, react three fiber, r3f, compose, custom canvas, bare model, TumbleControls, orbit controls, hooks can only be used within the canvas component]
 ---
 
 Each `*Mockup` component is a convenience wrapper around two composable parts:
 `MockupCanvas` (the stage: canvas, lighting, shadows, controls) and a device
 model such as `Galaxy`. Compose them yourself when you want more control.
+
+A bare model is geometry for a scene that already exists, so it always goes
+inside a canvas - `MockupCanvas` or a react-three-fiber `<Canvas>` of your
+own. Rendered anywhere else it throws
+`R3F: Hooks can only be used within the Canvas component!`.
 
 ```tsx title="scenes.tsx"
 'use client'
@@ -47,6 +52,12 @@ Devices accept all react-three-fiber group props (`position`, `rotation`,
 them with your own meshes. Several devices in one canvas also cost less than
 several one-liners, each of which is a canvas of its own - see
 [GPU and performance](/docs/performance#use-fewer-canvases).
+
+Option B has no orbit controls: those belong to `MockupCanvas`. To get the
+same drag-to-orbit, keyboard and pinch-zoom behavior in a canvas of your own, add
+[`<TumbleControls />`](/docs/api/advanced#tumblecontrols) inside it. To turn a
+composition into a one-liner component of your own, with slots and framing,
+see [`createMockup`](/docs/api/advanced#createmockup).
 
 ## Your own canvas must stay transparent
 

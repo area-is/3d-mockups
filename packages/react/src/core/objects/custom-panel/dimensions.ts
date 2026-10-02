@@ -12,6 +12,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export interface CustomSizeMm {
   /** Panel width in millimeters. */
@@ -33,6 +34,7 @@ export const CUSTOM_PANEL = {
 
 /** World units per millimeter for a given panel size. */
 export function customPanelScale(size: CustomSizeMm): number {
+  checkSizeMm('CustomPanel', size, 'width: 600, height: 900')
   return CUSTOM_PANEL.target / Math.max(size.width, size.height)
 }
 

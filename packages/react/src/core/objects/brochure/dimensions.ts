@@ -13,6 +13,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the brochure. */
 export const BROCHURE_MM = 1 / 60
@@ -30,7 +31,8 @@ export interface BrochureSize {
  * US letter Z-fold (three equal 93 x 216 mm panels); pass e.g.
  * `{ width: 99, height: 210 }` for an A4 tri-fold.
  */
-export function brochureSpec({ width = 93.1, height = 215.9 }: BrochureSize = {}) {
+export function brochureSpec(size: BrochureSize = {}) {
+  const { width = 93.1, height = 215.9 } = checkSizeMm('Brochure', size, 'width: 93.1, height: 215.9')
   return {
     /** One folded panel. Content you pass per panel maps onto this rect; the
      * sheet is cut square, so it carries no corner radius. */

@@ -5,11 +5,13 @@
  * (only `index.ts`/`core.ts` are tsup entries).
  */
 import * as React from 'react'
+import type { TVProps, TVSetProps, DoohTotemSize, DOOHTotemSize } from './index'
 import {
   mockupInfo,
   useSurface,
   useSurfaceOptional,
   type MockupInfo,
+  type MockupRegions,
   type MockupKind,
   type RegionInfo,
   type SurfaceInfo,
@@ -20,6 +22,7 @@ import {
   type AFrameSignProps,
   BrochureMockup,
   CustomBoxMockup,
+  CustomPanelMockup,
   type CustomBoxMockupProps,
   IPhoneMockup,
   IPhoneDuoMockup,
@@ -81,7 +84,6 @@ type _mockupPropsRoundtrip = Expect<Equal<MockupProps<AFrameSignProps>, AFrameSi
 // ---- a mockup advertises what it looks like; machinery stays on MockupCanvas ---------
 type _noFreeRotation = Expect<Not<Has<'freeRotation', AFrameSignMockupProps>>>
 type _noShadowY = Expect<Not<Has<'shadowY', AFrameSignMockupProps>>>
-type _noDpr = Expect<Not<Has<'dpr', AFrameSignMockupProps>>>
 type _canvasKeepsThem = Expect<Has<'freeRotation', MockupCanvasProps>>
 // One prop carries the turntable, so there is no separate speed to advertise.
 type _noSeparateSpeed = Expect<Not<Has<'autoRotateSpeed', AFrameSignMockupProps>>>
@@ -97,10 +99,10 @@ type _delayCapture = Expect<
 type _screenAccessibility = Expect<
   Equal<AFrameSignMockupProps['screenAccessibility'], 'hidden' | 'visible' | undefined>
 >
-// Renderer plumbing stays on the canvas (it still routes there at runtime).
-type _noGl = Expect<Not<Has<'gl', AFrameSignMockupProps>>>
-type _noOnCreated = Expect<Not<Has<'onCreated', AFrameSignMockupProps>>>
-type _noPause = Expect<Not<Has<'pauseWhenOffscreen', AFrameSignMockupProps>>>
+// Renderer plumbing is a mockup prop too: the performance guide passes it to
+// one-liners, and it always routed to the canvas at runtime.
+type _gl = Expect<Has<'gl' | 'onCreated' | 'dpr' | 'pauseWhenOffscreen', AFrameSignMockupProps>>
+type _glSame = Expect<Equal<AFrameSignMockupProps['gl'], MockupCanvasProps['gl']>>
 type _canvasRenderControl = Expect<Has<'gl' | 'onCreated' | 'pauseWhenOffscreen', MockupCanvasProps>>
 // ---- studio lighting is not optional -------------------------------------------------
 type _noEnvironment = Expect<Not<Has<'environment', MockupCanvasProps>>>
@@ -172,7 +174,7 @@ const _wrongPanelName = <BrochureMockup.FrontMiddle />
 
 // ---- the measurement API -------------------------------------------------------------
 type _kindIsUnion = Expect<Has<'galaxy', Record<MockupKind, true>>>
-type _infoShape = Expect<Equal<ReturnType<typeof mockupInfo>, MockupInfo>>
+type _infoShape = Expect<Equal<ReturnType<typeof mockupInfo<'book'>>, MockupInfo<MockupRegions<'book'>>>>
 type _primaryIsRegion = Expect<Equal<MockupInfo['primary'], RegionInfo>>
 
 // Geometry props are typed per kind; unrelated props are rejected.
@@ -192,15 +194,30 @@ const _duoInfo = mockupInfo('iphoneDuo', { openAngle: false, orientation: 'lands
 // @ts-expect-error - a Galaxy Z Fold variant is not an iPhone Duo variant
 mockupInfo('iphoneDuo', { variant: 'fold8' })
 
+// Regions are typed by name: the documented access typechecks under strict TS...
+const _coverPx: { width: number; height: number } = mockupInfo('book').regions.cover.px
+const _screenPx: { width: number; height: number } = mockupInfo('galaxy').regions.screen.px
+// ...a misspelt region does not...
+// @ts-expect-error - there is no `covr` region
+mockupInfo('book').regions.covr
+// ...and a region painted onto several surfaces is an array.
+type _plates = Expect<Equal<MockupRegions<'van'>['licensePlate'], RegionInfo[]>>
+
 // Every region carries all three unit systems.
 type _units = Expect<Equal<RegionInfo['units'], { width: number; height: number }>>
 type _mm = Expect<Equal<RegionInfo['mm'], { width: number; height: number }>>
 type _px = Expect<Equal<RegionInfo['px'], { width: number; height: number }>>
 
 // ---- statics on the component --------------------------------------------------------
-const _viaComponent = GalaxyMockup.info?.({ variant: 's26' })
+// Every built-in carries both statics, typed as present - no `?.` needed.
+const _viaComponent = GalaxyMockup.info({ variant: 's26' }).regions.screen.px
 const _componentRegions = BookMockup.regions
+type _regionsPresent = Expect<Equal<undefined extends typeof BookMockup.regions ? true : false, false>>
 type _statics = Expect<Has<'info', typeof GalaxyMockup>>
+// Required where the kind's props are: the custom panel cannot be measured without a size.
+// @ts-expect-error - CustomPanelMockup.info needs a size
+CustomPanelMockup.info()
+const _panelInfo = CustomPanelMockup.info({ size: { width: 600, height: 900 } })
 
 // ---- the surface hook ----------------------------------------------------------------
 function _ScreenContent() {
@@ -208,3 +225,7 @@ function _ScreenContent() {
   const maybe: SurfaceInfo | null = useSurfaceOptional()
   return <div style={{ width: surface.width, height: surface.height }}>{maybe?.resolution}</div>
 }
+
+// ---- naming: every component's props are `<Name>Props` -------------------------------
+type _tvSetProps = Expect<Equal<TVSetProps, TVProps>>
+type _doohSize = Expect<Equal<DOOHTotemSize, DoohTotemSize>>

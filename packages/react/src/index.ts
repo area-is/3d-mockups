@@ -53,6 +53,7 @@ export {
   mockupInfo,
   MOCKUP_KINDS,
   type MockupInfo,
+  type MockupRegions,
   type MockupKind,
   type MockupPropsMap,
   type RegionInfo,
@@ -129,7 +130,7 @@ export { RollupBanner, type RollupBannerProps } from './objects/rollup-banner/ro
 export { BusShelter, type BusShelterProps } from './objects/bus-shelter/bus-shelter'
 export { GreetingCard, type GreetingCardProps } from './objects/greeting-card/greeting-card'
 export { VinylRecord, type VinylRecordProps } from './objects/vinyl-record/vinyl-record'
-export { TVSet, type TVProps } from './objects/tv/tv'
+export { TVSet, type TVProps, type TVSetProps } from './objects/tv/tv'
 export { AFrameSign, type AFrameSignProps } from './objects/a-frame-sign/a-frame-sign'
 export { DOOHTotem, type DOOHTotemProps } from './objects/dooh-totem/dooh-totem'
 export { Storefront, type StorefrontProps } from './objects/storefront/storefront'
@@ -184,6 +185,7 @@ export type {
   MagazineSize,
   BrochureSize,
   DoohTotemSize,
+  DOOHTotemSize,
   PosterFrameSize,
   RollupBannerSize,
   CustomSizeMm,

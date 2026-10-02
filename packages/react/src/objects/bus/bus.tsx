@@ -280,8 +280,8 @@ function subtractSpans(spans: [number, number][], cuts: [number, number][], gap:
 export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Creative for the ad surfaces. Bare children fill the curb-side (+Z)
-   * surface - the king-size panel by default, the whole side with
-   * `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
+   * surface - by default the queen-size panel between the rear door and the
+   * front wheel, the whole side with `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
    * `<Bus.StreetSide>`, `<Bus.Rear>` and `<Bus.DestinationSign>`. Inside
    * `<Bus.DestinationSign>`, a string (scrolls as a marquee when it
    * overflows) or an array of strings (flips between them like a real
@@ -293,7 +293,8 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
   color?: string
   /**
    * CSS pixel width of the virtual ad surface. Height follows its aspect;
-   * the default tracks `coverage` (king-size panel dpi, or the full wrap's).
+   * the default tracks `coverage` (the ad panels' print density, or the full
+   * wrap's).
    */
   resolution?: number
   /**
@@ -367,18 +368,24 @@ function BusImpl({
   // vanishing at rear-quarter views). The shell stays registered so it
   // still occludes every other mockup in the scene.
 
-  // The ad rect the DeviceScreens cover: the classic king-size panel, or the
-  // whole side elevation with the operational glass carved out via clip-path.
+  // The ad rects the DeviceScreens cover: the classic panels - a king
+  // street-side, a queen curb-side, clear of the doors - or the whole side
+  // elevation with the operational glass carved out via clip-path.
   const fullWrap = coverage !== 'panel'
   // Perforated film runs the graphic over the glass; a plain full wrap carves it out.
   const overGlass = coverage === 'perforated'
   const side = fullWrap
     ? { width: BUS_FULL_SIDE.width, height: BUS_FULL_SIDE.height, x: BUS_FULL_SIDE.x, y: BUS_FULL_SIDE.y, radius: 0 }
     : { width: ad.width, height: ad.height, x: ad.x, y: ad.y, radius: ad.radius }
+  const curb = fullWrap ? side : BUS.curbAd
   const sideResolution = resolution ?? (fullWrap ? BUS.fullResolution : BUS.resolution)
   const rearSpec = fullWrap ? rearFull : rearAdSpec
   const surfaceDefaults = { surfaceBackground, surfaceStyle }
-  const curbSurface = resolveSurface(regions.curbSide, { ...surfaceDefaults, resolution: sideResolution })
+  // The curb panel prints at the street side's dpi, like the tail.
+  const curbSurface = resolveSurface(regions.curbSide, {
+    ...surfaceDefaults,
+    resolution: Math.round(curb.width * (sideResolution / side.width)),
+  })
   const streetSurface = resolveSurface(regions.streetSide, { ...surfaceDefaults, resolution: sideResolution })
   // The rear surface shares the side surface's dpi.
   const rearSurface = resolveSurface(regions.rear, {
@@ -760,8 +767,8 @@ function BusImpl({
       {/* curb-side doors: two full-glass leaves in a matte frame, dropping to
           the low-floor entry, the leaf-edge rubber seals meeting proud at the
           centre and the band's sill rail carried across the glass. The frame
-          stands proud of the ad plane: the king-size panel's rect runs across
-          the rear door, and hardware over the vinyl reads as an installer's
+          stands proud of the ad plane: a full wrap's rect runs across both
+          doors, and hardware over the vinyl reads as an installer's
           cut-around, where vinyl over the door frame reads as a mistake. */}
       {doors.map(({ x, width, bottomY }) => {
         const h = doorTopY - bottomY
@@ -1100,14 +1107,14 @@ function BusImpl({
         </React.Fragment>
       ))}
 
-      {/* the live ads: king-size panels (or full transit wraps) on both
-          sides, tail ad (or full tail wrap) on the rear */}
+      {/* the live ads: a queen curb-side and a king street-side (or full
+          transit wraps on both), tail ad (or full tail wrap) on the rear */}
       <DeviceScreen
-        width={side.width}
-        height={side.height}
-        radius={side.radius}
+        width={curb.width}
+        height={curb.height}
+        radius={curb.radius}
         {...curbSurface}
-        position={[side.x, side.y, hw + 0.008]}
+        position={[curb.x, curb.y, hw + 0.008]}
         {...sideScreenOcclusion(sideOccluderGeometries?.curb)}
         screenStyle={curbStyle}
       >

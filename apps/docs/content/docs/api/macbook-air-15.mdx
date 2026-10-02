@@ -4,7 +4,7 @@ description: The MacBook Air 15″ in WebGL, with a live prop explorer and the f
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="air15"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="air15"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="LaptopMockup" variant="air15" />
 
@@ -28,19 +28,21 @@ exactly where the hardware begins.
 
 <BareVsMockup object="Laptop" kind="laptop" slot="Screen" />
 
+To render this model, pass `variant="air15"`.
+
 ```tsx
 import { MockupCanvas, Laptop, LaptopMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<LaptopMockup float style={{ height: 520 }}>
+<LaptopMockup variant="air15" float style={{ height: 520 }}>
   <YourApp />
 </LaptopMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <Laptop rotation={[0, 0.4, 0]}>
+  <Laptop variant="air15" rotation={[0, 0.4, 0]}>
     <YourApp />
   </Laptop>
 </MockupCanvas>
@@ -48,26 +50,38 @@ import { MockupCanvas, Laptop, LaptopMockup } from 'react-3d-mockups'
 
 ## Props
 
-Beyond the [shared screen props](/docs/screen-content):
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'air13' \| 'air15' \| 'pro14' \| 'pro16' \| 'neo13'` | `'air13'` | MacBook Air 13"/15", MacBook Pro 14"/16" or MacBook Neo 13" - true relative sizes, per-model ports, feet, speaker grilles, and the notch (the Neo has none: its camera sits in the bezel). |
-| `color` | `string` | `'#e3e4e6'` | Aluminum finish. Takes a retail colorway id from `LAPTOP_COLORWAYS[variant]` - Airs `silver`, `starlight`, `midnight`, `skyblue`; Pros `spaceblack`, `silver`; Neo `silver`, `blush`, `citrus`, `indigo` - or any CSS color. |
 | `openAngle` | `number` | `110` | Lid angle in degrees between deck and screen (90 is upright). |
+| `color` | `string` | `'#e3e4e6'` | Aluminum finish. Takes a colorway id from `LAPTOP_COLORWAYS[variant]` (see [Colorways](#colorways)) or any CSS color. |
 | `resolution` | `number` | per variant | Virtual display width - each variant defaults to its real scaled desktop: 1280×832 (air13), 1440×932 (air15), 1512×982 (pro14), 1728×1117 (pro16), 1204×753 (neo13) - so desktop breakpoints apply. |
 
-There is no `orientation` prop; laptops only have one pose.
+There is no `orientation` prop: a laptop has one pose.
 
-## Mockup-able areas
+## Regions
 
-Every live surface filled with chroma green, labeled with the slot that
-feeds it - the fastest way to see exactly where your content lands and
-what stays 3D hardware.
+One region: the screen (bare children). Use the explicit
+`<LaptopMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<Laptop>`.
 
-<MockupExplorer component="LaptopMockup" variant="air15" screen="chroma" />
+## Colorways
 
-## More examples
+Pass a colorway id from `LAPTOP_COLORWAYS[variant]` for that model's retail
+finish, or any CSS color for a custom one. An id wins over a CSS color of the
+same name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| MacBook Air 13″, MacBook Air 15″ (`air13`, `air15`) | `silver` (`#e3e4e6`), `starlight` (`#e8e0d4`), `midnight` (`#2e3642`), `skyblue` (`#aec6d9`) |
+| MacBook Pro 14″, MacBook Pro 16″ (`pro14`, `pro16`) | `spaceblack` (`#4a484b`), `silver` (`#e3e4e6`) |
+| MacBook Neo 13″ (`neo13`) | `silver` (`#e3e4e6`), `blush` (`#e9cfd0`), `citrus` (`#dedb92`), `indigo` (`#505b73`) |
+
+## This model
 
 ### MacBook Air 15" in Sky Blue
 
@@ -79,6 +93,18 @@ what stays 3D hardware.
   variant="air15"
   props={{ color: 'skyblue', rotation: [0, 0.3, 0] }}
 />
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<MockupExplorer component="LaptopMockup" variant="air15" screen="chroma" />
+
+## More examples
+
+Every example renders live: drag to spin it, and the screens are live DOM.
 
 ### Midnight, tighter lid angle
 

@@ -53,7 +53,7 @@
     "./core": {
       "import": {
         "types": "./dist/core.d.ts",
-        "default": "./dist/core.js"
+        "default": "./dist/core/index.js"
       },
       "require": {
         "types": "./dist/core.d.cts",
@@ -73,8 +73,11 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "prepare": "npm run clean && tsup && node scripts/build-catalog.mjs",
-    "devices:check": "node scripts/sync-device-table.mjs",
-    "devices:sync": "node scripts/sync-device-table.mjs --write",
+    "devices:check": "node scripts/sync-device-table.mjs && node scripts/check-docs-data.mjs",
+    "devices:sync": "node scripts/sync-device-table.mjs --write && node scripts/check-docs-data.mjs --write",
+    "size": "node scripts/measure-size.mjs",
+    "size:check": "node scripts/measure-size.mjs --check",
+    "size:write": "node scripts/measure-size.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -95,6 +98,7 @@
     "@react-three/fiber": "^9.8.1",
     "@types/node": "^22.20.4",
     "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

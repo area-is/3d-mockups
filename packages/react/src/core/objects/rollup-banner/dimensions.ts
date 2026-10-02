@@ -13,6 +13,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the roll-up banner. */
 export const ROLLUP_BANNER_MM = 1 / 540
@@ -31,7 +32,8 @@ export interface RollupBannerSize {
  * for a wide 1000 x 2000 stand. The cassette wraps the graphic width; its
  * section and the hardware keep their real-world dimensions.
  */
-export function rollupBannerSpec({ width = 850, height = 2000 }: RollupBannerSize = {}) {
+export function rollupBannerSpec(size: RollupBannerSize = {}) {
+  const { width = 850, height = 2000 } = checkSizeMm('RollupBanner', size, 'width: 850, height: 2000')
   const w = width * ROLLUP_BANNER_MM
   const h = height * ROLLUP_BANNER_MM
   return {

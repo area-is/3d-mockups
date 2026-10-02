@@ -12,6 +12,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the DOOH totem. */
 export const DOOH_TOTEM_MM = 1 / 700
@@ -24,6 +25,9 @@ export interface DoohTotemSize {
   height?: number
 }
 
+/** `DoohTotemSize` spelled like its component, `DOOHTotem`; both names work. */
+export type DOOHTotemSize = DoohTotemSize
+
 /**
  * Build a DOOH totem spec for any enclosure size (millimeters). The default
  * is the JCDecaux/Clear Channel digital 6-sheet class (1300 x 2800 mm). The
@@ -31,7 +35,8 @@ export interface DoohTotemSize {
  * active display scale with the enclosure (so the display aspect follows the
  * cabinet - a 9:16 portrait at the default size).
  */
-export function doohTotemSpec({ width = 1300, height = 2800 }: DoohTotemSize = {}) {
+export function doohTotemSpec(size: DoohTotemSize = {}) {
+  const { width = 1300, height = 2800 } = checkSizeMm('DOOHTotem', size, 'width: 1300, height: 2800')
   const w = width * DOOH_TOTEM_MM
   const h = height * DOOH_TOTEM_MM
   const glassW = w - 0.197

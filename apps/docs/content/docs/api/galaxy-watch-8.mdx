@@ -4,7 +4,7 @@ description: The Galaxy Watch 8 in WebGL, with a live prop explorer and the full
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="watch8"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="watch8"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="GalaxyWatchMockup" variant="watch8" />
 
@@ -39,19 +39,21 @@ keeper.
 
 <BareVsMockup object="GalaxyWatch" kind="galaxyWatch" slot="Screen" />
 
+To render this model, pass `variant="watch8"`.
+
 ```tsx
 import { MockupCanvas, GalaxyWatch, GalaxyWatchMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<GalaxyWatchMockup float style={{ height: 520 }}>
+<GalaxyWatchMockup variant="watch8" float style={{ height: 520 }}>
   <YourApp />
 </GalaxyWatchMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <GalaxyWatch rotation={[0, 0.4, 0]}>
+  <GalaxyWatch variant="watch8" rotation={[0, 0.4, 0]}>
     <YourApp />
   </GalaxyWatch>
 </MockupCanvas>
@@ -59,19 +61,39 @@ import { MockupCanvas, GalaxyWatch, GalaxyWatchMockup } from 'react-3d-mockups'
 
 ## Props
 
-Beyond the [shared screen props](/docs/screen-content):
+Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
+[shared mockup props](/docs/api):
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'watch8' \| 'watch9' \| 'watchultra2'` | `'watch8'` | Which Galaxy Watch to render. The Watch 9 is the Watch 8's case with the generation's internals; the Watch Ultra 2 is the 47 mm titanium squircle. |
-| `color` | `string` | `'#1c1d21'` | Case. Takes a retail colorway id from `GALAXY_WATCH_COLORWAYS[variant]` (`graphite`/`silver` on the 44 mm models, `titaniumsilver`/`titaniumgray` on the Ultra 2) or any CSS color. |
+| `color` | `string` | `'#1c1d21'` | Case. Takes a colorway id from `GALAXY_WATCH_COLORWAYS[variant]` (see [Colorways](#colorways)) or any CSS color. |
 | `bandColor` | `string` | `'#2a2c31'` | Strap colorway (fluoroelastomer). |
 | `bandOpen` | `boolean` | `false` | Lay the band out unbuckled and flat instead of wearing it. |
 | `resolution` | `number` | per variant | Virtual display width - each model's own dp grid (240 on the 44 mm models, 249 on the Ultra 2), and the display is round, so give your face a `border-radius: 50%` root (or design edge-to-edge and let the crystal mask it). |
 
-There is no `orientation` prop.
+There is no `orientation` prop: a watch has one pose.
 
-## The models
+## Regions
+
+One region: the round screen (bare children). Use the explicit
+`<GalaxyWatchMockup.Screen>` slot when you want per-surface overrides -
+`surfaceBackground`, `resolution`, `surfaceStyle`. The same slot exists on
+the bare `<GalaxyWatch>`.
+
+## Colorways
+
+Pass a colorway id from `GALAXY_WATCH_COLORWAYS[variant]` for that model's
+retail case finish, or any CSS color for a custom one. The catalog covers the
+case; `bandColor` takes any CSS color. An id wins over a CSS color of the same
+name - pass hex if you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| Galaxy Watch 8, Galaxy Watch 9 (`watch8`, `watch9`) | `graphite` (`#33363c`), `silver` (`#d9dbde`) |
+| Galaxy Watch Ultra 2 (`watchultra2`) | `titaniumsilver` (`#ccced3`), `titaniumgray` (`#8b8e94`) |
+
+## This model
 
 ### Galaxy Watch 8
 
@@ -86,13 +108,15 @@ Retail finishes: `graphite`, `silver`.
 
 ## Mockup-able areas
 
-Every live surface filled with chroma green, labeled with the prop that
+Every live surface filled with chroma green, labeled with the slot that
 feeds it - the fastest way to see exactly where your content lands and
 what stays 3D hardware.
 
 <MockupExplorer component="GalaxyWatchMockup" variant="watch8" screen="chroma" />
 
 ## More examples
+
+Every example renders live: drag to spin it, and the screens are live DOM.
 
 ### Unbuckled, showing the sensor back
 

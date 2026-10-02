@@ -5,6 +5,8 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs'
 import { source } from '@/lib/source'
 import { baseOptions } from '@/lib/layout.shared'
 import { DocsSidebarSeparator } from '@/components/docs-sidebar'
+import { ModelLifecycleProvider } from '@/components/model-lifecycle'
+import { OLDER_MODELS } from '@/lib/model-lifecycle'
 import { hideGridPages } from '@/lib/sidebar-tree'
 import { fraunces, inter, jetbrainsMono } from '@/lib/fonts'
 import { notoSerifKR } from '@/lib/fonts-ko'
@@ -59,13 +61,16 @@ export default function DocsRootLayout({ children }: { children: ReactNode }) {
           * entirely. Pointing it explicitly is the whole fix.
           */}
         <RootProvider theme={DOCS_THEME} search={{ options: { api: asset('/api/search') } }}>
-          <DocsLayout
-            tree={hideGridPages(source.getPageTree())}
-            {...baseOptions()}
-            sidebar={{ components: { Separator: DocsSidebarSeparator } }}
-          >
-            {children}
-          </DocsLayout>
+          {/* Which models are older, for the sidebar grid and the gallery. */}
+          <ModelLifecycleProvider value={OLDER_MODELS}>
+            <DocsLayout
+              tree={hideGridPages(source.getPageTree())}
+              {...baseOptions()}
+              sidebar={{ components: { Separator: DocsSidebarSeparator } }}
+            >
+              {children}
+            </DocsLayout>
+          </ModelLifecycleProvider>
         </RootProvider>
       </body>
     </html>

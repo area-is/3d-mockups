@@ -1,14 +1,16 @@
 ---
 title: Other frameworks
-description: Vite, React Router, Astro and the Next.js Pages Router - the same rule everywhere, mount the mockup in the browser only.
+description: Vite, React Router, Astro and the Next.js Pages Router - load the mockup in the browser and keep three.js off the server.
 keywords: [frameworks, vite, react router, remix, astro, pages router, client only, clientonly, ssr, spa, lazy, suspense]
 ---
 
-One rule covers every framework: WebGL exists only in the browser, so a mockup
-has to mount on the client. Where a framework renders on the server, skip the
-mockup there and mount it after hydration. Wherever it lives, give its wrapper
-a fixed height - the mockup fills its parent, and a reserved box keeps the page
-from shifting when the canvas appears.
+WebGL exists only in the browser, so a mockup's 3D picture is always drawn on
+the client. Rendering a mockup on the server is safe - it outputs the wrapper
+and an empty `<canvas>`, and the picture appears after hydration - but it puts
+three.js in the server bundle for nothing. So where a framework renders on the
+server, the patterns below load the mockup in the browser only. Wherever it
+lives, give its wrapper a fixed height - the mockup fills its parent, and a
+reserved box keeps the page from shifting when the canvas appears.
 
 The examples below all load this component:
 
@@ -18,7 +20,18 @@ import { GalaxyMockup } from 'react-3d-mockups'
 export default function Mockup() {
   return (
     <GalaxyMockup float>
-      <YourApp />
+      <div
+        style={{
+          height: '100%',
+          display: 'grid',
+          placeItems: 'center',
+          background: '#111',
+          color: '#fff',
+          fontSize: 32,
+        }}
+      >
+        Hello
+      </div>
     </GalaxyMockup>
   )
 }
@@ -50,9 +63,10 @@ export function Hero() {
 ## React Router (framework mode) and Remix
 
 Framework mode renders routes on the server, and `lazy` alone does not stop
-that. Gate the mockup on hydration: `useSyncExternalStore` reads `false` on
-the server and while hydrating, then `true`, so the server HTML and the first
-client render agree and the mockup mounts right after.
+that: the mockup's module, three.js included, would load there too. To keep it
+in the browser, gate the mockup on hydration: `useSyncExternalStore` reads
+`false` on the server and while hydrating, then `true`, so the server HTML and
+the first client render agree and the mockup mounts right after.
 
 ```tsx title="app/components/hero.tsx"
 import { lazy, Suspense, useSyncExternalStore } from 'react'
@@ -97,8 +111,9 @@ import Mockup from '../components/mockup.tsx'
 </div>
 ```
 
-`client:load` or `client:visible` would render it on the server first, which
-is exactly what has to be avoided.
+`client:load` or `client:visible` would render it on the server first as
+well, which only adds three.js to the server render: the canvas can draw
+nothing there.
 
 ## Next.js Pages Router
 

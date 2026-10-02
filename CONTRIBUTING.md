@@ -18,12 +18,14 @@ npm run dev        # package in watch mode + docs at http://localhost:3000
 ```bash
 npm run typecheck     # both workspaces
 npm run test          # core unit tests (no DOM, no WebGL)
-npm run devices:check # the derived half of the device table, and aspect drift
+npm run devices:check # the numbers the docs quote: device and object tables, model counts
+npm run size:check    # what importing each mockup costs, against the docs' table
+npm run docs:examples # every code example in the READMEs and docs, typechecked
 npm run visual        # visual regression (needs `npm run dev` running)
 npm run bench         # performance budgets (needs `npm run dev` running)
 ```
 
-CI runs the first three plus a docs build on every PR, then the benchmark's
+CI runs the first five plus a docs build on every PR, then the benchmark's
 budgets against that build (its numbers land in the job summary). The visual
 check needs a dev server and takes several minutes on SwiftShader, so it stays
 local. Run it whenever you touch geometry.
@@ -69,10 +71,68 @@ They overlap less than they look:
   SwiftShader they only compare run to run on one machine (`--gpu` for real
   numbers, `--mobile` and `--cpu=4` for a phone-class profile). Both scripts
   take `CHROMIUM_EXECUTABLE` to use a Chromium other than Playwright's own.
-- **`npm run devices:check`**: the numbers in `docs/devices.mdx`. Two halves:
-  the Portrait/Landscape columns against what actually renders (`devices:sync`
-  rewrites those), and the modelled aspect against the hand-maintained Panel
-  column, which is the one comparison syncing cannot satisfy.
+- **`npm run devices:check`**: the numbers the docs quote. In
+  `docs/devices.mdx`, the Portrait/Landscape columns against what actually
+  renders (`devices:sync` rewrites those), and the modelled aspect against the
+  hand-maintained Panel column, which is the one comparison syncing cannot
+  satisfy. In `docs/objects.mdx`, the default sizes and the slots table, both
+  from `mockupInfo`. Then the model counts in the READMEs, and whether
+  `dist/catalog.json` matches the catalog code. It reads the built package, so
+  run `npm run build` first.
+- **`npm run size:check`**: what importing each mockup really costs an app,
+  bundled from the built `dist/` with the peers left out. It fails when an
+  import grows more than 10% past the table in `docs/devices.mdx`; if the
+  growth is intended, `npm run size:write` rewrites the table.
+- **`npm run docs:examples`**: every `tsx` and `ts` block in the READMEs and
+  the docs, compiled with strict TypeScript against the built package. An
+  excerpt is completed only as far as an excerpt needs - library exports and
+  React hooks imported, your own components (`<YourApp />`) declared - so a
+  rejected prop, a wrong export name or a misspelt region fails with the docs
+  file and line. A block that must not compile opts out with `nocheck` in its
+  fence.
+
+## Deprecating and removing a device
+
+Every device variant has a row in `DEVICE_LINEUP`
+(`packages/react/src/core/lifecycle.ts`): its product line and the month it was
+announced. When a newer model joins a line, nothing else changes. The newest
+month in a line is *current*, and every older model in it becomes
+*superseded*. The docs sidebar and gallery fold superseded models away under
+"older models", and their pages point to the newer model. They stay fully
+supported.
+
+Removing a model breaks code that names its `variant`, so it takes two
+releases:
+
+1. **Deprecate it.** Add `deprecated: { since, removeIn }` to its row. `since`
+   is the next release. `removeIn` is a later minor or major (`0.4.0`), never a
+   patch. List it under *Deprecated* in the changelog's Unreleased section.
+   From then on the model logs one development warning naming its replacement
+   when it renders, its docs page carries a warning, and its sidebar tile is
+   marked. `npm run test` refuses two kinds of deprecation:
+   - a model nothing newer has superseded, because there would be nothing to
+     switch to;
+   - a family's default variant. Change the default first, as its own
+     breaking change, so a removal never moves a default without saying so.
+2. **Remove it in the `removeIn` release.** Once the package version reaches
+   `removeIn`, `npm run test` fails until the model is gone, so the release PR
+   cannot go green while the model is still there. To remove it:
+   - delete its spec from `*_VARIANTS`, its colorways, its `DEVICE_LINEUP` row,
+     and its entry in `apps/docs/lib/mockup-catalog.mjs`;
+   - delete its docs page and thumbnail;
+   - search the repo for the variant id and the page id. Examples, the
+     explorer registry, the home-page carousel, the family reference, the
+     device table and `sync-device-table.mjs` all name variants;
+   - add a `REMOVED_DEVICES` entry naming the replacement, so `variant="…"`
+     fails with a pointer to it rather than a TypeError;
+   - add a redirect from its docs URL to the replacement's page in
+     `apps/docs/next.config.ts`;
+   - list it under *Changed (breaking)*.
+
+When to deprecate is a judgement call, not a rule. A reasonable default is to
+deprecate a model once a second newer generation of its line ships (the
+17 Pro when a 19 Pro arrives) and to remove it no sooner than the following
+minor.
 
 ## Style
 

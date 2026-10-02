@@ -7,7 +7,7 @@ keywords: [api, reference, props, components, slots, regions, all-in-one, bare m
 The library has two layers, and every model appears in both.
 
 1. **All-in-one mockups** - a stage and a model in one component, ready to drop
-   into a page. Ten for the devices:
+   into a page. Eleven for the devices:
 
    `GalaxyMockup` · `IPhoneMockup` · `IPhoneDuoMockup` · `FoldMockup` · `FlipMockup` ·
    `LaptopMockup` · `IPadMockup` · `GalaxyTabMockup` · `AppleWatchMockup` ·
@@ -29,11 +29,13 @@ The library has two layers, and every model appears in both.
    `IPhone`, `Fold`, `Book`, `Van`, `TVSet` and so on - for your own
    react-three-fiber scenes. See [Composing scenes](/docs/composing).
 
-   [`TumbleControls`](/docs/composing) (the drag-to-orbit camera controls) and
-   `LEDText` (the dot-matrix sign renderer used by the transit models) are
-   exported too, along with the
-   [`createMockup` / `createSlots` factories](/docs/composing) for building a
-   mockup of your own.
+   [`TumbleControls`](/docs/api/advanced#tumblecontrols) (the drag-to-orbit
+   camera controls) and [`LEDText`](/docs/api/advanced#ledtext) (the
+   dot-matrix sign renderer used by the transit models) are exported too,
+   along with the [`createMockup`](/docs/api/advanced#createmockup) and
+   [slot](/docs/api/advanced#slot-helpers) factories for building a mockup of
+   your own. [Advanced exports](/docs/api/advanced) documents them and every
+   other export.
 
 Every live example on these pages is a playground: the bar under the canvas has
 an input for **every** prop of the mockup above it, grouped into the model's own
@@ -62,14 +64,14 @@ a visitor can do with it:
 `shadows` · `background` · `camera` · `className` · `style`
 
 …and the ones that decide how it renders and how assistive technology reads
-it: `frameloop` · `pauseWhenOffscreen` · `time` · `delayCapture` · `gl` ·
-`onCreated` · `label` · `screenAccessibility`. See [Rendering](/docs/api/mockup-canvas#rendering) and
+it: `frameloop` · `pauseWhenOffscreen` · `dpr` · `time` · `delayCapture` ·
+`gl` · `onCreated` · `label` · `screenAccessibility`. See
+[Rendering](/docs/api/mockup-canvas#rendering) and
 [Accessibility](/docs/accessibility).
 
-`MockupCanvas` has a few more (`freeRotation`, `shadowY`, `dpr`) that tune the
-rendering machinery rather than the picture. A mockup does not advertise those:
-its framing already derives the shadow's ground line from the object's spec,
-and the remaining defaults are chosen to look right. Compose
+`MockupCanvas` has two more, `freeRotation` and `shadowY`, that a mockup does
+not advertise: a mockup's framing already derives the shadow's ground line
+from the object's spec, and the orbit clamp is chosen to look right. Compose
 [`MockupCanvas`](/docs/api/mockup-canvas) directly when you want them.
 
 ## Regions and slots

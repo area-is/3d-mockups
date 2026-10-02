@@ -63,7 +63,15 @@ function MailerBoxImpl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [size?.width, size?.height, size?.depth]
   )
-  const pxPerUnit = resolution / body.width
+  /*
+   * One print density for every panel: `resolution` is the lid's CSS width,
+   * as it is the primary surface's on every other object. The lid, front,
+   * back and bottom used to take `resolution` across their flat while the
+   * ends and the tape took it across the whole body - two densities on one
+   * box, and `mockupInfo` (which used the body's) reporting 513 px for a lid
+   * rendered at 520.
+   */
+  const pxPerUnit = resolution / (body.width - body.radius * 2)
 
   // fixed dressing scaled down for small shippers
   const endWrap = Math.min(0.77, body.height * 0.5)

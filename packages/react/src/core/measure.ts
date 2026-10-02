@@ -50,8 +50,18 @@ export interface RegionInfo {
   aspect: number
 }
 
-/** Everything known about a configured mockup. */
-export interface MockupInfo {
+/** A region name → its info, as `MockupInfo.regions` holds them. */
+export type RegionInfoMap = { readonly [name: string]: RegionInfo | RegionInfo[] | undefined }
+
+/**
+ * Everything known about a configured mockup.
+ *
+ * `R` types `regions` by name: `mockupInfo('book')` returns
+ * `MockupInfo<MockupRegions<'book'>>`, so `.regions.cover.px` typechecks and
+ * `.regions.covr` does not. Left at its default it is the loose map
+ * `describeMockup` returns for any spec.
+ */
+export interface MockupInfo<R extends RegionInfoMap = Record<string, RegionInfo | RegionInfo[]>> {
   /** The mockup kind this describes. */
   kind: MockupKind
   /** Millimetres per world unit for this family. */
@@ -66,7 +76,7 @@ export interface MockupInfo {
    * distinct surfaces (the van's two licence plates) holds an array, one entry
    * per surface - whether or not those surfaces are the same size.
    */
-  regions: Record<string, RegionInfo | RegionInfo[]>
+  regions: R
   /** Every region in declaration order, multi-surface regions flattened. */
   list: RegionInfo[]
 }
@@ -132,14 +142,24 @@ export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P
     resolved = metrics.regions(args)
   } catch (cause) {
     /*
-     * The kinds taking a required `size` (customPanel, customBox) blow up deep
-     * inside their scale function when it is missing, with a TypeError naming
-     * neither the mockup nor the prop. The public signature makes that
-     * unreachable from TypeScript; this is what JS callers see instead.
+     * A prop the resolver cannot use blows up deep inside it, as a TypeError
+     * naming neither the mockup nor the prop: a missing `size` on the kinds
+     * that require one (customPanel, customBox), or a `variant` the family
+     * does not have. The public signature makes both unreachable from
+     * TypeScript; this is what JavaScript callers see instead, naming the
+     * likelier of the two. (`mockupInfo` checks a device's variant by name
+     * before it gets here; this module deliberately carries no lineup, so an
+     * object's `.info()` does not ship every device's.)
      */
+    // The spec builders name their own mistakes (see `checkSizeMm`).
+    if (cause instanceof Error && cause.message.startsWith('[react-3d-mockups]')) throw cause
+    const variant = (args as { variant?: unknown }).variant
+    const reason = cause instanceof Error ? cause.message : String(cause)
     throw new Error(
-      `[react-3d-mockups] describeMockup: "${String(kind)}" could not be measured from these props. ` +
-        `Kinds with a required \`size\` (e.g. customPanel, customBox) must be given one.`,
+      `[react-3d-mockups] describeMockup: "${String(kind)}" could not be measured from these props (${reason}). ` +
+        (variant !== undefined
+          ? `Is variant="${String(variant)}" one of its variants?`
+          : 'Kinds with a required `size` (customPanel, customBox) must be given one.'),
       { cause }
     )
   }

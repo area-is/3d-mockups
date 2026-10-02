@@ -11,6 +11,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export interface CustomBoxSizeMm {
   /** Box width in millimeters (x). */
@@ -30,6 +31,7 @@ export const CUSTOM_BOX = {
 
 /** World units per millimeter for a given box size. */
 export function customBoxScale(size: CustomBoxSizeMm): number {
+  checkSizeMm('CustomBox', size, 'width: 240, height: 320, depth: 80')
   return CUSTOM_BOX.target / Math.max(size.width, size.height, size.depth)
 }
 

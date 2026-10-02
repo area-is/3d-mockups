@@ -4,7 +4,7 @@ description: The Galaxy Z Fold 8 in WebGL, with a live prop explorer and the ful
 ---
 
 Drive every prop from the inspector; the `demo.tsx` panel rewrites itself to
-exactly what is being passed. The explorer is pinned to `variant="fold8"`; everything below applies to the whole family.
+exactly what is being passed. The explorer and every example below are pinned to `variant="fold8"`; the props, regions and colorways apply to the whole family.
 
 <MockupExplorer component="FoldMockup" variant="fold8" />
 
@@ -19,19 +19,21 @@ camera pill on the back.
 
 <BareVsMockup object="Fold" kind="fold" slot="Screen" />
 
+To render this model, pass `variant="fold8"`.
+
 ```tsx
 import { MockupCanvas, Fold, FoldMockup } from 'react-3d-mockups'
 
 // The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
 // controls and a camera already framed on the object.
-<FoldMockup float style={{ height: 520 }}>
+<FoldMockup variant="fold8" float style={{ height: 520 }}>
   <YourApp />
 </FoldMockup>
 
 // The same model with no stage of its own. Inside a canvas you arrange
 // yourself it can be posed, animated, lit and joined by anything else.
 <MockupCanvas>
-  <Fold rotation={[0, 0.4, 0]}>
+  <Fold variant="fold8" rotation={[0, 0.4, 0]}>
     <YourApp />
   </Fold>
 </MockupCanvas>
@@ -47,8 +49,8 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 | `variant` | `'fold7' \| 'fold8' \| 'fold8ultra'` | `'fold7'` | Which Galaxy Z Fold to render. `fold7` and `fold8ultra` share the tall book chassis; `fold8` is the generation's wide form factor, opening into a landscape 4:3 tablet. |
 | `openAngle` | `boolean \| number` | `true` | How far the book is open. `true` is the unfolded tablet (content on the big inner display, with a center crease), `false` the folded candy-bar (content on the cover display, rear camera pill showing). A number is degrees (0 = shut, 180 = flat) and renders the real Flex Mode book pose: the panels pivot around the Armor FlexHinge while its rounded spine (with the SAMSUNG engraving) stays tangent to both back shells, wrapping the fold at every angle, and your content bends across the crease on two composited planes. The pose is continuous: every angle renders its own pose, and only the extremes hand over to the dedicated folded (~0°) and flat (180°) poses, which draw the crease as one seamless screen. |
 | `orientation` | `'portrait' \| 'landscape'` | `'portrait'` | Rotates the device a quarter turn and swaps the virtual display with upright content. On the fold7 and fold8ultra that lays the tablet on its side; on the natively landscape fold8 it stands it upright. |
-| `statusBar` | `boolean \| StatusBarContent` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - One UI's, on the cover screen and on the inner display alike, clearing whichever punch hole is showing - including the inner display's off-centre one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
-| `color` | `string` | `'#3a3d42'` | Back panel. Takes a retail colorway id from `FOLD_COLORWAYS[variant]`, which brings that model's frame and hinge with it, or any CSS color - the metal is then derived from it. |
+| `statusBar` | `boolean \| StatusBarOption` | `false` | Draw the system status bar across the top of the screen. `true` gives the platform's defaults - One UI's, on the cover screen and on the inner display alike, clearing whichever punch hole is showing - including the inner display's off-centre one; an object sets the clock, the meters and the ink (`{{ time: '14:05', battery: 0.42, batteryPercent: true, color: '#1c1c1e' }}`). It is placed from this device's own camera cutout and logical grid, so it lines up with the hardware on every variant. See [Status bar](/docs/screen-content#status-bar). |
+| `color` | `string` | `'#3a3d42'` | Back panel. Takes a colorway id from `FOLD_COLORWAYS[variant]` (see [Colorways](#colorways)), which brings that model's frame and hinge with it, or any CSS color - the metal is then derived from it. |
 | `resolution` | `number` | per state | CSS pixel width of the active display; height follows the panel aspect. Defaults to the device's own logical grid for whichever screen is showing - see the [device table](/docs/devices). |
 | `coverScreenUntil` | `number` | `30` | The hinge angle, in degrees, up to which the cover display stays lit as the device opens; above it your content moves to the inner display, so one of the two is lit at every angle, as on the hardware. `30` is where Android's reference foldable swaps; `90` keeps the cover on through the half-open tent pose, `0` swaps the moment the hinge moves. |
 
@@ -56,8 +58,7 @@ Beyond the [shared screen props](/docs/screen-content) and, on the mockup, the
 
 The active display is whichever screen is lit, so your content maps onto the
 cover display from shut until the hinge passes `coverScreenUntil` (30° by
-default) and the inner display after it. Switch with a
-single prop:
+default) and the inner display after it. Switch with a single prop:
 
 <MockupExplorer
   component="FoldMockup"
@@ -77,7 +78,37 @@ the crease:
   props={{ openAngle: 110, color: '#47536b', rotation: [0, -0.35, 0] }}
 />
 
-## The models
+Between open and closed, once the inner display is lit (past
+`coverScreenUntil`), each half of it is its own screen, so your screen content
+is mounted once per half: effects, state and video run twice. Fully open,
+shut, or while the cover display is lit, it is mounted once. Each half lays
+the content out at the whole display's size and shows its own part of it, so
+`useSurface()` reports the whole display in both halves - the same numbers as
+open flat.
+
+## Regions
+
+One region: the screen (bare children). `Screen` follows whichever display is
+lit - the cover display from shut until the hinge passes `coverScreenUntil`,
+the inner display after it. Use the explicit `<FoldMockup.Screen>` slot when
+you want per-surface overrides - `surfaceBackground`, `resolution`,
+`surfaceStyle`. The same slot exists on the bare `<Fold>`.
+
+## Colorways
+
+Pass a colorway id from `FOLD_COLORWAYS[variant]` for that model's retail
+finish; it brings the matching frame and hinge with it. Any CSS color works for
+a custom finish, and the metal is then derived from it, so `color="#4a5568"`
+needs nothing else. An id wins over a CSS color of the same name - pass hex if
+you mean the CSS one.
+
+| Model | Colorway ids (body color) |
+| --- | --- |
+| Galaxy Z Fold 7 (`fold7`) | `blueshadow` (`#47536b`), `jetblack` (`#17181c`), `silvershadow` (`#c9ccce`), `mint` (`#cfe0d2`) |
+| Galaxy Z Fold 8 (`fold8`) | `lavender` (`#c9c2d9`), `cream` (`#ece5d8`), `graphite` (`#45474c`), `pistachio` (`#d4dfc0`) |
+| Galaxy Z Fold 8 Ultra (`fold8ultra`) | `violetshadow` (`#5c5670`), `cream` (`#ece5d8`), `graphite` (`#45474c`), `greenshadow` (`#4a5a50`) |
+
+## This model
 
 ### Galaxy Z Fold 8
 
@@ -93,12 +124,6 @@ upright into 770×1020 instead. Retail finishes: `lavender`, `cream`,
   variant="fold8"
   props={{ color: 'lavender', rotation: [0, -0.3, 0] }}
 />
-
-## Colorways
-
-Pass an id from that model's catalog in `FOLD_COLORWAYS` for the retail finish
-- the frame and hinge come with it. A CSS color gets metal derived from it
-instead, so `color="#4a5568"` needs nothing else.
 
 ## Mockup-able areas
 

@@ -37,8 +37,9 @@ brochures, cards, packaging (product box, mailer box, gable-top milk carton,
 shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
 records, out-of-home formats (billboard, bus shelter, double-sided DOOH totem,
-A-frame, roll-up banner, storefront), a 65" TV, and wrap-ready vehicles (transit
-bus, cargo van, 53 ft semi trailer).
+A-frame, roll-up banner, storefront), a TV in three designs from 32" to 98", and
+wrap-ready vehicles (transit bus, cargo van, 53 ft semi trailer): 57 models in
+all (33 devices, 24 objects).
 
 ```tsx
 'use client'
@@ -47,9 +48,24 @@ import { GalaxyMockup } from 'react-3d-mockups'
 
 export function Hero() {
   return (
-    <GalaxyMockup autoRotate float>
-      <YourApp /> {/* any React node, iframe, video… */}
-    </GalaxyMockup>
+    // The mockup fills its parent, so give the parent a height.
+    <div style={{ height: 560 }}>
+      <GalaxyMockup autoRotate float>
+        {/* Any React node, iframe or video. */}
+        <div
+          style={{
+            height: '100%',
+            display: 'grid',
+            placeItems: 'center',
+            background: '#111',
+            color: '#fff',
+            fontSize: 32,
+          }}
+        >
+          Hello
+        </div>
+      </GalaxyMockup>
+    </div>
   )
 }
 ```
@@ -82,6 +98,8 @@ npm run dev        # package in watch mode + docs at http://localhost:3000
 npm run build      # builds the package, then the docs site as a Worker bundle
 npm run typecheck  # typechecks both workspaces
 npm run test       # core unit tests (no DOM, no WebGL)
+npm run devices:check  # the sizes and counts the docs quote, against the library
+npm run size:check     # what importing each mockup costs, against the documented table
 npm run visual     # visual regression vs baselines (needs `npm run dev` running)
 npm run bench      # performance behaviour vs budgets (needs a running site)
 ```

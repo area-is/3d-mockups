@@ -11,6 +11,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the magazine. */
 export const MAGAZINE_MM = 1 / 66
@@ -29,7 +30,8 @@ export interface MagazineSize {
  * Build a magazine spec for any trim size (millimeters). The default is the
  * US letter-trim monthly; pass e.g. `{ width: 210, height: 297 }` for A4.
  */
-export function magazineSpec({ width = 216, height = 279, thickness = 6 }: MagazineSize = {}) {
+export function magazineSpec(size: MagazineSize = {}) {
+  const { width = 216, height = 279, thickness = 6 } = checkSizeMm('Magazine', size, 'width: 216, height: 279, thickness: 6')
   const w = width * MAGAZINE_MM
   const h = height * MAGAZINE_MM
   return {

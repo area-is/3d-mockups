@@ -49,6 +49,12 @@ export interface TVProps extends Omit<GroupProps, 'children' | 'color'>, Surface
 }
 
 /**
+ * `TVSetProps`, named after the component like every other `<Name>Props`.
+ * `TVProps` stays as an alias so existing imports keep compiling.
+ */
+export type TVSetProps = TVProps
+
+/**
  * A procedurally built flat-screen TV (65" by default, sized via `size` in
  * inches): near-bezel-less 16:9 panel, thin edges with a shallow
  * electronics bulge low on the back, a recessed rear input bay (HDMI, USB,

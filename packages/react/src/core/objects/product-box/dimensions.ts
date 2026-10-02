@@ -12,6 +12,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export const PRODUCT_BOX = {
   /** The carton: width (x), height (y), depth (z). `radius` is the fold-edge rounding. */
@@ -48,6 +49,7 @@ export interface ProductBoxLayout {
  * set the true proportions.
  */
 export function productBoxLayout(size: ProductBoxSizeMm = PRODUCT_BOX_SIZE_MM): ProductBoxLayout {
+  checkSizeMm('ProductBox', size, 'width: 190, height: 265, depth: 55')
   const scale = PRODUCT_BOX.body.height / Math.max(size.width, size.height, size.depth)
   const depth = size.depth * scale
   return {

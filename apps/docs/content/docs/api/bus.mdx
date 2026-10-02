@@ -11,8 +11,10 @@ window behind the street-side A-pillar, two full-glass curb-side doors, flat
 roof with HVAC pod, stacked round taillights and rear louvers. Live
 surfaces:
 
-- the classic **king-size ad panel** (30"×144") between the wheels - or the
-  **entire sides and tail** with `coverage="full"`, transit-wrap style, and
+- the classic **ad panels** between the wheels: a king-size (30"×144") on the
+  street side and a queen-size (30"×88") on the curb side, clear of the doors,
+  plus a 21"×70" tail ad - or the **entire sides and tail** with
+  `coverage="full"`, transit-wrap style, and
 - optionally the **LED destination sign** above the windshield via
   `<Bus.DestinationSign>`.
 
@@ -60,8 +62,8 @@ Beyond the [shared screen props](/docs/screen-content):
 
 | Slot | Surface |
 | --- | --- |
-| `<BusMockup.CurbSide>` | Curb-side (+Z) ad surface - the king-size panel, or the whole side with `coverage="full"` (bare children). |
-| `<BusMockup.StreetSide>` | Street-side (−Z) ad surface. |
+| `<BusMockup.CurbSide>` | Curb-side (+Z) ad surface - the queen-size panel between the rear door and the front wheel, or the whole side with `coverage="full"` (bare children). |
+| `<BusMockup.StreetSide>` | Street-side (−Z) ad surface - the king-size panel, or the whole side with `coverage="full"`. |
 | `<BusMockup.Rear>` | Rear surface: the 21"×70" tail ad, or the whole tail with `coverage="full"`. |
 | `<BusMockup.DestinationSign>` | Live LED sign above the windshield. A string gets the built-in dot-matrix renderer (marquee when it overflows), an array of strings flips between them like an alternating sign; a node renders as-is. |
 

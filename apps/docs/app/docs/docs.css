@@ -104,7 +104,10 @@
    its own case: weight and colour mark it as a heading, not capitals. */
 .mockup-grid-heading {
   grid-column: 1 / -1;
-  margin: 20px 0 -2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 26px 0 4px;
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: -0.005em;
@@ -113,10 +116,16 @@
 }
 
 /* The first has no tiles above it, only the separator; a category after
-   tiles sits 28px below them (the 8px grid gap plus its margin), which
+   tiles sits 34px below them (the 8px grid gap plus its margin), which
    separates it from the category it follows. */
 .mockup-grid-heading:first-child {
-  margin-top: 16px;
+  margin-top: 20px;
+}
+
+.mockup-grid-heading svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .mockup-tile {
@@ -162,6 +171,106 @@
 .mockup-tile:hover .mockup-tile-label,
 .mockup-tile[data-active='true'] .mockup-tile-label {
   color: var(--color-fd-foreground);
+}
+
+/* An older model's thumbnail in gray. Every thumbnail's screen is chroma
+   green, so taking the colour out is what tells the older tiles apart at a
+   glance once their group is open. Dimmed, not faded: they are still links,
+   and come up to full strength under the pointer. */
+.mockup-tile[data-older] .mockup-tile-thumb img {
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.mockup-tile[data-older]:hover .mockup-tile-thumb img,
+.mockup-tile[data-older][data-active='true'] .mockup-tile-thumb img {
+  opacity: 1;
+}
+
+/* ...and no green behind it either when it is the page being read. */
+.mockup-tile[data-older][data-active='true'] {
+  background: var(--color-fd-accent);
+}
+
+/* "Deprecated" under a tile's name: a model the next releases remove. */
+.mockup-tile-note {
+  display: block;
+  font-size: 11px;
+  color: var(--color-fd-warning);
+}
+
+/* A category's superseded models (components/docs-sidebar.tsx): one quiet row
+   across both columns, indented like the category heading above it, opening
+   onto a grid of its own. */
+.mockup-older {
+  grid-column: 1 / -1;
+}
+
+.mockup-older > .mockup-grid {
+  margin-top: 8px;
+}
+
+.mockup-older-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-block: 6px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--color-fd-muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+/* Safari still draws its own marker unless told twice. */
+.mockup-older-summary::-webkit-details-marker {
+  display: none;
+}
+
+.mockup-older-summary:hover {
+  background: var(--color-fd-accent);
+  color: var(--color-fd-foreground);
+}
+
+.mockup-older-summary:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
+}
+
+.mockup-older-summary svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mockup-older-summary,
+  .mockup-tile-thumb img,
+  .model-gallery-thumb img {
+    transition: none;
+  }
+}
+
+/* The older-model / deprecated callout above a model page's body
+   (components/model-status-notice.tsx). It renders outside the prose
+   column, so its links need marking as links themselves. */
+.model-status-notice {
+  max-width: 78ch;
+}
+
+.model-status-notice a {
+  color: var(--color-fd-foreground);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -270,10 +379,45 @@
   color: var(--color-fd-muted-foreground);
 }
 
-.model-gallery-status {
+/* The live count on the left, the older-models switch on the right; they
+   stack on a phone. */
+.model-gallery-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
   margin: 14px 0 10px;
+}
+
+.model-gallery-status {
+  margin: 0;
   font-size: 13px;
   color: var(--color-fd-muted-foreground);
+}
+
+.model-gallery-older {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 13px;
+  color: var(--color-fd-foreground);
+  cursor: pointer;
+  user-select: none;
+}
+
+.model-gallery-older input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-fd-primary);
+  cursor: pointer;
+}
+
+.model-gallery-older input:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: 2px;
 }
 
 .model-gallery-grid {
@@ -316,6 +460,18 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Older models in gray once "Show older models" brings them in - the same
+   treatment as the sidebar's older tiles, so the two read alike. */
+.model-gallery-card[data-older] .model-gallery-thumb img {
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.model-gallery-card[data-older]:hover .model-gallery-thumb img {
+  opacity: 1;
 }
 
 .model-gallery-label {

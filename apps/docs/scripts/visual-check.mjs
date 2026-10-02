@@ -67,7 +67,9 @@ const CASES = [
   // panel mapping with no other automated cover
   ['brochure-back', 'device=brochure&regions=1&ry=200'],
   ['productbox', 'device=productbox&regions=1&ry=32&rx=14'],
-  ['mailer', 'device=mailer&regions=1&ry=32&rx=18'],
+  // The default framing: it looks down on the lid, where bare children print,
+  // with the front and left panels in view.
+  ['mailer', 'device=mailer&regions=1'],
   // The one object whose live surfaces are not all axis-aligned: the two roof
   // panels are posed off the spec's slant, so a wrong tilt or lift shows up
   // here as a coloured rect sliding off the gable.
@@ -205,13 +207,39 @@ const comparePage = await context.newPage()
 const failures = []
 const written = []
 
+/*
+ * Two checks ride along on every case, since every case already mounts a
+ * mockup in the dev server, under StrictMode:
+ *
+ * - Console errors and uncaught exceptions fail the case. Every screen once
+ *   logged "Attempted to synchronously unmount a root" on mount, and no
+ *   screenshot shows a console.
+ * - On the `regions=1` cases, each region's rendered size must equal what
+ *   `mockupInfo` reports for it (the harness tags each probe with that). The
+ *   two come from different code, and on the mailer box's lid they once
+ *   disagreed by 7 px while every picture still looked right.
+ */
+let consoleErrors = []
+page.on('console', (message) => {
+  if (message.type() === 'error') consoleErrors.push(message.text())
+})
+page.on('pageerror', (error) => consoleErrors.push(String(error)))
+
+const PARITY = () =>
+  [...document.querySelectorAll('[data-region-probe][data-expected]')].flatMap((el) => {
+    const rendered = `${el.clientWidth}x${el.clientHeight}`
+    const expected = el.getAttribute('data-expected')
+    return rendered === expected ? [] : [`${el.getAttribute('data-region-probe')} renders ${rendered}, mockupInfo says ${expected}`]
+  })
+
 for (const [name, query] of CASES) {
   const url = `${BASE}/harness?${query}`
   let shot
+  consoleErrors = []
   try {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 180_000 })
-    // r3f mounts the canvas, then drei's <Html> portals each screen through a
-    // nested root that can need a few frames to land (see device-screen.tsx).
+    // r3f mounts the canvas, then each screen portals through its own React
+    // root, which can need a few frames to land (see device-screen.tsx).
     await page.waitForSelector('canvas', { timeout: 60_000 })
     await page.waitForTimeout(4000)
     shot = await page.screenshot({ timeout: 60_000 })
@@ -220,6 +248,13 @@ for (const [name, query] of CASES) {
     failures.push(`${name}: could not capture - ${String(err).split('\n')[0]}`)
     console.log(`  ERROR  ${name} - ${String(err).split('\n')[0]}`)
     continue
+  }
+
+  const parity = await page.evaluate(PARITY)
+  if (parity.length || consoleErrors.length) {
+    for (const p of parity) failures.push(`${name}: ${p}`)
+    for (const e of new Set(consoleErrors)) failures.push(`${name}: console error - ${e.split('\n')[0]}`)
+    console.log(`  FAIL   ${name} - ${parity.length} size mismatch(es), ${consoleErrors.length} console error(s)`)
   }
 
   const baselinePath = join(BASELINES, `${name}.png`)
