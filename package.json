@@ -20,6 +20,9 @@
     "bench": "node apps/docs/scripts/bench.mjs",
     "devices:check": "node packages/react/scripts/sync-device-table.mjs",
     "devices:sync": "node packages/react/scripts/sync-device-table.mjs --write",
+    "size": "npm run size -w react-3d-mockups",
+    "size:check": "npm run size:check -w react-3d-mockups",
+    "size:write": "npm run size:write -w react-3d-mockups",
     "release": "node packages/react/scripts/release.mjs prepare",
     "release:notes": "node packages/react/scripts/release.mjs notes"
   },

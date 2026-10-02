@@ -34,6 +34,7 @@ import type { Orientation } from './orientation'
 import type { RegionMetrics, RegionSpec } from './regions'
 import { SCREEN_REGIONS } from './regions'
 import { describeMockup, type MockupInfo, type RegionInfo, type Size } from './measure'
+import { assertDeviceVariant } from './lifecycle'
 
 import { GALAXY_METRICS, type GalaxyVariant } from './devices/galaxy/dimensions'
 import { IPHONE_METRICS, type IPhoneVariant } from './devices/iphone/dimensions'
@@ -244,5 +245,8 @@ export function mockupInfo<K extends MockupKind>(
       `[react-3d-mockups] mockupInfo: unknown mockup kind "${String(kind)}". Known kinds: ${MOCKUP_KINDS.join(', ')}.`
     )
   }
+  // A removed or misspelt device variant fails here by name, pointing at its
+  // replacement, rather than as a TypeError from inside the metrics resolver.
+  assertDeviceVariant(kind, (props as { variant?: unknown } | undefined)?.variant, `mockupInfo("${kind}")`)
   return describeMockup({ kind, regions: entry.regions, metrics: entry.metrics }, props)
 }

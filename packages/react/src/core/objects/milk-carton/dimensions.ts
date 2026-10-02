@@ -24,6 +24,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export const MILK_CARTON = {
   /**
@@ -205,6 +206,7 @@ export interface MilkCartonLayout {
  * half-pint school carton and a 2 L jug-style pack both read right.
  */
 export function milkCartonLayout(size: MilkCartonSizeMm = MILK_CARTON_SIZE_MM): MilkCartonLayout {
+  checkSizeMm('MilkCarton', size, 'width: 95, height: 241, depth: 95')
   const scale = MILK_CARTON_HEIGHT / Math.max(size.width, size.height, size.depth)
   const width = size.width * scale
   const depth = size.depth * scale

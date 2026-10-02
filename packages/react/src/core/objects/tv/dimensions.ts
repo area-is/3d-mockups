@@ -111,6 +111,10 @@ const VARIANTS = {
  * 65" set on splayed feet.
  */
 export function tvSpec(inches: number = 65, variant: TVVariant = TV_DEFAULT_VARIANT) {
+  // Clamped into range below, but a NaN survives a clamp and becomes every number.
+  if (!Number.isFinite(inches)) {
+    throw new Error(`[react-3d-mockups] TVSet: size is ${String(inches)}; pass the diagonal in inches, e.g. size={65}.`)
+  }
   const d = clamp(inches, TV_MIN_INCHES, TV_MAX_INCHES)
   const v = VARIANTS[variant] ?? VARIANTS[TV_DEFAULT_VARIANT]
   const mm = (value: number) => value * TV_MM

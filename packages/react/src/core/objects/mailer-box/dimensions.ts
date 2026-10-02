@@ -14,6 +14,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 export const MAILER_BOX = {
   /** The shipper: width (x), height (y), depth (z). `radius` softens the corrugated edges. */
@@ -50,6 +51,7 @@ export interface MailerBoxLayout {
  * set the true proportions. The packing tape stays a real 48 mm band.
  */
 export function mailerBoxLayout(size: MailerBoxSizeMm = MAILER_BOX_SIZE_MM): MailerBoxLayout {
+  checkSizeMm('MailerBox', size, 'width: 350, height: 120, depth: 250')
   const scale = MAILER_BOX.body.width / Math.max(size.width, size.height, size.depth)
   const width = size.width * scale
   return {

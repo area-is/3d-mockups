@@ -12,6 +12,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the DOOH totem. */
 export const DOOH_TOTEM_MM = 1 / 700
@@ -31,7 +32,8 @@ export interface DoohTotemSize {
  * active display scale with the enclosure (so the display aspect follows the
  * cabinet - a 9:16 portrait at the default size).
  */
-export function doohTotemSpec({ width = 1300, height = 2800 }: DoohTotemSize = {}) {
+export function doohTotemSpec(size: DoohTotemSize = {}) {
+  const { width = 1300, height = 2800 } = checkSizeMm('DOOHTotem', size, 'width: 1300, height: 2800')
   const w = width * DOOH_TOTEM_MM
   const h = height * DOOH_TOTEM_MM
   const glassW = w - 0.197

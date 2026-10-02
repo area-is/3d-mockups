@@ -22,12 +22,20 @@ export function BareVsMockup({
   kind,
   /** The object's primary slot, e.g. `Screen` for a device, `Cover` for a book. */
   slot,
+  /**
+   * The props measuring cannot do without, as source, e.g.
+   * `{ size: { width: 600, height: 900 } }` for the custom panel. Without them
+   * `mockupInfo('customPanel')` - what this explainer printed - throws.
+   */
+  requiredProps,
 }: {
   object: string
   kind: string
   slot: string
+  requiredProps?: string
 }) {
   const mockup = `${object}Mockup`
+  const args = requiredProps ?? ''
   return (
     <>
       <p>
@@ -46,31 +54,39 @@ export function BareVsMockup({
         </strong>{' '}
         It renders geometry into a canvas that already exists, so it has to sit
         inside a <Link href="/docs/api/mockup-canvas">{'<MockupCanvas>'}</Link>{' '}
-        or any react-three-fiber <code>{'<Canvas>'}</code> you already have. On
-        its own, outside a canvas, it renders nothing. What you get back is the
-        rest of the scene: several objects, your own meshes, your own lighting
-        and one shared WebGL context instead of one per mockup.
+        or any react-three-fiber <code>{'<Canvas>'}</code> you already have.
+        Outside a canvas it throws{' '}
+        <code>R3F: Hooks can only be used within the Canvas component!</code>.
+        What you get back is the rest of the scene: several objects, your own
+        meshes, your own lighting and one shared WebGL context instead of one
+        per mockup.
       </p>
       <p>
         <strong>Both take the same object props.</strong> Every prop in the
         table on this page means the same thing on either component, transforms
         (<code>position</code>, <code>rotation</code>, <code>scale</code>)
-        included. <code>{`<${mockup}>`}</code> accepts a few more, and they are
-        all about the stage rather than the object: <code>float</code>, plus the{' '}
-        <code>controls</code>, <code>autoRotate</code>, <code>zoom</code>,{' '}
-        <code>fullscreen</code>, <code>shadows</code>, <code>background</code>,{' '}
-        <code>camera</code>, <code>className</code> and <code>style</code> props
-        it hands to its canvas.
+        included. <code>{`<${mockup}>`}</code> accepts more, and they are all
+        about the stage rather than the object: <code>float</code>, plus the
+        props it hands to its canvas - <code>controls</code>,{' '}
+        <code>autoRotate</code>, <code>zoom</code>, <code>fullscreen</code>,{' '}
+        <code>shadows</code>, <code>background</code> and <code>camera</code>{' '}
+        for the stage; <code>frameloop</code>, <code>dpr</code>,{' '}
+        <code>gl</code>, <code>onCreated</code> and{' '}
+        <code>pauseWhenOffscreen</code> for rendering; <code>time</code> and{' '}
+        <code>delayCapture</code> for video and screenshots;{' '}
+        <code>label</code> and <code>screenAccessibility</code> for assistive
+        tech; and <code>className</code> and <code>style</code>.
       </p>
       <p>
         <strong>Slots are on both; measuring is not.</strong>{' '}
         <code>{`<${mockup}.${slot}>`}</code> and{' '}
         <code>{`<${object}.${slot}>`}</code> are the same component, as is every
         other slot this object has. The measurement statics{' '}
-        <code>{`${mockup}.info()`}</code> and <code>{`${mockup}.regions`}</code>{' '}
-        exist only on the mockup; to measure the bare object, call{' '}
+        <code>{`${mockup}.info(${args})`}</code> and{' '}
+        <code>{`${mockup}.regions`}</code> exist only on the mockup; to measure
+        the bare object, call{' '}
         <Link href="/docs/api/mockup-info">
-          <code>{`mockupInfo('${kind}')`}</code>
+          <code>{`mockupInfo('${kind}'${args ? `, ${args}` : ''})`}</code>
         </Link>
         .
       </p>

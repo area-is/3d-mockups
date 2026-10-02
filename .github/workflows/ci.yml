@@ -44,6 +44,13 @@ jobs:
       - name: Device table
         run: npm run devices:check
 
+      # What one import really costs an app, measured on the built dist/ an
+      # app installs. Fails when an import grows more than 10% past the
+      # import-cost table in the docs - the table that once promised ~12 KB
+      # while the published single-file bundle shipped the whole library.
+      - name: Import cost
+        run: npm run size:check
+
       # The generated files are committed so typecheck works on a clean
       # checkout; this catches a docs edit that was never re-extracted.
       - name: Generated docs files are up to date

@@ -12,6 +12,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the book. */
 export const BOOK_MM = 1 / 56
@@ -32,7 +33,8 @@ export interface BookSize {
  * `{ width: 216, height: 279 }` for a letter-size art book. Boards, squares
  * and joints keep their real-world dimensions regardless of trim.
  */
-export function bookSpec({ width = 156, height = 234, thickness = 27 }: BookSize = {}) {
+export function bookSpec(size: BookSize = {}) {
+  const { width = 156, height = 234, thickness = 27 } = checkSizeMm('Book', size, 'width: 156, height: 234, thickness: 27')
   const w = width * BOOK_MM
   const h = height * BOOK_MM
   const t = thickness * BOOK_MM

@@ -61,7 +61,7 @@ describe('the mockup registry', () => {
     // Used to throw `Cannot read properties of undefined (reading 'width')`
     // from deep inside the scale function, naming neither prop nor mockup.
     expect(() => (mockupInfo as (k: string) => unknown)('customPanel')).toThrow(
-      /customPanel/
+      /CustomPanel requires a `size` in millimetres, e\.g\. size=\{\{ width: 600, height: 900 \}\}/
     )
   })
 
@@ -107,5 +107,25 @@ describe('props that change what is measured', () => {
     const landscape = mockupInfo('galaxy', { orientation: 'landscape' }).primary.px
     expect(landscape.width).toBe(portrait.height)
     expect(landscape.height).toBe(portrait.width)
+  })
+})
+
+describe('sizes', () => {
+  /*
+   * A zero, a negative or a NaN used to flow straight through the scale
+   * maths: `mockupInfo('book', { size: { width: 0 } })` reported Infinity and
+   * the component rendered nothing, with no error anywhere.
+   */
+  it.each([0, -10, Number.NaN, Number.POSITIVE_INFINITY])('rejects a width of %s by name', (width) => {
+    expect(() => mockupInfo('book', { size: { width } })).toThrow(/Book: size\.width is .*positive number of millimetres/)
+    expect(() => mockupInfo('customBox', { size: { width, height: 90, depth: 160 } })).toThrow(/CustomBox: size\.width/)
+  })
+
+  it('rejects a TV diagonal that is not a number', () => {
+    expect(() => mockupInfo('tv', { size: Number.NaN })).toThrow(/TVSet: size is NaN/)
+  })
+
+  it('still takes a partial size, filling the rest from the defaults', () => {
+    expect(mockupInfo('book', { size: { width: 216 } }).primary.mm.width).toBeCloseTo(216, 0)
   })
 })

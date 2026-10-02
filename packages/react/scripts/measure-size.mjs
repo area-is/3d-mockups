@@ -1,62 +1,140 @@
-// Measures the tree-shaken cost of importing each device mockup:
-// esbuild-bundles a one-line entry per component (peers external), minified,
-// and reports raw + gzip sizes. Run from packages/react:
-//   node scripts/measure-size.mjs
+/**
+ * Measures what importing each mockup really costs an app: esbuild bundles a
+ * one-line entry per component FROM THE BUILT PACKAGE (`dist/index.js`, what
+ * npm ships), peers external, minified, and reports raw and gzip sizes.
+ *
+ *   node scripts/measure-size.mjs           print the table
+ *   node scripts/measure-size.mjs --write   rewrite the docs' import-cost table
+ *   node scripts/measure-size.mjs --check   fail if an import has grown >10%
+ *                                           past its documented gzip size
+ *
+ * It used to bundle `src/`, where every module is its own file and tree-shaking
+ * works by construction - and so it never saw that the published single-file
+ * `dist/index.js` kept the whole library behind any one import. Measuring the
+ * artifact is the point; run `npm run build` first.
+ *
+ * Peers are what the app already installs once (react, three, fiber, drei).
+ * The runtime dependencies (the CSG engine, its-fine) are counted, because an
+ * app bundles them on our behalf.
+ */
 import { build } from 'esbuild'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 
-const ENTRIES = {
-  'GalaxyMockup (Galaxy phone family)': "export { GalaxyMockup } from './src/index'",
-  'IPhoneMockup (iPhone family)': "export { IPhoneMockup } from './src/index'",
-  'IPhoneDuoMockup (iPhone Duo)': "export { IPhoneDuoMockup } from './src/index'",
-  'LaptopMockup (MacBook Air + Pro)': "export { LaptopMockup } from './src/index'",
-  'IPadMockup (iPad family)': "export { IPadMockup } from './src/index'",
-  'GalaxyTabMockup (Galaxy Tab family)': "export { GalaxyTabMockup } from './src/index'",
-  'AppleWatchMockup (Apple Watch)': "export { AppleWatchMockup } from './src/index'",
-  'GalaxyWatchMockup (Galaxy Watch)': "export { GalaxyWatchMockup } from './src/index'",
-  'StudioDisplayMockup (Studio Display)': "export { StudioDisplayMockup } from './src/index'",
-  'FoldMockup (Galaxy Z Fold family)': "export { FoldMockup } from './src/index'",
-  'FlipMockup (Galaxy Z Flip family)': "export { FlipMockup } from './src/index'",
-  'BookMockup (hardcover)': "export { BookMockup } from './src/index'",
-  'MagazineMockup (glossy monthly)': "export { MagazineMockup } from './src/index'",
-  'BrochureMockup (tri-fold)': "export { BrochureMockup } from './src/index'",
-  'BusinessCardMockup (32pt card)': "export { BusinessCardMockup } from './src/index'",
-  'PosterFrameMockup (18x24 frame)': "export { PosterFrameMockup } from './src/index'",
-  'BillboardMockup (14x48 bulletin)': "export { BillboardMockup } from './src/index'",
-  'VanMockup (cargo van)': "export { VanMockup } from './src/index'",
-  'IDCardMockup (badge + lanyard)': "export { IDCardMockup } from './src/index'",
-  'BusMockup (transit bus)': "export { BusMockup } from './src/index'",
-  'ProductBoxMockup (retail carton)': "export { ProductBoxMockup } from './src/index'",
-  'RollupBannerMockup (850x2000 stand)': "export { RollupBannerMockup } from './src/index'",
-  'BusShelterMockup (6-sheet shelter)': "export { BusShelterMockup } from './src/index'",
-  'GreetingCardMockup (A7 card)': "export { GreetingCardMockup } from './src/index'",
-  'VinylRecordMockup (12in LP)': "export { VinylRecordMockup } from './src/index'",
-  'TVSetMockup (65in TV)': "export { TVSetMockup } from './src/index'",
-  'AFrameSignMockup (sandwich board)': "export { AFrameSignMockup } from './src/index'",
-  'DOOHTotemMockup (digital totem)': "export { DOOHTotemMockup } from './src/index'",
-  'StorefrontMockup (shop facade)': "export { StorefrontMockup } from './src/index'",
-  'SemiTrailerMockup (53ft dry van)': "export { SemiTrailerMockup } from './src/index'",
-  'MailerBoxMockup (shipper box)': "export { MailerBoxMockup } from './src/index'",
-  'MilkCartonMockup (gable-top carton)': "export { MilkCartonMockup } from './src/index'",
-  'ShoppingBagMockup (kraft carrier)': "export { ShoppingBagMockup } from './src/index'",
-  'CustomPanelMockup (any-size sheet)': "export { CustomPanelMockup } from './src/index'",
-  'CustomBoxMockup (any-size box)': "export { CustomBoxMockup } from './src/index'",
-  'everything (full library)': "export * from './src/index'",
-}
+const here = dirname(fileURLToPath(import.meta.url))
+const root = join(here, '..')
+const DOC = join(root, '..', '..', 'apps', 'docs', 'content', 'docs', 'devices.mdx')
+const PEERS = ['react', 'react-dom', 'react/*', 'three', 'three/*', '@react-three/fiber', '@react-three/drei']
+/** How far past its documented gzip size an import may grow before `--check` fails. */
+const TOLERANCE = 0.1
 
-for (const [name, contents] of Object.entries(ENTRIES)) {
+/** `[component, label]` in the docs table's order; the label is the table's first column. */
+const ENTRIES = [
+  ['GalaxyMockup', 'Galaxy family'],
+  ['IPhoneMockup', 'iPhone family'],
+  ['IPhoneDuoMockup', 'iPhone Duo'],
+  ['FoldMockup', 'Galaxy Z Fold family'],
+  ['FlipMockup', 'Galaxy Z Flip family'],
+  ['LaptopMockup', 'MacBook Air, Pro + Neo'],
+  ['IPadMockup', 'iPad family'],
+  ['GalaxyTabMockup', 'Galaxy Tab family'],
+  ['AppleWatchMockup', 'Apple Watch'],
+  ['GalaxyWatchMockup', 'Galaxy Watch'],
+  ['StudioDisplayMockup', 'Studio Display'],
+  ['BookMockup', 'hardcover'],
+  ['MagazineMockup', 'glossy monthly'],
+  ['BrochureMockup', 'tri-fold'],
+  ['BusinessCardMockup', '32 pt card'],
+  ['IDCardMockup', 'badge + lanyard'],
+  ['PosterFrameMockup', '18×24 frame'],
+  ['ProductBoxMockup', 'retail carton'],
+  ['RollupBannerMockup', '850×2000 stand'],
+  ['BillboardMockup', '14×48 bulletin'],
+  ['BusMockup', 'transit bus'],
+  ['VanMockup', 'cargo van'],
+  ['BusShelterMockup', '6-sheet shelter'],
+  ['GreetingCardMockup', 'A7 card'],
+  ['VinylRecordMockup', '12" LP'],
+  ['TVSetMockup', '65" TV'],
+  ['AFrameSignMockup', 'sandwich board'],
+  ['DOOHTotemMockup', 'digital totem'],
+  ['StorefrontMockup', 'shop façade'],
+  ['SemiTrailerMockup', '53 ft dry van'],
+  ['MailerBoxMockup', 'shipper box'],
+  ['MilkCartonMockup', 'gable-top carton'],
+  ['ShoppingBagMockup', 'kraft carrier'],
+  ['CustomPanelMockup', 'any-size sheet'],
+  ['CustomBoxMockup', 'any-size box'],
+]
+
+async function measure(contents) {
   const result = await build({
-    stdin: { contents, resolveDir: process.cwd(), loader: 'ts' },
+    stdin: { contents, resolveDir: root, loader: 'js' },
     bundle: true,
     minify: true,
     write: false,
     format: 'esm',
     target: 'es2022',
-    external: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
-    jsx: 'automatic',
-    loader: { '.tsx': 'tsx', '.ts': 'ts' },
+    platform: 'browser',
+    external: PEERS,
+    // The banner every component module carries; esbuild warns that it
+    // ignores it in a bundle, which is exactly what an app bundler does too.
+    logLevel: 'error',
   })
   const bytes = result.outputFiles[0].contents
-  const gz = gzipSync(bytes).length
-  console.log(`${name}: ${(bytes.length / 1024).toFixed(1)} KB min / ${(gz / 1024).toFixed(1)} KB gzip`)
+  return { min: bytes.length / 1024, gzip: gzipSync(bytes).length / 1024 }
+}
+
+const kb = (n) => `${n.toFixed(1)} KB`
+const rows = []
+for (const [component, label] of ENTRIES) {
+  rows.push({ component, label, ...(await measure(`export { ${component} } from './dist/index.js'`)) })
+}
+const whole = await measure(`export * from './dist/index.js'`)
+
+const mode = process.argv[2]
+if (!mode) {
+  for (const r of rows) console.log(`${r.component}: ${kb(r.min)} min / ${kb(r.gzip)} gzip`)
+  console.log(`everything: ${kb(whole.min)} min / ${kb(whole.gzip)} gzip`)
+  process.exit(0)
+}
+
+const doc = readFileSync(DOC, 'utf8')
+const TABLE = /(\| Import \| Minified \| Gzip \|\n\| --- \| --- \| --- \|\n)((?:\|[^\n]*\n)+)/
+
+if (mode === '--write') {
+  const body =
+    rows.map((r) => `| \`${r.component}\` (${r.label}) | ${kb(r.min)} | ${kb(r.gzip)} |`).join('\n') +
+    `\n| Whole library (every export) | ${kb(whole.min)} | ${kb(whole.gzip)} |\n`
+  if (!TABLE.test(doc)) throw new Error(`No import-cost table found in ${DOC}`)
+  writeFileSync(DOC, doc.replace(TABLE, (_m, head) => head + body))
+  console.log(`Rewrote the import-cost table in ${DOC}.`)
+} else if (mode === '--check') {
+  const documented = new Map(
+    [...(doc.match(TABLE)?.[2] ?? '').matchAll(/\| `(\w+)`[^|]*\| [\d.]+ KB \| ([\d.]+) KB \|/g)].map((m) => [
+      m[1],
+      Number(m[2]),
+    ])
+  )
+  const failures = rows.filter((r) => {
+    const limit = documented.get(r.component)
+    return limit === undefined || r.gzip > limit * (1 + TOLERANCE)
+  })
+  for (const r of failures) {
+    const limit = documented.get(r.component)
+    console.error(
+      limit === undefined
+        ? `${r.component}: not in the import-cost table of ${DOC}`
+        : `${r.component}: ${kb(r.gzip)} gzip, documented ${kb(limit)} (+${Math.round((r.gzip / limit - 1) * 100)}%)`
+    )
+  }
+  if (failures.length > 0) {
+    console.error('\nAn import grew past its documented size. If that is intended, run `npm run size:write` and commit.')
+    process.exit(1)
+  }
+  console.log(`All ${rows.length} imports within ${TOLERANCE * 100}% of their documented size.`)
+} else {
+  throw new Error(`Unknown option ${mode}. Use --write or --check.`)
 }

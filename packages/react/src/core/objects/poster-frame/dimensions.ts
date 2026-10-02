@@ -14,6 +14,7 @@
  */
 
 import type { MockupFraming, MockupMetrics, RegionSpec } from '../../regions'
+import { checkSizeMm } from '../../size'
 
 /** World units per millimeter for the poster frame. */
 export const POSTER_FRAME_MM = 1 / 140
@@ -32,7 +33,8 @@ export interface PosterFrameSize {
  * or `{ width: 594, height: 841 }` for A1. The molding profile, lip and mat
  * width keep their real-world dimensions regardless of sheet size.
  */
-export function posterFrameSpec({ width = 457, height = 610 }: PosterFrameSize = {}) {
+export function posterFrameSpec(size: PosterFrameSize = {}) {
+  const { width = 457, height = 610 } = checkSizeMm('PosterFrame', size, 'width: 457, height: 610')
   const w = width * POSTER_FRAME_MM
   const h = height * POSTER_FRAME_MM
   const lip = 0.0457

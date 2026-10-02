@@ -278,7 +278,7 @@ describe('checkDeviceVariant', () => {
     expect(() => checkDeviceVariant('iphone', 'nope' as never, 'IPhone')).toThrow(
       /\[react-3d-mockups\] IPhone: unknown variant "nope"\. Known variants: "17", "air"/
     )
-    expect(() => mockupInfo('iphone', { variant: 'nope' as never })).toThrow(/describeMockup\("iphone"\): unknown variant "nope"/)
+    expect(() => mockupInfo('iphone', { variant: 'nope' as never })).toThrow(/mockupInfo\("iphone"\): unknown variant "nope"/)
   })
 
   it('passes a live variant, and leaves kinds without generations alone', () => {

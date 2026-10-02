@@ -13,7 +13,6 @@ import type { RegionMetrics, RegionRadius, RegionSpec } from './regions'
 // without ever pulling in the registry module that owns it.
 import type { MockupKind } from './metrics'
 import { screenCssHeight, screenPxPerUnit } from './screen/surface'
-import { assertDeviceVariant } from './lifecycle'
 
 /** A width/height pair in whichever unit the containing field names. */
 export interface Size {
@@ -126,9 +125,6 @@ export interface MeasurableMockup<P> {
  */
 export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P>, props?: P): MockupInfo {
   const args = (props ?? {}) as P
-  // A removed or misspelt variant would otherwise surface as a TypeError from
-  // inside the metrics resolver, naming neither the variant nor the fix.
-  assertDeviceVariant(kind, (args as { variant?: unknown }).variant, `describeMockup("${String(kind)}")`)
   let mmPerUnit: number
   let resolved: Record<string, RegionMetrics | RegionMetrics[]>
   try {
@@ -136,14 +132,24 @@ export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P
     resolved = metrics.regions(args)
   } catch (cause) {
     /*
-     * The kinds taking a required `size` (customPanel, customBox) blow up deep
-     * inside their scale function when it is missing, with a TypeError naming
-     * neither the mockup nor the prop. The public signature makes that
-     * unreachable from TypeScript; this is what JS callers see instead.
+     * A prop the resolver cannot use blows up deep inside it, as a TypeError
+     * naming neither the mockup nor the prop: a missing `size` on the kinds
+     * that require one (customPanel, customBox), or a `variant` the family
+     * does not have. The public signature makes both unreachable from
+     * TypeScript; this is what JavaScript callers see instead, naming the
+     * likelier of the two. (`mockupInfo` checks a device's variant by name
+     * before it gets here; this module deliberately carries no lineup, so an
+     * object's `.info()` does not ship every device's.)
      */
+    // The spec builders name their own mistakes (see `checkSizeMm`).
+    if (cause instanceof Error && cause.message.startsWith('[react-3d-mockups]')) throw cause
+    const variant = (args as { variant?: unknown }).variant
+    const reason = cause instanceof Error ? cause.message : String(cause)
     throw new Error(
-      `[react-3d-mockups] describeMockup: "${String(kind)}" could not be measured from these props. ` +
-        `Kinds with a required \`size\` (e.g. customPanel, customBox) must be given one.`,
+      `[react-3d-mockups] describeMockup: "${String(kind)}" could not be measured from these props (${reason}). ` +
+        (variant !== undefined
+          ? `Is variant="${String(variant)}" one of its variants?`
+          : 'Kinds with a required `size` (customPanel, customBox) must be given one.'),
       { cause }
     )
   }
