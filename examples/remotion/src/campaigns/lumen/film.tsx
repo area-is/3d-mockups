@@ -211,7 +211,7 @@ function InviteShot() {
       </Line>
       {/* across the top of the frame and out, clear of the card and the leaf */}
       <Moth frame={frame} path={(f) => ({ x: -120 + f * 13, y: 110 - Math.max(0, -120 + f * 13 - 600) * 0.35 + Math.sin(f * 0.15) * 15 })} width={200} />
-      <Drift name="lumen-fern" x={150 + frame * 0.4} y={980} width={560} rotate={-60} blur={14} />
+      <Drift name="lumen-fern" x={60 + frame * 0.3} y={1050} width={480} rotate={-60} blur={14} />
     </AbsoluteFill>
   )
 }
@@ -305,14 +305,14 @@ function PassShot() {
  */
 const RECORD_GROUND = -VINYL_RECORD_FRAMING.extent()
 const ZINE_SCALE = mockupInfo('magazine').mmPerUnit / mockupInfo('vinylRecord').mmPerUnit
-const ZINE_AT: Vec3 = [3.0, RECORD_GROUND + MAGAZINE_FRAMING.extent({}) * ZINE_SCALE, 0.5]
+const ZINE_AT: Vec3 = [3.7, RECORD_GROUND + MAGAZINE_FRAMING.extent({}) * ZINE_SCALE, 0]
 
 function RecordShot() {
   const frame = useCurrentFrame()
   const delayCapture = useMockupCapture()
   const orbit = orbitAt(frame, [
-    { frame: 0, target: [0.8, 0.0, 0.2], distance: 6.6, azimuth: 0.35, elevation: 0.06, fov: 34 },
-    { frame: 140, target: [0.6, -0.1, 0.3], distance: 9.6, azimuth: -0.28, elevation: 0.12, fov: 38 },
+    { frame: 0, target: [1.1, 0.0, 0.0], distance: 7.6, azimuth: 0.2, elevation: 0.06, fov: 34 },
+    { frame: 140, target: [1.0, -0.1, 0.0], distance: 10.2, azimuth: -0.2, elevation: 0.12, fov: 38 },
   ])
   return (
     <AbsoluteFill style={{ background: `radial-gradient(ellipse 85% 85% at 50% 45%, #21473a 0%, #0e231c 80%)` }}>
@@ -329,7 +329,7 @@ function RecordShot() {
             <RecordLabel turn={frame * 6.6} />
           </VinylRecord.Label>
         </VinylRecord>
-        <Magazine name="zine" glossy position={ZINE_AT} rotation={[0, -0.38, 0]} scale={ZINE_SCALE}>
+        <Magazine name="zine" glossy position={ZINE_AT} rotation={[0, -0.25, 0]} scale={ZINE_SCALE}>
           <Magazine.Cover>
             <ZineCover />
           </Magazine.Cover>

@@ -283,14 +283,16 @@ function WatchShot() {
 /* ------------------------------------------------------------------ */
 
 /*
- * The shipper is modelled at 78 mm per unit; the shoe box is a CustomBox
- * at the real 330 × 120 × 210 mm, scaled onto the shipper's units so it
- * sits on the lid at its true size.
+ * The shoe box is a CustomBox at the real 330 × 120 × 210 mm, and the
+ * shipper is the one it travels in, 35 mm bigger all round - so the box sits
+ * on the lid with lid to spare on every side. Both normalise their longest
+ * edge to the stage, so the shoe box is scaled onto the shipper's units.
  */
 const SHOEBOX = { width: 330, height: 120, depth: 210 }
-const MAILER_MM = mockupInfo('mailerBox').mmPerUnit
+const SHIPPER = { width: 400, height: 150, depth: 280 }
+const MAILER_MM = mockupInfo('mailerBox', { size: SHIPPER }).mmPerUnit
 const SHOEBOX_ON_MAILER = mockupInfo('customBox', { size: SHOEBOX }).mmPerUnit / MAILER_MM
-const MAILER_EXTENT = MAILER_BOX_FRAMING.extent({})
+const MAILER_EXTENT = MAILER_BOX_FRAMING.extent({ size: SHIPPER })
 const BOX_GROUND = -MAILER_EXTENT
 const SHIPPER_TURN = 0.2
 /** How far above the lid the shoe box is let go. */
@@ -341,7 +343,7 @@ function BoxesShot() {
         <CameraRig orbit={orbit} />
         <Floor y={BOX_GROUND} color="#d3d0c8" radius={14} />
         <OverlapProbe names={['shipper', 'shoebox']} frame={frame} />
-        <MailerBox name="shipper" color="#1a1b1e" tapeColor={KITE.volt} rotation={[0, SHIPPER_TURN, 0]}>
+        <MailerBox name="shipper" size={SHIPPER} color="#1a1b1e" tapeColor={KITE.volt} rotation={[0, SHIPPER_TURN, 0]}>
           <MailerBox.Top>
             <MailerLid />
           </MailerBox.Top>
@@ -359,7 +361,7 @@ function BoxesShot() {
             <MailerEnd />
           </MailerBox.Right>
         </MailerBox>
-        <CustomBox name="shoebox" size={SHOEBOX} color={volt.ground} position={[0, shoeboxY, 0]} rotation={[0, SHIPPER_TURN - 0.08 + (lift / SHOEBOX_DROP) * 0.5, 0]} scale={SHOEBOX_ON_MAILER}>
+        <CustomBox name="shoebox" size={SHOEBOX} color={volt.ground} position={[0, shoeboxY, 0]} rotation={[0, SHIPPER_TURN - 0.04 + (lift / SHOEBOX_DROP) * 0.5, 0]} scale={SHOEBOX_ON_MAILER}>
           {shoeboxFaces(volt)}
         </CustomBox>
       </MockupCanvas>

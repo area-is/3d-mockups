@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion'
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion'
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions'
 import { iris } from '@remotion/transitions/iris'
 import { pushCut } from '@remotion/transitions/push-cut'

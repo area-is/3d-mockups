@@ -328,13 +328,19 @@ export function StoreScreen() {
 /*  The boxes                                                          */
 /* ------------------------------------------------------------------ */
 
-/** The shipper's lid, black corrugated with volt ink, under the tape. */
+/**
+ * The shipper's lid, black corrugated with volt ink. The packing tape runs
+ * across the middle of the lid, so the print is laid out around it: the mark
+ * above the tape and the line below it, with the band between left clear.
+ */
 export function MailerLid() {
   return (
-    <Face ink={KITE.volt} font={DISPLAY} style={{ alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-      <KiteGlyph size="13cqw" color={KITE.volt} />
-      <div style={{ fontSize: '24cqw', lineHeight: 0.9, marginTop: '3cqh' }}>KITE</div>
-      <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '3.8cqw', letterSpacing: '-0.01em', marginTop: '4cqh' }}>Handle like a personal best.</div>
+    <Face ink={KITE.volt} font={DISPLAY} style={{ alignItems: 'center', justifyContent: 'space-between', padding: '9cqh 0 10cqh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2.4cqw' }}>
+        <KiteGlyph size="6cqw" color={KITE.volt} tail={false} />
+        <span style={{ fontSize: '13cqw', lineHeight: 0.9 }}>KITE</span>
+      </div>
+      <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '3.4cqw', letterSpacing: '-0.01em' }}>Handle like a personal best.</div>
     </Face>
   )
 }
