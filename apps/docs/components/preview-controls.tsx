@@ -10,6 +10,7 @@ import {
   BusMockup,
   BusShelterMockup,
   BusinessCardMockup,
+  CreditCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
@@ -346,6 +347,28 @@ const MODELS = new Map<unknown, ModelControls>([
   [BusMockup, { controls: [COVERAGE] }],
   [BusShelterMockup, {}],
   [BusinessCardMockup, { controls: [swatch('edgeColor', 'edge')] }],
+  [
+    CreditCardMockup,
+    {
+      controls: [
+        toggle('emboss', 'embossed', true),
+        {
+          prop: 'tipping',
+          label: 'tipping',
+          kind: 'select',
+          options: [
+            { value: 'silver', label: 'silver' },
+            { value: 'gold', label: 'gold' },
+            { value: 'none', label: 'none' },
+          ],
+          preset: 'silver',
+        },
+        toggle('chip', 'chip', true),
+        toggle('stripe', 'stripe', true),
+        toggle('signature', 'signature panel', true),
+      ],
+    },
+  ],
   [CustomBoxMockup, { controls: [size('box mm', [['width', 180], ['height', 120], ['depth', 60]])] }],
   [
     CustomPanelMockup,

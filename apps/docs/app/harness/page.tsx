@@ -9,6 +9,7 @@ import {
   BrochureMockup,
   BusMockup,
   BusinessCardMockup,
+  CreditCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
@@ -109,6 +110,7 @@ const PLAIN = {
   book: BookMockup,
   brochure: BrochureMockup,
   card: BusinessCardMockup,
+  creditcard: CreditCardMockup,
   totem: DOOHTotemMockup,
   greeting: GreetingCardMockup,
   mailer: MailerBoxMockup,
@@ -178,7 +180,7 @@ function regionProbe(Mockup: object, measuredAt: Record<string, unknown> = {}): 
  * Params:
  *   device      tablet | monitor | flip | fold | iphoneduo | watch | laptop
  *               | phone | iphone | bus | van | shelter | tv | idcard
- *               | store | magazine (default tablet)
+ *               | store | magazine | creditcard (default tablet)
  *   pvariant    device variant id                  (phone, iphone)
  *   fvariant    device variant id                  (fold, iphoneduo)
  *   flvariant   device variant id                  (flip)

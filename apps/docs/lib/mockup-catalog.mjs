@@ -180,6 +180,9 @@ export const OBJECTS = [
   object('id-card', 'ID card', 'IDCardMockup', 'device=idcard&ry=-20', 'Print', [
     'id card', 'badge', 'name badge', 'lanyard', 'event badge', 'conference badge', 'employee badge',
   ]),
+  object('credit-card', 'Credit card', 'CreditCardMockup', 'device=creditcard&ry=-22&rx=8', 'Print', [
+    'credit card', 'debit card', 'bank card', 'payment card', 'card', 'emv chip', 'embossed', 'fintech', 'cr80',
+  ]),
   object('greeting-card', 'Greeting card', 'GreetingCardMockup', 'device=greeting&ry=-24', 'Print', [
     'greeting card', 'card', 'invitation', 'birthday card', 'folded card', 'print',
   ]),

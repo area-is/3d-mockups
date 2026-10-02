@@ -48,6 +48,7 @@ import {
   GardenVanSide,
 } from '../screens/garden-art'
 import { MoreauCard, MoreauCardBack, MoreauSign, MoreauSignBack } from '../screens/studio-art'
+import { LarkmoorCard, LarkmoorCardBack } from '../screens/bank-card-art'
 import { TulipBack, TulipFront, TulipInsideLeft, TulipInsideRight } from '../screens/card-art'
 import { ColdwellScreen, MarblePoster, ShelterArrivals, ShelterNotice, SignalBanner, StridePoster } from '../screens/street-art'
 import {
@@ -102,7 +103,7 @@ import {
  * The carousel is a selection; the catalogue is more. Every other print
  * object gets a job of its own below (`SAMPLE_ART`) - a magazine, a
  * botanical garden's leaflet and van, an architect's card and door sign, a
- * bakery front, a haulier's trailer - built the same way and drawn from the
+ * bank's debit card, a bakery front, a haulier's trailer - built the same way and drawn from the
  * same kind of generated cut-outs, so no reference page falls back to a
  * labelled placeholder. The carousel objects' faces it never turns to (a
  * box's bottom, a carton's back roof) are filled in the same way.
@@ -186,6 +187,7 @@ export const SAMPLE_ART: Readonly<Record<string, CarouselFaces>> = {
   },
   businessCard: { front: 'MoreauCard', back: 'MoreauCardBack' },
   idCard: { front: 'GardenBadge', back: 'GardenBadgeBack' },
+  creditCard: { front: 'LarkmoorCard', back: 'LarkmoorCardBack' },
   greetingCard: { front: 'TulipFront', insideLeft: 'TulipInsideLeft', insideRight: 'TulipInsideRight', back: 'TulipBack' },
   rollupBanner: { banner: 'SignalBanner' },
   busShelter: { poster: 'StridePoster', inner: 'MarblePoster', arrivals: 'ShelterArrivals', arrivalsBack: 'ShelterNotice' },
@@ -309,6 +311,9 @@ const ART: Readonly<Record<string, (finish: string, at: ArtPlacement) => ReactNo
   MoreauCardBack: (finish) => <MoreauCardBack material={finish} />,
   MoreauSign: (finish) => <MoreauSign material={finish} />,
   MoreauSignBack: (finish) => <MoreauSignBack material={finish} />,
+
+  LarkmoorCard: (finish) => <LarkmoorCard material={finish} />,
+  LarkmoorCardBack: (finish) => <LarkmoorCardBack material={finish} />,
 
   TulipFront: (finish) => <TulipFront material={finish} />,
   TulipInsideLeft: (finish) => <TulipInsideLeft material={finish} />,

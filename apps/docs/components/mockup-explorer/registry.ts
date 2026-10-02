@@ -10,6 +10,7 @@ import {
   BusShelterMockup,
   BusinessCard,
   BusinessCardMockup,
+  CreditCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
@@ -284,6 +285,7 @@ const OBJECTS: Record<string, ExplorerSpec> = {
     bareName: 'BusinessCard',
   }),
   IDCardMockup: object(IDCardMockup, 'IDCardMockup', 'idCard', 'ID card', { stock: true }),
+  CreditCardMockup: object(CreditCardMockup, 'CreditCardMockup', 'creditCard', 'Credit card', { stock: true }),
   GreetingCardMockup: object(GreetingCardMockup, 'GreetingCardMockup', 'greetingCard', 'Greeting card', { stock: true }),
   PosterFrameMockup: object(PosterFrameMockup, 'PosterFrameMockup', 'posterFrame', 'Poster frame', {
     bare: PosterFrame,

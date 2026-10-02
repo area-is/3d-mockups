@@ -11,7 +11,8 @@
  *   npm run thumbs -- --only=ipad substring filter on entry id
  *
  * Expects the docs dev server on PORT (default 3000, which is what `npm run
- * dev` serves); pass --base to override.
+ * dev` serves); pass --base to override. CHROMIUM_EXECUTABLE points it at a
+ * Chromium other than the one Playwright downloaded, as for `visual`.
  * WebGL runs on SwiftShader, so no GPU is needed - at the cost of being slow.
  */
 import { chromium } from 'playwright'
@@ -36,6 +37,7 @@ mkdirSync(OUT, { recursive: true })
 const browser = await chromium.launch({
   // SwiftShader: no GPU needed, and the same frames on CI as on a laptop.
   args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+  ...(process.env.CHROMIUM_EXECUTABLE ? { executablePath: process.env.CHROMIUM_EXECUTABLE } : {}),
 })
 const context = await browser.newContext({ viewport: { width: 360, height: 360 }, deviceScaleFactor: 1 })
 const page = await context.newPage()
