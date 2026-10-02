@@ -23,7 +23,7 @@ import {
 import { A_FRAME_SIGN_FRAMING, BILLBOARD_FRAMING, BUS_SHELTER_FRAMING, MILK_CARTON_FRAMING, VAN_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Clouds, Drift, Floor, FontGate, landing, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage, Vignette, Words } from '../kit'
+import { CameraRig, Clouds, Drift, drop, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage, Vignette, Words } from '../kit'
 import {
   BagBack,
   BagFront,
@@ -166,6 +166,7 @@ function HeroShot() {
 const CARTON_GROUND = -MILK_CARTON_FRAMING.extent({})
 /** How far above the table the cartons are let go. */
 const DROP = 7.5
+const CARTON_MM = mockupInfo('milkCarton').mmPerUnit
 
 function LineupShot() {
   const frame = useCurrentFrame()
@@ -202,16 +203,14 @@ function LineupShot() {
         <Floor y={CARTON_GROUND} color="#28503a" radius={12} />
         <OverlapProbe names={FLAVOURS.map((f) => f.id)} frame={frame} />
         {FLAVOURS.map((f, i) => {
-          // Each carton drops onto the table a beat after the last and bounces to rest -
-          // off the table, never into it. In the air it spins about its own upright
-          // axis, never tips: a tipped carton leans into its neighbour, while a spinning
-          // one stays inside a circle (its footprint's diagonal, 2.45 units) narrower
-          // than the spacing between them.
-          const lift = landing(frame, fps, 8 + i * 10, DROP)
+          // Each carton drops straight onto the table a beat after the last, under
+          // gravity at the stage's own scale, and lands with a thud: a full carton of
+          // juice gives back almost none of its speed. Straight down, never tipped or
+          // spun, so it lands where it was let go, clear of its neighbours.
+          const lift = drop(frame, fps, 8 + i * 10, DROP, { mmPerUnit: CARTON_MM, restitution: 0.1 })
           const turn = tween(frame, 78 + i * 6, 128 + i * 6, 0, -0.62)
-          const spin = (lift / DROP) * 0.9 * (i % 2 ? 1 : -1)
           return (
-            <MilkCarton key={f.id} name={f.id} color={f.ground} position={[xs[i]!, lift, 0]} rotation={[0, turn - 0.08 * (i - 1) + spin, 0]}>
+            <MilkCarton key={f.id} name={f.id} color={f.ground} position={[xs[i]!, lift, 0]} rotation={[0, turn - 0.08 * (i - 1), 0]}>
               {cartonFaces(f)}
             </MilkCarton>
           )

@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as THREE from 'three'
 import type { PerspectiveCamera } from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
-import { AbsoluteFill, Img, spring, staticFile, useCurrentFrame, useDelayRender, useVideoConfig, type SpringConfig } from 'remotion'
+import { AbsoluteFill, Img, staticFile, useCurrentFrame, useDelayRender, useVideoConfig } from 'remotion'
 import { useMockupCapture } from '../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../reel/motion'
 
@@ -168,15 +168,39 @@ export function CameraRig({ orbit }: { orbit: Orbit }) {
   return null
 }
 
+/** Standard gravity, in mm/s². */
+const GRAVITY = 9810
+
 /**
  * How high above its resting place something dropped onto a surface is, at
- * `frame`: it falls from `height`, lands at `start`-ish, and bounces off the
- * surface, each bounce lower. Never below zero - a spring's overshoot would
- * carry the object into whatever it lands on.
+ * `frame`. Let go from `height` at `start`, it falls under gravity - from rest,
+ * gaining speed all the way down, not easing in - and on landing keeps only
+ * `restitution` of its speed, so each hop is a short, quick parabola a fraction
+ * the height of the last. A full carton gives back almost nothing (a thud), a
+ * box of shoes a low hop. `mmPerUnit` is the stage's scale, so a 40 cm drop
+ * takes as long as a real one: about nine frames at 30 fps. Never below zero.
  */
-export function landing(frame: number, fps: number, start: number, height: number, config?: Partial<SpringConfig>): number {
-  const fall = spring({ frame: frame - start, fps, config: { damping: 11, stiffness: 140, mass: 0.9, ...config } })
-  return height * Math.abs(1 - fall)
+export function drop(
+  frame: number,
+  fps: number,
+  start: number,
+  height: number,
+  { mmPerUnit, restitution }: { mmPerUnit: number; restitution: number }
+): number {
+  const g = GRAVITY / mmPerUnit
+  let t = (frame - start) / fps
+  if (t <= 0) return height
+  const fall = Math.sqrt((2 * height) / g)
+  if (t < fall) return height - 0.5 * g * t * t
+  t -= fall
+  // Each bounce leaves with `restitution` of the speed it landed at; stop once
+  // a hop would be lower than a millimetre.
+  for (let v = restitution * g * fall; (v * v) / (2 * g) * mmPerUnit > 1; v *= restitution) {
+    const flight = (2 * v) / g
+    if (t < flight) return v * t - 0.5 * g * t * t
+    t -= flight
+  }
+  return 0
 }
 
 /**

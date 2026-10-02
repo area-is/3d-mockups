@@ -1,6 +1,7 @@
 'use client'
 
 import type { CSSProperties, ReactNode } from 'react'
+import { useSurfaceOptional } from 'react-3d-mockups'
 import { damier, gyre, halftone, ortho } from 'tabbied/patterns'
 import { FONT, Pattern } from './swiss-art'
 import { Photo, SERIF } from './label-art'
@@ -295,14 +296,23 @@ function Kicker({ children }: { children: ReactNode }) {
   )
 }
 
+const SECTIONS = ['World', 'Politics', 'Business', 'Science', 'Culture', 'Sport', 'Opinion', 'Puzzles']
+
+/** Below this width (CSS px) the paper is a phone's: one column, not two pages. */
+const TWO_PAGES = 560
+
 /**
- * The morning paper on the Fold: masthead and section bar across both pages,
- * the lead story with its photograph on the left page, three shorter pieces
- * with thumbnails, the most-read list and the markets on the right. The two
- * columns leave a gutter down the middle for the hinge, so the crease falls
- * between the pages the way it does in a folded newspaper.
+ * The morning paper on the Fold. Open, it is two pages: masthead and section
+ * bar across both, the lead story with its photograph on the left page, three
+ * shorter pieces with thumbnails, the most-read list and the markets on the
+ * right, with a gutter down the middle so the crease falls between the pages
+ * the way it does in a folded newspaper. Shut, the same paper is on the cover
+ * display, a phone's width, so it is laid out the way the paper's app lays it
+ * out on a phone: one column, the section bar running off the edge to scroll.
  */
 export function Newspaper() {
+  // Off a device (the docs render it flat too) there is no surface: two pages.
+  const pages = (useSurfaceOptional()?.width ?? Infinity) >= TWO_PAGES
   return (
     <div
       style={{
@@ -314,131 +324,179 @@ export function Newspaper() {
         fontFamily: FONT,
         display: 'flex',
         flexDirection: 'column',
-        padding: '54px 28px 22px',
-        // The Fold draws One UI's bar over the top of the inner display; this
+        padding: pages ? '54px 28px 22px' : '0 18px 16px',
+        // The Fold draws One UI's bar over the top of each display; this
         // clears the band it actually occupies rather than a number tuned to
         // one variant. `0px` off a device, where this also renders.
-        paddingTop: 'calc(var(--mockup-safe-area-top, 0px) + 18px)',
+        paddingTop: `calc(var(--mockup-safe-area-top, 0px) + ${pages ? 18 : 10}px)`,
         overflow: 'hidden',
         userSelect: 'none',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, letterSpacing: 0, color: NEWS_MUTED }}>
-        <span>Tuesday, September 15, 2026 · Morning edition</span>
-        <span>Partly sunny · 68° / 54° · Sign in</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 10.5, letterSpacing: 0, color: NEWS_MUTED, whiteSpace: 'nowrap' }}>
+        <span>{pages ? 'Tuesday, September 15, 2026 · Morning edition' : 'Tuesday, September 15'}</span>
+        <span>{pages ? 'Partly sunny · 68° / 54° · Sign in' : '68° / 54°'}</span>
       </div>
-      <div style={{ ...rule(2), borderBottom: `1px solid ${NEWS_INK}`, marginTop: 8, padding: '10px 0 9px', textAlign: 'center' }}>
-        <div style={{ fontFamily: SERIF, fontSize: 58, lineHeight: 1, letterSpacing: '-0.01em' }}>The Meridian</div>
+      <div style={{ ...rule(2), borderBottom: `1px solid ${NEWS_INK}`, marginTop: 8, padding: pages ? '10px 0 9px' : '8px 0 7px', textAlign: 'center' }}>
+        <div style={{ fontFamily: SERIF, fontSize: pages ? 58 : 40, lineHeight: 1, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+          The Meridian
+        </div>
       </div>
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: pages ? 'space-between' : 'flex-start',
+          gap: pages ? 0 : 16,
           padding: '8px 2px',
           borderBottom: `1px solid ${NEWS_INK}`,
           fontSize: 11.5,
           fontWeight: 600,
           letterSpacing: '-0.01em',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          // On a phone the bar is wider than the screen and scrolls; the fade
+          // says there is more of it.
+          ...(pages ? {} : { maskImage: 'linear-gradient(90deg, #000 82%, transparent)' }),
         }}
       >
-        {['World', 'Politics', 'Business', 'Science', 'Culture', 'Sport', 'Opinion', 'Puzzles'].map((section) => (
-          <span key={section} style={section === 'World' ? { color: NEWS_RED } : undefined}>
+        {SECTIONS.map((section) => (
+          <span key={section} style={{ flex: 'none', ...(section === 'World' ? { color: NEWS_RED } : {}) }}>
             {section}
           </span>
         ))}
       </div>
 
-      {/* One row, pinned to the page: the lead's body runs off the foot of the
-          page the way a jump story does, rather than pushing the row taller
-          than the screen and the markets strip off it. */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'minmax(0, 1fr)', columnGap: 46, flex: 1, minHeight: 0, paddingTop: 16 }}>
-        {/* the left page: the lead */}
-        <div style={{ minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-          <div style={{ height: 222, overflow: 'hidden' }}>
-            <Photo src={asset('/art/news-lead.webp')} position="50% 45%" />
+      {pages ? (
+        /* One row, pinned to the page: the lead's body runs off the foot of
+           the page the way a jump story does, rather than pushing the row
+           taller than the screen and the markets strip off it. */
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'minmax(0, 1fr)', columnGap: 46, flex: 1, minHeight: 0, paddingTop: 16 }}>
+          {/* the left page: the lead */}
+          <div style={{ minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+            <Lead columns={2} />
           </div>
-          <div style={{ fontSize: 10.5, lineHeight: 1.35, color: NEWS_MUTED, marginTop: 6 }}>
-            The first eastbound tram crosses Founders Bridge at 6:12 a.m. Photograph: Ana Ferreira for The Meridian
-          </div>
-          <div style={{ marginTop: 14 }}>
-            <Kicker>Transit</Kicker>
-          </div>
-          <div style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 33, lineHeight: 1.08, letterSpacing: '-0.012em', margin: '6px 0 10px', color: NEWS_INK }}>
-            City&rsquo;s first light-rail line opens to dawn crowds and a decade of promises
-          </div>
-          <p style={{ fontFamily: SERIF, fontSize: 14.5, lineHeight: 1.4, color: '#33312c', margin: '0 0 9px' }}>
-            Twelve years after the referendum, the Green Line carried 41,000 riders on its first morning. The
-            second phase breaks ground in spring.
-          </p>
-          <div style={{ fontSize: 11, color: NEWS_MUTED, marginBottom: 10 }}>
-            By <strong style={{ color: NEWS_INK, fontWeight: 600 }}>Marcus Ellery</strong> · 7 min read
-          </div>
-          <div style={{ columnCount: 2, columnGap: 16, fontSize: 11.5, lineHeight: 1.5, textAlign: 'justify', hyphens: 'auto' }}>
-            <p style={{ margin: 0 }}>
-              <span style={{ fontFamily: SERIF, fontSize: 34, float: 'left', lineHeight: 0.8, paddingRight: 6, paddingTop: 4 }}>T</span>
-              he first eastbound tram left Founders Bridge at 6:12 a.m. with every seat taken and a small crowd
-              applauding from the platform, and by the time the morning rush had thinned the transit authority
-              was reporting ridership at roughly double its opening-day forecast.
-            </p>
-            <p style={{ margin: '8px 0 0' }}>
-              The 14-kilometre line, approved by voters in 2014 and delayed twice by funding disputes, links the
-              university district with the riverfront and the regional rail hub. Trains run every six minutes at
-              peak and every twelve off-peak, and the first month of fares has been waived.
-            </p>
-            <p style={{ margin: '8px 0 0' }}>
-              &ldquo;It is not a monument, it is a timetable,&rdquo; said transit director Hana Okafor, who rode
-              the first service. &ldquo;Judge it in a year, when it is just how people get to work.&rdquo; A second
-              phase north to the hospital campus is due to start construction in April.
-            </p>
+          {/* the right page: the shorts, the list, the markets */}
+          <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <Shorts thumb={120} />
+            <MostRead />
+            <Markets />
           </div>
         </div>
+      ) : (
+        /* One column, running off the foot of the screen the way a feed does. */
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', paddingTop: 14 }}>
+          <Lead columns={1} />
+          <div style={{ ...rule(1), marginTop: 14, paddingTop: 12 }}>
+            <Shorts thumb={92} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
-        {/* the right page: the shorts, the list, the markets */}
-        <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          {SECOND.map((story) => (
-            <div
-              key={story.title}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 14, paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid #d6d1c6' }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <Kicker>{story.kicker}</Kicker>
-                <div style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 18, lineHeight: 1.15, letterSpacing: '-0.01em', margin: '4px 0 5px', color: NEWS_INK }}>
-                  {story.title}
-                </div>
-                <p style={{ margin: 0, fontSize: 11, lineHeight: 1.38, color: '#33312c' }}>{story.standfirst}</p>
-                <div style={{ fontSize: 10.5, color: NEWS_MUTED, marginTop: 5 }}>By {story.byline}</div>
-              </div>
-              <div style={{ height: 94, overflow: 'hidden' }}>
-                <Photo src={story.photo} position={story.position} />
-              </div>
+/** The lead: photograph, headline, standfirst, and the body in `columns` columns. */
+function Lead({ columns }: { columns: 1 | 2 }) {
+  const wide = columns === 2
+  return (
+    <>
+      <div style={{ height: wide ? 222 : 196, overflow: 'hidden' }}>
+        <Photo src={asset('/art/news-lead.webp')} position="50% 45%" />
+      </div>
+      <div style={{ fontSize: 10.5, lineHeight: 1.35, color: NEWS_MUTED, marginTop: 6 }}>
+        The first eastbound tram crosses Founders Bridge at 6:12 a.m. Photograph: Ana Ferreira for The Meridian
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <Kicker>Transit</Kicker>
+      </div>
+      <div style={{ fontFamily: SERIF, fontWeight: 400, fontSize: wide ? 33 : 27, lineHeight: 1.08, letterSpacing: '-0.012em', margin: '6px 0 10px', color: NEWS_INK }}>
+        City&rsquo;s first light-rail line opens to dawn crowds and a decade of promises
+      </div>
+      <p style={{ fontFamily: SERIF, fontSize: wide ? 14.5 : 15, lineHeight: 1.4, color: '#33312c', margin: '0 0 9px' }}>
+        Twelve years after the referendum, the Green Line carried 41,000 riders on its first morning. The
+        second phase breaks ground in spring.
+      </p>
+      <div style={{ fontSize: 11, color: NEWS_MUTED, marginBottom: 10 }}>
+        By <strong style={{ color: NEWS_INK, fontWeight: 600 }}>Marcus Ellery</strong> · 7 min read
+      </div>
+      <div style={{ columnCount: columns, columnGap: 16, fontSize: wide ? 11.5 : 13, lineHeight: 1.5, textAlign: 'justify', hyphens: 'auto' }}>
+        <p style={{ margin: 0 }}>
+          <span style={{ fontFamily: SERIF, fontSize: wide ? 34 : 38, float: 'left', lineHeight: 0.8, paddingRight: 6, paddingTop: 4 }}>T</span>
+          he first eastbound tram left Founders Bridge at 6:12 a.m. with every seat taken and a small crowd
+          applauding from the platform, and by the time the morning rush had thinned the transit authority
+          was reporting ridership at roughly double its opening-day forecast.
+        </p>
+        <p style={{ margin: '8px 0 0' }}>
+          The 14-kilometre line, approved by voters in 2014 and delayed twice by funding disputes, links the
+          university district with the riverfront and the regional rail hub. Trains run every six minutes at
+          peak and every twelve off-peak, and the first month of fares has been waived.
+        </p>
+        <p style={{ margin: '8px 0 0' }}>
+          &ldquo;It is not a monument, it is a timetable,&rdquo; said transit director Hana Okafor, who rode
+          the first service. &ldquo;Judge it in a year, when it is just how people get to work.&rdquo; A second
+          phase north to the hospital campus is due to start construction in April.
+        </p>
+      </div>
+    </>
+  )
+}
+
+/** The three shorter pieces, each with a `thumb`-px-wide photograph. */
+function Shorts({ thumb }: { thumb: number }) {
+  return (
+    <>
+      {SECOND.map((story) => (
+        <div
+          key={story.title}
+          style={{ display: 'grid', gridTemplateColumns: `1fr ${thumb}px`, gap: 14, paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid #d6d1c6' }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <Kicker>{story.kicker}</Kicker>
+            <div style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 18, lineHeight: 1.15, letterSpacing: '-0.01em', margin: '4px 0 5px', color: NEWS_INK }}>
+              {story.title}
             </div>
-          ))}
-          <div>
-            <div style={{ ...rule(2), paddingTop: 8, fontSize: 11, fontWeight: 700, letterSpacing: '-0.01em' }}>Most read</div>
-            <ol style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 5 }}>
-              {MOST_READ.map((item, i) => (
-                <li key={item} style={{ display: 'flex', gap: 10, fontSize: 12, lineHeight: 1.3 }}>
-                  <span style={{ fontFamily: SERIF, fontSize: 18, lineHeight: 1, color: NEWS_RED, flex: 'none', width: 14 }}>{i + 1}</span>
-                  <span style={{ fontFamily: SERIF }}>{item}</span>
-                </li>
-              ))}
-            </ol>
+            <p style={{ margin: 0, fontSize: 11, lineHeight: 1.38, color: '#33312c' }}>{story.standfirst}</p>
+            <div style={{ fontSize: 10.5, color: NEWS_MUTED, marginTop: 5 }}>By {story.byline}</div>
           </div>
-          <div style={{ marginTop: 'auto', ...rule(1), paddingTop: 7, display: 'flex', justifyContent: 'space-between', fontSize: 10.5, letterSpacing: '0.02em' }}>
-            <span>
-              S&amp;P 500 <strong style={{ color: '#1a7f4b' }}>+0.4%</strong>
-            </span>
-            <span>
-              Nasdaq <strong style={{ color: '#1a7f4b' }}>+0.7%</strong>
-            </span>
-            <span>10-yr 4.02%</span>
-            <span>EUR/USD 1.09</span>
-            <span>
-              Brent <strong style={{ color: NEWS_RED }}>−1.1%</strong>
-            </span>
+          <div style={{ height: Math.round(thumb * 0.78), overflow: 'hidden' }}>
+            <Photo src={story.photo} position={story.position} />
           </div>
         </div>
-      </div>
+      ))}
+    </>
+  )
+}
+
+function MostRead() {
+  return (
+    <div>
+      <div style={{ ...rule(2), paddingTop: 8, fontSize: 11, fontWeight: 700, letterSpacing: '-0.01em' }}>Most read</div>
+      <ol style={{ margin: '6px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 5 }}>
+        {MOST_READ.map((item, i) => (
+          <li key={item} style={{ display: 'flex', gap: 10, fontSize: 12, lineHeight: 1.3 }}>
+            <span style={{ fontFamily: SERIF, fontSize: 18, lineHeight: 1, color: NEWS_RED, flex: 'none', width: 14 }}>{i + 1}</span>
+            <span style={{ fontFamily: SERIF }}>{item}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+function Markets() {
+  return (
+    <div style={{ marginTop: 'auto', ...rule(1), paddingTop: 7, display: 'flex', justifyContent: 'space-between', fontSize: 10.5, letterSpacing: '0.02em' }}>
+      <span>
+        S&amp;P 500 <strong style={{ color: '#1a7f4b' }}>+0.4%</strong>
+      </span>
+      <span>
+        Nasdaq <strong style={{ color: '#1a7f4b' }}>+0.7%</strong>
+      </span>
+      <span>10-yr 4.02%</span>
+      <span>EUR/USD 1.09</span>
+      <span>
+        Brent <strong style={{ color: NEWS_RED }}>−1.1%</strong>
+      </span>
     </div>
   )
 }

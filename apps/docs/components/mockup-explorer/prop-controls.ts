@@ -121,6 +121,8 @@ const RANGES: Record<
   // ("150"), not by dragging until the readout agrees.
   openAngle: { min: 0, max: 180, step: 1, unit: '°', editable: true },
   foldAngle: { min: 0, max: 90, step: 1, unit: '°' },
+  // A hinge angle like `openAngle`, so whole degrees over the same travel.
+  coverScreenUntil: { min: 0, max: 180, step: 1, unit: '°' },
   cornerRadius: { min: 0, max: 40, step: 0.5, unit: 'mm' },
   // The only numeric `size`: a TV's diagonal, which its own docs clamp.
   size: { min: 32, max: 98, step: 1, unit: '"' },

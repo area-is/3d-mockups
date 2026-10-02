@@ -69,8 +69,8 @@ laid out in container units, so one design holds at any `resolution`),
 `Cut` and `Drift` (a cut-out on a surface, or in the frame in front of or
 behind the transparent canvas, blurred for depth of field, and kept clear of
 the mockups), a `CameraRig` keyed by frame, a `Floor` that fades into the
-CSS backdrop so a stage has ground for its contact shadow, `landing` (a drop
-that bounces off what it lands on), `statusBarFont` and `OverlapProbe` (see
+CSS backdrop so a stage has ground for its contact shadow, `drop` (a fall
+under gravity onto a surface), `statusBarFont` and `OverlapProbe` (see
 below).
 
 ### The photographs
@@ -95,12 +95,16 @@ the same shoe. The script needs Python 3 with Pillow and requests.
 
 ### Notes from making them
 
-- **Nothing lands inside anything.** A spring's overshoot carried a dropped
-  carton below the table (the floor clipped its foot) and the shoe box into
-  the shipper. `landing()` reflects the overshoot instead - the object
-  bounces off the surface, each bounce lower - and a falling carton spins
-  about its upright axis rather than tipping, because a tipped carton leans
-  into its neighbour.
+- **Drop things under gravity, not on a spring.** A spring's overshoot
+  carried a dropped carton below the table (the floor clipped its foot) and
+  the shoe box into the shipper, and even bounced back off the surface its
+  slow, even wobble read as rubber. `drop()` lets go from rest and falls at
+  9.81 m/s², scaled by the stage's `mmPerUnit` so a 40 cm drop takes the nine
+  frames a real one does, then gives back only `restitution` of its speed on
+  each landing: a full carton thuds (0.1), a box of shoes hops once, low and
+  quick (0.2). They fall straight, neither tipped nor spun: a tipped carton
+  leans into its neighbour, and a spin that stops dead on landing reads as
+  fake as the spring did.
 - **Check a stage for collisions.** Every multi-object stage names its
   objects and mounts an `OverlapProbe`; render with
   `REMOTION_OVERLAP_PROBE=1` and it logs any frame where one object's
