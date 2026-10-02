@@ -7,6 +7,8 @@ breaking change can ship in a minor release, and is always listed under
 
 ## Unreleased
 
+## 0.1.1 - 2026-10-02
+
 ### Changed
 
 - **The README, which is the package's npm page, says the package is in active
