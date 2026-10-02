@@ -70,7 +70,8 @@ laid out in container units, so one design holds at any `resolution`),
 behind the transparent canvas, blurred for depth of field, and kept clear of
 the mockups), a `CameraRig` keyed by frame, a `Floor` that fades into the
 CSS backdrop so a stage has ground for its contact shadow, `landing` (a drop
-that bounces off what it lands on) and `OverlapProbe` (see below).
+that bounces off what it lands on), `statusBarFont` and `OverlapProbe` (see
+below).
 
 ### The photographs
 
@@ -113,6 +114,12 @@ the same shoe. The script needs Python 3 with Pillow and requests.
   is laid over everything (`OnKraft` in `grove/art.tsx`).
 - **Small type is set in sentence case,** at the face's own spacing, never
   in tracked capitals.
+- **Name the status bar's face.** A device's status bar asks for SF or One
+  UI Sans, which a render machine has neither of. KITE points it at the
+  faces the film loads with `statusBarFont()`, which sets
+  `--mockup-status-bar-font`: Inter on the iPhones and Roboto on the Fold. The
+  product page is a light screen, so its bar is set dark
+  (`statusBar={{ color: '#000000' }}`), the way a light app's is.
 - **Slots must be direct children.** A component that returns
   `<CustomBox.Top>` and friends is not a slot; a function that returns a
   fragment of them is (`shoeboxFaces(colourway)`).

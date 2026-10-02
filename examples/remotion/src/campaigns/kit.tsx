@@ -377,7 +377,7 @@ export function useEnvelope(start: number, fadeIn: number, fadeOut = 12, end?: n
  * falls back to the system font for that frame alone, on the page and on
  * every printed surface.
  */
-export function FontGate({ fonts, children }: { fonts: string[]; children: React.ReactNode }) {
+export function FontGate({ fonts, style, children }: { fonts: string[]; style?: React.CSSProperties; children: React.ReactNode }) {
   const { delayRender, continueRender } = useDelayRender()
   const [handle] = React.useState(() => delayRender('Loading fonts'))
   React.useEffect(() => {
@@ -386,8 +386,15 @@ export function FontGate({ fonts, children }: { fonts: string[]; children: React
       .then(() => continueRender(handle))
       .catch(() => continueRender(handle))
   }, [continueRender, fonts, handle])
-  return <AbsoluteFill>{children}</AbsoluteFill>
+  return <AbsoluteFill style={style}>{children}</AbsoluteFill>
 }
+
+/**
+ * The face a device's status bar is set in. The bar asks for SF or One UI
+ * Sans and, off a Mac or a Galaxy, falls back to whatever the machine has;
+ * a render machine has neither, so a film names the closest faces it loads.
+ */
+export const statusBarFont = (family: string) => ({ '--mockup-status-bar-font': family }) as React.CSSProperties
 
 /** Soft clouds drifting across a CSS sky; `drift` is how far they have moved, in 1920-wide pixels. */
 export function Clouds({ drift, tint = '255,255,255', opacity = 0.7 }: { drift: number; tint?: string; opacity?: number }) {

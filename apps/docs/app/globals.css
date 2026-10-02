@@ -23,6 +23,10 @@
   --font-sans: var(--font-inter), 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
     Menlo, Consolas, monospace;
+  /* The devices' status bars: SF where the visitor has it, and otherwise the
+     site's own Inter - SF's nearest open cousin - rather than whatever UI face
+     the visitor's system happens to have. */
+  --mockup-status-bar-font: -apple-system, BlinkMacSystemFont, var(--font-inter), 'Inter', sans-serif;
 }
 
 * {

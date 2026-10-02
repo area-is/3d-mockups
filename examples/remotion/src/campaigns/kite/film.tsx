@@ -7,6 +7,7 @@ import { slide } from '@remotion/transitions/slide'
 import { wipe } from '@remotion/transitions/wipe'
 import '@fontsource-variable/inter'
 import '@fontsource/anton'
+import '@fontsource-variable/roboto'
 import {
   AppleWatch,
   AppleWatchMockup,
@@ -22,7 +23,7 @@ import {
 import { APPLE_WATCH_FRAMING, CUSTOM_BOX_FRAMING, LAPTOP_FRAMING, MAILER_BOX_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Cut, Drift, Floor, FontGate, landing, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage } from '../kit'
+import { CameraRig, Cut, Drift, Floor, FontGate, landing, orbitAt, OverlapProbe, RIG_START, statusBarFont, useEnvelope, useStage } from '../kit'
 import {
   COLOURWAYS,
   CountdownScreen,
@@ -59,7 +60,13 @@ const CUTS = 6
 export const KITE_DURATION =
   KITE_SHOTS.title + KITE_SHOTS.phone + KITE_SHOTS.fold + KITE_SHOTS.watch + KITE_SHOTS.boxes + KITE_SHOTS.desk + KITE_SHOTS.outro - KITE_SHOTS.transition * CUTS
 
-const FONTS = ['40px Anton', '700 40px "Inter Variable"']
+const FONTS = ['40px Anton', '700 40px "Inter Variable"', '600 40px "Inter Variable"', '700 40px "Roboto Variable"']
+
+/** Inter stands in for SF on the iPhones; Roboto for One UI Sans on the Fold. */
+const IOS_BAR = statusBarFont('"Inter Variable"')
+const ONEUI_BAR = statusBarFont('"Roboto Variable"')
+/** The product page is light, so its status bar is set dark, as a light app's is. */
+const ON_LIGHT = { color: '#000000' }
 
 /** Speed lines: thin streaks tearing right to left, a pure function of the frame. */
 function Streaks({ frame, color = '255,255,255', count = 26, speed = 1, opacity = 0.5 }: { frame: number; color?: string; count?: number; speed?: number; opacity?: number }) {
@@ -185,7 +192,7 @@ function PhoneShot() {
         <br />
         AERO 2 AERO 2 AERO 2
       </div>
-      <IPhoneMockup {...stage} variant="18promax" color="black" statusBar position={[1.45, -0.05 + bob, 0]} rotation={[tilt, turn, 0]}>
+      <IPhoneMockup {...stage} variant="18promax" color="black" statusBar={ON_LIGHT} position={[1.45, -0.05 + bob, 0]} rotation={[tilt, turn, 0]}>
         <ProductScreen pick={pick} shoeOpacity={frame < LIFT ? 1 : 0} />
       </IPhoneMockup>
       <Shout style={{ left: 120 * u, top: 250 * u, color: current.ink, fontSize: 132 * u }}>
@@ -235,7 +242,7 @@ function FoldShot() {
   const cover = openAngle < 30
   const live = useEnvelope(OPEN_FROM + 50, 14, 0)
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(ellipse 70% 70% at 55% 50%, #24272e 0%, ${KITE.graphite} 75%)` }}>
+    <AbsoluteFill style={{ ...ONEUI_BAR, background: `radial-gradient(ellipse 70% 70% at 55% 50%, #24272e 0%, ${KITE.graphite} 75%)` }}>
       <Streaks frame={frame} opacity={0.3} />
       <div style={{ position: 'absolute', left: 960 * u - 450 * u, top: 540 * u - 450 * u, width: 900 * u, height: 900 * u, borderRadius: '50%', background: 'radial-gradient(circle, rgba(214,255,58,0.22) 0%, rgba(214,255,58,0) 65%)' }} />
       <FoldMockup {...stage} variant="fold8" color="graphite" statusBar openAngle={Math.round(openAngle)} position={[0.3, -0.05, 0]} rotation={rotation}>
@@ -417,7 +424,7 @@ function DeskShot() {
           name="phone"
           variant="18pro"
           color="black"
-          statusBar
+          statusBar={ON_LIGHT}
           scale={PHONE_SCALE}
           position={[3.25, DESK + on(8.75) / 2 + 0.005, 1.15]}
           rotation={[-Math.PI / 2, 0, -0.32]}
@@ -469,7 +476,7 @@ export function KiteFilm() {
   const timing = linearTiming({ durationInFrames: KITE_SHOTS.transition })
   const springy = springTiming({ durationInFrames: KITE_SHOTS.transition, config: { damping: 200 } })
   return (
-    <FontGate fonts={FONTS}>
+    <FontGate fonts={FONTS} style={IOS_BAR}>
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={KITE_SHOTS.title}>
           <TitleShot />
