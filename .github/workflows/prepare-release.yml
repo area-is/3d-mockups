@@ -15,6 +15,10 @@ name: Prepare a release
 # - A PR opened with the workflow's own token triggers no other workflow, so CI
 #   does not run on it. It changes no code, and release.yml typechecks, tests
 #   and builds again before it publishes anything.
+#
+# Re-running a run that was cancelled or failed after pushing its branch picks
+# up where it stopped: a branch that already holds exactly this release is not
+# pushed again, and a PR that is already open is not opened twice.
 
 on:
   workflow_dispatch:
@@ -55,26 +59,40 @@ jobs:
           npm run -s release -- "$BUMP"
           echo "VERSION=$(node -p "require('./packages/react/package.json').version")" >> "$GITHUB_ENV"
 
-      # An existing branch may carry someone's edits to the notes, so it is
-      # never overwritten.
+      # A branch that already exists is either this release, pushed by a run
+      # that stopped before opening the PR, or carries someone's edits to the
+      # notes. Identical contents tell the two apart; edits are never
+      # overwritten.
       - name: Push the release branch
         run: |
           branch="release/v$VERSION"
-          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
-            echo "::error::$branch already exists. Merge or close its PR and delete the branch, then run this again."
-            exit 1
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git switch -c "$branch"
           git commit -am "Release react-3d-mockups v$VERSION"
-          git push origin "$branch"
+          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            git fetch -q --depth=1 origin "$branch"
+            if [ "$(git rev-parse 'FETCH_HEAD^{tree}')" != "$(git rev-parse 'HEAD^{tree}')" ]; then
+              echo "::error::$branch already exists with different contents. Merge or close its PR and delete the branch, then run this again."
+              exit 1
+            fi
+            echo "$branch already holds this release; not pushing it again."
+          else
+            git push origin "$branch"
+          fi
           echo "BRANCH=$branch" >> "$GITHUB_ENV"
 
       - name: Open the pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json url --jq '.[0].url // empty')"
+          if [ -n "$existing" ]; then
+            echo "::notice::The release PR is already open: $existing"
+            echo "The release PR is already open: $existing" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           npm run -s release:notes -- "$VERSION" > "$RUNNER_TEMP/notes.md"
           workflow="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/.github/workflows/release.yml"
           {
