@@ -49,6 +49,7 @@ import {
   type AppleWatchVariant,
   GalaxyWatch,
   type GalaxyWatchVariant,
+  type MockupInfo,
 } from 'react-3d-mockups'
 import { carouselArtNode } from '@/components/mockup-explorer/carousel-art'
 import { BillboardAdArt, BusAdArt, TVShowArt } from '@/components/screens/print-art'
@@ -131,13 +132,27 @@ const PLAIN = {
  * capitalized component per region), so this covers objects it has never
  * heard of - including any added later.
  */
-function regionProbe(Mockup: object): React.ReactNode {
+function regionProbe(Mockup: object, measuredAt: Record<string, unknown> = {}): React.ReactNode {
   const slots = Object.entries(Mockup).filter(
     ([key, value]) => /^[A-Z]/.test(key) && typeof value === 'function'
   ) as [string, React.ComponentType<{ children?: React.ReactNode }>][]
+  /*
+   * Each probe also carries the size `mockupInfo` reports for its region, so
+   * the visual check can compare it with the size the surface renders at.
+   * The two come from different code - the metrics resolver and the scene
+   * component - and once disagreed by 7 px on the mailer box's lid.
+   */
+  const info = (Mockup as { info?: (props: Record<string, unknown>) => MockupInfo }).info?.(measuredAt)
+  const expected = (name: string) => {
+    const region = info?.regions[name.charAt(0).toLowerCase() + name.slice(1)]
+    const px = (Array.isArray(region) ? region[0] : region)?.px
+    return px ? `${px.width}x${px.height}` : undefined
+  }
   return slots.map(([name, Slot], i) => (
     <Slot key={name}>
       <div
+        data-region-probe={name}
+        data-expected={expected(name)}
         style={{
           width: '100%',
           height: '100%',
@@ -313,7 +328,7 @@ function HarnessScene() {
         rotation={[rx, ry, 0]}
       >
         {params.get('regions') === '1' ? (
-          regionProbe(BusMockup)
+          regionProbe(BusMockup, { coverage: COVERAGE_PARAM(params.get('coverage')) })
         ) : (
           <>
             {screen}
@@ -340,7 +355,7 @@ function HarnessScene() {
         rotation={[rx, ry, 0]}
       >
         {params.get('regions') === '1' ? (
-          regionProbe(VanMockup)
+          regionProbe(VanMockup, { coverage: COVERAGE_PARAM(params.get('coverage')) })
         ) : (
           <>
             {screen}

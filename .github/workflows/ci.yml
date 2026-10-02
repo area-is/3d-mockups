@@ -39,9 +39,11 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-      # Guards the half of the device table the library can derive, plus the
-      # modelled-aspect check against the hand-maintained panel grid.
-      - name: Device table
+      # The numbers the docs quote, against the library: the derived half of
+      # the device table and the modelled-aspect check against the panel grid,
+      # the objects table's sizes and slots, the README model counts, and
+      # whether dist/catalog.json matches the catalog code.
+      - name: Docs data
         run: npm run devices:check
 
       # What one import really costs an app, measured on the built dist/ an
@@ -50,6 +52,13 @@ jobs:
       # while the published single-file bundle shipped the whole library.
       - name: Import cost
         run: npm run size:check
+
+      # Every tsx/ts block in the READMEs and the docs, compiled with strict
+      # TypeScript against the built package. Docs examples are what people
+      # paste; this is what caught props the types rejected, export names that
+      # did not exist and region accesses that failed under strict.
+      - name: Docs examples typecheck
+        run: npm run docs:examples
 
       # The generated files are committed so typecheck works on a clean
       # checkout; this catches a docs edit that was never re-extracted.

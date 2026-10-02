@@ -18,12 +18,14 @@ npm run dev        # package in watch mode + docs at http://localhost:3000
 ```bash
 npm run typecheck     # both workspaces
 npm run test          # core unit tests (no DOM, no WebGL)
-npm run devices:check # the derived half of the device table, and aspect drift
+npm run devices:check # the numbers the docs quote: device and object tables, model counts
+npm run size:check    # what importing each mockup costs, against the docs' table
+npm run docs:examples # every code example in the READMEs and docs, typechecked
 npm run visual        # visual regression (needs `npm run dev` running)
 npm run bench         # performance budgets (needs `npm run dev` running)
 ```
 
-CI runs the first three plus a docs build on every PR, then the benchmark's
+CI runs the first five plus a docs build on every PR, then the benchmark's
 budgets against that build (its numbers land in the job summary). The visual
 check needs a dev server and takes several minutes on SwiftShader, so it stays
 local. Run it whenever you touch geometry.
@@ -69,10 +71,25 @@ They overlap less than they look:
   SwiftShader they only compare run to run on one machine (`--gpu` for real
   numbers, `--mobile` and `--cpu=4` for a phone-class profile). Both scripts
   take `CHROMIUM_EXECUTABLE` to use a Chromium other than Playwright's own.
-- **`npm run devices:check`**: the numbers in `docs/devices.mdx`. Two halves:
-  the Portrait/Landscape columns against what actually renders (`devices:sync`
-  rewrites those), and the modelled aspect against the hand-maintained Panel
-  column, which is the one comparison syncing cannot satisfy.
+- **`npm run devices:check`**: the numbers the docs quote. In
+  `docs/devices.mdx`, the Portrait/Landscape columns against what actually
+  renders (`devices:sync` rewrites those), and the modelled aspect against the
+  hand-maintained Panel column, which is the one comparison syncing cannot
+  satisfy. In `docs/objects.mdx`, the default sizes and the slots table, both
+  from `mockupInfo`. Then the model counts in the READMEs, and whether
+  `dist/catalog.json` matches the catalog code. It reads the built package, so
+  run `npm run build` first.
+- **`npm run size:check`**: what importing each mockup really costs an app,
+  bundled from the built `dist/` with the peers left out. It fails when an
+  import grows more than 10% past the table in `docs/devices.mdx`; if the
+  growth is intended, `npm run size:write` rewrites the table.
+- **`npm run docs:examples`**: every `tsx` and `ts` block in the READMEs and
+  the docs, compiled with strict TypeScript against the built package. An
+  excerpt is completed only as far as an excerpt needs - library exports and
+  React hooks imported, your own components (`<YourApp />`) declared - so a
+  rejected prop, a wrong export name or a misspelt region fails with the docs
+  file and line. A block that must not compile opts out with `nocheck` in its
+  fence.
 
 ## Deprecating and removing a device
 
