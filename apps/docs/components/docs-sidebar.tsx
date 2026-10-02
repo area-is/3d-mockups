@@ -2,6 +2,21 @@
 
 import { Fragment, useEffect, useState } from 'react'
 import Link from 'next/link'
+import {
+  ChevronDown,
+  ChevronUp,
+  Laptop,
+  Newspaper,
+  Package,
+  Ruler,
+  Signpost,
+  Smartphone,
+  Tablet,
+  TabletSmartphone,
+  Truck,
+  Watch,
+  type LucideIcon,
+} from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import type * as PageTree from 'fumadocs-core/page-tree'
 import { SidebarSeparator, useFolderDepth } from 'fumadocs-ui/components/sidebar/base'
@@ -30,6 +45,25 @@ function byCategory(entries: CatalogEntry[]): [string, CatalogEntry[]][] {
 }
 
 const ALL: CatalogEntry[] = [...DEVICES, ...OBJECTS]
+
+/**
+ * One icon per category heading, so a reader scrolling a long grid can find
+ * "Wearables" by shape before reading a word. Keyed by the gallery's
+ * category names; a category added there without an icon here simply has
+ * none.
+ */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  Phones: Smartphone,
+  Foldables: TabletSmartphone,
+  Tablets: Tablet,
+  'Laptops and displays': Laptop,
+  Wearables: Watch,
+  Print: Newspaper,
+  Packaging: Package,
+  'Out of home': Signpost,
+  Vehicles: Truck,
+  Custom: Ruler,
+}
 
 /**
  * Which categories each grid holds. By category rather than by catalog list,
@@ -110,7 +144,6 @@ function Tile({ entry }: { entry: CatalogEntry }) {
  */
 function OlderModels({ entries }: { entries: CatalogEntry[] }) {
   const pathname = usePathname()
-  const style = useItemOffset()
   const holdsActive = entries.some((e) => e.href === pathname)
   const [open, setOpen] = useState(holdsActive)
   useEffect(() => {
@@ -119,11 +152,11 @@ function OlderModels({ entries }: { entries: CatalogEntry[] }) {
 
   return (
     <details className="mockup-older" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary className="mockup-older-summary" style={style}>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m9 18 6-6-6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      {/* Centred across both columns, the chevron under the count pointing
+          the way the group will move: down to open it, up to fold it away. */}
+      <summary className="mockup-older-summary">
         {entries.length} older {entries.length === 1 ? 'model' : 'models'}
+        {open ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
       </summary>
       <div className="mockup-grid">
         {entries.map((e) => (
@@ -146,10 +179,12 @@ function GridSection({ label, entries }: { label: string; entries: CatalogEntry[
       <div className="mockup-grid">
         {byCategory(entries).map(([category, group]) => {
           const older = group.filter((e) => statusOf(e.href) !== 'current')
+          const Icon = CATEGORY_ICONS[category]
           return (
             <Fragment key={category}>
               {/* Indented like the separator above it, so the two labels line up. */}
               <span className="mockup-grid-heading" style={style}>
+                {Icon && <Icon aria-hidden="true" />}
                 {category}
               </span>
               {group

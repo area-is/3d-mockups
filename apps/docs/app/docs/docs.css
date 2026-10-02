@@ -104,7 +104,10 @@
    its own case: weight and colour mark it as a heading, not capitals. */
 .mockup-grid-heading {
   grid-column: 1 / -1;
-  margin: 20px 0 -2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 26px 0 4px;
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: -0.005em;
@@ -113,10 +116,16 @@
 }
 
 /* The first has no tiles above it, only the separator; a category after
-   tiles sits 28px below them (the 8px grid gap plus its margin), which
+   tiles sits 34px below them (the 8px grid gap plus its margin), which
    separates it from the category it follows. */
 .mockup-grid-heading:first-child {
-  margin-top: 16px;
+  margin-top: 20px;
+}
+
+.mockup-grid-heading svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .mockup-tile {
@@ -204,9 +213,11 @@
 
 .mockup-older-summary {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding-block: 4px;
+  gap: 2px;
+  padding-block: 6px;
+  text-align: center;
   border-radius: 8px;
   font-size: 12px;
   line-height: 1.3;
@@ -238,16 +249,10 @@
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  transition: transform 0.15s ease;
-}
-
-.mockup-older[open] > .mockup-older-summary svg {
-  transform: rotate(90deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .mockup-older-summary,
-  .mockup-older-summary svg,
   .mockup-tile-thumb img,
   .model-gallery-thumb img {
     transition: none;
