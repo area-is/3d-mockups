@@ -100,7 +100,7 @@ export function ModelGallery() {
       <ul className="model-gallery-grid">
         {shown.map((m) => (
           <li key={m.id}>
-            <Link href={m.href} className="model-gallery-card">
+            <Link href={m.href} className="model-gallery-card" data-older={statusOf(m.href) !== 'current' || undefined}>
               <span className="model-gallery-thumb">
                 {/* Decorative: the label beside it names the link. */}
                 <img src={m.thumb} alt="" width={360} height={360} loading="lazy" decoding="async" />

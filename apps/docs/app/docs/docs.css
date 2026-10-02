@@ -164,6 +164,26 @@
   color: var(--color-fd-foreground);
 }
 
+/* An older model's thumbnail in gray. Every thumbnail's screen is chroma
+   green, so taking the colour out is what tells the older tiles apart at a
+   glance once their group is open. Dimmed, not faded: they are still links,
+   and come up to full strength under the pointer. */
+.mockup-tile[data-older] .mockup-tile-thumb img {
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.mockup-tile[data-older]:hover .mockup-tile-thumb img,
+.mockup-tile[data-older][data-active='true'] .mockup-tile-thumb img {
+  opacity: 1;
+}
+
+/* ...and no green behind it either when it is the page being read. */
+.mockup-tile[data-older][data-active='true'] {
+  background: var(--color-fd-accent);
+}
+
 /* "Deprecated" under a tile's name: a model the next releases remove. */
 .mockup-tile-note {
   display: block;
@@ -227,7 +247,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mockup-older-summary,
-  .mockup-older-summary svg {
+  .mockup-older-summary svg,
+  .mockup-tile-thumb img,
+  .model-gallery-thumb img {
     transition: none;
   }
 }
@@ -433,6 +455,18 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Older models in gray once "Show older models" brings them in - the same
+   treatment as the sidebar's older tiles, so the two read alike. */
+.model-gallery-card[data-older] .model-gallery-thumb img {
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.model-gallery-card[data-older]:hover .model-gallery-thumb img {
+  opacity: 1;
 }
 
 .model-gallery-label {

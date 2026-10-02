@@ -75,7 +75,12 @@ function Tile({ entry }: { entry: CatalogEntry }) {
   const pathname = usePathname()
   const statusOf = useModelStatus()
   return (
-    <Link href={entry.href} className="mockup-tile" data-active={pathname === entry.href}>
+    <Link
+      href={entry.href}
+      className="mockup-tile"
+      data-active={pathname === entry.href}
+      data-older={statusOf(entry.href) !== 'current' || undefined}
+    >
       <span className="mockup-tile-thumb">
         {/* Pre-rendered shot of the real WebGL mockup (scripts/generate-thumbs.mjs). */}
         <img src={entry.thumb} alt="" loading="lazy" width="120" height="62" />
