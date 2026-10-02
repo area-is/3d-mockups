@@ -39,8 +39,8 @@ shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
 records, out-of-home formats (billboard, bus shelter, double-sided DOOH totem,
 A-frame, roll-up banner, storefront), a TV in three designs from 32" to 98", and
-wrap-ready vehicles (transit bus, cargo van, 53 ft semi trailer): 57 models in
-all (33 devices, 24 objects).
+wrap-ready vehicles (transit bus, cargo van, 53 ft semi trailer): 58 models in
+all (33 devices, 25 objects).
 
 ```tsx
 'use client'

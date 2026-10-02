@@ -14,8 +14,8 @@
  *   size artwork against, and five of them had drifted.
  * - `docs/objects.mdx`, "Multiple live surfaces": the table of each object's
  *   slots, generated from its region list, so no surface goes unmentioned.
- * - The model counts in the READMEs: "all 57 models" and "(33 devices, 24
- *   objects)".
+ * - The model counts in the READMEs and the docs' introduction: "all N
+ *   models", "N models in all" and "(N devices, N objects)".
  * - `dist/catalog.json` is what the catalog code produces now, so a stale
  *   build cannot ship last release's rows.
  *
@@ -129,15 +129,18 @@ const models = devices + objects
 for (const file of COUNTED) {
   const text = readFileSync(file, 'utf8')
   const next = text
-    .replace(/\ball (\d+) models\b/g, (m, n) => {
-      if (Number(n) !== models) problems.push(`${file}: "${m}", there are ${models}`)
-      return `all ${models} models`
+    // "all N models" or "N models in all", wrapped across a line or not.
+    // Only the numbers are rewritten, so the line breaks stay where they were.
+    .replace(/\ball\s+(\d+)\s+models\b|\b(\d+)\s+models\s+in\s+all\b/g, (m, first, second) => {
+      if (Number(first ?? second) !== models) problems.push(`${file}: "${m.replace(/\s+/g, ' ')}", there are ${models}`)
+      return m.replace(/\d+/, String(models))
     })
-    .replace(/\((\d+) devices, (\d+) objects\)/g, (m, d, o) => {
+    .replace(/\((\d+)\s+devices,\s+(\d+)\s+objects\)/g, (m, d, o) => {
       if (Number(d) !== devices || Number(o) !== objects) {
-        problems.push(`${file}: "${m}", there are ${devices} devices and ${objects} objects`)
+        problems.push(`${file}: "${m.replace(/\s+/g, ' ')}", there are ${devices} devices and ${objects} objects`)
       }
-      return `(${devices} devices, ${objects} objects)`
+      let i = 0
+      return m.replace(/\d+/g, () => String(i++ === 0 ? devices : objects))
     })
   if (WRITE && next !== text) writeFileSync(file, next)
 }

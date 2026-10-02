@@ -39,7 +39,7 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
   LED destination sign.
 - **Small imports** - each mockup is its own module, so an app ships only what it
   imports: about 14–21 KB gzipped for an object, about 60 KB for a device (two thirds
-  of it the CSG engine, shared by every device), 139 KB for the whole library, peers
+  of it the CSG engine, shared by every device), 144 KB for the whole library, peers
   excluded.
 - **True-to-device screens** - each virtual display matches the real device's logical
   resolution in portrait *and* landscape (table below), so your layouts and breakpoints
