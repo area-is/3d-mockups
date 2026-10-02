@@ -118,10 +118,11 @@ the same shoe. The script needs Python 3 with Pillow and requests.
   another render (or a batch of stills) shared the CPU, a few frames in
   every thousand came out with a whole canvas, or one surface, missing for
   a single frame - Remotion's own screenshot code notes a frame drop under
-  pressure with Chrome's `fromSurface` capture. So render one at a time,
-  with `DISABLE_FROM_SURFACE=1` (which `remotion.config.ts` sets). To check a
-  render, look for a frame that differs from both of its neighbours far more
-  than they differ from each other.
+  pressure with Chrome's `fromSurface` capture. Rendered one at a time with
+  `DISABLE_FROM_SURFACE=1` (which `remotion.config.ts` sets), all three came
+  out without one: 15 such frames across the first renders, none in 2,260
+  frames of the second. To check a render, look for a frame that differs
+  from both of its neighbours far more than they differ from each other.
 
 WebGL in headless Chrome needs a GPU backend. `remotion.config.ts` asks for
 `swangle` (SwiftShader under ANGLE, on the CPU), which works anywhere and is

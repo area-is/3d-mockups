@@ -324,7 +324,7 @@ function StreetShot() {
           </AFrameSign.Back>
         </AFrameSign>
       </MockupCanvas>
-      <Headline style={{ left: 110 * u, top: 110 * u, color: GROVE.green, fontSize: 104 * u, opacity: caption, transform: `translateY(${(1 - caption) * 20 * u}px)` }}>
+      <Headline style={{ left: 110 * u, bottom: 90 * u, color: GROVE.green, fontSize: 104 * u, opacity: caption, transform: `translateY(${(1 - caption) * 20 * u}px)` }}>
         On your corner
         <br />
         <span style={{ fontStyle: 'italic', fontWeight: 420 }}>before you are.</span>
