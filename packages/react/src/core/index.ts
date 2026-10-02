@@ -47,6 +47,22 @@ export {
   mockupRegions,
 } from './metrics'
 
+// Device lifecycle: product lines, which models newer ones have superseded,
+// and which are scheduled for removal.
+export {
+  type DeviceKind,
+  type DeviceVariant,
+  type DeviceRelease,
+  type DeviceDeprecation,
+  type DeviceStatus,
+  type DeviceLifecycle,
+  type RemovedDevice,
+  DEVICE_LINEUP,
+  DEVICE_KINDS,
+  REMOVED_DEVICES,
+  deviceLifecycle,
+} from './lifecycle'
+
 // Geometry math.
 export { roundedRectShape, roundedRectShapeCorners } from './geometry/rounded-rect'
 export { gearShape } from './geometry/gear'

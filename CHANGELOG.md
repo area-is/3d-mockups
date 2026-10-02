@@ -7,6 +7,31 @@ breaking change can ship in a minor release, and is always listed under
 
 ## Unreleased
 
+### Added
+
+- **Device lifecycle, and a way to retire old models.** Every device variant
+  now belongs to a product line in `DEVICE_LINEUP`
+  (`react-3d-mockups/core`), with the month it was announced, and
+  `deviceLifecycle(kind, variant)` says where it stands:
+  - `current`: the newest model in its line;
+  - `superseded`: a newer model in its line is in the catalog. Today that is
+    the iPhone 17 Pro and Pro Max, the Galaxy Z Fold 7 and Z Flip 7, Apple
+    Watch Series 11 and Galaxy Watch 8. Superseded models are fully supported;
+  - `deprecated`: scheduled for removal, with the release that removes it.
+
+  A deprecated model logs one development warning naming its replacement. A
+  removed one throws an error that points to its replacement, through
+  `REMOVED_DEVICES`. Nothing is deprecated yet. CONTRIBUTING.md has the
+  deprecation and removal process. The docs sidebar and gallery now show the
+  newest model of each line, with the older ones one click away.
+
+### Fixed
+
+- **An unknown `variant` throws an error that names it.** A misspelt variant
+  on a device component, or passed to `mockupInfo`, used to throw a TypeError
+  from inside the scene or the metrics resolver. It now throws `unknown
+  variant "…"` and lists the variants that exist.
+
 ## 0.1.1 - 2026-10-02
 
 ### Changed

@@ -12,6 +12,7 @@ import {
   type LaptopVariant,
   roundedRectShape,
 } from '../../core'
+import { checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import { createWordmarkTexture } from '../wordmark'
 import { createLogoGeometry } from '../logos'
@@ -762,6 +763,7 @@ function LaptopImpl({
   surfaceStyle,
   ...groupProps
 }: LaptopProps) {
+  checkDeviceVariant('laptop', variant, 'Laptop')
   const screen = collectSlots(children, SCREEN_REGIONS).screen
   const spec = LAPTOP_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to

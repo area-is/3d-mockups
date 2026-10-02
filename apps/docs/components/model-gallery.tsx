@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { CATEGORIES, DEVICES, OBJECTS } from '@/lib/mockup-catalog.mjs'
+import { useModelStatus } from '@/components/model-lifecycle'
 
 interface CatalogEntry {
   id: string
@@ -14,6 +15,9 @@ interface CatalogEntry {
 
 const MODELS: CatalogEntry[] = [...DEVICES, ...OBJECTS]
 const KINDS: string[] = CATEGORIES
+
+/** What a card says under the model's name: its kind, and its age when it is not current. */
+const STATUS_NOTE = { current: '', superseded: ' · Older model', deprecated: ' · Deprecated' }
 
 /**
  * Every model in the library as a thumbnail grid, filtered by kind - the
@@ -29,12 +33,30 @@ const KINDS: string[] = CATEGORIES
  * at a time, pressing the pressed one again - or "All" - shows everything. The
  * count under them is a polite live region, so a screen reader hears what a
  * filter did without the focus moving.
+ *
+ * Only the newest model of each product line shows until "Show older models"
+ * is ticked. What is older comes from the library's own lineup (see
+ * lib/model-lifecycle.ts), so this page and the sidebar agree on it. The chip
+ * counts follow the switch: they count what pressing the chip would show.
  */
 export function ModelGallery() {
   const [kind, setKind] = useState<string | null>(null)
+  const [showOlder, setShowOlder] = useState(false)
   const labelId = useId()
-  const shown = kind ? MODELS.filter((m) => m.category === kind) : MODELS
-  const count = (k: string) => MODELS.filter((m) => m.category === k).length
+  const statusOf = useModelStatus()
+  const latest = MODELS.filter((m) => statusOf(m.href) === 'current')
+  const olderCount = MODELS.length - latest.length
+  const pool = showOlder ? MODELS : latest
+  const shown = kind ? pool.filter((m) => m.category === kind) : pool
+  const count = (k: string) => pool.filter((m) => m.category === k).length
+  const hiddenHere = (kind ? MODELS.filter((m) => m.category === kind) : MODELS).length - shown.length
+
+  let status = kind ? `${shown.length} of ${MODELS.length} models: ${kind}` : `All ${MODELS.length} models`
+  if (hiddenHere > 0) {
+    status = kind
+      ? `${status}, ${hiddenHere} older hidden`
+      : `${shown.length} of ${MODELS.length} models: the newest in each line`
+  }
 
   return (
     <div className="model-gallery not-prose">
@@ -48,7 +70,7 @@ export function ModelGallery() {
           aria-pressed={kind === null}
           onClick={() => setKind(null)}
         >
-          All <span className="model-gallery-chip-count">{MODELS.length}</span>
+          All <span className="model-gallery-chip-count">{pool.length}</span>
         </button>
         {KINDS.map((k) => (
           <button
@@ -63,9 +85,17 @@ export function ModelGallery() {
         ))}
       </div>
 
-      <p className="model-gallery-status" aria-live="polite">
-        {kind ? `${shown.length} of ${MODELS.length} models: ${kind}` : `All ${MODELS.length} models`}
-      </p>
+      <div className="model-gallery-bar">
+        <p className="model-gallery-status" aria-live="polite">
+          {status}
+        </p>
+        {olderCount > 0 && (
+          <label className="model-gallery-older">
+            <input type="checkbox" checked={showOlder} onChange={(e) => setShowOlder(e.currentTarget.checked)} />
+            Show older models <span className="model-gallery-chip-count">{olderCount}</span>
+          </label>
+        )}
+      </div>
 
       <ul className="model-gallery-grid">
         {shown.map((m) => (
@@ -76,7 +106,10 @@ export function ModelGallery() {
                 <img src={m.thumb} alt="" width={360} height={360} loading="lazy" decoding="async" />
               </span>
               <span className="model-gallery-label">{m.label}</span>
-              <span className="model-gallery-kind">{m.category}</span>
+              <span className="model-gallery-kind">
+                {m.category}
+                {STATUS_NOTE[statusOf(m.href)]}
+              </span>
             </Link>
           </li>
         ))}

@@ -1,7 +1,7 @@
 ---
 title: Roadmap
 description: Where the library is heading next, what has changed, and how versions are numbered.
-keywords: [roadmap, changelog, releases, release notes, versions, versioning, semver, breaking changes, upgrade]
+keywords: [roadmap, changelog, releases, release notes, versions, versioning, semver, breaking changes, upgrade, deprecation, deprecated, older models, removed devices]
 ---
 
 - More devices: more monitors, more wearables, and desktop towers.
@@ -24,3 +24,18 @@ major one, and every breaking change is called out in the changelog. npm's
 default caret range already respects that: on `0.x`, `^0.1.0` accepts
 `0.1.x` releases but not `0.2.0`, so moving to the next minor version is a
 change you make on purpose - read the changelog when you do.
+
+### Older devices
+
+When a newer model joins a product line, such as the iPhone 18 Pro after the
+17 Pro, the older model stays in the library and keeps working. The sidebar
+and the [gallery](/docs/gallery) list it under *older models*, and its page
+links to the newer one.
+
+A model is removed only after a deprecation that lasts at least one minor
+release. The changelog lists it under *Deprecated* with the version that
+removes it, its page carries a warning, and rendering it logs a development
+warning that names the variant to switch to. To check the same thing from
+code, use `deviceLifecycle(kind, variant)` from `react-3d-mockups/core`. It
+returns `current`, `superseded` or `deprecated` and lists the models that
+replace the one you passed.

@@ -13,6 +13,7 @@ import type { RegionMetrics, RegionRadius, RegionSpec } from './regions'
 // without ever pulling in the registry module that owns it.
 import type { MockupKind } from './metrics'
 import { screenCssHeight, screenPxPerUnit } from './screen/surface'
+import { assertDeviceVariant } from './lifecycle'
 
 /** A width/height pair in whichever unit the containing field names. */
 export interface Size {
@@ -125,6 +126,9 @@ export interface MeasurableMockup<P> {
  */
 export function describeMockup<P>({ kind, regions, metrics }: MeasurableMockup<P>, props?: P): MockupInfo {
   const args = (props ?? {}) as P
+  // A removed or misspelt variant would otherwise surface as a TypeError from
+  // inside the metrics resolver, naming neither the variant nor the fix.
+  assertDeviceVariant(kind, (args as { variant?: unknown }).variant, `describeMockup("${String(kind)}")`)
   let mmPerUnit: number
   let resolved: Record<string, RegionMetrics | RegionMetrics[]>
   try {

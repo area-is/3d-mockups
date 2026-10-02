@@ -72,6 +72,12 @@ What that puts in the core today:
   procedural studio light rig (`STUDIO_LIGHTFORMERS`), the idle float animation
   (`floatPose`), touch-action policy, zoom math (`orbitZoomBy`), fullscreen helpers
   and the overlay-button chrome.
+- **Lifecycle** (`src/core/lifecycle.ts`) - every device variant's product
+  line and announcement month (`DEVICE_LINEUP`), from which `deviceLifecycle`
+  derives whether a newer model has superseded it, plus scheduled
+  deprecations and the tombstones of removed models (`REMOVED_DEVICES`). Each
+  device scene component checks its `variant` here, which is what turns a
+  removed or misspelt one into an error that names it.
 
 What stays in the React layer (note that `src/core/screen` and `src/screen`
 are different directories - the core half is the math, the React half is the
@@ -219,6 +225,14 @@ tables.
    call. Passing `metrics` directly rather than looking it up by `kind` is
    deliberate: a registry lookup would make every mockup reference every spec, so
    importing one component would pull in all of them.
+
+A device variant takes one more row: its product line and the month it was
+announced, in `DEVICE_LINEUP` (`src/core/lifecycle.ts`). The table is keyed by
+the variant type, so a variant without a row does not typecheck. A new model in
+an existing line supersedes the older ones with no edit to theirs - the docs
+sidebar and gallery fold those away on their own. Deprecating and removing a
+model is a process of its own, in
+[CONTRIBUTING.md](CONTRIBUTING.md#deprecating-and-removing-a-device).
 
 A region that resolves to an **array** of rects means exactly one thing: a
 single slot painted onto several distinct surfaces, like the van's nose and

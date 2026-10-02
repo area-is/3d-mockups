@@ -74,6 +74,49 @@ They overlap less than they look:
   rewrites those), and the modelled aspect against the hand-maintained Panel
   column, which is the one comparison syncing cannot satisfy.
 
+## Deprecating and removing a device
+
+Every device variant has a row in `DEVICE_LINEUP`
+(`packages/react/src/core/lifecycle.ts`): its product line and the month it was
+announced. When a newer model joins a line, nothing else changes. The newest
+month in a line is *current*, and every older model in it becomes
+*superseded*. The docs sidebar and gallery fold superseded models away under
+"older models", and their pages point to the newer model. They stay fully
+supported.
+
+Removing a model breaks code that names its `variant`, so it takes two
+releases:
+
+1. **Deprecate it.** Add `deprecated: { since, removeIn }` to its row. `since`
+   is the next release. `removeIn` is a later minor or major (`0.4.0`), never a
+   patch. List it under *Deprecated* in the changelog's Unreleased section.
+   From then on the model logs one development warning naming its replacement
+   when it renders, its docs page carries a warning, and its sidebar tile is
+   marked. `npm run test` refuses two kinds of deprecation:
+   - a model nothing newer has superseded, because there would be nothing to
+     switch to;
+   - a family's default variant. Change the default first, as its own
+     breaking change, so a removal never moves a default without saying so.
+2. **Remove it in the `removeIn` release.** Once the package version reaches
+   `removeIn`, `npm run test` fails until the model is gone, so the release PR
+   cannot go green while the model is still there. To remove it:
+   - delete its spec from `*_VARIANTS`, its colorways, its `DEVICE_LINEUP` row,
+     and its entry in `apps/docs/lib/mockup-catalog.mjs`;
+   - delete its docs page and thumbnail;
+   - search the repo for the variant id and the page id. Examples, the
+     explorer registry, the home-page carousel, the family reference, the
+     device table and `sync-device-table.mjs` all name variants;
+   - add a `REMOVED_DEVICES` entry naming the replacement, so `variant="…"`
+     fails with a pointer to it rather than a TypeError;
+   - add a redirect from its docs URL to the replacement's page in
+     `apps/docs/next.config.ts`;
+   - list it under *Changed (breaking)*.
+
+When to deprecate is a judgement call, not a rule. A reasonable default is to
+deprecate a model once a second newer generation of its line ships (the
+17 Pro when a 19 Pro arrives) and to remove it no sooner than the following
+minor.
+
 ## Style
 
 Match the surrounding code. The one habit worth calling out: comments here

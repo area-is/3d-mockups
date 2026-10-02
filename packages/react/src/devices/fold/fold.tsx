@@ -20,6 +20,7 @@ import {
   type IPhoneDuoVariant,
   roundedRectShape,
 } from '../../core'
+import { checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -1180,6 +1181,7 @@ export interface FoldProps extends FoldCommonProps {
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
 function FoldImpl({ variant = FOLD_DEFAULT_VARIANT, ...props }: FoldProps) {
+  checkDeviceVariant('fold', variant, 'Fold')
   return <FoldBody spec={FOLD_VARIANTS[variant]} catalog={FOLD_COLORWAYS[variant]} {...props} />
 }
 FoldImpl.displayName = 'Fold'
@@ -1206,6 +1208,7 @@ export interface IPhoneDuoProps extends FoldCommonProps {
  * Must be rendered inside a react-three-fiber `<Canvas>` (or `<MockupCanvas>`).
  */
 function IPhoneDuoImpl({ variant = IPHONE_DUO_DEFAULT_VARIANT, ...props }: IPhoneDuoProps) {
+  checkDeviceVariant('iphoneDuo', variant, 'IPhoneDuo')
   return (
     <FoldBody spec={IPHONE_DUO_VARIANTS[variant]} catalog={IPHONE_DUO_COLORWAYS[variant]} {...props} />
   )

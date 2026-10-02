@@ -15,6 +15,7 @@ import {
   type FlipVariant,
   roundedRectShape,
 } from '../../core'
+import { checkDeviceVariant } from '../../core/lifecycle'
 import { DeviceScreen } from '../../screen/device-screen'
 import {
   renderStatusBar,
@@ -155,6 +156,7 @@ function FlipImpl({
   coverScreenUntil,
   ...groupProps
 }: FlipProps) {
+  checkDeviceVariant('flip', variant, 'Flip')
   const screenSlot = collectSlots(children, SCREEN_REGIONS).screen
   const spec = FLIP_VARIANTS[variant]
   // `color` doubles as the colorway selector: a catalog id resolves to
