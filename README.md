@@ -19,6 +19,10 @@ GPU-accelerated **3D device mockups for React** - drop any content onto the scre
 playing, iframes loading. The mockups are decorative - you rotate and zoom them, and the
 hardware masks the screen pixel for pixel.
 
+> **In active development.** The API may change over the next few weeks. Breaking changes
+> are listed in the [changelog](CHANGELOG.md) with what to change; pin an exact version
+> (`npm install --save-exact react-3d-mockups`) if you need it to stay put.
+
 Built on [three.js](https://threejs.org) and
 [react-three-fiber](https://github.com/pmndrs/react-three-fiber). Every model is
 generated procedurally at runtime - **no 3D asset files to load or host**. The device
@@ -87,9 +91,9 @@ less than they look.
 
 ## Releasing and deploying
 
-- **The package** is published to npm from CI on a version tag, through npm
-  Trusted Publishing; the very first publish is by hand. The steps are in
-  [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
+- **The package** is published to npm from CI, through npm Trusted Publishing,
+  whenever a version bump is merged to `main`; the tag and GitHub Release follow
+  automatically. The steps are in [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
 - **The docs site** runs on Cloudflare Workers (OpenNext), deployed by Workers
   Builds on push, and is served at a path on the apex. Everything about building,
   deploying and routing it - including the stand-in Worker for the `area.is` apex -
