@@ -280,8 +280,8 @@ function subtractSpans(spans: [number, number][], cuts: [number, number][], gap:
 export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, SurfaceProps {
   /**
    * Creative for the ad surfaces. Bare children fill the curb-side (+Z)
-   * surface - the king-size panel by default, the whole side with
-   * `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
+   * surface - by default the queen-size panel between the rear door and the
+   * front wheel, the whole side with `coverage="full"`; name regions explicitly with `<Bus.CurbSide>`,
    * `<Bus.StreetSide>`, `<Bus.Rear>` and `<Bus.DestinationSign>`. Inside
    * `<Bus.DestinationSign>`, a string (scrolls as a marquee when it
    * overflows) or an array of strings (flips between them like a real
@@ -293,7 +293,8 @@ export interface BusProps extends Omit<GroupProps, 'children' | 'color'>, Surfac
   color?: string
   /**
    * CSS pixel width of the virtual ad surface. Height follows its aspect;
-   * the default tracks `coverage` (king-size panel dpi, or the full wrap's).
+   * the default tracks `coverage` (the ad panels' print density, or the full
+   * wrap's).
    */
   resolution?: number
   /**
@@ -766,8 +767,8 @@ function BusImpl({
       {/* curb-side doors: two full-glass leaves in a matte frame, dropping to
           the low-floor entry, the leaf-edge rubber seals meeting proud at the
           centre and the band's sill rail carried across the glass. The frame
-          stands proud of the ad plane: the king-size panel's rect runs across
-          the rear door, and hardware over the vinyl reads as an installer's
+          stands proud of the ad plane: a full wrap's rect runs across both
+          doors, and hardware over the vinyl reads as an installer's
           cut-around, where vinyl over the door frame reads as a mistake. */}
       {doors.map(({ x, width, bottomY }) => {
         const h = doorTopY - bottomY

@@ -42,10 +42,24 @@ export interface Flavour {
   image: string
   /** Width over height of the cut-out, so its box is reserved before it loads. */
   aspect: number
+  /**
+   * The fruit laid out in a low row, for the curb side's short queen panel.
+   * A flavour without one uses its group (`image`) there.
+   */
+  row?: { image: string; aspect: number }
 }
 
 export const SUNPEEL_FLAVOURS: Flavour[] = [
-  { id: 'blood-orange', name: 'Blood orange', ground: '#ff5f1f', ink: '#2a0b06', sun: '#ffa062', image: '/art/sunpeel-blood-orange.webp', aspect: 720 / 405 },
+  {
+    id: 'blood-orange',
+    name: 'Blood orange',
+    ground: '#ff5f1f',
+    ink: '#2a0b06',
+    sun: '#ffa062',
+    image: '/art/sunpeel-blood-orange.webp',
+    aspect: 720 / 405,
+    row: { image: '/art/sunpeel-blood-orange-row.webp', aspect: 960 / 273 },
+  },
   { id: 'lime', name: 'Lime', ground: '#c6e84a', ink: '#123d1f', sun: '#e2f59a', image: '/art/sunpeel-lime.webp', aspect: 720 / 403 },
   { id: 'grapefruit', name: 'Pink grapefruit', ground: '#ff8fa3', ink: '#3d0b1c', sun: '#ffc3cd', image: '/art/sunpeel-grapefruit.webp', aspect: 720 / 467 },
 ]
@@ -77,15 +91,16 @@ function Wrap({ flavour, style, children }: { flavour: Flavour; style?: CSSPrope
   )
 }
 
-function Fruit({ flavour, style }: { flavour: Flavour; style: CSSProperties }) {
+function Fruit({ flavour, row, style }: { flavour: Flavour; row?: boolean; style: CSSProperties }) {
+  const art = row && flavour.row ? flavour.row : flavour
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={asset(flavour.image)}
+      src={asset(art.image)}
       alt=""
       draggable={false}
       decoding="async"
-      style={{ position: 'absolute', height: 'auto', aspectRatio: flavour.aspect, pointerEvents: 'none', ...style }}
+      style={{ position: 'absolute', height: 'auto', aspectRatio: art.aspect, pointerEvents: 'none', ...style }}
     />
   )
 }
@@ -113,7 +128,7 @@ function Lockup({ flavour, size }: { flavour: Flavour; size: number }) {
 /**
  * One flank of the bus (1920 x 455 at the wrap's resolution). `doors` is the
  * curb side: tail at the left, a door leaf at 43-52 % and another from 88 %.
- * `panel` is the king-size ad instead of the full wrap - see `SunpeelBoard`.
+ * `panel` is the ad panel instead of the full wrap - see `SunpeelBoard`.
  *
  * `clearGlass` is a full wrap cut away from the windows (`coverage="full"`)
  * rather than run over them as perforated film: the window band takes 28-72 %
@@ -197,47 +212,54 @@ export function SunpeelRear({ ground, panel, clearGlass }: { ground?: string; pa
 }
 
 /**
- * The king-size side panel (30" x 144", 4.8:1), for a bus on `coverage="panel"`:
- * the same three things as the wrap - sun, fruit, name - in a strip, the name
- * leading from the nose end.
+ * The side panels for a bus on `coverage="panel"`: the same three things as
+ * the wrap - sun, fruit, name - in a strip, the name toward the nose.
  *
- * The street side's panel runs nose to tail and is clear all the way, so it
- * takes a line of copy at the tail end too. The curb side's (`doors`) runs
- * tail to nose, and the rear door leaf stands in front of it from 15 to 48 %
- * of its length, so there everything keeps to the front half and the tail
- * end is left as plain ground.
+ * The street side carries the king-size panel (30" x 144", 4.8:1), clear all
+ * the way, so it takes a line of copy at the tail end too. The curb side
+ * (`doors`) carries a queen (30" x 88", about 2.9:1) between the rear door
+ * and the front wheel, running tail to nose: the fruit, in a low row with the
+ * sun rising behind it, fills the tail half and the name the nose half.
  */
 export function SunpeelBoard({ ground, doors }: { ground?: string; doors?: boolean }) {
   const flavour = flavourOf(ground)
-  const at = (cqw: number): CSSProperties => (doors ? { right: `${cqw}cqw` } : { left: `${cqw}cqw` })
+  if (doors) {
+    return (
+      <Wrap flavour={flavour}>
+        <Sun flavour={flavour} style={{ left: '16cqw', top: '6cqh', width: '30cqw' }} />
+        <Fruit flavour={flavour} row style={{ left: '3cqw', bottom: '13cqh', width: '54cqw' }} />
+        <div style={{ position: 'absolute', left: '61cqw', top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
+          <Lockup flavour={flavour} size={8.4} />
+        </div>
+      </Wrap>
+    )
+  }
   return (
     <Wrap flavour={flavour}>
-      <Sun flavour={flavour} style={{ ...at(doors ? 29 : 31), top: '-12cqh', width: doors ? '18cqw' : '22cqw' }} />
-      <Fruit flavour={flavour} style={{ ...at(doors ? 26 : 28), top: doors ? '10cqh' : '6cqh', width: doors ? '23cqw' : '28cqw' }} />
-      <div style={{ position: 'absolute', ...at(4), top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
+      <Sun flavour={flavour} style={{ left: '31cqw', top: '-12cqh', width: '22cqw' }} />
+      <Fruit flavour={flavour} style={{ left: '28cqw', top: '6cqh', width: '28cqw' }} />
+      <div style={{ position: 'absolute', left: '4cqw', top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
         <Lockup flavour={flavour} size={5.4} />
       </div>
-      {!doors && (
-        <div
-          style={{
-            position: 'absolute',
-            right: '4cqw',
-            top: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '4.2cqw',
-            fontWeight: 800,
-            letterSpacing: '-0.045em',
-            lineHeight: 0.95,
-            textAlign: 'right',
-          }}
-        >
-          Ice cold.
-          <br />
-          Zero sugar.
-        </div>
-      )}
+      <div
+        style={{
+          position: 'absolute',
+          right: '4cqw',
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '4.2cqw',
+          fontWeight: 800,
+          letterSpacing: '-0.045em',
+          lineHeight: 0.95,
+          textAlign: 'right',
+        }}
+      >
+        Ice cold.
+        <br />
+        Zero sugar.
+      </div>
     </Wrap>
   )
 }
