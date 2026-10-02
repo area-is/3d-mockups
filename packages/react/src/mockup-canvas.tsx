@@ -66,7 +66,7 @@ function TouchScrollFix({ zoom }: { zoom: boolean }) {
  * canvas keeps showing its last frame, so resuming a little before it scrolls
  * back in (`PAUSE_MARGIN`) is seamless.
  */
-function useWorthDrawing(target: React.RefObject<Element | null>, enabled: boolean): boolean {
+function useWorthDrawing(element: Element | null, enabled: boolean): boolean {
   const [worth, setWorth] = React.useState(true)
   React.useEffect(() => {
     if (!enabled) {
@@ -76,7 +76,6 @@ function useWorthDrawing(target: React.RefObject<Element | null>, enabled: boole
     let intersecting = true
     let visible = document.visibilityState !== 'hidden'
     const update = () => setWorth(intersecting && visible)
-    const element = target.current
     const observer =
       element && typeof IntersectionObserver !== 'undefined'
         ? new IntersectionObserver(
@@ -98,7 +97,7 @@ function useWorthDrawing(target: React.RefObject<Element | null>, enabled: boole
       observer?.disconnect()
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [target, enabled])
+  }, [element, enabled])
   return worth
 }
 
@@ -429,26 +428,55 @@ export function MockupCanvas({
   const [isFullscreen, setIsFullscreen] = React.useState(false)
 
   /*
-   * The wrapper fills its container (`height: 100%`), so a container with no
+   * The element that boxes the mockup: the overlay wrapper when there is one,
+   * otherwise the canvas itself - or, while a lost context is being waited
+   * out, the placeholder holding its place. Most canvases have no wrapper (no
+   * zoom buttons, no full-screen button), and the off-screen pause once
+   * watched the wrapper alone: on those it watched nothing, so a canvas
+   * scrolled away kept drawing every frame. State rather than a ref, so the
+   * observers below re-attach when the element is replaced.
+   */
+  const wrapped = (zoom && controls) || fullscreen
+  const [box, setBox] = React.useState<HTMLElement | null>(null)
+  const wrapperBox = React.useCallback((element: HTMLDivElement | null) => {
+    wrapperRef.current = element
+    if (element) setBox(element)
+  }, [])
+  const innerBox = React.useCallback(
+    (element: HTMLElement | null) => {
+      if (element && !wrapped) setBox(element)
+    },
+    [wrapped]
+  )
+
+  /*
+   * The mockup fills its container (`height: 100%`), so a container with no
    * height of its own - the first thing anyone writes, `<div><GalaxyMockup /></div>`
    * - gives the canvas none: the mockup renders nothing, and nothing said why.
-   * Checked a frame after mount, in development, once per page, and only for a
+   * Watched rather than checked once: such a container starts out propped open
+   * by the canvas's default 150 px and only collapses a few frames later, once
+   * the canvas is restyled. In development, once per page, and only for a
    * container that is laid out: a hidden tab panel has no height either, and
    * legitimately.
    */
   React.useEffect(() => {
-    if (!DEV || warnedNoHeight) return
-    const frame = requestAnimationFrame(() => {
-      const el = wrapperRef.current
-      if (!el || warnedNoHeight || el.offsetParent === null || el.clientWidth === 0 || el.clientHeight > 0) return
+    if (!DEV || warnedNoHeight || !box || typeof ResizeObserver === 'undefined') return
+    // A bare canvas is sized by r3f, which keeps the browser's default height
+    // until it measures; the 100%-sized element r3f puts around it is not.
+    const el = box instanceof HTMLCanvasElement ? box.parentElement : box
+    if (!el) return
+    const observer = new ResizeObserver(() => {
+      if (warnedNoHeight || el.offsetParent === null || el.clientWidth === 0 || el.clientHeight > 0) return
       warnedNoHeight = true
+      observer.disconnect()
       console.warn(
         "[react-3d-mockups] The mockup's container has no height, so nothing is visible. " +
           'Give it one, e.g. <div style={{ height: 560 }}>.'
       )
     })
-    return () => cancelAnimationFrame(frame)
-  }, [])
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [box])
   React.useEffect(() => {
     if (!fullscreen) return
     const onChange = () => {
@@ -511,11 +539,16 @@ export function MockupCanvas({
   const stageFov = (cameraOptions as { fov?: unknown }).fov
   const stageFovValue = typeof stageFov === 'number' ? stageFov : undefined
 
-  const canvasRef = React.useRef<HTMLCanvasElement>(null)
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+  const canvasBox = React.useCallback(
+    (element: HTMLCanvasElement | null) => {
+      canvasRef.current = element
+      innerBox(element)
+    },
+    [innerBox]
+  )
   // A paused canvas draws nothing, so it would hold a capture forever.
-  // Observed through the wrapper, which outlives a renderer that is replaced
-  // after a lost context (see `contextLost`) and covers the same box.
-  const drawing = useWorthDrawing(wrapperRef, pauseWhenOffscreen && !capturing)
+  const drawing = useWorthDrawing(box, pauseWhenOffscreen && !capturing)
 
   /*
    * A dropped WebGL context. Browsers cap live contexts per page (16 in
@@ -529,7 +562,7 @@ export function MockupCanvas({
    */
   const [contextLost, setContextLost] = React.useState(false)
   const [rendererGeneration, setRendererGeneration] = React.useState(0)
-  const backInView = useWorthDrawing(wrapperRef, contextLost)
+  const backInView = useWorthDrawing(box, contextLost)
   const leftView = React.useRef(false)
   React.useEffect(() => {
     if (!contextLost) return
@@ -594,11 +627,11 @@ export function MockupCanvas({
 
   const canvas = contextLost ? (
     // Holds the mockup's place while its renderer is gone (see `contextLost`).
-    <div aria-hidden="true" style={{ width: '100%', height: '100%' }} />
+    <div ref={innerBox} aria-hidden="true" style={{ width: '100%', height: '100%' }} />
   ) : (
     <Canvas
       key={rendererGeneration}
-      ref={canvasRef}
+      ref={canvasBox}
       className={className}
       // pan-y keeps pages scrollable on touch: vertical swipes scroll past the
       // mockup, horizontal drags (and mouse) orbit the device. With zoom on,
@@ -662,7 +695,7 @@ export function MockupCanvas({
   // full-screen button is independent. With neither overlay, hand back the
   // bare canvas untouched.
   const showZoomButtons = zoom && controls
-  if (!showZoomButtons && !fullscreen) {
+  if (!wrapped) {
     return (
       <>
         {focusStyle}
@@ -683,7 +716,7 @@ export function MockupCanvas({
   // inside a MockupCanvas it only ever re-finds this element.
   return (
     <div
-      ref={wrapperRef}
+      ref={wrapperBox}
       style={{
         position: 'relative',
         isolation: 'isolate',
