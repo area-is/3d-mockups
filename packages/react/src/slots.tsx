@@ -93,7 +93,12 @@ export type Slot<P extends SlotProps = SlotProps> = React.FC<P>
 // TypeScript 6 no longer does.
 declare const process: { env: { NODE_ENV?: string } }
 
-function warnDev(message: string): void {
+/**
+ * A development-only `console.warn`, prefixed with the library's name. Shared
+ * with the scene components that validate a prop (the credit card's embossed
+ * text) so every warning reads the same and drops out of production builds.
+ */
+export function warnDev(message: string): void {
   if (process.env.NODE_ENV !== 'production') {
     // eslint-disable-next-line no-console
     console.warn(`[react-3d-mockups] ${message}`)

@@ -9,6 +9,22 @@ breaking change can ship in a minor release, and is always listed under
 
 ### Added
 
+- **`CreditCardMockup` and `CreditCard`: a payment card with real embossing.**
+  An ISO/IEC 7810 ID-1 card (85.60×53.98×0.76 mm, 3.18 mm corners) with
+  live full-bleed `front` and `back` faces, measured under the new
+  `creditCard` kind. Over the print stand an EMV contact plate on the ISO/IEC
+  7816-2 contact field, and the `number`, `name` and `expiry` embossed as
+  raised geometry - rounded beads up to 0.46 mm high, the number in a
+  Farrington 7B-style face with its baseline 21.42 mm above the bottom edge,
+  silver, gold or any colour of foil `tipping` (or `'none'`, which shades the
+  print instead), and a printed "VALID THRU" legend - with their mirrored,
+  debossed impressions on the back beside the magnetic stripe and the
+  signature panel. `emboss`, `chip`, `stripe` and `signature` each turn their
+  piece off. The lettering is a stroke font in the core (`STROKE_FONT`,
+  `layoutStrokeText`, `normalizeStrokeText`): no font files and nothing to
+  download. Accented letters are transliterated (José embosses as JOSE);
+  characters it still has no glyph for are dropped with a one-time
+  development warning.
 - **Device lifecycle, and a way to retire old models.** Every device variant
   now belongs to a product line in `DEVICE_LINEUP`
   (`react-3d-mockups/core`), with the month it was announced, and

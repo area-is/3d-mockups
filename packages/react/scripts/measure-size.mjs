@@ -48,6 +48,7 @@ const ENTRIES = [
   ['BrochureMockup', 'tri-fold'],
   ['BusinessCardMockup', '32 pt card'],
   ['IDCardMockup', 'badge + lanyard'],
+  ['CreditCardMockup', 'embossed payment card'],
   ['PosterFrameMockup', '18×24 frame'],
   ['ProductBoxMockup', 'retail carton'],
   ['RollupBannerMockup', '850×2000 stand'],

@@ -33,7 +33,8 @@ Pro and Neo, the iPad and Galaxy Tab families, three Apple Watches (Series 11,
 Series 12 and the titanium Ultra 4) and three Galaxy Watches (8, 9 and the
 titanium Ultra 2) on full wristbands, and a 27" desktop display. Beyond devices,
 the same live-surface API covers everyday objects - books, magazines,
-brochures, cards, packaging (product box, mailer box, gable-top milk carton,
+brochures, business cards, ID badges, credit cards (EMV chip, embossed number
+and name), packaging (product box, mailer box, gable-top milk carton,
 shopping bag),
 custom-size panels and boxes at any millimeter dimensions, posters, vinyl
 records, out-of-home formats (billboard, bus shelter, double-sided DOOH totem,

@@ -5,7 +5,7 @@
 </p>
 
 **Live React components on procedural 3D devices - no GLB files.**
-[Docs, live demos and a gallery of all 57 models →](https://area.is/react-3d-mockups/docs/gallery)
+[Docs, live demos and a gallery of all 58 models →](https://area.is/react-3d-mockups/docs/gallery)
 
 GPU-accelerated **3D device mockups for React**. Put any content on the screen of a 3D
 device - real DOM, projected onto WebGL glass, so it stays live: text is vector crisp at
@@ -29,8 +29,8 @@ decorative: you rotate and zoom them, and the hardware masks the screen pixel fo
   at runtime. No GLB files and nothing to host. The phones, foldables, tablets,
   watches and laptops use a small CSG engine (`three-bvh-csg`, a regular dependency)
   to machine their ports and speaker/mic holes into the chassis as real cavities.
-- **Twenty-four objects** on the same live-surface API - books, magazines, brochures,
-  business cards and ID badges, packaging (product box, mailer box, gable-top milk
+- **Twenty-five objects** on the same live-surface API - books, magazines, brochures,
+  business cards, ID badges and payment cards with embossed numbers, packaging (product box, mailer box, gable-top milk
   carton, shopping bag), custom-size panels and boxes at any millimeter dimensions,
   posters, vinyl records, a greeting card, out-of-home formats (billboard, bus
   shelter, double-sided DOOH totem, A-frame, roll-up banner, storefront), a TV, and
