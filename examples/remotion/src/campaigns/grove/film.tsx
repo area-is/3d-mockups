@@ -466,7 +466,9 @@ export function GroveFilm() {
         <TransitionSeries.Sequence durationInFrames={GROVE_SHOTS.hero}>
           <HeroShot />
         </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={pushCut({ flashColor: GROVE.cream })} timing={timing} />
+        {/* The cut and its flash, without the punch-in on the incoming shot: it
+            ends the transition at 107% and the shot snaps back to 100% after. */}
+        <TransitionSeries.Transition presentation={pushCut({ flashColor: GROVE.cream, incomingStartScale: 1, incomingEndScale: 1 })} timing={timing} />
         <TransitionSeries.Sequence durationInFrames={GROVE_SHOTS.lineup}>
           <LineupShot />
         </TransitionSeries.Sequence>
