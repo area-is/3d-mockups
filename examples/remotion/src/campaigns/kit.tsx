@@ -25,6 +25,9 @@ export type ArtName =
   | 'grove-leaves'
   | 'grove-glass'
   | 'grove-farmer'
+  | 'grove-grower-blood'
+  | 'grove-grower-lemon'
+  | 'grove-grower-apple'
   | 'grove-crate'
   | 'kite-volt'
   | 'kite-sky'
@@ -168,39 +171,16 @@ export function CameraRig({ orbit }: { orbit: Orbit }) {
   return null
 }
 
-/** Standard gravity, in mm/s². */
-const GRAVITY = 9810
-
 /**
- * How high above its resting place something dropped onto a surface is, at
- * `frame`. Let go from `height` at `start`, it falls under gravity - from rest,
- * gaining speed all the way down, not easing in - and on landing keeps only
- * `restitution` of its speed, so each hop is a short, quick parabola a fraction
- * the height of the last. A full carton gives back almost nothing (a thud), a
- * box of shoes a low hop. `mmPerUnit` is the stage's scale, so a 40 cm drop
- * takes as long as a real one: about nine frames at 30 fps. Never below zero.
+ * How high above its resting place something set down on a surface is, at
+ * `frame`: lowered from `height` over `frames`, slowing to rest as it touches,
+ * the way a thing put down by hand arrives - no fall, no bounce. Keep `height`
+ * to a couple of centimetres at the stage's scale: enough to read as placed,
+ * not dropped. Held at `height` until `start`.
  */
-export function drop(
-  frame: number,
-  fps: number,
-  start: number,
-  height: number,
-  { mmPerUnit, restitution }: { mmPerUnit: number; restitution: number }
-): number {
-  const g = GRAVITY / mmPerUnit
-  let t = (frame - start) / fps
-  if (t <= 0) return height
-  const fall = Math.sqrt((2 * height) / g)
-  if (t < fall) return height - 0.5 * g * t * t
-  t -= fall
-  // Each bounce leaves with `restitution` of the speed it landed at; stop once
-  // a hop would be lower than a millimetre.
-  for (let v = restitution * g * fall; (v * v) / (2 * g) * mmPerUnit > 1; v *= restitution) {
-    const flight = (2 * v) / g
-    if (t < flight) return v * t - 0.5 * g * t * t
-    t -= flight
-  }
-  return 0
+export function settle(frame: number, start: number, height: number, frames = 14): number {
+  const t = Math.min(1, Math.max(0, (frame - start) / frames))
+  return height * (1 - t) ** 3
 }
 
 /**

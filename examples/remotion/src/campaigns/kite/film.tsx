@@ -23,7 +23,7 @@ import {
 import { APPLE_WATCH_FRAMING, CUSTOM_BOX_FRAMING, LAPTOP_FRAMING, MAILER_BOX_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeInOut, easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Cut, Drift, drop, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, statusBarFont, useEnvelope, useStage } from '../kit'
+import { CameraRig, Cut, Drift, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, settle, statusBarFont, useEnvelope, useStage } from '../kit'
 import {
   COLOURWAYS,
   CountdownScreen,
@@ -172,8 +172,8 @@ function PhoneShot() {
   const { fps } = useVideoConfig()
   // No idle float here: the phone has to be still, and exactly square, when the shoe lifts.
   const stage = useStage(false)
-  const settle = 1 - tween(frame, 60, LIFT - 6, 0, 1)
-  const bob = Math.sin((frame / fps) * 2.2) * 0.06 * settle
+  const stilling = 1 - tween(frame, 60, LIFT - 6, 0, 1)
+  const bob = Math.sin((frame / fps) * 2.2) * 0.06 * stilling
   const pick = interpolate(frame, [36, 50, 78, 92], [0, 1, 1, 2], { easing: easeInOut, extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   const current = COLOURWAYS[Math.round(pick)]!
   // The phone settles square to camera for the lift, so the shoe leaves the glass where it sat.
@@ -303,7 +303,8 @@ const MAILER_EXTENT = MAILER_BOX_FRAMING.extent({ size: SHIPPER })
 const BOX_GROUND = -MAILER_EXTENT
 const SHIPPER_TURN = 0.2
 /** How far above the lid the shoe box is let go. */
-const SHOEBOX_DROP = 4.5
+/** The shoe box is set down from two centimetres above the lid. */
+const SET_DOWN = 20 / MAILER_MM
 
 /** Every printed face of a shoe box, as slots (they must be the box's direct children, so this returns a fragment). */
 function shoeboxFaces(colourway: Colourway) {
@@ -330,14 +331,14 @@ function shoeboxFaces(colourway: Colourway) {
 
 function BoxesShot() {
   const frame = useCurrentFrame()
-  const { fps, width } = useVideoConfig()
+  const { width } = useVideoConfig()
   const u = width / 1920
   const delayCapture = useMockupCapture()
   const volt = COLOURWAYS[0]!
-  // The shoe box drops straight onto the shipper's lid under gravity at the stage's
-  // scale and gives back a fifth of its speed - one low hop, then it sits - landing
-  // centred, turned so little against the shipper that its whole base is on the lid.
-  const lift = drop(frame, fps, 14, SHOEBOX_DROP, { mmPerUnit: MAILER_MM, restitution: 0.2 })
+  // The shoe box is set down on the shipper's lid: lowered the last two centimetres
+  // and coming to rest as it touches, centred, turned so little against the
+  // shipper that its whole base is on the lid.
+  const lift = settle(frame, 8, SET_DOWN)
   const shoeboxY = MAILER_EXTENT + CUSTOM_BOX_FRAMING.extent({ size: SHOEBOX }) * SHOEBOX_ON_MAILER + 0.003 + lift
   const orbit = orbitAt(frame, [
     { frame: 0, target: [0, 0.5, 0], distance: 11.5, azimuth: -0.7, elevation: 0.3, fov: 38 },
@@ -406,8 +407,9 @@ function DeskShot() {
   const delayCapture = useMockupCapture()
   const ember = COLOURWAYS[2]!
   const orbit = orbitAt(frame, [
+    // Still while the shot slides in and for a beat after: straight down on the desk.
     { frame: 0, target: [-0.3, DESK, 0.3], distance: 12.5, azimuth: 0.0, elevation: 1.38, fov: 40 },
-    { frame: 30, target: [-0.3, DESK, 0.3], distance: 12.0, azimuth: 0.08, elevation: 1.3, fov: 40 },
+    { frame: 30, target: [-0.3, DESK, 0.3], distance: 12.5, azimuth: 0.0, elevation: 1.38, fov: 40 },
     { frame: 130, target: [-0.9, DESK + 1.0, -0.5], distance: 12.6, azimuth: -0.45, elevation: 0.34, fov: 38 },
   ])
   const line = useEnvelope(96, 14, 0)

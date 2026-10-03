@@ -34,6 +34,16 @@ export interface Flavour {
   sun: string
   notes: string
   number: string
+  /** The story side: who grows it, in their words and their photograph. */
+  story: {
+    kicker: string
+    /** Three short lines; the last is set in italic. */
+    lines: [string, string, string]
+    body: string
+    grower: ArtName
+    /** The disc of colour the grower stands in. */
+    disc: string
+  }
 }
 
 export const FLAVOURS: Flavour[] = [
@@ -47,6 +57,13 @@ export const FLAVOURS: Flavour[] = [
     sun: '#e8542a',
     notes: 'Blood orange, navel orange, a squeeze of lime.',
     number: '01',
+    story: {
+      kicker: 'From the hillside grove',
+      lines: ['Cold nights.', 'Red fruit.', 'Pressed by noon.'],
+      body: 'Tomás has grown blood oranges on the same terraced hill for thirty-one winters. The cold nights are what turn them red.',
+      grower: 'grove-grower-blood',
+      disc: '#f3c8a2',
+    },
   },
   {
     id: 'lemon',
@@ -58,6 +75,13 @@ export const FLAVOURS: Flavour[] = [
     sun: '#ffe07a',
     notes: 'Meyer lemon, fresh ginger root, pink lady apple.',
     number: '02',
+    story: {
+      kicker: 'From the valley floor',
+      lines: ['Sharp lemons.', 'Hot ginger.', 'Wide awake.'],
+      body: 'Amara grows the Meyer lemons. The ginger comes from her neighbour, dug the same week it is pressed.',
+      grower: 'grove-grower-lemon',
+      disc: '#f6d25c',
+    },
   },
   {
     id: 'apple',
@@ -69,6 +93,13 @@ export const FLAVOURS: Flavour[] = [
     sun: '#4f8f45',
     notes: 'Granny smith, garden mint, cucumber.',
     number: '03',
+    story: {
+      kicker: 'From the top orchard',
+      lines: ['Crisp apples.', 'Garden mint.', 'Cool as morning.'],
+      body: 'Ben’s orchard sits at the head of the valley, where the frost keeps the apples tart and mint grows wild along the fence.',
+      grower: 'grove-grower-apple',
+      disc: '#cfe3b0',
+    },
   },
 ]
 
@@ -171,23 +202,22 @@ export function CartonFront({ flavour: f }: { flavour: Flavour }) {
   )
 }
 
-/** The wall a three-quarter turn shows: who pressed it, and when. */
+/** The wall a three-quarter turn shows: who grows this flavour, in their own words. */
 export function CartonStory({ flavour: f }: { flavour: Flavour }) {
+  const { kicker, lines, body, grower, disc } = f.story
   return (
     <Face ground={GROVE.cream} ink={GROVE.green} font={SERIF} style={{ padding: '10cqw 9cqw 0' }}>
-      <div style={label('3.4cqw', { color: f.ground === '#f2c230' ? GROVE.green : f.ground })}>Pressed at dawn</div>
+      <div style={label('3.4cqw', { color: f.ground === '#f2c230' ? GROVE.green : f.ground })}>{kicker}</div>
       <div style={{ fontSize: '10.2cqw', fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', marginTop: '4cqw' }}>
-        Picked Monday.
+        {lines[0]}
         <br />
-        Pressed Tuesday.
+        {lines[1]}
         <br />
-        <span style={{ fontStyle: 'italic', fontWeight: 420 }}>Gone by Wednesday.</span>
+        <span style={{ fontStyle: 'italic', fontWeight: 420 }}>{lines[2]}</span>
       </div>
-      <div style={small('3.6cqw', { marginTop: '2.4cqh', maxWidth: '82cqw' })}>
-        Every bottle comes from one grove, forty minutes up the road. No concentrate, no heat, nothing added.
-      </div>
-      <div aria-hidden style={{ position: 'absolute', left: '-20cqw', right: '-20cqw', bottom: '-44cqw', height: '96cqw', borderRadius: '50%', background: f.ground === '#f2c230' ? '#f6d25c' : '#f3c8a2' }} />
-      <Cut name="grove-farmer" style={{ left: '22cqw', bottom: 0, width: '66cqw' }} />
+      <div style={small('3.6cqw', { marginTop: '2.4cqh', maxWidth: '82cqw' })}>{body}</div>
+      <div aria-hidden style={{ position: 'absolute', left: '-20cqw', right: '-20cqw', bottom: '-44cqw', height: '96cqw', borderRadius: '50%', background: disc }} />
+      <Cut name={grower} style={{ left: '18cqw', bottom: 0, width: '70cqw' }} />
     </Face>
   )
 }

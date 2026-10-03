@@ -23,7 +23,7 @@ import {
 import { A_FRAME_SIGN_FRAMING, BILLBOARD_FRAMING, BUS_SHELTER_FRAMING, MILK_CARTON_FRAMING, VAN_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
 import { easeOut, tween, type Vec3 } from '../../reel/motion'
-import { CameraRig, Clouds, Drift, drop, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, useEnvelope, useStage, Vignette, Words } from '../kit'
+import { CameraRig, Drift, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, settle, useEnvelope, useStage, Words } from '../kit'
 import {
   BagBack,
   BagFront,
@@ -87,6 +87,41 @@ function cartonFaces(f: Flavour) {
         <CartonGable flavour={f} />
       </MilkCarton.GableBack>
     </>
+  )
+}
+
+/**
+ * A solid colour behind a stage, lit a little brighter where the object
+ * stands: `[centre, body, edge]`.
+ */
+const backdrop = ([centre, body, edge]: [string, string, string]) =>
+  `radial-gradient(ellipse 90% 80% at 50% 42%, ${centre} 0%, ${body} 55%, ${edge} 100%)`
+
+/**
+ * Words set huge in the brand serif, outlined, running across the backdrop
+ * behind the stage - `speed` px a frame, leftward when positive.
+ */
+function Marquee({ text, top, stroke, speed }: { text: string; top: number; stroke: string; speed: number }) {
+  const frame = useCurrentFrame()
+  const { width } = useVideoConfig()
+  const u = width / 1920
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: top * u,
+        left: (speed > 0 ? -200 - frame * speed : -2400 - frame * speed) * u,
+        whiteSpace: 'nowrap',
+        fontFamily: SERIF,
+        fontWeight: 760,
+        fontSize: 470 * u,
+        letterSpacing: '-0.05em',
+        color: 'transparent',
+        WebkitTextStroke: `${2.2 * u}px ${stroke}`,
+      }}
+    >
+      {Array.from({ length: 4 }, () => text).join(' · ')}
+    </div>
   )
 }
 
@@ -165,12 +200,12 @@ function HeroShot() {
 
 const CARTON_GROUND = -MILK_CARTON_FRAMING.extent({})
 /** How far above the table the cartons are let go. */
-const DROP = 7.5
-const CARTON_MM = mockupInfo('milkCarton').mmPerUnit
+/** Each carton is set down from two centimetres above the table. */
+const SET_DOWN = 20 / mockupInfo('milkCarton').mmPerUnit
 
 function LineupShot() {
   const frame = useCurrentFrame()
-  const { fps, width } = useVideoConfig()
+  const { width } = useVideoConfig()
   const u = width / 1920
   const delayCapture = useMockupCapture()
   const xs = [-2.6, 0, 2.6]
@@ -180,34 +215,19 @@ function LineupShot() {
   ])
   const caption = useEnvelope(64, 16, 12)
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(ellipse 90% 80% at 50% 42%, #2a5139 0%, ${GROVE.green} 55%, ${GROVE.deep} 100%)` }}>
+    <AbsoluteFill style={{ background: backdrop(['#2a5139', GROVE.green, GROVE.deep]) }}>
       {/* the name, outlined and running behind the range */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 180 * u,
-          left: (-200 - frame * 3) * u,
-          whiteSpace: 'nowrap',
-          fontFamily: SERIF,
-          fontWeight: 760,
-          fontSize: 470 * u,
-          letterSpacing: '-0.05em',
-          color: 'transparent',
-          WebkitTextStroke: `${2.2 * u}px rgba(248,241,227,0.22)`,
-        }}
-      >
-        grove grove grove grove
-      </div>
+      <Marquee text="grove" top={180} stroke="rgba(248,241,227,0.22)" speed={3} />
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={CARTON_GROUND} label="Three Grove cartons">
         <CameraRig orbit={orbit} />
         <Floor y={CARTON_GROUND} color="#28503a" radius={12} />
         <OverlapProbe names={FLAVOURS.map((f) => f.id)} frame={frame} />
         {FLAVOURS.map((f, i) => {
-          // Each carton drops straight onto the table a beat after the last, under
-          // gravity at the stage's own scale, and lands with a thud: a full carton of
-          // juice gives back almost none of its speed. Straight down, never tipped or
-          // spun, so it lands where it was let go, clear of its neighbours.
-          const lift = drop(frame, fps, 8 + i * 10, DROP, { mmPerUnit: CARTON_MM, restitution: 0.1 })
+          // Each carton is set down on the table a beat after the last: lowered the
+          // last two centimetres and coming to rest as it touches, straight down,
+          // never tipped or spun, so it lands where it was held, clear of its
+          // neighbours.
+          const lift = settle(frame, 4 + i * 6, SET_DOWN)
           const turn = tween(frame, 78 + i * 6, 128 + i * 6, 0, -0.62)
           return (
             <MilkCarton key={f.id} name={f.id} color={f.ground} position={[xs[i]!, lift, 0]} rotation={[0, turn - 0.08 * (i - 1), 0]}>
@@ -298,19 +318,20 @@ function StreetShot() {
   const { width } = useVideoConfig()
   const u = width / 1920
   const delayCapture = useMockupCapture()
+  // One slow push-in on the whole corner, still while the shot comes in.
+  const corner = { target: [0.6, 0.45, 0.6] as Vec3, elevation: 0.14, fov: 38 }
   const orbit = orbitAt(frame, [
-    { frame: 0, target: [SIGN_AT[0], SIGN_AT[1] + 0.1, SIGN_AT[2]], distance: 3.4, azimuth: 0.28, elevation: 0.08, fov: 34 },
-    { frame: 70, target: [4.1, -0.2, 1.2], distance: 6.6, azimuth: 0.42, elevation: 0.1, fov: 36 },
-    { frame: 170, target: [0.6, 0.45, 0.6], distance: 13.2, azimuth: 0.62, elevation: 0.15, fov: 38 },
+    { frame: 0, ...corner, distance: 13.8, azimuth: 0.56 },
+    { frame: 14, ...corner, distance: 13.8, azimuth: 0.56 },
+    { frame: 170, ...corner, distance: 12.4, azimuth: 0.64 },
   ])
   const caption = useEnvelope(96, 16, 12)
   return (
-    <AbsoluteFill style={{ background: 'linear-gradient(180deg, #a9d2ec 0%, #d8ebf2 38%, #fbe8cf 62%, #f1d8b8 100%)' }}>
-      <Clouds drift={frame * 0.4} tint="255,255,255" />
-      <div style={{ position: 'absolute', left: 1500 * u, top: (140 - frame * 0.15) * u, width: 260 * u, height: 260 * u, borderRadius: '50%', background: 'radial-gradient(circle, #fff6dc 0%, #ffe0a0 45%, rgba(255,224,160,0) 70%)' }} />
+    <AbsoluteFill style={{ background: backdrop(['#ffd968', GROVE.lemon, '#d9a514']) }}>
+      <Marquee text="around the corner" top={150} stroke="rgba(29,58,42,0.16)" speed={-2.6} />
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={STREET_GROUND} label="A bus shelter and a sidewalk sign">
         <CameraRig orbit={orbit} />
-        <Floor y={STREET_GROUND} color="#e3d6c3" radius={26} />
+        <Floor y={STREET_GROUND} color="#e8b923" radius={26} />
         <OverlapProbe names={['shelter', 'sign']} frame={frame} />
         <BusShelter name="shelter" color="#2b3a33">
           <BusShelter.Poster>
@@ -356,10 +377,11 @@ function VanShot() {
     { frame: 110, target: [0.3, -0.1, 0], distance: 9.4, azimuth: 0.28, elevation: 0.08, fov: 36 },
   ])
   return (
-    <AbsoluteFill style={{ background: 'linear-gradient(180deg, #f6c99a 0%, #fbe3c4 45%, #f4e5cf 70%, #e8d9c2 100%)' }}>
+    <AbsoluteFill style={{ background: backdrop(['#e2573b', '#c8321f', '#8f1d12']) }}>
+      <Marquee text="delivered daily" top={200} stroke="rgba(255,240,222,0.2)" speed={3} />
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={VAN_GROUND} label="The Grove delivery van">
         <CameraRig orbit={orbit} />
-        <Floor y={VAN_GROUND} color="#ddcdb4" radius={22} />
+        <Floor y={VAN_GROUND} color="#b42c1b" radius={22} />
         <Van color={GROVE.green} coverage="full">
           <Van.CurbSide>
             <VanSide />
@@ -373,7 +395,6 @@ function VanShot() {
           <Van.LicensePlate>GROVE 8</Van.LicensePlate>
         </Van>
       </MockupCanvas>
-      <Vignette strength={0.18} color="80,40,10" />
     </AbsoluteFill>
   )
 }
@@ -397,11 +418,11 @@ function BillboardShot() {
     easeOut
   )
   return (
-    <AbsoluteFill style={{ background: 'linear-gradient(180deg, #ef8d5a 0%, #f7b27a 35%, #fcd9a8 62%, #e9cfae 100%)' }}>
-      <Clouds drift={frame * 0.6} tint="255,236,214" />
+    <AbsoluteFill style={{ background: backdrop(['#a8daf2', '#7ec3e6', '#4f9cc6']) }}>
+      <Marquee text="fresh every morning" top={140} stroke="rgba(255,255,255,0.42)" speed={-2.6} />
       <MockupCanvas controls={false} delayCapture={delayCapture} camera={RIG_START} shadowY={BILLBOARD_GROUND} label="A Grove billboard">
         <CameraRig orbit={orbit} />
-        <Floor y={BILLBOARD_GROUND} color="#d9c39f" radius={20} />
+        <Floor y={BILLBOARD_GROUND} color="#6fb3d9" radius={20} />
         <Billboard color="#3a3f3c">
           <BillboardArt />
         </Billboard>

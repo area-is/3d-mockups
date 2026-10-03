@@ -46,8 +46,8 @@ Each film is one brand, told on the surfaces it would be printed or shown
 on, with a backdrop made of CSS and photographs rather than a pattern:
 
 - **Grove** (`src/campaigns/grove`), a cold-pressed juice: a gable-top
-  carton turning in a pool of morning light, the three-flavour range dropping
-  onto a table, a kraft bag swinging, the corner it is sold on (a bus shelter
+  carton turning in a pool of morning light, the three-flavour range set down
+  on a table, a kraft bag swinging, the corner it is sold on (a bus shelter
   with its LED board and a sidewalk A-frame on one stage, at their true
   relative sizes), the delivery van in a full wrap, and a billboard shot from
   below.
@@ -69,13 +69,12 @@ laid out in container units, so one design holds at any `resolution`),
 `Cut` and `Drift` (a cut-out on a surface, or in the frame in front of or
 behind the transparent canvas, blurred for depth of field, and kept clear of
 the mockups), a `CameraRig` keyed by frame, a `Floor` that fades into the
-CSS backdrop so a stage has ground for its contact shadow, `drop` (a fall
-under gravity onto a surface), `statusBarFont` and `OverlapProbe` (see
-below).
+CSS backdrop so a stage has ground for its contact shadow, `settle` (a short
+set-down onto a surface), `statusBarFont` and `OverlapProbe` (see below).
 
 ### The photographs
 
-Every photograph in the films - fruit, a farmer, the shoe in three colours,
+Every photograph in the films - fruit, four growers, the shoe in three colours,
 runners, musicians, plants, a moth - is a cut-out on a transparent
 ground in `public/art`, generated with OpenAI's GPT Image 2.5
 (`gpt-image-2.5-sunburst`, `quality: "low"`, `background: "transparent"`).
@@ -95,16 +94,13 @@ the same shoe. The script needs Python 3 with Pillow and requests.
 
 ### Notes from making them
 
-- **Drop things under gravity, not on a spring.** A spring's overshoot
-  carried a dropped carton below the table (the floor clipped its foot) and
-  the shoe box into the shipper, and even bounced back off the surface its
-  slow, even wobble read as rubber. `drop()` lets go from rest and falls at
-  9.81 m/s², scaled by the stage's `mmPerUnit` so a 40 cm drop takes the nine
-  frames a real one does, then gives back only `restitution` of its speed on
-  each landing: a full carton thuds (0.1), a box of shoes hops once, low and
-  quick (0.2). They fall straight, neither tipped nor spun: a tipped carton
-  leans into its neighbour, and a spin that stops dead on landing reads as
-  fake as the spring did.
+- **Set things down; don't drop them.** A spring's overshoot carried a
+  dropped carton below the table and the shoe box into the shipper, and its
+  wobble read as rubber. A fall at real gravity was worse in a different way:
+  from any height worth seeing, it is over in a few frames and looks thrown.
+  `settle()` lowers an object the last couple of centimetres at the stage's
+  scale (`20 / mmPerUnit`) and slows it to rest as it touches, the way a thing
+  put down by hand arrives: straight down, no tip, no spin, no bounce.
 - **Check a stage for collisions.** Every multi-object stage names its
   objects and mounts an `OverlapProbe`; render with
   `REMOTION_OVERLAP_PROBE=1` and it logs any frame where one object's

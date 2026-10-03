@@ -56,6 +56,10 @@ ART = {
     'grove-leaves': (SQUARE, 'A sprig of three glossy dark green citrus leaves with two small white orange blossoms.'),
     'grove-glass': (PORTRAIT, 'A tall clear glass of fresh blood orange juice with ice cubes and condensation droplets, a slice of blood orange on the rim, no straw.'),
     'grove-farmer': (PORTRAIT, 'Waist-up portrait of a smiling citrus farmer in her fifties wearing a straw hat and a linen work shirt, holding a wooden crate full of oranges. Natural daylight.'),
+    # The growers on each carton's story side, one per flavour.
+    'grove-grower-blood': (PORTRAIT, 'Waist-up portrait of a smiling orange grower in his sixties with a short grey beard, wearing a canvas apron over a rolled-up denim work shirt, holding a halved blood orange in each hand with the deep red flesh facing the camera. Natural daylight.'),
+    'grove-grower-lemon': (PORTRAIT, 'Waist-up portrait of a cheerful young woman farmer in her twenties with curly dark hair tied back, wearing a mustard-yellow work jacket, holding a woven basket of bright yellow lemons with a few knobbly fresh ginger roots on top. Natural daylight.'),
+    'grove-grower-apple': (PORTRAIT, 'Waist-up portrait of a smiling orchard keeper in his forties with round glasses and a flat cap, wearing a green knit sweater, holding an armful of green granny smith apples with a sprig of fresh mint tucked among them. Natural daylight.'),
     'grove-crate': (LANDSCAPE, 'A rustic wooden fruit crate overflowing with oranges, lemons and green apples with leaves, three-quarter view from slightly above.'),
     # ---- KITE: a running-shoe drop -------------------------------------
     'kite-volt': (LANDSCAPE, 'A modern lightweight running shoe, side profile with the toe pointing right: volt yellow-green engineered mesh upper, thick white foam midsole with a slight rocker, black heel tab and laces, black outsole. No logos or text.'),
