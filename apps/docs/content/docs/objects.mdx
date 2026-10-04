@@ -21,6 +21,7 @@ product dimensions - no GLB files, no hosting, no pop-in.
 | Tri-fold brochure | `Brochure` | 93×216 mm per letter-fold panel | 3 panels, front + back | 360×835 each |
 | Business card | `BusinessCard` | 89×51 mm, 32 pt stock | front + back | 520×298 each |
 | ID card (lanyard) | `IDCard` | 54×85.6 mm CR80 badge | front + back below the punch strip | 420×666 each |
+| Credit card | `CreditCard` | 85.6×54 mm ID-1 card, chip + embossed number | front + back | 520×328 each |
 | Poster frame | `PosterFrame` | 18"×24" sheet, 22 mm molding | visible opening (optional mat) | 540×726 |
 | Product box | `ProductBox` | 190×265×55 mm retail carton | all six panels | 480×669 front |
 | Roll-up banner | `RollupBanner` | 850×2000 mm stand | banner graphic | 420×988 |
@@ -109,6 +110,7 @@ covers the rules.
 | `Brochure` | front-left panel | `<Brochure.FrontCenter>`, `<Brochure.FrontRight>`, `<Brochure.BackLeft>`, `<Brochure.BackCenter>`, `<Brochure.BackRight>` |
 | `BusinessCard` | front face | `<BusinessCard.Back>` |
 | `IDCard` | front face | `<IDCard.Back>` |
+| `CreditCard` | front face | `<CreditCard.Back>` |
 | `ProductBox` | front panel | `<ProductBox.Right>`, `<ProductBox.Left>`, `<ProductBox.Top>`, `<ProductBox.Bottom>`, `<ProductBox.Back>` |
 | `Bus` | curb-side ad | `<Bus.StreetSide>`, `<Bus.Rear>`, `<Bus.DestinationSign>` |
 | `Van` | curb-side wrap | `<Van.StreetSide>`, `<Van.Rear>`, `<Van.LicensePlate>` |
@@ -132,6 +134,9 @@ A few of them behave in ways worth knowing:
 - **`Bus`**: the curb-side ad is a queen-size panel that stops short of the
   doors, as on a real bus; `coverage="full"` turns both sides into full wraps.
   `<Bus.DestinationSign>` is the live LED sign above the windshield.
+- **`CreditCard`**: the chip, the embossing, the magnetic stripe and the
+  signature panel stand over the print as 3D hardware, like the real thing,
+  and the back carries the embossing's mirrored impressions.
 - **`Van`**: `<Van.LicensePlate>` fills both plates; pass it a plain string
   and it is set on the built-in plate blank.
 - **`SemiTrailer`**: `<SemiTrailer.Rear>` sits under a lock-rod overlay, like a
@@ -166,8 +171,10 @@ the hand-held print pieces.
 
 As with the devices, the raw dimensions are exported as plain data from the
 `/core` subpath - `BOOK`, `MAGAZINE`, `BROCHURE`, `BUSINESS_CARD`, `ID_CARD`,
-`POSTER_FRAME`, `BILLBOARD`, `VAN` and a constant like them for every other
-object, plus aspect-ratio constants like `VAN_WRAP_ASPECT`:
+`CREDIT_CARD`, `POSTER_FRAME`, `BILLBOARD`, `VAN` and a constant like them for
+every other object, plus aspect-ratio constants like `VAN_WRAP_ASPECT`, and
+the credit card's embossing font, `STROKE_FONT`, with the `layoutStrokeText`
+that sets it:
 
 ```ts
 import { BOOK, POSTER_FRAME, VAN, VAN_WRAP_ASPECT } from 'react-3d-mockups/core'

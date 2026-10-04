@@ -9,6 +9,29 @@ breaking change can ship in a minor release, and is always listed under
 
 ### Added
 
+- **`CreditCardMockup` and `CreditCard`: a payment card with real embossing.**
+  An ISO/IEC 7810 ID-1 card (85.60×53.98×0.76 mm, 3.18 mm corners) with
+  live full-bleed `front` and `back` faces, measured under the new
+  `creditCard` kind, checked against photographs of real cards. The print
+  sits under a gloss laminate that picks up the studio lights as the card
+  turns (`finish="matte"` for soft-touch), round a white core at the cut
+  edge (`edgeColor`). Over the print stand a 13×11.4 mm EMV contact plate,
+  `chip="gold"` or `"silver"`, etched with its contacts and set in its milled
+  cavity over the ISO/IEC 7816-2 contact field; and the `number`, `name` and
+  `expiry` embossed as raised geometry up to 0.46 mm high - flat crests
+  carrying silver, gold or any colour of foil `tipping` (or `'none'`, which
+  shades the print instead) on shoulders that slope into the print. The
+  number is in a Farrington 7B-style face centred 21.42 mm above the bottom
+  edge, the name and expiry in the ISO/IEC 7811-1 name-and-address area with
+  a printed "VALID THRU" legend, and the back carries their mirrored,
+  debossed impressions beside the magnetic stripe and the signature panel.
+  `emboss="flat"` prints the lines in a thin line instead, as most new cards
+  do, and `emboss={false}`, `chip={false}`, `stripe` and `signature` turn
+  their piece off. The lettering is a stroke font in the core
+  (`STROKE_FONT`, `layoutStrokeText`, `normalizeStrokeText`): no font files
+  and nothing to download. Accented letters are transliterated (José embosses
+  as JOSE); characters it still has no glyph for are dropped with a one-time
+  development warning.
 - **Device lifecycle, and a way to retire old models.** Every device variant
   now belongs to a product line in `DEVICE_LINEUP`
   (`react-3d-mockups/core`), with the month it was announced, and

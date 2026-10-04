@@ -24,6 +24,9 @@ import {
   CustomBoxMockup,
   CustomPanelMockup,
   type CustomBoxMockupProps,
+  CreditCardMockup,
+  type CreditCardProps,
+  type CreditCardTipping,
   IPhoneMockup,
   IPhoneDuoMockup,
   GalaxyMockup,
@@ -193,6 +196,10 @@ const _vanInfo = mockupInfo('van', { coverage: 'panel' })
 const _duoInfo = mockupInfo('iphoneDuo', { openAngle: false, orientation: 'landscape' })
 // @ts-expect-error - a Galaxy Z Fold variant is not an iPhone Duo variant
 mockupInfo('iphoneDuo', { variant: 'fold8' })
+// The card's embossed text is not geometry: it moves no surface.
+const _creditCardInfo = mockupInfo('creditCard')
+// @ts-expect-error - the card number cannot change a measurement
+mockupInfo('creditCard', { number: '4000 1234 5678 9010' })
 
 // Regions are typed by name: the documented access typechecks under strict TS...
 const _coverPx: { width: number; height: number } = mockupInfo('book').regions.cover.px
@@ -208,11 +215,30 @@ type _units = Expect<Equal<RegionInfo['units'], { width: number; height: number 
 type _mm = Expect<Equal<RegionInfo['mm'], { width: number; height: number }>>
 type _px = Expect<Equal<RegionInfo['px'], { width: number; height: number }>>
 
+// ---- the credit card's `name` is the cardholder's, not the three.js object name ------
+type _cardName = Expect<Equal<CreditCardProps['name'], string | undefined>>
+type _cardTipping = Expect<Equal<CreditCardProps['tipping'], CreditCardTipping | undefined>>
+const _cardUsage = (
+  <CreditCardMockup number="4000 1234 5678 9010" name="ALEX MORGAN" expiry="12/29" tipping="#b87333">
+    <CreditCardMockup.Back surfaceBackground="#111">
+      <div />
+    </CreditCardMockup.Back>
+  </CreditCardMockup>
+)
+// Lettering embossed, printed flat or left off; a chip in either plating; the laminate's finish.
+const _cardFlat = <CreditCardMockup emboss="flat" chip="silver" finish="matte" edgeColor="#111" />
+const _cardPlain = <CreditCardMockup emboss={false} chip={false} />
+// @ts-expect-error - `emboss` is a boolean or 'flat'
+const _cardBadEmboss = <CreditCardMockup emboss="raised" />
+// @ts-expect-error - the chip comes in gold or silver
+const _cardBadChip = <CreditCardMockup chip="platinum" />
+
 // ---- statics on the component --------------------------------------------------------
 // Every built-in carries both statics, typed as present - no `?.` needed.
 const _viaComponent = GalaxyMockup.info({ variant: 's26' }).regions.screen.px
 const _componentRegions = BookMockup.regions
 type _regionsPresent = Expect<Equal<undefined extends typeof BookMockup.regions ? true : false, false>>
+const _cardViaComponent = CreditCardMockup.info()
 type _statics = Expect<Has<'info', typeof GalaxyMockup>>
 // Required where the kind's props are: the custom panel cannot be measured without a size.
 // @ts-expect-error - CustomPanelMockup.info needs a size

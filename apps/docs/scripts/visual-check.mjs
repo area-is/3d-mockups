@@ -82,6 +82,18 @@ const CASES = [
   ['totem', 'device=totem&regions=1&ry=24'],
   ['aframe', 'device=aframe&regions=1&ry=22'],
   ['custombox', 'device=custombox&regions=1&w=250&h=90&d=160&ry=34&rx=16'],
+  // The credit card's chip and embossed lines are geometry standing over the
+  // live face, and its back carries the stripe, the signature panel and the
+  // debossed impressions over the other - a face that shifts under them, or
+  // hardware that sinks into it and z-fights, shows on the probe colours.
+  ['creditcard', 'device=creditcard&regions=1&ry=24&rx=8'],
+  ['creditcard-back', 'device=creditcard&regions=1&ry=200&rx=8'],
+  // close up and raking, where the embossing's relief, foil and contact
+  // shadow have to read as raised characters, not a print of them
+  ['creditcard-emboss', 'device=creditcard&screen=art&art=LarkmoorCard&color=%231f2b46&ry=-38&rx=-28&dist=2.6'],
+  // printed flat on a matte card with a silver chip: hairline type lying on
+  // the face, no laminate sweep, and the other plating
+  ['creditcard-flat', `device=creditcard&screen=art&art=LarkmoorCard&color=%231f2b46&ry=-20&rx=-10&dist=3.2&props=${encodeURIComponent(JSON.stringify({ emboss: 'flat', chip: 'silver', finish: 'matte' }))}`],
 
   // --- devices: one screen each, but they exercise orientation + poses ---
   ['galaxy', 'device=phone&pvariant=s26&ry=24'],

@@ -10,6 +10,7 @@ import {
   BusMockup,
   BusShelterMockup,
   BusinessCardMockup,
+  CreditCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
@@ -346,6 +347,61 @@ const MODELS = new Map<unknown, ModelControls>([
   [BusMockup, { controls: [COVERAGE] }],
   [BusShelterMockup, {}],
   [BusinessCardMockup, { controls: [swatch('edgeColor', 'edge')] }],
+  [
+    CreditCardMockup,
+    {
+      controls: [
+        {
+          prop: 'emboss',
+          label: 'lettering',
+          kind: 'select',
+          options: [
+            { value: 'raised', label: 'embossed' },
+            { value: 'flat', label: 'printed flat' },
+            { value: 'none', label: 'none' },
+          ],
+          parse: (value) => (value === 'raised' ? true : value === 'none' ? false : value),
+          preset: 'raised',
+        },
+        {
+          prop: 'tipping',
+          label: 'tipping',
+          kind: 'select',
+          options: [
+            { value: 'silver', label: 'silver' },
+            { value: 'gold', label: 'gold' },
+            { value: 'none', label: 'none' },
+          ],
+          preset: 'silver',
+        },
+        {
+          prop: 'chip',
+          label: 'chip',
+          kind: 'select',
+          options: [
+            { value: 'gold', label: 'gold' },
+            { value: 'silver', label: 'silver' },
+            { value: 'none', label: 'none' },
+          ],
+          parse: (value) => (value === 'none' ? false : value),
+          preset: 'gold',
+        },
+        {
+          prop: 'finish',
+          label: 'finish',
+          kind: 'select',
+          options: [
+            { value: 'gloss', label: 'gloss' },
+            { value: 'matte', label: 'matte' },
+          ],
+          preset: 'gloss',
+        },
+        swatch('edgeColor', 'edge'),
+        toggle('stripe', 'stripe', true),
+        toggle('signature', 'signature panel', true),
+      ],
+    },
+  ],
   [CustomBoxMockup, { controls: [size('box mm', [['width', 180], ['height', 120], ['depth', 60]])] }],
   [
     CustomPanelMockup,

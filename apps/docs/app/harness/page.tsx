@@ -9,6 +9,7 @@ import {
   BrochureMockup,
   BusMockup,
   BusinessCardMockup,
+  CreditCardMockup,
   CustomBoxMockup,
   CustomPanelMockup,
   DOOHTotemMockup,
@@ -66,6 +67,17 @@ import { SwissRaster } from '@/components/screens/swiss-art'
 const COVERAGE_PARAM = (value: string | null): 'panel' | 'full' | 'perforated' =>
   value === 'full' || value === 'perforated' ? value : 'panel'
 
+/** `props`: a JSON object of the object's own props (`{"tipping":"gold"}`), for the plain objects. */
+const parseProps = (value: string | null): Record<string, unknown> => {
+  if (!value) return {}
+  try {
+    const parsed: unknown = JSON.parse(value)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {}
+  } catch {
+    return {}
+  }
+}
+
 /** `statusBar`: `1`/`0` for the prop's boolean form, or a JSON object for the tuned one. */
 const parseStatusBar = (value: string | null): boolean | Record<string, unknown> | undefined => {
   if (value === null) return undefined
@@ -109,6 +121,7 @@ const PLAIN = {
   book: BookMockup,
   brochure: BrochureMockup,
   card: BusinessCardMockup,
+  creditcard: CreditCardMockup,
   totem: DOOHTotemMockup,
   greeting: GreetingCardMockup,
   mailer: MailerBoxMockup,
@@ -178,7 +191,7 @@ function regionProbe(Mockup: object, measuredAt: Record<string, unknown> = {}): 
  * Params:
  *   device      tablet | monitor | flip | fold | iphoneduo | watch | laptop
  *               | phone | iphone | bus | van | shelter | tv | idcard
- *               | store | magazine (default tablet)
+ *               | store | magazine | creditcard (default tablet)
  *   pvariant    device variant id                  (phone, iphone)
  *   fvariant    device variant id                  (fold, iphoneduo)
  *   flvariant   device variant id                  (flip)
@@ -207,6 +220,8 @@ function regionProbe(Mockup: object, measuredAt: Record<string, unknown> = {}): 
  *   shadows     1 | 0                              (default 0 - clean poses)
  *   controls    1 | 0                              (default 0 - drag tests)
  *   statusBar   1 | 0 | JSON StatusBarContent      (phones, foldables, tablets)
+ *   props       JSON object of the object's own props, e.g. {"tipping":"gold"}
+ *                                                  (the plain objects: book, card, creditcard, …)
  */
 /** Pieces `screen=art` can name beyond the carousel's own (see `carouselArtNode`). */
 const PRINT_ART: Record<string, () => React.ReactNode> = {
@@ -271,6 +286,7 @@ function HarnessScene() {
   if (plain) {
     const Mockup = plain as React.ComponentType<Record<string, unknown>>
     const distParam = params.get('dist')
+    const extra = parseProps(params.get('props'))
     return (
       <Mockup
         color={color}
@@ -278,8 +294,9 @@ function HarnessScene() {
         camera={distParam ? { position: [0, cy, Number(distParam)], fov: 40 } : undefined}
         shadows={shadows}
         rotation={[rx, ry, 0]}
+        {...extra}
       >
-        {params.get('regions') === '1' ? regionProbe(plain) : screen}
+        {params.get('regions') === '1' ? regionProbe(plain, extra) : screen}
       </Mockup>
     )
   }

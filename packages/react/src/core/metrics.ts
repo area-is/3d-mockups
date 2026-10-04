@@ -71,6 +71,7 @@ import {
 } from './objects/poster-frame/dimensions'
 import { BILLBOARD_METRICS, BILLBOARD_REGIONS } from './objects/billboard/dimensions'
 import { ID_CARD_METRICS, ID_CARD_REGIONS } from './objects/id-card/dimensions'
+import { CREDIT_CARD_METRICS, CREDIT_CARD_REGIONS } from './objects/credit-card/dimensions'
 import { BUS_METRICS, BUS_REGIONS, type BusCoverage } from './objects/bus/dimensions'
 import { VAN_METRICS, VAN_REGIONS, type VanCoverage } from './objects/van/dimensions'
 import { STOREFRONT_METRICS, STOREFRONT_REGIONS } from './objects/storefront/dimensions'
@@ -123,6 +124,7 @@ export interface MockupPropsMap {
   posterFrame: { size?: PosterFrameSize; mat?: boolean | string }
   billboard: Record<string, never>
   idCard: Record<string, never>
+  creditCard: Record<string, never>
   bus: { coverage?: BusCoverage }
   van: { coverage?: VanCoverage }
   storefront: Record<string, never>
@@ -148,7 +150,7 @@ export type MockupKind = keyof MockupPropsMap
 interface Entry {
   regions: readonly RegionSpec[]
   // Props are validated by `mockupInfo`'s public signature; inside the registry
-  // the 34 prop shapes are deliberately erased so one table can hold them all.
+  // the 36 prop shapes are deliberately erased so one table can hold them all.
   metrics: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mmPerUnit: number | ((props: any) => number)
@@ -184,6 +186,7 @@ const REGISTRY = {
   posterFrame: { regions: POSTER_FRAME_REGIONS, metrics: POSTER_FRAME_METRICS },
   billboard: { regions: BILLBOARD_REGIONS, metrics: BILLBOARD_METRICS },
   idCard: { regions: ID_CARD_REGIONS, metrics: ID_CARD_METRICS },
+  creditCard: { regions: CREDIT_CARD_REGIONS, metrics: CREDIT_CARD_METRICS },
   bus: { regions: BUS_REGIONS, metrics: BUS_METRICS },
   van: { regions: VAN_REGIONS, metrics: VAN_METRICS },
   storefront: { regions: STOREFRONT_REGIONS, metrics: STOREFRONT_METRICS },

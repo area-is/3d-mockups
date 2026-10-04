@@ -1,0 +1,174 @@
+---
+title: Credit card
+description: A payment card with an EMV chip, an embossed number, name and expiry, a magnetic stripe, and live front and back faces.
+---
+
+`<CreditCard>` and `<CreditCardMockup>` render an ISO/IEC 7810 ID-1
+payment card - 85.60×53.98 mm on 0.76 mm PVC with 3.18 mm corners - with a
+live 520×328 DOM surface on the front and, optionally, the back. Your art
+prints full bleed under a gloss laminate that catches the studio lights as
+the card turns; over it sit the parts a real card carries on top of its
+print, each placed where the standards put it:
+
+- the **EMV chip**: a 13×11.4 mm gold or silver contact plate in its milled
+  cavity over the ISO/IEC 7816-2 contact field, its contacts etched into
+  the plate, essentially flush with the card;
+- the **embossed number, name and expiry**: real raised relief, not a
+  texture, up to 0.46 mm high (ISO/IEC 7811-1). Each stroke is a flat
+  crest, where the silver or gold foil tipping is stamped, on shoulders
+  that slope down into the print. The number is set in a Farrington
+  7B-style face, centred 21.42 mm above the bottom edge; the expiry and the
+  name below it, in the name-and-address area, in the smaller gothic with a
+  printed "VALID THRU" legend. They can be printed flat instead;
+- on the back, the embossing's **mirrored, debossed impressions**, the
+  **magnetic stripe** (12.7 mm tall, 5.54 mm below the top edge) and the
+  **signature panel**;
+- round it all, the **white core** that shows at the cut edge of a
+  laminated card.
+
+<MockupExplorer
+  component="CreditCardMockup"
+  props={{ float: true, rotation: [-0.12, -0.4, 0] }}
+/>
+
+## `<CreditCard>` vs `<CreditCardMockup>`
+
+<BareVsMockup object="CreditCard" kind="creditCard" slot="Front" />
+
+```tsx
+import { MockupCanvas, CreditCard, CreditCardMockup } from 'react-3d-mockups'
+
+// The one-liner: its own canvas, with lighting, a ground shadow, drag-to-orbit
+// controls and a camera already framed on the object.
+<CreditCardMockup number="4000 1234 5678 9010" name="ALEX MORGAN" float style={{ height: 520 }}>
+  <YourCardArt />
+</CreditCardMockup>
+
+// The same model with no stage of its own. Inside a canvas you arrange
+// yourself it can be posed, animated, lit and joined by anything else.
+<MockupCanvas>
+  <CreditCard rotation={[0, 0.4, 0]}>
+    <YourCardArt />
+  </CreditCard>
+</MockupCanvas>
+```
+
+## Props
+
+Beyond the [shared screen props](/docs/screen-content):
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `color` | `string` | `'#1f2b46'` | Card stock: an unprinted back, and the print's ground wherever the art leaves it clear. |
+| `edgeColor` | `string` | `'#f1efe9'` | The cut edge. A PVC card's printed sheets are laminated over a white core, so its edge shows white whatever the print; set this for a coloured core or a metal card. |
+| `number` | `string` | `'4000 1234 5678 9010'` | The embossed card number. Spaces are kept as typed; a number too long for the line condenses to fit. |
+| `name` | `string` | `'ALEX MORGAN'` | The embossed cardholder name, along the bottom of the card. |
+| `expiry` | `string` | `'12/29'` | The embossed expiry, with a printed "VALID THRU" legend to its left. `''` leaves both out. |
+| `emboss` | `boolean \| 'flat'` | `true` | How the number, name and expiry are set. `true` raises them (and presses their impressions into the back); `'flat'` prints them in a thin line with no relief, the way most cards issued today do; `false` leaves them off, for art that sets its own. |
+| `tipping` | `'silver' \| 'gold' \| 'none' \| string` | `'silver'` | Foil on the embossed crests: a preset, any CSS color, or `'none'` for untipped crests that show the print they were pushed up through. With `emboss="flat"` it is the colour the lines print in, and `'none'` prints them in plain ink. |
+| `chip` | `boolean \| 'gold' \| 'silver'` | `true` | The EMV chip's contact plate on the front: `'gold'` (or `true`), `'silver'`, or `false` for none. |
+| `finish` | `'gloss' \| 'matte'` | `'gloss'` | The laminate over the print. `'gloss'` catches the studio's highlights as the card turns; `'matte'` keeps the print flat, for soft-touch cards. |
+| `stripe` | `boolean` | `true` | The magnetic stripe across the top of the back. |
+| `signature` | `boolean` | `true` | The signature panel on the back, under the stripe. |
+| `surfaceBackground` | `string` | `color` | CSS background behind each face's content - the stock itself unless you set it, so whatever the content leaves clear prints on `color`. |
+| `resolution` | `number` | `520` | Virtual face width in CSS px (~150 dpi); height follows the card aspect. |
+
+The embossed lines take capitals, digits, spaces and `/`, `-` and `.`.
+Lower case is raised as capitals and accented letters lose their accents
+(José becomes JOSE), the way a card bureau transliterates a name; anything
+else is left out, and in development the console names what was dropped,
+once per character.
+
+## Regions
+
+| Slot | Surface |
+| --- | --- |
+| `<CreditCardMockup.Front>` | Front face, full bleed (bare children). |
+| `<CreditCardMockup.Back>` | Back face, full bleed - plain stock when omitted. |
+
+Every slot takes per-surface overrides - `surfaceBackground`,
+`resolution`, `surfaceStyle` - over the mockup-level defaults. The
+same slots exist on the bare `<CreditCard>`.
+
+The chip, the embossing, the stripe and the signature panel are 3D
+hardware over the art, so they cover whatever you print under them,
+pixel for pixel. Lay the art out around them - the chip's cavity is 7.9 to
+21.6 mm in from the left and 16.6 to 28.7 mm down, the number line 30.4 to
+34.7 mm down - or switch the piece off and print your own.
+
+## Mockup-able areas
+
+Every live surface filled with chroma green, labeled with the slot that
+feeds it - the fastest way to see exactly where your content lands and
+what stays 3D hardware.
+
+<MockupExplorer component="CreditCardMockup" screen="chroma" />
+
+## How the embossing is built
+
+No font file is loaded. The lettering is a small stroke font in the core -
+every glyph a few polylines on a 4×6 grid (`STROKE_FONT`), laid out by
+`layoutStrokeText` - and the card sweeps each stroke the way a die shapes
+PVC: a flat crest half the stroke wide, on shoulders that fall away on a
+smooth curve and meet the card with no seam. Each is one merged geometry
+per line, rebuilt only when that line's text changes. The foil is a
+part-metal film on the crests only, so they catch the studio lights the way
+a real card's do, while the shoulders show the print they were pushed up
+through, lit and shaded, and a soft contact shadow grounds each stroke.
+Untipped crests, and the impressions on the back, are drawn as shading over
+the live print in the same way, because that is what they are: the art
+itself, pushed up or pressed in. Printed flat, the same strokes are laid on
+the face as a thin monoline.
+
+```ts
+import { CREDIT_CARD, layoutStrokeText } from 'react-3d-mockups/core'
+
+// The number line's strokes, as [x, y] polylines in world units on the face.
+const { strokes, bounds } = layoutStrokeText('4000 1234 5678 9010', CREDIT_CARD.emboss.number)
+```
+
+## More examples
+
+### Gold tipping, both sides
+
+Foil comes in `'silver'`, `'gold'` or any CSS color. Turn the card over:
+the back's print sits under the stripe, the signature panel and the
+number's mirrored impressions.
+
+<MockupExplorer
+  component="CreditCardMockup"
+  props={{ tipping: 'gold', autoRotate: 2 }}
+/>
+
+### Untipped embossing
+
+`tipping="none"` leaves the crests bare, so the relief shows the card's
+own print, lit and shaded.
+
+<MockupExplorer
+  component="CreditCardMockup"
+  props={{ tipping: 'none', color: '#e9e4d8', rotation: [-0.2, -0.45, 0] }}
+/>
+
+### Printed flat
+
+Most cards issued today print the number, name and expiry rather than
+emboss them. `emboss="flat"` sets the same lines in a thin printed line
+with no relief and nothing pressed into the back; `tipping` picks the ink.
+Here on a matte card with a silver chip.
+
+<MockupExplorer
+  component="CreditCardMockup"
+  props={{ emboss: 'flat', chip: 'silver', finish: 'matte', color: '#16161a', rotation: [-0.1, -0.35, 0] }}
+/>
+
+### A blank card
+
+`emboss={false}` leaves the lettering off so your art can carry the
+details; `chip`, `stripe` and `signature` turn the rest of the hardware off
+the same way.
+
+<MockupExplorer
+  component="CreditCardMockup"
+  props={{ emboss: false, chip: false, color: '#e9e4d8', rotation: [-0.1, -0.35, 0] }}
+/>
