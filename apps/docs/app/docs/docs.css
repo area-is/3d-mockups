@@ -786,7 +786,8 @@
  */
 .mx-select,
 .mx-number,
-.mx-numfield {
+.mx-numfield,
+.mx-text {
   display: inline-flex;
   align-items: center;
   /* Explicit, so the declared height is the measured one whether or not a
@@ -805,7 +806,8 @@
 
 .mx-select:focus-visible,
 .mx-number:focus-visible,
-.mx-numfield:focus-within {
+.mx-numfield:focus-within,
+.mx-text:focus-visible {
   outline: none;
   border-color: var(--mx-accent);
 }
@@ -851,6 +853,13 @@
 .mx-number {
   width: 64px;
   -moz-appearance: textfield;
+}
+
+/* Wide enough for a 19-digit card number in the panel's monospace. */
+.mx-text {
+  width: 13.5em;
+  min-width: 0;
+  font-family: var(--font-mono);
 }
 
 .mx-number::-webkit-outer-spin-button,

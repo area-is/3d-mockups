@@ -7,9 +7,9 @@ import type { PropDoc } from '@/lib/prop-tables.generated'
  * Everything else a component accepts is described only by the prop table in
  * its API page - a name, a type, a default - and that turns out to be enough
  * to build the control from: `boolean` is a switch, `number` a slider,
- * `'a' \| 'b'` a select, `{ width?, height? }` a set of millimetre fields, and
- * a `*Color` string a color well. So the explorer drives those too, and the
- * table stays the single source of truth.
+ * `'a' \| 'b'` a select, `{ width?, height? }` a set of millimetre fields, a
+ * `*Color` string a color well and any other `string` a text field. So the
+ * explorer drives those too, and the table stays the single source of truth.
  *
  * A prop with a type this can't read stays a read-only row, exactly as the
  * whole group used to be. That is the deliberate fallback: a new prop lands in
@@ -71,6 +71,8 @@ export type Control =
   | { kind: 'vector'; axes: Axis[]; min: number; max: number; step: number }
   | { kind: 'dimensions'; axes: Axis[]; unit: string }
   | { kind: 'camera' }
+  /** Free text - a card's embossed number or name - up to `maxLength` characters. */
+  | { kind: 'text'; maxLength: number }
 
 export type EnumOption = string | boolean
 
@@ -153,7 +155,18 @@ const RANGES: Record<
   cornerRadius: { min: 0, max: 40, step: 0.5, unit: 'mm' },
   // The only numeric `size`: a TV's diagonal, which its own docs clamp.
   size: { min: 32, max: 98, step: 1, unit: '"' },
+  dpr: { min: 0.5, max: 3, step: 0.25, unit: '×' },
 }
+
+/**
+ * The longest string a text field takes, and a shared link may carry: room
+ * for any card number or name, and short enough that a crafted link cannot
+ * bloat the snippet.
+ */
+const TEXT_MAX = 64
+
+/** `'ALEX MORGAN'` - a quoted string default, unquoted; anything else names no value. */
+const quoted = (stated: string | undefined) => stated?.match(/^'(.*)'$/)?.[1]
 
 /** Bounds for a number with no entry above - centered on whatever it defaults to. */
 const range = (name: string, fallback: number | undefined) =>
@@ -237,6 +250,13 @@ export function editableProp(doc: PropDoc): EditableProp | null {
     )
   }
 
+  // `dpr`: one ratio or a `[min, max]` clamp. The slider sets one ratio, and
+  // starts at the top of the default clamp - the ratio a hi-dpi screen gets.
+  if (/^number \| \[min, max\]$/.test(type)) {
+    const clamp = stated ? allNumbers(stated) : []
+    return of({ kind: 'number', ...range(doc.name, undefined) }, undefined, clamp.at(-1) ?? 1)
+  }
+
   // A union of one - `variant: 'series11'`, the only watch there is - has
   // nothing to choose between, so it stays a documented row rather than
   // becoming a select that cannot change anything.
@@ -262,6 +282,11 @@ export function editableProp(doc: PropDoc): EditableProp | null {
 
   if (type === 'string' && /color$/i.test(doc.name)) {
     return of({ kind: 'color' }, hex(doc.default), hex(doc.default) ?? '#8a8f98')
+  }
+
+  if (type === 'string') {
+    const fallback = quoted(stated)
+    return of({ kind: 'text', maxLength: TEXT_MAX }, fallback, fallback ?? '')
   }
 
   return null
@@ -301,9 +326,10 @@ const MAX_MM = 10_000
  * Each case is the control's own contract: a switch holds a boolean, a slider
  * clamps to its travel, a select to its options, a color well to a hex. The
  * composites are held a little tighter than their number fields, to what an
- * object can be: a size above zero, a camera with a field of view. Nothing
- * free-form gets through, which matters beyond tidiness - these values are
- * printed into the snippet as code.
+ * object can be: a size above zero, a camera with a field of view. The one
+ * free-form value, a text field's, is held to its length and only ever
+ * printed as an escaped string literal (`jsxString`) - which matters beyond
+ * tidiness, because these values are printed into the snippet as code.
  */
 export function acceptValue(prop: EditableProp, value: unknown): unknown {
   const { control } = prop
@@ -320,6 +346,8 @@ export function acceptValue(prop: EditableProp, value: unknown): unknown {
       return (typeof value === 'string' || typeof value === 'boolean') && control.options.includes(value)
         ? value
         : undefined
+    case 'text':
+      return typeof value === 'string' && value.length <= control.maxLength ? value : undefined
     case 'vector':
       return Array.isArray(value) && value.length === control.axes.length && value.every(finite)
         ? value
@@ -365,6 +393,16 @@ export function propSummary(prop: EditableProp, value: unknown): string {
   }
 }
 
+/**
+ * A string as a JSX attribute value: quoted as typed when it reads back
+ * exactly, else a JS string literal in braces. JSX attribute strings have no
+ * escapes and do decode HTML entities, so a quote, an ampersand, a backslash
+ * or a control character goes through `JSON.stringify` - text from a shared
+ * link is never spliced into the code as written.
+ */
+const jsxString = (text: string) =>
+  /^[^"&\\\u0000-\u001f\u007f-\u009f\u2028\u2029]*$/.test(text) ? `"${text}"` : `{${JSON.stringify(text)}}`
+
 /** One prop, written the way it would appear in the snippet. */
 export function propAttribute(prop: EditableProp, value: unknown): string {
   const { name, control } = prop
@@ -381,6 +419,8 @@ export function propAttribute(prop: EditableProp, value: unknown): string {
       return `${name}="${String(value)}"`
     case 'color':
       return `${name}="${String(value)}"`
+    case 'text':
+      return `${name}=${jsxString(String(value))}`
     case 'vector': {
       const axis = (value as number[]).map(num)
       // A uniform scale reads as one number, which is how anyone writes it.

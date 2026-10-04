@@ -34,7 +34,6 @@ export const CATEGORIES = [
   'Packaging',
   'Out of home',
   'Vehicles',
-  'Custom',
 ]
 
 const device = (id, label, component, variant, shot, category, keywords) => ({
@@ -189,6 +188,12 @@ export const OBJECTS = [
   object('poster-frame', 'Poster frame', 'PosterFrameMockup', 'device=poster&ry=-18', 'Print', [
     'poster', 'frame', 'framed poster', 'art print', 'wall art', 'print',
   ]),
+  object('vinyl-record', 'Vinyl record', 'VinylRecordMockup', 'device=vinyl&ry=-20', 'Print', [
+    'vinyl', 'record', 'lp', 'album cover', 'album art', 'record sleeve', 'music',
+  ]),
+  object('custom-panel', 'Custom panel', 'CustomPanelMockup', 'device=custompanel&ry=-18', 'Print', [
+    'custom size', 'custom', 'panel', 'sheet', 'flat print', 'any size',
+  ]),
   object('product-box', 'Product box', 'ProductBoxMockup', 'device=productbox&ry=-32&rx=12', 'Packaging', [
     'box', 'product box', 'retail box', 'carton', 'packaging', 'package',
   ]),
@@ -201,14 +206,8 @@ export const OBJECTS = [
   object('shopping-bag', 'Shopping bag', 'ShoppingBagMockup', 'device=bag&ry=-26', 'Packaging', [
     'bag', 'shopping bag', 'paper bag', 'kraft bag', 'carrier bag', 'tote', 'packaging',
   ]),
-  object('custom-panel', 'Custom panel', 'CustomPanelMockup', 'device=custompanel&ry=-18', 'Custom', [
-    'custom size', 'custom', 'panel', 'sheet', 'flat print', 'any size',
-  ]),
-  object('custom-box', 'Custom box', 'CustomBoxMockup', 'device=custombox&ry=-34&rx=14', 'Custom', [
+  object('custom-box', 'Custom box', 'CustomBoxMockup', 'device=custombox&ry=-34&rx=14', 'Packaging', [
     'custom box', 'custom size', 'custom', 'any size box', 'dieline',
-  ]),
-  object('vinyl-record', 'Vinyl record', 'VinylRecordMockup', 'device=vinyl&ry=-20', 'Print', [
-    'vinyl', 'record', 'lp', 'album cover', 'album art', 'record sleeve', 'music',
   ]),
   object('rollup-banner', 'Roll-up banner', 'RollupBannerMockup', 'device=rollup&ry=-18', 'Out of home', [
     'rollup', 'roll up', 'pull up banner', 'banner', 'banner stand', 'trade show', 'exhibition',

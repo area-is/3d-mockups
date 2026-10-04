@@ -422,6 +422,27 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
     )
   }
 
+  if (control.kind === 'text') {
+    return (
+      <div className="mx-row" title={doc.description}>
+        <span className="mx-prop">{name}</span>
+        <span className="mx-row-controls">
+          <input
+            type="text"
+            className="mx-text"
+            aria-label={name}
+            spellCheck={false}
+            autoComplete="off"
+            maxLength={control.maxLength}
+            value={String(value ?? '')}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          {reset}
+        </span>
+      </div>
+    )
+  }
+
   if (control.kind === 'enum') {
     // A value a page set outside the presets (a `| string` prop's own colour)
     // is still the one in force, so it stays listed and selected.

@@ -270,9 +270,10 @@ interface Offered {
  * A link is input from anyone, so each change is taken only if the panel
  * offers a control for it here and the value is one that control could have
  * produced - otherwise that change is dropped and the rest still apply. Every
- * string that survives is one of a known set or a hex colour, which also
- * keeps a crafted link from writing code of its own into the snippet, and
- * from there into a StackBlitz project.
+ * string that survives is one of a known set, a hex colour, or a text field's
+ * value - held to its length and printed only as an escaped string literal -
+ * which also keeps a crafted link from writing code of its own into the
+ * snippet, and from there into a StackBlitz project.
  */
 function restoreShared(base: PropState, link: Record<string, unknown>, offered: Offered): PropState {
   const { spec, lockedVariant, hasColor, arranged, owned, editable } = offered
@@ -353,6 +354,8 @@ interface PanelProps {
   transform: EditableProp[]
   /** The stage camera, which belongs with the other stage props. */
   camera?: EditableProp
+  /** The canvas's own inferred props (`dpr`), shown under the stage. */
+  stage: EditableProp[]
   /** Documented, but not something a live demo can drive. */
   readOnly: PropDoc[]
 }
@@ -369,8 +372,11 @@ interface PanelProps {
 const documented = (spec: ExplorerSpec) =>
   new Set((COMPONENT_PROPS[spec.name] ?? []).map((doc) => doc.name))
 
+/** Canvas props with an inferred row, which sit with the stage rather than the model. */
+const STAGE_PROPS = new Set(['dpr'])
+
 function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
-  const out: PanelProps = { object: [], transform: [], readOnly: [] }
+  const out: PanelProps = { object: [], transform: [], stage: [], readOnly: [] }
   const seen = new Set(driven)
   for (const doc of [...(COMPONENT_PROPS[spec.name] ?? []), ...SHARED_PROPS]) {
     if (seen.has(doc.name)) continue
@@ -378,6 +384,7 @@ function panelProps(spec: ExplorerSpec, driven: Set<string>): PanelProps {
     const prop = editableProp(doc)
     if (!prop) out.readOnly.push(doc)
     else if (prop.control.kind === 'camera') out.camera = prop
+    else if (STAGE_PROPS.has(prop.name)) out.stage.push(prop)
     else if (prop.control.kind === 'vector') out.transform.push(prop)
     else out.object.push(prop)
   }
@@ -509,17 +516,17 @@ const lastWins = (attributes: string[]): string[] => {
   return [...byName.values()]
 }
 
-/**
- * The props an arrangement takes off the object and gives to the canvas or to
- * the individual instances - so neither the stage nor the snippet hands a bare
- * object something the page or the canvas already owns.
- */
 /** The flat view's zoom range, as factors over the fit, and the step a click takes. */
 const FLAT_ZOOM_MIN = 0.25
 const FLAT_ZOOM_MAX = 8
 const FLAT_ZOOM_STEP = 1.25
 
-const NOT_AN_ARRANGED_OBJECT_PROP = ['camera', 'position', 'rotation', 'scale']
+/**
+ * The props an arrangement takes off the object and gives to the canvas or to
+ * the individual instances - so neither the stage nor the snippet hands a bare
+ * object something the page or the canvas already owns.
+ */
+const NOT_AN_ARRANGED_OBJECT_PROP = ['camera', 'dpr', 'position', 'rotation', 'scale']
 
 /** The object props in play - what a bare instance would take too. */
 function objectAttributes(
@@ -628,13 +635,14 @@ function buildArrangedSource(
   extras: EditableProp[]
 ): Line[] {
   const shared = objectAttributes(spec, p, extras, NOT_AN_ARRANGED_OBJECT_PROP)
-  const camera = extras.find((prop) => prop.name === 'camera')
+  // The camera frames the whole composition, and `dpr` sets the whole
+  // canvas's resolution, so both are the canvas's here - there is no
+  // one-liner between the panel row and the stage to route them.
+  const onCanvas = extras.filter((prop) => (prop.name === 'camera' || prop.name === 'dpr') && prop.name in p.extra)
   const canvas = lastWins([
     ...stageAttributes(p),
     ...Object.entries(arrangement.canvas ?? {}).map(([name, value]) => literalAttribute(name, value)),
-    // The camera frames the whole composition, so it is the canvas's here -
-    // there is no one-liner between the panel row and the stage to route it.
-    ...(camera && 'camera' in p.extra ? [propAttribute(camera, p.extra.camera)] : []),
+    ...onCanvas.map((prop) => propAttribute(prop, p.extra[prop.name])),
   ])
   const lines: Line[] = []
   const imports = new Set(['MockupCanvas'])
@@ -844,7 +852,7 @@ function MockupExplorerImpl({
     ...ownedByItems,
   ])
   const panel = panelProps(spec, driven)
-  const editable = [...panel.object, ...panel.transform, ...(panel.camera ? [panel.camera] : [])]
+  const editable = [...panel.object, ...panel.transform, ...(panel.camera ? [panel.camera] : []), ...panel.stage]
 
   /** What a row shows: the value in play, whether it moved, and how to move it. */
   const rowProps = (prop: EditableProp) => ({
@@ -1018,9 +1026,10 @@ function MockupExplorerImpl({
   /**
    * The props that describe the OBJECT - the ones a bare instance takes too.
    *
-   * An arrangement takes four of them back. `camera` frames the composition
-   * rather than any one object, and the one-liner is not there to route it to
-   * the canvas; the transforms are the page's, one per instance. Both are gone
+   * An arrangement takes five of them back. `camera` frames the composition
+   * and `dpr` sets the canvas's resolution rather than any one object's, and
+   * the one-liner is not there to route them to the canvas; the transforms
+   * are the page's, one per instance. Both are gone
    * from the panel too, so nothing here is silently dropping a live row.
    */
   const objectProps: Record<string, unknown> = {
@@ -1046,7 +1055,11 @@ function MockupExplorerImpl({
     fullscreen: p.fullscreen,
     shadows: p.shadows,
     ...(arranged
-      ? { ...arranged.canvas, ...(p.extra.camera ? { camera: p.extra.camera } : {}) }
+      ? {
+          ...arranged.canvas,
+          ...(p.extra.camera ? { camera: p.extra.camera } : {}),
+          ...('dpr' in p.extra ? { dpr: p.extra.dpr } : {}),
+        }
       : {}),
   }
 
@@ -1429,6 +1442,9 @@ function MockupExplorerImpl({
               </span>
             </div>
             {panel.camera ? <PropRow {...rowProps(panel.camera)} /> : null}
+            {panel.stage.map((prop) => (
+              <PropRow key={prop.name} {...rowProps(prop)} />
+            ))}
 
             {panel.transform.length ? (
               <>

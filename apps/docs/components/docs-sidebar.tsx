@@ -8,7 +8,6 @@ import {
   Laptop,
   Newspaper,
   Package,
-  Ruler,
   Signpost,
   Smartphone,
   Tablet,
@@ -62,7 +61,6 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Packaging: Package,
   'Out of home': Signpost,
   Vehicles: Truck,
-  Custom: Ruler,
 }
 
 /**

@@ -184,6 +184,19 @@ export const COMPONENT_PROPS: Record<string, PropDoc[]> = {
     {"name":"surfaceBackground","type":"string","default":"'#ffffff'","description":"CSS background behind your poster content."},
     {"name":"resolution","type":"number","default":"540","description":"Virtual art width in CSS px; height follows its aspect."},
   ],
+  "VinylRecordMockup": [
+    {"name":"vinylColor","type":"string","default":"'#0b0b0d'","description":"Disc color. Classic black; try pressing colors."},
+    {"name":"color","type":"string","default":"'#f2efe8'","description":"Jacket stock (edges and unprinted faces)."},
+    {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind cover, back and label - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
+    {"name":"resolution","type":"number","default":"520","description":"Virtual cover width in CSS px; the label shares its dpi."},
+  ],
+  "CustomPanelMockup": [
+    {"name":"size","type":"{ width, height, thickness? }","default":"required","description":"Panel size in millimeters. thickness defaults to 5."},
+    {"name":"color","type":"string","default":"'#f2f1ed'","description":"Stock color: edges, and the back when unprinted."},
+    {"name":"cornerRadius","type":"number","default":"2","description":"Corner rounding in millimeters."},
+    {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind each printed face - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
+    {"name":"resolution","type":"number","default":"560","description":"Virtual front face width in CSS px."},
+  ],
   "ProductBoxMockup": [
     {"name":"size","type":"{ width, height, depth }","default":"190×265×55","description":"Real size in millimeters. The longest edge normalizes to the stage, so any size fills the camera at true proportions."},
     {"name":"color","type":"string","default":"'#f4f1ea'","description":"Carton stock: unprinted panels and fold edges."},
@@ -212,24 +225,11 @@ export const COMPONENT_PROPS: Record<string, PropDoc[]> = {
     {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind each printed face - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
     {"name":"resolution","type":"number","default":"460","description":"Virtual front face width in CSS px; height follows the bag."},
   ],
-  "CustomPanelMockup": [
-    {"name":"size","type":"{ width, height, thickness? }","default":"required","description":"Panel size in millimeters. thickness defaults to 5."},
-    {"name":"color","type":"string","default":"'#f2f1ed'","description":"Stock color: edges, and the back when unprinted."},
-    {"name":"cornerRadius","type":"number","default":"2","description":"Corner rounding in millimeters."},
-    {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind each printed face - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
-    {"name":"resolution","type":"number","default":"560","description":"Virtual front face width in CSS px."},
-  ],
   "CustomBoxMockup": [
     {"name":"size","type":"{ width, height, depth }","default":"required","description":"Box size in millimeters."},
     {"name":"color","type":"string","default":"'#e8e5df'","description":"Stock color for unprinted faces."},
     {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind each printed face - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
     {"name":"resolution","type":"number","default":"560","description":"Virtual front face width in CSS px; all faces share its dpi."},
-  ],
-  "VinylRecordMockup": [
-    {"name":"vinylColor","type":"string","default":"'#0b0b0d'","description":"Disc color. Classic black; try pressing colors."},
-    {"name":"color","type":"string","default":"'#f2efe8'","description":"Jacket stock (edges and unprinted faces)."},
-    {"name":"surfaceBackground","type":"string","default":"color","description":"CSS background behind cover, back and label - the stock itself unless you set it, so whatever the content leaves clear prints on color."},
-    {"name":"resolution","type":"number","default":"520","description":"Virtual cover width in CSS px; the label shares its dpi."},
   ],
   "RollupBannerMockup": [
     {"name":"size","type":"{ width?, height? }","default":"850×2000","description":"Physical graphic in mm - e.g. { width: 1000 } for the wide stand. The cassette resizes with it."},
