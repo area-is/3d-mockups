@@ -1,0 +1,33 @@
+{
+  "film": "grove",
+  "voice": {
+    "voiceId": "JBFqnCBsd6RMkjVDRZzb",
+    "modelId": "eleven_multilingual_v2",
+    "settings": { "stability": 0.6, "similarity_boost": 0.8, "style": 0.2, "use_speaker_boost": true }
+  },
+  "music": {
+    "prompt": "Bright, warm morning track for a cold-pressed juice commercial: plucked acoustic guitar, marimba, light handclaps and soft percussion at 100 BPM. Cheerful and uncluttered, leaves room for a voiceover, and ends gently on a resolved chord at 26 seconds. No vocals.",
+    "seconds": 27,
+    "volume": 0.5,
+    "duck": 0.4
+  },
+  "lines": [
+    { "id": "vo-01-hero", "shot": "hero", "at": 20, "maxSeconds": 3.2, "text": "Squeezed this morning. Not last month." },
+    { "id": "vo-02-lineup", "shot": "lineup", "at": 20, "maxSeconds": 3.2, "text": "Blood orange. Lemon ginger. Green apple." },
+    { "id": "vo-03-bag", "shot": "bag", "at": 16, "maxSeconds": 2.3, "text": "Cold, fresh, and good to go." },
+    { "id": "vo-04-street", "shot": "street", "at": 30, "maxSeconds": 3.6, "text": "On your corner, before you're even up." },
+    { "id": "vo-05-van", "shot": "van", "at": 16, "maxSeconds": 2.3, "text": "Delivered fresh every morning." },
+    { "id": "vo-06-billboard", "shot": "billboard", "at": 16, "maxSeconds": 2.3, "text": "Never from concentrate." },
+    { "id": "vo-07-outro", "shot": "outro", "at": 16, "maxSeconds": 1.8, "text": "Grove. Squeezed this morning." }
+  ],
+  "sfx": [
+    { "id": "sfx-hero-morning", "shot": "hero", "at": [0], "seconds": 4.4, "volume": 0.35, "prompt": "Soft early-morning orchard ambience with distant birdsong." },
+    { "id": "sfx-lineup-cut", "shot": "lineup", "at": [6], "seconds": 0.6, "volume": 0.5, "prompt": "A short soft whoosh into a camera-flash pop." },
+    { "id": "sfx-lineup-carton", "shot": "lineup", "at": [17, 23, 29], "seconds": 0.5, "volume": 0.7, "prompt": "A full juice carton set down on a wooden table, a soft dull thud." },
+    { "id": "sfx-bag-rustle", "shot": "bag", "at": [14], "seconds": 1.4, "volume": 0.5, "prompt": "A kraft paper shopping bag rustling as it swings." },
+    { "id": "sfx-street-city", "shot": "street", "at": [14], "seconds": 5.0, "volume": 0.3, "prompt": "A quiet early-morning city street, a bus pulling away in the distance." },
+    { "id": "sfx-van-roll", "shot": "van", "at": [12], "seconds": 3.2, "volume": 0.45, "prompt": "An electric delivery van rolling past slowly, soft tyre noise on asphalt." },
+    { "id": "sfx-billboard-air", "shot": "billboard", "at": [12], "seconds": 3.2, "volume": 0.25, "prompt": "Light open-air wind high above a road." },
+    { "id": "sfx-outro-pour", "shot": "outro", "at": [4], "seconds": 1.8, "volume": 0.6, "prompt": "Juice poured into a glass over ice, ending on one clean bright ding." }
+  ]
+}

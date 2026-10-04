@@ -11,7 +11,8 @@
     "render:lumen": "remotion render LumenFilm out/lumen.mp4 --concurrency=1",
     "art": "python3 scripts/generate-art.py",
     "still": "remotion still",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audio": "python3 scripts/generate-audio.py"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

@@ -92,6 +92,58 @@ cut-outs. And the shoe's sky and ember colourways and its three-quarter view
 are edits of the volt image rather than fresh generations, so all four are
 the same shoe. The script needs Python 3 with Pillow and requests.
 
+### Sound
+
+KITE and Grove are cut for narration, a music bed and effects from
+[ElevenLabs](https://elevenlabs.io). Each film's cue sheet,
+`src/campaigns/<film>/sound.json`, holds what the narrator says and when, the
+effects on the visual beats, and a prompt for the music. Every cue is anchored
+to a shot and a frame within it, so re-timing a shot carries its sound along.
+`src/campaigns/sound.tsx` plays whatever of the sheet is in
+`public/audio/<film>/` and nothing that is not, so the films render silent
+until the files exist:
+
+```bash
+ELEVENLABS_API_KEY=... npm run audio -- kite          # generate what is missing
+ELEVENLABS_API_KEY=... npm run audio -- kite vo-03-fold
+npm run audio -- grove --dry-run                      # the cue sheet, no requests
+```
+
+Working in the ElevenLabs app instead, `--dry-run` lists every file name with
+its text or prompt and length; save each file under its name and the film
+picks it up. The mix is in the sheet: the music fades in over the first 12
+frames and out over the last second, and dips to `duck` (40%) for each line's
+window. Each line has a window (`maxSeconds`) that ends before the next shot,
+and the script reports any read that runs past it. The script trims the
+silence the voice model leaves around a line, so it starts on its cue.
+
+The narration is written for the voice, not the screen: "Aero Two", "October
+ninth" and "Kite" rather than "AERO 2", "10.09" and "KITE", which a
+text-to-speech model may read as a decimal or spell out. Each line is one
+short sentence or two per shot (1.3 to 2.6 words a second), so it lands
+inside the shot with room to breathe. Each line complements the type on
+screen rather than reading it out.
+
+| KITE | Narration | Effects |
+| --- | --- | --- |
+| 0:00.4 title | This is Aero Two. | whoosh as the shoe tears past (0:00.1) |
+| 0:03.2 app | Three colours. One seriously light shoe. | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
+| 0:07.7 Fold | The countdown's on. And the drop is live. | countdown beeps (0:07.6, 0:07.9), launch chime (0:08.3), hinge (0:08.5) |
+| 0:11.7 watch | Tempo pace. Easy-day feel. | notification (0:12.9) |
+| 0:15.4 boxes | Unbox it. Lace up. Go. | box set down (0:15.1) |
+| 0:19.5 desk | October ninth. Only in the Kite app. | camera swoosh (0:19.3) |
+| 0:23.4 outro | Kite. Run lighter. | logo sting (0:23.0) |
+
+| Grove | Narration | Effects |
+| --- | --- | --- |
+| 0:00.7 hero | Squeezed this morning. Not last month. | orchard morning (from 0:00) |
+| 0:04.9 line-up | Blood orange. Lemon ginger. Green apple. | cut (0:04.5), three cartons set down (0:04.8 to 0:05.2) |
+| 0:09.1 bag | Cold, fresh, and good to go. | paper bag (0:09.0) |
+| 0:12.8 corner | On your corner, before you're even up. | street (from 0:12.3) |
+| 0:17.6 van | Delivered fresh every morning. | van rolling past (0:17.5) |
+| 0:20.9 billboard | Never from concentrate. | wind (from 0:20.7) |
+| 0:24.1 outro | Grove. Squeezed this morning. | pour and ding (0:23.7) |
+
 ### Notes from making them
 
 - **Set things down; don't drop them.** A spring's overshoot carried a
@@ -140,7 +192,10 @@ the same shoe. The script needs Python 3 with Pillow and requests.
   `pushCut` move or clip the outgoing shot in 2D and are fine. `flip` puts
   it in a CSS 3D perspective, which compounds with the 3D transforms that
   place each screen's DOM on the glass: the printed faces came off the
-  geometry they belong to, and the half-way frame was black.
+  geometry they belong to, and the half-way frame was black. And `pushCut`
+  leaves the incoming shot zoomed to 107% when it ends, so the shot jumps
+  back to 100% the frame after; Grove passes `incomingStartScale: 1` and
+  `incomingEndScale: 1`.
 - **Render one film at a time, without `fromSurface`.** Rendered while
   another render (or a batch of stills) shared the CPU, a few frames in
   every thousand came out with a whole canvas, or one surface, missing for

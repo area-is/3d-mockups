@@ -22,6 +22,8 @@ import {
 } from 'react-3d-mockups'
 import { A_FRAME_SIGN_FRAMING, BILLBOARD_FRAMING, BUS_SHELTER_FRAMING, MILK_CARTON_FRAMING, VAN_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
+import { shotStarts, Soundtrack, type SoundSheet } from '../sound'
+import SOUND from './sound.json'
 import { easeOut, tween, type Vec3 } from '../../reel/motion'
 import { CameraRig, Drift, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, settle, useEnvelope, useStage, Words } from '../kit'
 import {
@@ -58,6 +60,9 @@ import {
  */
 
 export const GROVE_SHOTS = { hero: 140, lineup: 140, bag: 110, street: 170, van: 110, billboard: 110, outro: 72, transition: 12 }
+const SHOT_ORDER = ['hero', 'lineup', 'bag', 'street', 'van', 'billboard', 'outro'] as const
+/** The narration, effects and music, placed on the shots they belong to (see `sound.json`). */
+const SOUND_STARTS = shotStarts(SHOT_ORDER, GROVE_SHOTS, GROVE_SHOTS.transition)
 const CUTS = 6
 export const GROVE_DURATION =
   GROVE_SHOTS.hero + GROVE_SHOTS.lineup + GROVE_SHOTS.bag + GROVE_SHOTS.street + GROVE_SHOTS.van + GROVE_SHOTS.billboard + GROVE_SHOTS.outro - GROVE_SHOTS.transition * CUTS
@@ -493,6 +498,7 @@ export function GroveFilm() {
           <Outro />
         </TransitionSeries.Sequence>
       </TransitionSeries>
+      <Soundtrack sheet={SOUND as SoundSheet} starts={SOUND_STARTS} />
     </FontGate>
   )
 }

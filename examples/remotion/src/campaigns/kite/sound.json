@@ -1,0 +1,35 @@
+{
+  "film": "kite",
+  "voice": {
+    "voiceId": "JBFqnCBsd6RMkjVDRZzb",
+    "modelId": "eleven_multilingual_v2",
+    "settings": { "stability": 0.42, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": true }
+  },
+  "music": {
+    "prompt": "Energetic sports-commercial track for a running-shoe launch: punchy drums, driving synth bass and bright plucks at 120 BPM. Opens on a quick riser, builds steadily with a short lift around 8 seconds, leaves room for a voiceover, and ends on one clean final hit at 25 seconds. No vocals.",
+    "seconds": 26,
+    "volume": 0.55,
+    "duck": 0.4
+  },
+  "lines": [
+    { "id": "vo-01-title", "shot": "title", "at": 12, "maxSeconds": 2.2, "text": "This is Aero Two." },
+    { "id": "vo-02-phone", "shot": "phone", "at": 18, "maxSeconds": 3.6, "text": "Three colours. One seriously light shoe." },
+    { "id": "vo-03-fold", "shot": "fold", "at": 14, "maxSeconds": 3.4, "text": "The countdown's on. And the drop is live." },
+    { "id": "vo-04-watch", "shot": "watch", "at": 16, "maxSeconds": 2.5, "text": "Tempo pace. Easy-day feel." },
+    { "id": "vo-05-boxes", "shot": "boxes", "at": 30, "maxSeconds": 2.8, "text": "Unbox it. Lace up. Go." },
+    { "id": "vo-06-desk", "shot": "desk", "at": 36, "maxSeconds": 3.1, "text": "October ninth. Only in the Kite app." },
+    { "id": "vo-07-outro", "shot": "outro", "at": 14, "maxSeconds": 1.9, "text": "Kite. Run lighter." }
+  ],
+  "sfx": [
+    { "id": "sfx-title-whoosh", "shot": "title", "at": [2], "seconds": 1.0, "volume": 0.7, "prompt": "A fast, airy whoosh as a running shoe tears past the camera, clean sports-commercial sound design." },
+    { "id": "sfx-phone-tap", "shot": "phone", "at": [36, 78], "seconds": 0.5, "volume": 0.5, "prompt": "A soft, crisp smartphone interface tap." },
+    { "id": "sfx-phone-lift", "shot": "phone", "at": [104], "seconds": 0.8, "volume": 0.6, "prompt": "A quick rising whoosh, like something lifting off a glass screen." },
+    { "id": "sfx-fold-beep", "shot": "fold", "at": [11, 22], "seconds": 0.5, "volume": 0.45, "prompt": "A short, clean digital countdown beep." },
+    { "id": "sfx-fold-live", "shot": "fold", "at": [33], "seconds": 0.8, "volume": 0.55, "prompt": "A bright digital launch chime." },
+    { "id": "sfx-fold-hinge", "shot": "fold", "at": [38], "seconds": 1.2, "volume": 0.55, "prompt": "A premium foldable phone hinge opening smoothly, ending on a soft mechanical click." },
+    { "id": "sfx-watch-ping", "shot": "watch", "at": [52], "seconds": 0.6, "volume": 0.6, "prompt": "A short smartwatch notification: a soft haptic buzz with a gentle ping." },
+    { "id": "sfx-boxes-thud", "shot": "boxes", "at": [20], "seconds": 0.5, "volume": 0.7, "prompt": "A cardboard shoe box set down gently on top of another box, a soft muted thud." },
+    { "id": "sfx-desk-swoosh", "shot": "desk", "at": [30], "seconds": 1.6, "volume": 0.4, "prompt": "A slow, low cinematic camera swoosh." },
+    { "id": "sfx-outro-sting", "shot": "outro", "at": [2], "seconds": 1.8, "volume": 0.7, "prompt": "A short, punchy logo sting: a whoosh into a bright synth hit." }
+  ]
+}

@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion'
 import { linearTiming, springTiming, TransitionSeries } from '@remotion/transitions'
-import { clockWipe } from '@remotion/transitions/clock-wipe'
 import { iris } from '@remotion/transitions/iris'
 import { slide } from '@remotion/transitions/slide'
 import { wipe } from '@remotion/transitions/wipe'
@@ -22,6 +21,8 @@ import {
 } from 'react-3d-mockups'
 import { APPLE_WATCH_FRAMING, CUSTOM_BOX_FRAMING, LAPTOP_FRAMING, MAILER_BOX_FRAMING } from 'react-3d-mockups/core'
 import { useMockupCapture } from '../../use-mockup-capture'
+import { shotStarts, Soundtrack, type SoundSheet } from '../sound'
+import SOUND from './sound.json'
 import { easeInOut, easeOut, tween, type Vec3 } from '../../reel/motion'
 import { CameraRig, Cut, Drift, Floor, FontGate, orbitAt, OverlapProbe, RIG_START, settle, statusBarFont, useEnvelope, useStage } from '../kit'
 import {
@@ -56,6 +57,9 @@ import {
  */
 
 export const KITE_SHOTS = { title: 90, phone: 150, fold: 130, watch: 110, boxes: 130, desk: 150, outro: 72, transition: 12 }
+const SHOT_ORDER = ['title', 'phone', 'fold', 'watch', 'boxes', 'desk', 'outro'] as const
+/** The narration, effects and music, placed on the shots they belong to (see `sound.json`). */
+const SOUND_STARTS = shotStarts(SHOT_ORDER, KITE_SHOTS, KITE_SHOTS.transition)
 const CUTS = 6
 export const KITE_DURATION =
   KITE_SHOTS.title + KITE_SHOTS.phone + KITE_SHOTS.fold + KITE_SHOTS.watch + KITE_SHOTS.boxes + KITE_SHOTS.desk + KITE_SHOTS.outro - KITE_SHOTS.transition * CUTS
@@ -374,9 +378,9 @@ function BoxesShot() {
         </CustomBox>
       </MockupCanvas>
       <Shout style={{ left: 110 * u, top: 90 * u, color: KITE.graphite, fontSize: 110 * u, opacity: caption, transform: `translateY(${(1 - caption) * 20 * u}px)` }}>
-        AT YOUR DOOR
+        UNBOX. LACE UP.
         <br />
-        BY FRIDAY.
+        GO.
       </Shout>
     </AbsoluteFill>
   )
@@ -495,7 +499,7 @@ export function KiteFilm() {
         <TransitionSeries.Sequence durationInFrames={KITE_SHOTS.watch}>
           <WatchShot />
         </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={clockWipe({ width, height })} timing={timing} />
+        <TransitionSeries.Transition presentation={wipe({ direction: 'from-top-left' })} timing={timing} />
         <TransitionSeries.Sequence durationInFrames={KITE_SHOTS.boxes}>
           <BoxesShot />
         </TransitionSeries.Sequence>
@@ -508,6 +512,7 @@ export function KiteFilm() {
           <Outro />
         </TransitionSeries.Sequence>
       </TransitionSeries>
+      <Soundtrack sheet={SOUND as SoundSheet} starts={SOUND_STARTS} />
     </FontGate>
   )
 }

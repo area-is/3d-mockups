@@ -47,10 +47,17 @@ export function KiteGlyph({ size, color, tail = true }: { size: number | string;
   )
 }
 
+/**
+ * The lock-up: the outro's kite, spars and tail, beside the word - its diamond
+ * level with the capitals and the tail hanging below the line, so at any size
+ * it reads as a kite rather than a bullet.
+ */
 export function KiteLogo({ size, color, glyph }: { size: number | string; color: string; glyph?: string }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.18em', fontFamily: DISPLAY, fontSize: size, letterSpacing: '0.02em', lineHeight: 1, color }}>
-      <KiteGlyph size="0.62em" color={glyph ?? color} tail={false} />
+    <div style={{ display: 'inline-flex', alignItems: 'flex-start', gap: '0.16em', fontFamily: DISPLAY, fontSize: size, letterSpacing: '0.02em', lineHeight: 1, color }}>
+      <span style={{ display: 'block', marginTop: '0.02em', marginBottom: '-0.42em' }}>
+        <KiteGlyph size="0.8em" color={glyph ?? color} />
+      </span>
       KITE
     </div>
   )
@@ -255,7 +262,7 @@ export function WorkoutScreen({ notifyAt }: { notifyAt: number }) {
         }}
       >
         <div style={{ width: 30, height: 30, borderRadius: '50%', background: KITE.volt, display: 'grid', placeItems: 'center', flex: 'none' }}>
-          <KiteGlyph size={14} color={KITE.graphite} tail={false} />
+          <KiteGlyph size={13} color={KITE.graphite} />
         </div>
         <div style={{ fontSize: 12.5, lineHeight: 1.25, fontWeight: 600 }}>
           <span style={{ color: KITE.volt }}>KITE</span>
@@ -336,10 +343,7 @@ export function StoreScreen() {
 export function MailerLid() {
   return (
     <Face ink={KITE.volt} font={DISPLAY} style={{ alignItems: 'center', justifyContent: 'space-between', padding: '9cqh 0 10cqh' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2.4cqw' }}>
-        <KiteGlyph size="6cqw" color={KITE.volt} tail={false} />
-        <span style={{ fontSize: '13cqw', lineHeight: 0.9 }}>KITE</span>
-      </div>
+      <KiteLogo size="13cqw" color={KITE.volt} />
       <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '3.4cqw', letterSpacing: '-0.01em' }}>Handle like a personal best.</div>
     </Face>
   )
