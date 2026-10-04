@@ -111,7 +111,15 @@ npm run audio -- grove --dry-run                      # the cue sheet, no reques
 
 Working in the ElevenLabs app instead, `--dry-run` lists every file name with
 its text or prompt and length; save each file under its name and the film
-picks it up. The mix is in the sheet: the music fades in over the first 12
+picks it up. Or read the whole script as one take, a pause between lines
+(`<break time="1.2s" />`), and cut it with `--split take.mp3`: one performance
+across every line, evened out, cut at its longest silences, with any pause
+inside a line shortened to 0.4 s.
+
+KITE's narration is in `public/audio/kite`: ElevenLabs' Coach Cap
+(`eleven_multilingual_v2`), read as one take and cut with `--split`. Its
+transcript matches the script, and every line sits inside its window. The
+music and effects are still to generate. The mix is in the sheet: the music fades in over the first 12
 frames and out over the last second, and dips to `duck` (40%) for each line's
 window. Each line has a window (`maxSeconds`) that ends before the next shot,
 and the script reports any read that runs past it. The script trims the

@@ -36,13 +36,20 @@ export const COLOURWAYS: Colourway[] = [
   { id: 'ember', name: 'Ember', art: 'kite-ember', ground: '#ff5a2a', deep: '#e0441a', ink: '#1a0a05' },
 ]
 
-/** The mark: a kite, its spars, and a tail. */
+/**
+ * The mark: a kite and its tail. The four panels are cut apart where the
+ * spars cross, a clear gap rather than a darker line, so the mark is one
+ * colour and reads on any ground. Each panel is the diamond's quarter pulled
+ * back 0.7 from both spars (the outer edges cut where they meet the gap).
+ */
 export function KiteGlyph({ size, color, tail = true }: { size: number | string; color: string; tail?: boolean }) {
   return (
     <svg viewBox="0 0 24 32" style={{ width: size, height: 'auto', display: 'block', flex: 'none' }} aria-hidden>
-      <path d="M12 1 22 11 12 23 2 11Z" fill={color} />
-      <path d="M12 1V23M2 11H22" stroke="rgba(0,0,0,0.35)" strokeWidth={1.2} />
-      {tail && <path d="M12 23c-2 2 2 3 0 5s2 3 0 4" stroke={color} strokeWidth={1.6} fill="none" strokeLinecap="round" />}
+      <path
+        d="M11.3 1.7 2.7 10.3H11.3ZM12.7 1.7 21.3 10.3H12.7ZM12.7 11.7H21.42L12.7 22.16ZM11.3 11.7H2.58L11.3 22.16Z"
+        fill={color}
+      />
+      {tail && <path d="M12 23.2c-2 1.8 2 2.8 0 4.8s2 3 0 4" stroke={color} strokeWidth={1.6} fill="none" strokeLinecap="round" />}
     </svg>
   )
 }
@@ -369,45 +376,124 @@ export function MailerEnd() {
   )
 }
 
-/** The shoe box lid (330 × 210 mm). */
+/**
+ * Print on a shoe box's coated board, laid over a face's artwork: the board's
+ * fine tooth, the face's place in the light (`shade`, from none on the lid to
+ * the most on an end) darkening toward its lower edge, and the creases - the
+ * board catches the light where a fold rounds it and dips just inside. Without
+ * it a face is a flat screen of colour with type on it; with it, ink on board.
+ */
+function OnCoated({ shade, lit = false }: { shade: number; lit?: boolean }) {
+  return (
+    <>
+      <svg aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', mixBlendMode: 'overlay', opacity: 0.5 }}>
+        <filter id="kite-board-tooth">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={4} stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#kite-board-tooth)" />
+      </svg>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, mixBlendMode: 'multiply', background: `linear-gradient(180deg, rgba(0,0,0,${shade * 0.55}) 0%, rgba(0,0,0,${shade}) 100%)` }} />
+      {/* the face toward the light takes a soft fall of it across one corner */}
+      {lit ? <div aria-hidden style={{ position: 'absolute', inset: 0, mixBlendMode: 'screen', background: 'linear-gradient(140deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%)' }} /> : null}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 0 0.3cqmin rgba(255,255,255,0.2), inset 0 0 2.6cqmin rgba(0,0,0,0.16)' }} />
+    </>
+  )
+}
+
+/** A printed photograph: matte, a touch less saturated than the screen's, and casting no shadow. */
+const PRINTED: React.CSSProperties = { filter: 'saturate(0.9) contrast(0.96)' }
+
+/** How deep the lid's rim comes down the walls: a third of the box's 120 mm. */
+const RIM = '34cqh'
+
+/**
+ * The shoe box lid (330 × 210 mm): the colourway flooded edge to edge with a
+ * tone-on-tone run of speed lines, the kite and the specs along the top, the
+ * shoe across the middle, and the name set big in the colourway's deeper tone,
+ * bleeding off the bottom right.
+ */
 export function ShoeboxLid({ colourway: c }: { colourway: Colourway }) {
   return (
-    <Face ground={c.ground} ink={c.ink} font={DISPLAY} style={{ padding: '6cqw 7cqw' }}>
-      <div style={{ position: 'absolute', right: '-4cqw', top: '-6cqh', fontSize: '46cqh', lineHeight: 0.85, color: 'rgba(0,0,0,0.07)' }}>AERO</div>
-      <KiteLogo size="9cqw" color={c.ink} />
-      <Cut name={c.art} style={{ left: '20cqw', top: '22cqh', width: '74cqw', transform: 'rotate(-8deg)', filter: 'drop-shadow(0 2cqw 1.6cqw rgba(0,0,0,0.25))' }} />
-      <div style={{ position: 'absolute', left: '7cqw', bottom: '8cqh', fontSize: '10cqw', lineHeight: 1 }}>AERO 2</div>
+    <Face ground={c.ground} ink={c.ink} font={DISPLAY} style={{ padding: '6.5cqw 7cqw' }}>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(118deg, rgba(0,0,0,0.045) 0 0.9cqw, transparent 0.9cqw 3.2cqw)' }} />
+      <div aria-hidden style={{ position: 'absolute', right: '-3cqw', bottom: '-9cqh', fontSize: '50cqh', lineHeight: 0.8, color: c.deep }}>AERO 2</div>
+      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <KiteLogo size="8cqw" color={c.ink} />
+        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '2.4cqw', lineHeight: 1.35, textAlign: 'right', letterSpacing: '-0.01em' }}>
+          Road running
+          <br />
+          212 g · 6 mm drop
+        </div>
+      </div>
+      <Cut name={c.art} style={{ left: '24cqw', top: '17cqh', width: '58cqw', transform: 'rotate(-7deg)', ...PRINTED }} />
+      <div style={{ marginTop: 'auto', position: 'relative' }}>
+        <div style={{ fontSize: '9cqw', lineHeight: 0.9 }}>AERO 2</div>
+        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: '2.4cqw', marginTop: '1.2cqw', letterSpacing: '-0.01em' }}>Run lighter.</div>
+      </div>
+      <OnCoated shade={0} lit />
     </Face>
   )
 }
 
-/** The end of the box: the label the warehouse reads. */
-export function ShoeboxLabel({ colourway: c }: { colourway: Colourway }) {
+/**
+ * A wall of the box, long or short: the lid's rim across the top third, in the
+ * colourway, casting a hairline of shadow on the graphite base below it - the
+ * two-piece box every pair of shoes comes in - and the base's own print under
+ * that. The long walls name the shoe; the ends carry the warehouse label.
+ */
+function ShoeboxWall({ colourway: c, end, shade }: { colourway: Colourway; end: boolean; shade: number }) {
+  const sku = `KT-0219-${c.id === 'volt' ? '701' : c.id === 'sky' ? '402' : '806'}`
   return (
-    <Face ground={c.ground} ink={c.ink} font={SANS} style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '70cqw', height: '68cqh', background: '#fff', color: KITE.graphite, borderRadius: '1.5cqw', padding: '4cqh 4cqw', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: DISPLAY, fontSize: '8cqw', lineHeight: 1 }}>
-          <span>AERO 2</span>
-          <span>US 9</span>
-        </div>
-        <div style={{ fontSize: '3.6cqw', fontWeight: 700, marginTop: '3cqh' }}>{c.name} · KT-0219-{c.id === 'volt' ? '701' : c.id === 'sky' ? '402' : '806'}</div>
-        <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5cqw', height: '22cqh' }}>
-          {Array.from({ length: 38 }, (_, i) => (
-            <div key={i} style={{ width: `${[0.4, 0.9, 0.3, 0.6, 1.1][i % 5]}cqw`, background: KITE.graphite }} />
-          ))}
-        </div>
+    <Face ground={KITE.graphite} ink={c.ground} font={DISPLAY}>
+      <div style={{ height: RIM, flex: 'none', background: c.ground, color: c.ink, display: 'flex', alignItems: 'center', justifyContent: end ? 'center' : 'space-between', padding: '0 5cqw', boxSizing: 'border-box' }}>
+        <KiteLogo size="17cqh" color={c.ink} />
+        {end ? null : <span style={{ fontSize: '15cqh' }}>RUN LIGHTER</span>}
       </div>
+      {/* the rim's edge stands a board's thickness proud of the base: a lit lip, then its shadow */}
+      <div aria-hidden style={{ height: '0.8cqh', flex: 'none', background: 'rgba(255,255,255,0.35)', mixBlendMode: 'screen' }} />
+      <div aria-hidden style={{ height: '7cqh', marginBottom: '-7cqh', flex: 'none', position: 'relative', background: 'linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0))' }} />
+      {end ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '64cqw', height: '46cqh', background: '#f4f3ee', color: KITE.graphite, borderRadius: '1cqw', padding: '3.5cqh 4cqw', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', fontFamily: SANS }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: DISPLAY, fontSize: '7cqw', lineHeight: 1 }}>
+              <span>AERO 2</span>
+              <span>US 9</span>
+            </div>
+            <div style={{ fontSize: '3cqw', fontWeight: 700, marginTop: '1.6cqh' }}>
+              {c.name} · {sku}
+            </div>
+            <div style={{ marginTop: 'auto', display: 'flex', gap: '0.45cqw', height: '13cqh' }}>
+              {Array.from({ length: 36 }, (_, i) => (
+                <div key={i} style={{ width: `${[0.35, 0.8, 0.3, 0.55, 1][i % 5]}cqw`, background: KITE.graphite }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 5cqw' }}>
+          <span style={{ fontSize: '30cqh', lineHeight: 0.9 }}>AERO 2</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2.4cqw', fontFamily: SANS, fontWeight: 700, fontSize: '7cqh', color: KITE.chalk, letterSpacing: '-0.01em' }}>
+            <span>{c.name} · Road running</span>
+            <span style={{ display: 'flex', gap: '0.8cqw' }}>
+              {COLOURWAYS.map((w) => (
+                <span key={w.id} style={{ width: '6cqh', height: '6cqh', borderRadius: '50%', background: w.ground, boxShadow: w.id === c.id ? `0 0 0 0.6cqh ${KITE.chalk}` : undefined }} />
+              ))}
+            </span>
+          </div>
+        </div>
+      )}
+      <OnCoated shade={shade} />
     </Face>
   )
 }
 
-export function ShoeboxSide({ colourway: c }: { colourway: Colourway }) {
-  return (
-    <Face ground={c.ground} ink={c.ink} font={DISPLAY} style={{ justifyContent: 'center', padding: '0 5cqw' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <KiteLogo size="15cqh" color={c.ink} />
-        <span style={{ fontSize: '15cqh' }}>RUN LIGHTER</span>
-      </div>
-    </Face>
-  )
+/** A long wall (330 × 120 mm). */
+export function ShoeboxSide({ colourway }: { colourway: Colourway }) {
+  return <ShoeboxWall colourway={colourway} end={false} shade={0.14} />
+}
+
+/** A short wall (210 × 120 mm), with the label the warehouse reads. */
+export function ShoeboxLabel({ colourway }: { colourway: Colourway }) {
+  return <ShoeboxWall colourway={colourway} end shade={0.26} />
 }

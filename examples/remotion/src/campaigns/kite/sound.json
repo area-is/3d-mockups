@@ -1,7 +1,8 @@
 {
   "film": "kite",
   "voice": {
-    "voiceId": "JBFqnCBsd6RMkjVDRZzb",
+    "voiceId": "SYXbTJsLE7zmSjr1DchT",
+    "name": "Coach Cap",
     "modelId": "eleven_multilingual_v2",
     "settings": { "stability": 0.42, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": true }
   },

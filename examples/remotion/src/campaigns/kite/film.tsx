@@ -240,7 +240,9 @@ function FoldShot() {
   const u = width / 1920
   const stage = useStage()
   const seconds = 3 - frame / 11
-  const openAngle = tween(frame, OPEN_FROM, OPEN_FROM + 56, 0, 180, easeInOut)
+  // From 1 degree, not 0: below half a degree the Fold swaps to its separate
+  // shut model, and the opening should run on one rig from its first frame.
+  const openAngle = tween(frame, OPEN_FROM, OPEN_FROM + 56, 1, 180, easeInOut)
   const rotation: Vec3 = [0.1, tween(frame, 0, 130, -0.85, 0.08), 0]
   // The cover display is lit until 30 degrees; the content follows the lit display.
   const cover = openAngle < 30
@@ -378,9 +380,7 @@ function BoxesShot() {
         </CustomBox>
       </MockupCanvas>
       <Shout style={{ left: 110 * u, top: 90 * u, color: KITE.graphite, fontSize: 110 * u, opacity: caption, transform: `translateY(${(1 - caption) * 20 * u}px)` }}>
-        UNBOX. LACE UP.
-        <br />
-        GO.
+        LACE UP. GO.
       </Shout>
     </AbsoluteFill>
   )

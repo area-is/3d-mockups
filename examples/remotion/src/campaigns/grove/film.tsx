@@ -454,7 +454,8 @@ function Outro() {
       <div style={{ transform: `scale(${0.86 + mark * 0.14})`, opacity: mark }}>
         <Wordmark size={`${250 * u}px`} color={GROVE.cream} leaf="#8cc66b" />
       </div>
-      <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 400, fontSize: 52 * u, color: GROVE.cream, marginTop: 40 * u, opacity: line }}>
+      {/* Clear of the g's descender, which hangs well below the wordmark's line. */}
+      <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 400, fontSize: 52 * u, color: GROVE.cream, marginTop: 110 * u, opacity: line }}>
         Cold-pressed in small batches.
       </div>
     </AbsoluteFill>

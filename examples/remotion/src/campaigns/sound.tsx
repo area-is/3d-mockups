@@ -13,7 +13,7 @@ import { Audio, getStaticFiles, interpolate, Sequence, staticFile, useVideoConfi
  */
 export interface SoundSheet {
   film: string
-  voice: { voiceId: string; modelId: string; settings: Record<string, number | boolean> }
+  voice: { voiceId: string; name?: string; modelId: string; settings: Record<string, number | boolean> }
   music: { prompt: string; seconds: number; volume: number; duck: number }
   lines: { id: string; shot: string; at: number; maxSeconds: number; text: string }[]
   sfx: { id: string; shot: string; at: number[]; seconds: number; volume: number; prompt: string }[]
