@@ -111,36 +111,57 @@ npm run audio -- grove --dry-run                      # the cue sheet, no reques
 
 Working in the ElevenLabs app instead, `--dry-run` lists every file name with
 its text or prompt and length; save each file under its name and the film
-picks it up. Or read the whole script as one take, a pause between lines
-(`<break time="1.2s" />`), and cut it with `--split take.mp3`: one performance
-across every line, evened out, cut at its longest silences, with any pause
-inside a line shortened to 0.4 s.
+picks it up. Or read the whole script as one take: `--dry-run` ends with it,
+a pause between lines (`[long pause]` on `eleven_v3` and `eleven_v4`,
+`<break time="1.2s" />` on the older models), and `--split take.mp3` cuts it.
+That keeps one performance across every line, evened out, with any pause
+inside a line shortened to 0.4 s. A dramatic pause inside a line can be as
+long as the one between two lines, so `--split` cuts at the pauses that leave
+each line nearest its share of the script by length, not simply the longest.
 
-KITE's narration is in `public/audio/kite`: ElevenLabs' Coach Cap
-(`eleven_multilingual_v2`), read as one take and cut with `--split`. Its
-transcript matches the script, and every line sits inside its window. The
-music and effects are still to generate. The mix is in the sheet: the music fades in over the first 12
-frames and out over the last second, and dips to `duck` (40%) for each line's
-window. Each line has a window (`maxSeconds`) that ends before the next shot,
-and the script reports any read that runs past it. The script trims the
-silence the voice model leaves around a line, so it starts on its cue.
+On `eleven_v3` and `eleven_v4` a line can carry audio tags, `[softly]`,
+`[whispers]`, `[excited]`, which set how the words after them are said and are
+not spoken. A tag holds until the next one, so a one-take read carries it
+from line to line.
+
+KITE's sound is in `public/audio/kite`: a voiceover and a music bed. The
+voiceover is written as an ad rather than a caption track. It opens on a hook
+("There's a run you're always chasing..."), then the feeling ("The one where
+every step feels like... nothing at all", whispered as the shoe lifts off the
+glass). The name lands just after the beat drops ("Meet Aero Two."), the proof
+comes while the watch posts a 4:38 pace ("Faster splits. Easier miles."), and
+it closes on the call to action and the tagline. That is six lines in 25
+seconds, with the boxes left to the music. The voice is ElevenLabs' Everett
+on `eleven_v4`, its tags setting each line's delivery, read as one take and
+cut with `--split`. Its transcript matches the script.
+
+The music is one `eleven_music_v2_5` bed: a soft build that drops into the
+full beat on its eighth second. Its `sync` (`{ "shot": "fold", "at": 33,
+"second": 8 }`) lands that drop on the frame the Fold's countdown reaches
+zero, so the bed starts 9 frames into the film. The effects are still to
+generate. The mix is in the sheet: the music fades in over its first 12
+frames and out over the film's last second, and dips to `duck` (30%) for each
+line's window. A line's own `duck` overrides it, and KITE's two opening lines
+set it to 1 so the music's quiet build stays audible under them. After the
+drop, the voice sits about 10 dB over the music. Each line has a window (`maxSeconds`) that ends before the
+next line, and the script reports any read that runs past it. The script
+trims the silence the voice model leaves around a line, so it starts on its
+cue.
 
 The narration is written for the voice, not the screen: "Aero Two", "October
 ninth" and "Kite" rather than "AERO 2", "10.09" and "KITE", which a
-text-to-speech model may read as a decimal or spell out. Each line is one
-short sentence or two per shot (1.3 to 2.6 words a second), so it lands
-inside the shot with room to breathe. Each line complements the type on
-screen rather than reading it out.
+text-to-speech model may read as a decimal or spell out. Each line
+complements the type on screen rather than reading it out.
 
 | KITE | Narration | Effects |
 | --- | --- | --- |
-| 0:00.4 title | This is Aero Two. | whoosh as the shoe tears past (0:00.1) |
-| 0:03.2 app | Three colours. One seriously light shoe. | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
-| 0:07.7 Fold | The countdown's on. And the drop is live. | countdown beeps (0:07.6, 0:07.9), launch chime (0:08.3), hinge (0:08.5) |
-| 0:11.7 watch | Tempo pace. Easy-day feel. | notification (0:12.9) |
-| 0:15.4 boxes | Unbox it. Lace up. Go. | box set down (0:15.1) |
-| 0:19.5 desk | October ninth. Only in the Kite app. | camera swoosh (0:19.3) |
-| 0:23.4 outro | Kite. Run lighter. | logo sting (0:23.0) |
+| 0:00.3 title | [softly] There's a run you're always chasing... | whoosh as the shoe tears past (0:00.1) |
+| 0:03.9 app | The one where every step feels like... [whispers] nothing at all. | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
+| 0:08.8 Fold | [excited] Meet Aero Two. | countdown beeps (0:07.6, 0:07.9), launch chime and the music's drop (0:08.3), hinge (0:08.5) |
+| 0:11.9 watch | [confident] Faster splits. Easier miles. | notification (0:12.9) |
+| boxes | (the music) | box set down (0:15.1) |
+| 0:19.2 desk | Drops October ninth. Only on the Kite app. | camera swoosh (0:19.3) |
+| 0:23.3 outro | [warmly] Kite. Run lighter. | logo sting (0:23.0) |
 
 | Grove | Narration | Effects |
 | --- | --- | --- |

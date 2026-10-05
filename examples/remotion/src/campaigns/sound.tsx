@@ -13,9 +13,17 @@ import { Audio, getStaticFiles, interpolate, Sequence, staticFile, useVideoConfi
  */
 export interface SoundSheet {
   film: string
-  voice: { voiceId: string; name?: string; modelId: string; settings: Record<string, number | boolean> }
-  music: { prompt: string; seconds: number; volume: number; duck: number }
-  lines: { id: string; shot: string; at: number; maxSeconds: number; text: string }[]
+  voice: { voiceId: string; name?: string; modelId: string; settings?: Record<string, number | boolean> }
+  music: {
+    prompt: string
+    seconds: number
+    volume: number
+    duck: number
+    /** Lines the music up with the picture: its `second` lands on frame `at` of `shot` (say, the beat drop on a countdown's zero). Without it the music starts with the film. */
+    sync?: { shot: string; at: number; second: number }
+  }
+  /** `duck`, if given, is how far the music dips under that line instead of the sheet's: 1 leaves a quiet passage of the music as it is. */
+  lines: { id: string; shot: string; at: number; maxSeconds: number; text: string; duck?: number }[]
   sfx: { id: string; shot: string; at: number[]; seconds: number; volume: number; prompt: string }[]
 }
 
@@ -45,10 +53,11 @@ const DUCK_RAMP = 8
  * Plays whatever of a sheet's audio is in `public/audio/<film>/` - nothing at
  * all until the files are generated, so the films render silent as before.
  *
- * The music fades in over the first 12 frames and out over the last second,
- * and dips to `duck` of its level for every narration line that has a file,
- * across the line's window (`maxSeconds`, which the generator checks each
- * line fits), so the voice always sits on top.
+ * The music starts where its `sync` puts it (trimmed if that is before the
+ * film), fades in over its first 12 frames and out over the film's last
+ * second, and dips to `duck` of its level for every narration line that has a
+ * file, across the line's window (`maxSeconds`, which the generator checks
+ * each line fits), so the voice always sits on top.
  */
 export function Soundtrack({ sheet, starts }: { sheet: SoundSheet; starts: Record<string, number> }) {
   const { fps, durationInFrames } = useVideoConfig()
@@ -67,14 +76,26 @@ export function Soundtrack({ sheet, starts }: { sheet: SoundSheet; starts: Recor
   const duck = (frame: number) =>
     lines.reduce(
       (level, line) =>
-        Math.min(level, interpolate(frame, [line.from - DUCK_RAMP, line.from, line.to, line.to + DUCK_RAMP], [1, sheet.music.duck, sheet.music.duck, 1], clamp)),
+        Math.min(level, interpolate(frame, [line.from - DUCK_RAMP, line.from, line.to, line.to + DUCK_RAMP], [1, line.duck ?? sheet.music.duck, line.duck ?? sheet.music.duck, 1], clamp)),
       1
     )
-  const fade = (frame: number) => interpolate(frame, [0, 12, durationInFrames - fps, durationInFrames - 1], [0, 1, 1, 0], clamp)
+  const sync = sheet.music.sync
+  const musicAt = sync ? at(sync.shot, sync.at) - Math.round(sync.second * fps) : 0
+  const musicFrom = Math.max(0, musicAt)
+  const fade = (frame: number) => interpolate(frame, [musicFrom, musicFrom + 12, durationInFrames - fps, durationInFrames - 1], [0, 1, 1, 0], clamp)
 
   return (
     <>
-      {has('music') ? <Audio src={src('music')} volume={(frame) => sheet.music.volume * fade(frame) * duck(frame)} /> : null}
+      {has('music') ? (
+        <Sequence from={musicFrom} layout="none" name="music">
+          {/* the volume callback counts from the music's own start */}
+          <Audio
+            src={src('music')}
+            trimBefore={musicFrom - musicAt}
+            volume={(frame) => sheet.music.volume * fade(frame + musicFrom) * duck(frame + musicFrom)}
+          />
+        </Sequence>
+      ) : null}
       {lines.map((line) => (
         <Sequence key={line.id} from={line.from} layout="none" name={line.id}>
           <Audio src={src(line.id)} />
