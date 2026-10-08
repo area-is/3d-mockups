@@ -12,6 +12,7 @@ import {
   FLIP_VARIANTS,
   FLIP_DEFAULT_VARIANT,
   SCREEN_REGIONS,
+  type FlipSpec,
   type FlipVariant,
   roundedRectShape,
 } from '../../core'
@@ -58,12 +59,17 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    * fills the nearly-square cover display, with the two lens rings and
    * flash sitting on the glass beside it.
    *
-   * A number (0 = shut, 180 = flat) renders the real Flex Mode pose: the halves
-   * pivot around the Armor FlexHinge while its glossy curved housing rolls into
-   * the gap between them, and your content bends across the fold - e.g.
-   * `open={100}` for the classic half-open standing pose. The pose is
-   * continuous from nearly shut to nearly flat; only ~0° snaps to the dedicated
-   * folded pose and ~177°+ to the flat-open one. At intermediate angles the
+   * A number (0 = shut, 180 = flat) renders the real Flex Mode pose: the lower
+   * half holds still and the cover half swings open about the crease, the
+   * Armor FlexHinge, while its glossy curved housing rolls into the gap between
+   * them, and your content bends across the fold - e.g. `openAngle={100}` for
+   * the classic half-open standing pose. The pose is continuous from nearly
+   * shut to nearly flat; only ~0° snaps to the dedicated folded pose and the
+   * flat-open one takes only a flat hinge. The crease is the one line that
+   * never moves, so the open phone is centred on it and the folded one hangs
+   * below it, hinge up - upside down from the way a shut Flip is usually held.
+   * For that view, turn it a half-turn about z and lower it by its folded
+   * height. At intermediate angles the
    * display is composited from two planes that depth-blend against the chassis,
    * so content there is display-only and stateful screen content is best kept
    * simple.
@@ -104,6 +110,19 @@ export interface FlipProps extends Omit<GroupProps, 'children' | 'color'>, Surfa
    */
   coverScreenUntil?: number
 }
+
+/**
+ * Where the folded pose sits, in the device's own frame. The crease is the one
+ * line that never moves: the lower half lies where the flat-open pose puts it,
+ * below the crease, and the cover half is shut over it, in front - so the
+ * folded phone hangs below the crease, hinge up and upside down from the way
+ * it is usually held (turn it a half-turn about z to stand it hinge-down). It
+ * is exactly where the flex rig arrives at 0 degrees.
+ */
+const creaseShut = (spec: FlipSpec) => ({
+  position: [0, -spec.closed.body.height / 2, spec.open.body.depth / 2 + 0.006] as [number, number, number],
+  rotation: [0, 0, Math.PI] as [number, number, number],
+})
 
 /** An extruded rounded-rect slab with a soft edge bevel (one flip half / body). */
 function slabGeometry(width: number, height: number, radius: number, depth: number, bevel: number) {
@@ -601,11 +620,13 @@ function FlipImpl({
     // interpenetrating (crossed DOM planes glitch near 0°).
     const pz = openBody.depth / 2 + 0.006
     const halfH = half.height
-    // Below ~26° the whole rig glides into the folded pose's canonical
-    // placement - fold the assembly forward around the hinge, half-turn it
-    // upright in-plane, re-center - converging exactly where the dedicated
-    // closed pose renders, so the ~0° swap never jumps. Identity above 26°.
-    const w = THREE.MathUtils.smoothstep(26 - angle, 0, 26)
+    // The halves are built folding symmetrically, each `alpha` off flat; the
+    // whole assembly is then turned by `alpha` about the crease, so the lower
+    // half never moves - it lies exactly where the flat-open pose puts it at
+    // every angle - and the upper (cover) half swings the full fold about the
+    // crease, through the space in front of the main display. Fully shut that
+    // lands exactly on the folded pose (see `creaseShut`), so nothing glides
+    // and nothing jumps at ~0°.
     // Spine housing: a cylinder segment tangent to both halves' back shells.
     // The halves pivot on the display's neutral plane, so their back faces
     // stay a constant `spineR` from the axis at every angle - the exposed
@@ -714,13 +735,9 @@ function FlipImpl({
     return (
       <group {...groupProps}>
         <group key="flex" rotation-z={landscape ? Math.PI / 2 : 0}>
-          {/* convergence chain: re-center → half-turn upright in-plane
-              around the folding compact's center → fold the assembly
-              forward around the hinge line - all weighted by `w` */}
-          <group position={[0, (halfH / 2) * w, -pz * w]}>
-          <group position={[0, -halfH / 2, pz]} rotation-z={Math.PI * w}>
-          <group position={[0, halfH / 2, -pz]}>
-          <group position={[0, 0, pz]} rotation-x={alpha * w}>
+          {/* turn the symmetric fold by `alpha` about the crease: the lower
+              half holds still and the cover half swings */}
+          <group position={[0, 0, pz]} rotation-x={alpha}>
           <group position={[0, 0, -pz]}>
           {/* upper (cover) half folds toward the viewer around the hinge */}
           <group position={[0, 0, pz]} rotation-x={alpha}>
@@ -792,9 +809,6 @@ function FlipImpl({
                 <meshPhysicalMaterial color={frameColor} metalness={0.7} roughness={0.38} side={THREE.DoubleSide} />
               </mesh>
             ))}
-          </group>
-          </group>
-          </group>
           </group>
           </group>
           </group>
@@ -872,6 +886,8 @@ function FlipImpl({
   return (
     <group {...groupProps}>
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
+      {/* shut on the lower half, which lies where the open pose puts it */}
+      <group {...creaseShut(spec)}>
         {/* front half (cover screen + cameras) and rear half, with the air gap */}
         <group position-z={halfZ}>
           <mesh geometry={shell.upper}>
@@ -898,6 +914,7 @@ function FlipImpl({
         {hingeBand(stackBottom - spec.hinge.overhang + stackR)}
 
         {endSeams([half.height / 2 - spec.endSeamInset], half.depth)}
+      </group>
       </group>
     </group>
   )

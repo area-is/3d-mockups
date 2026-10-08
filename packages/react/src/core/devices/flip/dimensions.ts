@@ -220,18 +220,13 @@ export const FLIP_FRAMING = {
   extent: ({ variant, openAngle, orientation }) => {
     const spec = FLIP_VARIANTS[variant ?? FLIP_DEFAULT_VARIANT]
     const angle = foldOpenAngle(openAngle)
-    const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
-    const extent =
-      orientation === 'landscape'
-        ? angle > 3
-          ? spec.open.body.width
-          : spec.closed.body.width
-        : angle >= 177
-          ? spec.open.body.height
-          : angle <= 3
-            ? spec.closed.body.height + spec.hinge.overhang * 2
-            : spec.closed.body.height * 2 * foldCos
-    return extent / 2
+    // On its side the hinge turns about a vertical line: half the width,
+    // whatever the angle.
+    if (orientation === 'landscape') return (angle > 3 ? spec.open : spec.closed).body.width / 2
+    // Upright, the crease runs across the origin and the lower half hangs
+    // below it at every angle, shut included - the cover half only ever
+    // swings above it or in front - so its foot never moves.
+    return angle >= 177 ? spec.open.body.height / 2 : spec.closed.body.height
   },
 } as const satisfies MockupFraming<{
   variant?: FlipVariant

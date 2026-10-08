@@ -1,6 +1,7 @@
 'use client'
 
 import { FlipMockup, FoldMockup } from 'react-3d-mockups'
+import { FLIP_VARIANTS } from 'react-3d-mockups/core'
 import { CoverWidget, INK, TabletApp, type LedgerState } from './ledger-screens'
 
 /**
@@ -17,9 +18,16 @@ export function FoldScene({ state }: { state: LedgerState }) {
   )
 }
 
+/**
+ * Shut, a Flip hangs below its crease hinge-up, its cover upside down; the
+ * cover widget is read the way the phone is held, hinge-down, so it is turned
+ * a half-turn about z and lowered by its folded height back onto its shadow.
+ */
+const FLIP_SHUT_HEIGHT = FLIP_VARIANTS.flip7.closed.body.height
+
 export function FlipScene({ state }: { state: LedgerState }) {
   return (
-    <FlipMockup float variant="flip7" openAngle={false} color="jetblack" surfaceBackground="#000" rotation={[0, -0.32, 0]}>
+    <FlipMockup float variant="flip7" openAngle={false} color="jetblack" surfaceBackground="#000" position={[0, -FLIP_SHUT_HEIGHT, 0]} rotation={[0, -0.32, Math.PI]}>
       <CoverWidget state={state} />
     </FlipMockup>
   )

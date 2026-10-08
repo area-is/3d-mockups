@@ -1,0 +1,33 @@
+{
+  "film": "grove",
+  "voice": {
+    "voiceId": "FLj50PrMa40MhGHappOt",
+    "name": "Beth - Commercial, Upbeat, Engaging",
+    "modelId": "eleven_v4"
+  },
+  "music": {
+    "prompt": "A 26-second sunny, upbeat indie-pop commercial track at 112 BPM: bright strummed acoustic guitar, ukulele, handclaps, a punchy kick and a bouncy bass. For the first eight seconds it is light and bouncy, just guitar, ukulele and claps under a voiceover. At eight and a half seconds the full band kicks in with the kick and bass, cheerful and driving, and it stays bright and full, then ends on one big final strum at twenty-five seconds that rings out to silence. Instrumental, crisp and uncluttered production with room for a voiceover.",
+    "seconds": 26.5,
+    "volume": 0.6,
+    "duck": 0.25,
+    "sync": { "shot": "van", "at": 0, "second": 17.4 }
+  },
+  "lines": [
+    { "id": "vo-01-hero", "shot": "hero", "at": 12, "maxSeconds": 4.0, "duck": 0.4, "text": "[excited] Rise and shine! [playfully] Your juice has been up since five-forty." },
+    { "id": "vo-02-lineup", "shot": "lineup", "at": 14, "maxSeconds": 4.1, "duck": 0.4, "text": "Real fruit. Cold-pressed. [chuckles] That's the whole recipe." },
+    { "id": "vo-03-bag", "shot": "bag", "at": 16, "maxSeconds": 2.0, "duck": 0.4, "text": "[excited] Grab it, shake it, go!" },
+    { "id": "vo-04-street", "shot": "street", "at": 24, "maxSeconds": 3.9, "text": "It's waiting on your corner... [playfully] before you've even found your shoes." },
+    { "id": "vo-05-billboard", "shot": "billboard", "at": 0, "maxSeconds": 3.3, "text": "[confident] Never from concentrate. Never from yesterday." },
+    { "id": "vo-06-outro", "shot": "outro", "at": 4, "maxSeconds": 2.2, "text": "[cheerfully] Grove. Squeezed this morning." }
+  ],
+  "sfx": [
+    { "id": "sfx-hero-morning", "shot": "hero", "at": [0], "seconds": 4.4, "volume": 0.35, "prompt": "Soft early-morning orchard ambience with distant birdsong." },
+    { "id": "sfx-lineup-cut", "shot": "lineup", "at": [6], "seconds": 0.6, "volume": 0.5, "prompt": "A short soft whoosh into a camera-flash pop." },
+    { "id": "sfx-lineup-carton", "shot": "lineup", "at": [17, 23, 29], "seconds": 0.5, "volume": 0.7, "prompt": "A full juice carton set down on a wooden table, a soft dull thud." },
+    { "id": "sfx-bag-rustle", "shot": "bag", "at": [14], "seconds": 1.4, "volume": 0.5, "prompt": "A kraft paper shopping bag rustling as it swings." },
+    { "id": "sfx-street-city", "shot": "street", "at": [14], "seconds": 5.0, "volume": 0.3, "prompt": "A quiet early-morning city street, a bus pulling away in the distance." },
+    { "id": "sfx-van-roll", "shot": "van", "at": [12], "seconds": 3.2, "volume": 0.45, "prompt": "An electric delivery van rolling past slowly, soft tyre noise on asphalt." },
+    { "id": "sfx-billboard-air", "shot": "billboard", "at": [12], "seconds": 3.2, "volume": 0.25, "prompt": "Light open-air wind high above a road." },
+    { "id": "sfx-outro-pour", "shot": "outro", "at": [4], "seconds": 1.8, "volume": 0.6, "prompt": "Juice poured into a glass over ice, ending on one clean bright ding." }
+  ]
+}

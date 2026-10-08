@@ -410,7 +410,7 @@ export function PropRow({ prop, value, set, onChange, onReset }: PropRowProps) {
                 value={Number(value)}
                 onChange={(e) => onChange(Number(e.target.value))}
               />
-              <span className="mx-hex">
+              <span className="mx-hex mx-value">
                 {Number(value)}
                 {control.unit}
               </span>

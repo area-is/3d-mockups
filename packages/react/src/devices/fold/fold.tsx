@@ -67,12 +67,15 @@ export interface FoldCommonProps extends Omit<GroupProps, 'children' | 'color'>,
    * camera pill shows on the back.
    *
    * A number (0 = shut, 180 = flat) renders the real Flex Mode book pose: the
-   * panels pivot around the Armor FlexHinge while its rounded spine (with the
-   * SAMSUNG engraving) stays tangent to both back shells, wrapping the fold at
-   * every angle, and your content bends across the crease - e.g. `openAngle={110}`
-   * for the half-open standing pose. The pose is continuous from nearly shut to
-   * nearly flat; only ~0° snaps to the dedicated folded pose and ~177°+ to the
-   * flat-open one. At intermediate angles the display is composited from two
+   * camera half holds still and the cover half swings open about the crease,
+   * the Armor FlexHinge, whose rounded spine (with the SAMSUNG engraving) stays
+   * tangent to both back shells, wrapping the fold at every angle, and your
+   * content bends across the crease - e.g. `openAngle={110}` for the half-open
+   * standing pose. The pose is continuous from nearly shut to nearly flat; only
+   * ~0° snaps to the dedicated folded pose and the flat-open one takes only a
+   * flat hinge. The crease is the one line that never moves, so the open device
+   * is centred on it and the folded one lies on the camera half, half its own
+   * width to the right. At intermediate angles the display is composited from two
    * planes that depth-blend against the chassis, so content there is
    * display-only and stateful screen content is best kept simple.
    */
@@ -123,6 +126,19 @@ interface FoldBodyProps extends FoldCommonProps {
   spec: FoldSpec
   catalog: Colorway[]
 }
+
+/**
+ * Where the folded pose sits, in the device's own frame. The crease is the one
+ * line that never moves: the camera half lies where the flat-open pose puts
+ * it, right of the crease, and the cover half is shut over it, in front - so
+ * the folded phone is that far right of, and forward of, the open one's
+ * centre. It is exactly where the flex rig arrives at 0 degrees.
+ */
+const creaseShut = (spec: FoldSpec): [number, number, number] => [
+  spec.open.body.width / 4,
+  0,
+  spec.open.body.depth / 2 + 0.006,
+]
 
 /** An extruded rounded-rect slab with a soft edge bevel (a fold half / the open body). */
 function slabGeometry(
@@ -753,12 +769,13 @@ function FoldBody({
     // at the crease at every angle - nearly shut included - instead of
     // interpenetrating (crossed DOM planes glitch near 0°).
     const pz = b.depth / 2 + 0.006
-    // Below ~26° the whole rig glides into the folded pose's canonical
-    // placement - a quarter-turn of the assembly around the vertical hinge
-    // line plus re-centering onto the spine edge - converging exactly
-    // where the dedicated closed pose renders, so the ~0° swap never
-    // jumps. Identity above 26°.
-    const w = THREE.MathUtils.smoothstep(26 - angle, 0, 26)
+    // The panels are built folding symmetrically, each `alpha` off flat; the
+    // whole assembly is then turned by `alpha` about the crease, so the
+    // camera half never moves - it lies exactly where the flat-open pose puts
+    // it at every angle - and the cover half swings the full fold about the
+    // crease, through the space in front of the inner display, the way a
+    // book's cover opens. Fully shut that lands exactly on the folded pose
+    // (see `creaseShut`), so nothing glides and nothing jumps at ~0°.
     // Tangent radius: pivot plane to the back face. The exposed arc spans
     // ±alpha around straight-back, meeting each half at its back corner.
     // Run the spine and its caps essentially edge to edge - the panels'
@@ -846,10 +863,9 @@ function FoldBody({
     return (
       <group {...groupProps}>
         <group key="flex" rotation-z={landscape ? Math.PI / 2 : 0}>
-          {/* convergence chain: re-center onto the spine edge → quarter-turn
-              the assembly around the vertical hinge line - weighted by `w` */}
-          <group position={[(-hw / 2) * w, 0, -pz * w]}>
-          <group position={[0, 0, pz]} rotation-y={alpha * w}>
+          {/* turn the symmetric fold by `alpha` about the crease: the camera
+              half holds still and the cover half swings */}
+          <group position={[0, 0, pz]} rotation-y={alpha}>
           <group position={[0, 0, -pz]}>
           {/* left (cover-screen) panel folds toward the viewer */}
           <group position={[0, 0, pz]} rotation-y={alpha}>
@@ -979,7 +995,6 @@ function FoldBody({
           </group>
           </group>
           </group>
-          </group>
         </group>
       </group>
     )
@@ -1080,6 +1095,8 @@ function FoldBody({
   return (
     <group {...groupProps}>
       <group key="closed" rotation-z={landscape ? Math.PI / 2 : 0}>
+      {/* shut on the camera half, which lies where the open pose puts it */}
+      <group position={creaseShut(spec)}>
         {/* front (cover) slab - carries the cover screen and the speaker slot */}
         <group position-z={halfZ}>
           <mesh geometry={shell.front}>
@@ -1162,6 +1179,7 @@ function FoldBody({
             </group>
           )
         })()}
+      </group>
       </group>
     </group>
   )

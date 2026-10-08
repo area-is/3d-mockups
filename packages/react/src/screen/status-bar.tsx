@@ -43,6 +43,36 @@ export interface StatusBarProps extends StatusBarContent {
   color?: string
 }
 
+/**
+ * The face each platform sets its bar in. Apple ships San Francisco and
+ * Samsung ships One UI Sans; neither is ours to bundle, so each stack asks for
+ * the platform's own face first - on a Mac and on a Galaxy the first name
+ * resolves and the bar is set in the real thing - and then for the closest
+ * faces a host is likely to have: Inter (SF's nearest open cousin, and often
+ * already on the page), Roboto, Segoe UI, Helvetica.
+ *
+ * `system-ui` is left out on purpose. Off Apple and Windows it is whatever the
+ * desktop's UI face happens to be - on most Linux machines, and so in most
+ * headless renders, DejaVu Sans, whose wide, open digits look nothing like a
+ * phone's. Helvetica and Arial resolve to Liberation Sans there instead.
+ *
+ * A page that loads its own face overrides both stacks with
+ * `--mockup-status-bar-font`.
+ */
+const FONT_STACKS: Record<StatusBarPlatform, string> = {
+  ios: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, "Inter Variable", "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+  oneui:
+    '"One UI Sans", "SamsungOne", "Samsung Sans", Roboto, "Roboto Flex", Inter, "Inter Variable", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif',
+}
+
+/**
+ * Trim a run of text to its cap height, so centring it centres the digits.
+ * Left alone, a line box is placed by the face's ascent and descent, which
+ * differ from face to face - so the same flex centring that sits SF's digits
+ * in the middle of the battery left a fallback's riding high in it.
+ */
+const CAP_TRIM: React.CSSProperties = { textBox: 'trim-both cap alphabetic' }
+
 /** The tint a battery's fill takes in each state, if not the ink. */
 const batteryFill = (state: StatusBarBattery, ink: string, low: string, charging: string) =>
   state === 'low' ? low : state === 'charging' ? charging : ink
@@ -114,6 +144,7 @@ const BoltIcon = ({ size, color }: { size: number; color: string }) => (
  */
 function Meter({
   width,
+  minWidth,
   height,
   radius,
   level,
@@ -126,6 +157,8 @@ function Meter({
 }: {
   /** A fixed width, or nothing to hug the digits. */
   width?: number
+  /** When hugging, the narrowest it gets - so two digits are not a dot. */
+  minWidth?: number
   height: number
   radius: number
   level: number
@@ -140,9 +173,11 @@ function Meter({
 }) {
   const filled = Math.min(100, Math.max(0, level * 100))
   const knock = contrastInk(fill)
+  // The in-flow copy grows to the meter's width, so it centres its digits in
+  // exactly the box the absolute copy does and the two register at the fill.
   const run = (paint: string, clip: string, inFlow: boolean): React.CSSProperties => ({
     position: inFlow ? 'relative' : 'absolute',
-    ...(inFlow ? {} : { inset: 0 }),
+    ...(inFlow ? { flex: '1 0 auto' } : { inset: 0 }),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -162,7 +197,7 @@ function Meter({
   const content = (paint: string) => (
     <>
       {bolt ? <BoltIcon size={fontSize * 0.92} color={paint} /> : null}
-      <span>{label}</span>
+      <span style={CAP_TRIM}>{label}</span>
     </>
   )
   return (
@@ -173,6 +208,7 @@ function Meter({
         display: 'inline-flex',
         flex: 'none',
         width,
+        minWidth,
         height,
         borderRadius: radius,
         overflow: 'hidden',
@@ -214,27 +250,46 @@ function IosSignal({ h, lit, color }: { h: number; lit: number; color: string })
   )
 }
 
-/** iOS Wi-Fi: a dot with three concentric arcs opening upward. */
+/**
+ * A fan of three concentric stripes - the inner wedge and two bands - opening
+ * upward from an apex at `(ax, ay)`, `spread` radians either side of vertical.
+ * Both systems draw Wi-Fi this way; they differ in the angle and the corners.
+ */
+function fanStripe(ax: number, ay: number, spread: number, r1: number, r2: number): string {
+  const sx = Math.sin(spread)
+  const cy = Math.cos(spread)
+  return r1 === 0
+    ? `M${ax} ${ay} L${ax - r2 * sx} ${ay - r2 * cy} A${r2} ${r2} 0 0 1 ${ax + r2 * sx} ${ay - r2 * cy} Z`
+    : `M${ax - r2 * sx} ${ay - r2 * cy} A${r2} ${r2} 0 0 1 ${ax + r2 * sx} ${ay - r2 * cy} ` +
+        `L${ax + r1 * sx} ${ay - r1 * cy} A${r1} ${r1} 0 0 0 ${ax - r1 * sx} ${ay - r1 * cy} Z`
+}
+
+/**
+ * iOS Wi-Fi: a quarter-circle fan, 45 degrees either side of vertical, cut
+ * into a wedge and two bands of about equal weight, every corner softened.
+ * Not three free-standing semicircles over a dot - that is a broadcast icon.
+ */
 function IosWifi({ h, lit, color }: { h: number; lit: number; color: string }) {
-  const w = h * 1.38
-  // Drawn on a 20x14 grid, so the arc weights stay in proportion at any size.
-  const arcs = [
-    { r: 4.2, o: 1 },
-    { r: 7.6, o: 2 },
-    { r: 11, o: 3 },
+  const w = h * (16.4 / 12)
+  // Drawn on a 16.4x12 grid. The stripes are inset by half the stroke that
+  // rounds their corners, so the visible bands are 2.4 thick with 1.35 gaps.
+  const round = 0.9
+  const stripes: [number, number][] = [
+    [0, 3.45],
+    [5.7, 7.2],
+    [9.45, 10.85],
   ]
   return (
-    <svg width={w} height={h} viewBox="0 0 20 14" aria-hidden focusable="false" style={{ width: w, height: h }}>
-      <circle cx="10" cy="12" r="1.7" fill={color} opacity={lit > 0 ? 1 : 0.32} />
-      {arcs.map(({ r, o }) => (
+    <svg width={w} height={h} viewBox="0 0 16.4 12" aria-hidden focusable="false" style={{ width: w, height: h }}>
+      {stripes.map(([r1, r2], i) => (
         <path
-          key={r}
-          d={`M ${10 - r} 12 A ${r} ${r} 0 0 1 ${10 + r} 12`}
-          fill="none"
+          key={i}
+          d={fanStripe(8.2, 11.4, Math.PI / 4, r1, r2)}
+          fill={color}
           stroke={color}
-          strokeWidth={1.9}
-          strokeLinecap="round"
-          opacity={lit >= o ? 1 : 0.32}
+          strokeWidth={round}
+          strokeLinejoin="round"
+          opacity={lit > i ? 1 : 0.32}
         />
       ))}
     </svg>
@@ -365,17 +420,7 @@ function OneUiWifi({
 }) {
   const w = h * (generation ? 1.6 : 1.3)
   // The fan: apex at the foot, spread 50 degrees either side of vertical.
-  const ax = 10
-  const ay = 14
-  const spread = (50 * Math.PI) / 180
-  const sx = Math.sin(spread)
-  const cy = Math.cos(spread)
-  /** A stripe of the fan between two radii - a wedge when `r1` is 0. */
-  const stripe = (r1: number, r2: number) =>
-    r1 === 0
-      ? `M${ax} ${ay} L${ax - r2 * sx} ${ay - r2 * cy} A${r2} ${r2} 0 0 1 ${ax + r2 * sx} ${ay - r2 * cy} Z`
-      : `M${ax - r2 * sx} ${ay - r2 * cy} A${r2} ${r2} 0 0 1 ${ax + r2 * sx} ${ay - r2 * cy} ` +
-        `L${ax + r1 * sx} ${ay - r1 * cy} A${r1} ${r1} 0 0 0 ${ax - r1 * sx} ${ay - r1 * cy} Z`
+  const stripe = (r1: number, r2: number) => fanStripe(10, 14, (50 * Math.PI) / 180, r1, r2)
   const stripes: [number, number][] = [
     [0, 4.4],
     [5.6, 8.8],
@@ -405,9 +450,10 @@ function OneUiWifi({
 /**
  * One UI battery. Since One UI 8.5 it is a pill, a touch taller than the
  * icons beside it, filled to the charge with the percentage set into the
- * fill and no wider than the number needs - so that is the default. Without
- * the percentage it falls back to the squarer outline capsule of the releases
- * before, nub on the trailing edge.
+ * fill - so that is the default. It keeps its proportions at two digits
+ * rather than closing up around them, and widens only for a face too wide to
+ * fit three. Without the percentage it falls back to the squarer outline
+ * capsule of the releases before, nub on the trailing edge.
  */
 function OneUiBattery({
   h,
@@ -427,6 +473,7 @@ function OneUiBattery({
     const height = h * 1.12
     return (
       <Meter
+        minWidth={height * 1.9}
         height={height}
         radius={height / 2}
         level={level}
@@ -499,6 +546,7 @@ export function StatusBar({
     whiteSpace: 'nowrap',
   }
   const textStyle: React.CSSProperties = {
+    ...CAP_TRIM,
     fontSize: layout.fontSize,
     fontWeight: layout.fontWeight,
     letterSpacing: `${layout.letterSpacing}em`,
@@ -515,13 +563,7 @@ export function StatusBar({
         width,
         height: layout.bandHeight,
         color,
-        // Apple ships San Francisco and Samsung ships One UI Sans; neither is
-        // ours to bundle, so this asks for the platform's own UI face first and
-        // falls back to whatever the host has. On a Mac and on an Android
-        // device the first name resolves and the bar is set in the real thing.
-        fontFamily: ios
-          ? '-apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif'
-          : '"One UI Sans", "Samsung Sans", Roboto, system-ui, sans-serif',
+        fontFamily: `var(--mockup-status-bar-font, ${FONT_STACKS[platform]})`,
         fontVariantNumeric: 'tabular-nums',
         pointerEvents: 'none',
         /*
@@ -550,7 +592,7 @@ export function StatusBar({
           <span style={{ ...textStyle, marginLeft: layout.gap * 0.5 }}>{date}</span>
         ) : null}
         {!ios && carrier ? (
-          <span style={{ fontSize: layout.fontSize * 0.86, fontWeight: 500, opacity: 0.85 }}>
+          <span style={{ ...CAP_TRIM, fontSize: layout.fontSize * 0.86, fontWeight: 500, opacity: 0.85 }}>
             {carrier}
           </span>
         ) : null}

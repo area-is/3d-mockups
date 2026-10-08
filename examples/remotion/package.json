@@ -1,16 +1,26 @@
 {
   "name": "react-3d-mockups-remotion-example",
   "private": true,
-  "description": "A Remotion video built from react-3d-mockups scenes over Tabbied pattern backgrounds. Not a workspace: it installs the package the way an app would.",
+  "description": "Remotion videos built from react-3d-mockups scenes: a reel over Tabbied pattern backgrounds, and three campaign films printed with GPT Image 2.5 cut-outs. Not a workspace: it installs the package the way an app would.",
   "type": "module",
   "scripts": {
     "studio": "remotion studio",
     "render": "remotion render MockupReel out/mockup-reel.mp4 --concurrency=1",
+    "render:grove": "remotion render GroveFilm out/grove.mp4 --concurrency=1",
+    "render:kite": "remotion render KiteFilm out/kite.mp4 --concurrency=1",
+    "render:lumen": "remotion render LumenFilm out/lumen.mp4 --concurrency=1",
+    "art": "python3 scripts/generate-art.py",
     "still": "remotion still",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audio": "python3 scripts/generate-audio.py"
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
     "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/roboto": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/space-grotesk": "^5.3.0",
     "@react-three/drei": "10.7.9",

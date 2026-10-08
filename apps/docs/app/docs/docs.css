@@ -955,6 +955,21 @@
   accent-color: var(--mx-accent);
 }
 
+/*
+ * A row must not change width when it is edited, or the longest prop names
+ * wrap onto a second line the moment they are touched. So a slider's readout
+ * keeps one width whatever it reads, and once the row is set the slider gives
+ * up the room its reset button takes.
+ */
+.mx-value {
+  min-width: 4ch;
+  text-align: end;
+}
+
+.mx-row:has(.mx-clear) .mx-range {
+  width: 50px;
+}
+
 .mx-disclosure {
   display: inline-flex;
   align-items: center;
@@ -1460,6 +1475,10 @@
 
   .mx-range {
     width: 60px;
+  }
+
+  .mx-row:has(.mx-clear) .mx-range {
+    width: 36px;
   }
 
   /* Icons only, so the file tabs keep the strip. Each button carries its name

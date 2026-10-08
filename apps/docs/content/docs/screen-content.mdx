@@ -118,6 +118,25 @@ status bar), and neither do laptops, monitors, watches or any of the print
 objects. The bar is also exported as a component, `StatusBar`, for use outside
 a mockup - see [Advanced exports](/docs/api/advanced#status-bar).
 
+### The face it is set in
+
+The glyphs are drawn, but the clock and the battery's digits are type, and
+neither San Francisco nor One UI Sans is the library's to ship. The bar asks
+for the platform's own face first, so on a Mac and on a Galaxy it is set in
+the real thing, then for the closest faces a machine is likely to have:
+Inter, Roboto, Segoe UI, Helvetica. It never falls back to `system-ui`, which
+on Linux - and so in most headless renders - is DejaVu Sans, whose wide digits
+look nothing like a phone's.
+
+If your page loads a face of its own, point the bar at it with the
+`--mockup-status-bar-font` custom property, anywhere above the canvas:
+
+```css
+:root {
+  --mockup-status-bar-font: -apple-system, var(--font-inter), sans-serif;
+}
+```
+
 ### Laying out under the status bar
 
 A wallpaper or a lock screen is meant to run under the bar; an app's toolbar

@@ -560,15 +560,18 @@ function foldFraming<V extends string>(variants: Record<V, FoldSpec>, defaultVar
     extent: ({ variant, openAngle, orientation }: FoldPoseProps<V>) => {
       const spec = variants[variant ?? defaultVariant]
       const angle = foldOpenAngle(openAngle)
-      const state = angle > 3 ? spec.open : spec.closed
-      const foldCos = Math.cos((((180 - angle) / 2) * Math.PI) / 180)
-      const extent =
-        orientation === 'landscape'
-          ? angle > 3 && angle < 177
-            ? state.body.width * foldCos
-            : state.body.width
-          : state.body.height
-      return extent / 2
+      // Upright, the hinge turns about a vertical line: half the height,
+      // whatever the angle.
+      if (orientation !== 'landscape') return (angle > 3 ? spec.open : spec.closed).body.height / 2
+      // On its side the crease runs across the origin and the camera half
+      // lies above it at every angle, so what reaches down is the cover half:
+      // shut, only the hinge edge of the stack, which sits on the camera half;
+      // opening, its free edge, once it swings past square; at worst, the
+      // spine curling round the crease.
+      const half = spec.open.body.width / 2
+      if (angle <= 3) return Math.max(0, spec.closed.body.width / 2 + spec.hinge.overhang - half / 2)
+      const spine = spec.open.body.depth + 0.006
+      return Math.max(spine, -half * Math.cos((angle * Math.PI) / 180))
     },
   } as const satisfies MockupFraming<FoldPoseProps<V>>
 }

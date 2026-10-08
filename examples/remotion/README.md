@@ -1,7 +1,8 @@
 # react-3d-mockups × Remotion
 
 A [Remotion](https://www.remotion.dev) project that renders react-3d-mockups
-to video, over animated [Tabbied](https://tabbied.com) pattern backgrounds.
+to video: a reel over animated [Tabbied](https://tabbied.com) pattern
+backgrounds, and three campaign films that use no patterns at all.
 
 - **`MockupReel`**: a ~30 s reel at 1920×1080. It opens on a title card,
   then gives single mockups a shot each - an iPhone 18 Pro Max turning
@@ -23,6 +24,10 @@ to video, over animated [Tabbied](https://tabbied.com) pattern backgrounds.
   angles to see which display is lit at each. Render one frame:
   `npx remotion still WatchSheet out/ultra4.png --props='{"kind":"apple","variant":"ultra4"}'`.
 
+- **`GroveFilm`, `KiteFilm`, `LumenFilm`**: three ~25 s films, each a
+  campaign for a fictional brand carried across the objects and devices it
+  would really appear on. See [The campaign films](#the-campaign-films).
+
 It is not an npm workspace: it installs the package from `../../packages/react`
 the way an app would, so build the package first.
 
@@ -32,7 +37,217 @@ cd examples/remotion
 npm install
 npm run studio                     # preview in Remotion Studio
 npm run render                     # out/mockup-reel.mp4
+npm run render:grove               # out/grove.mp4 (also render:kite, render:lumen)
 ```
+
+## The campaign films
+
+Each film is one brand, told on the surfaces it would be printed or shown
+on, with a backdrop made of CSS and photographs rather than a pattern:
+
+- **Grove** (`src/campaigns/grove`), a cold-pressed juice: a gable-top
+  carton turning in a pool of morning light, the three-flavour range set down
+  on a table, a kraft bag swinging, the corner it is sold on (a bus shelter
+  with its LED board and a sidewalk A-frame on one stage, at their true
+  relative sizes), the delivery van in a full wrap, and a billboard shot from
+  below.
+- **KITE** (`src/campaigns/kite`), a running shoe's drop: the shoe tears
+  across the title, sits on an iPhone 18 Pro Max product page through its
+  three colourways and then lifts off the glass into the next shot; a Galaxy
+  Z Fold8 counts down on its cover display and opens on the lookbook; an
+  Apple Watch Ultra 4 gets the shipping note mid-run; the shoe box lands on
+  the shipper; and the whole drop lies on a desk at true scale, shot from
+  straight overhead before the camera cranes down.
+- **Lumen** (`src/campaigns/lumen`), a music festival in a glasshouse: the
+  invitation opening as a luna moth crosses it, the Z-fold programme
+  unfolding, the artist pass turning on its lanyard, the live record spinning
+  beside the zine, and the gate at night - a DOOH totem and two roll-up
+  banners under string lights.
+
+`src/campaigns/kit.tsx` holds what they share: `Face` (a printed surface
+laid out in container units, so one design holds at any `resolution`),
+`Cut` and `Drift` (a cut-out on a surface, or in the frame in front of or
+behind the transparent canvas, blurred for depth of field, and kept clear of
+the mockups), a `CameraRig` keyed by frame, a `Floor` that fades into the
+CSS backdrop so a stage has ground for its contact shadow, `settle` (a short
+set-down onto a surface), `statusBarFont` and `OverlapProbe` (see below).
+
+### The photographs
+
+Every photograph in the films - fruit, four growers, the shoe in three colours,
+runners, musicians, plants, a moth - is a cut-out on a transparent
+ground in `public/art`, generated with OpenAI's GPT Image 2.5
+(`gpt-image-2.5-sunburst`, `quality: "low"`, `background: "transparent"`).
+`scripts/generate-art.py` holds every prompt and regenerates any of them:
+
+```bash
+OPENAI_API_KEY=... npm run art                   # only the missing ones
+OPENAI_API_KEY=... npm run art -- kite-runner    # just these
+```
+
+Two things it learned. Asked for a transparent background alone, the model
+stood a lemon on an opaque white studio floor; naming every kind of ground it
+must leave out (floor, shadow, backdrop, reflection, glow) gave clean
+cut-outs. And the shoe's sky and ember colourways and its three-quarter view
+are edits of the volt image rather than fresh generations, so all four are
+the same shoe. The script needs Python 3 with Pillow and requests.
+
+### Sound
+
+KITE and Grove are cut for sound from [ElevenLabs](https://elevenlabs.io):
+Grove for narration, a music bed and effects, KITE for music and effects
+only. Each film's cue sheet, `src/campaigns/<film>/sound.json`, holds what
+the narrator says and when (if anyone does), the effects on the visual
+beats, and a prompt for the music. Every cue is anchored
+to a shot and a frame within it, so re-timing a shot carries its sound along.
+`src/campaigns/sound.tsx` plays whatever of the sheet is in
+`public/audio/<film>/` and nothing that is not, so the films render silent
+until the files exist:
+
+```bash
+ELEVENLABS_API_KEY=... npm run audio -- kite          # generate what is missing
+ELEVENLABS_API_KEY=... npm run audio -- kite vo-03-fold
+npm run audio -- grove --dry-run                      # the cue sheet, no requests
+```
+
+Working in the ElevenLabs app instead, `--dry-run` lists every file name with
+its text or prompt and length; save each file under its name and the film
+picks it up. Or read the whole script as one take: `--dry-run` ends with it,
+a pause between lines (`[long pause]` on `eleven_v3` and `eleven_v4`,
+`<break time="1.2s" />` on the older models), and `--split take.mp3` cuts it.
+That keeps one performance across every line, evened out, with any pause
+inside a line shortened to 0.4 s. A dramatic pause inside a line can be as
+long as the one between two lines, so `--split` cuts at the pauses that leave
+each line nearest its share of the script by length, not simply the longest.
+
+On `eleven_v3` and `eleven_v4` a line can carry audio tags, `[softly]`,
+`[whispers]`, `[excited]`, which set how the words after them are said and are
+not spoken. A tag holds until the next one, so a one-take read carries it
+from line to line.
+
+KITE's sound is in `public/audio/kite`: a music bed and no narration, so the
+type on screen carries the words. The bed is one `eleven_music_v2_5` track,
+a soft build that drops into the full beat on its eighth second. Its `sync`
+(`{ "shot": "fold", "at": 33, "second": 8 }`) lands that drop on the frame
+the Fold's countdown reaches zero, so the bed starts 9 frames into the film.
+
+Grove's sound is in `public/audio/grove`: a voiceover and a music bed. The
+voiceover is written as an ad rather than a caption track:
+- a wake-up hook, "Rise and shine! Your juice has been up since five-forty"
+  (the batch time on the corner's menu board);
+- the recipe as the cartons land, "Real fruit. Cold-pressed. That's the
+  whole recipe.";
+- "Grab it, shake it, go!" as the bag swings;
+- "It's waiting on your corner... before you've even found your shoes" as
+  "before you are." comes up;
+- the van left to the music;
+- then the promise and the tagline: "Never from concentrate. Never from
+  yesterday." and "Grove. Squeezed this morning."
+
+The voice is ElevenLabs' Beth, an energetic commercial read, on `eleven_v4`.
+Its tags set each line's delivery, and it was read as one take and cut with
+`--split`. Its transcript matches the script. The music is an
+`eleven_music_v2_5` indie-pop bed that climbs in three steps: guitar and
+claps, the band from 8.85 s, and the full chorus from 17.4 s. Its `sync`
+puts the chorus on the van's first frame, which also lands the band on the
+cut into the bag. The model returned 40 s where 26.5 s was asked for, so the
+film plays the first 26 s and fades the last second out.
+
+Neither film's effects are generated yet. The mix is in the sheet: the music
+fades in over its first 12 frames and out over the film's last second, and
+dips to `duck` for each line's window, or to the line's own `duck` if it has
+one. Grove's music dips to 25% under the chorus and to 40% under the first
+three lines, so the light opening stays audible. The voice sits 9 to 11 dB
+over the music throughout. Each line has a window (`maxSeconds`) that ends
+before the next line, and the script reports any read that runs past it.
+The script trims the silence the voice model leaves around a line, so it
+starts on its cue.
+
+The narration is written for the voice, not the screen: "five-forty" rather
+than "5:40", which a text-to-speech model may read oddly. Each line
+complements the type on screen rather than reading it out.
+
+| KITE | Music and effects |
+| --- | --- |
+| 0:00 title | whoosh as the shoe tears past (0:00.1) |
+| 0:02.6 app | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
+| 0:07.2 Fold | countdown beeps (0:07.6, 0:07.9), launch chime and the music's drop (0:08.3), hinge (0:08.5) |
+| 0:11.1 watch | notification (0:12.9) |
+| 0:14.4 boxes | box set down (0:15.1) |
+| 0:18.3 desk | camera swoosh (0:19.3) |
+| 0:22.9 outro | logo sting (0:23.0) |
+
+| Grove | Narration | Music and effects |
+| --- | --- | --- |
+| 0:00.4 hero | [excited] Rise and shine! [playfully] Your juice has been up since five-forty. | orchard morning (from 0:00) |
+| 0:04.7 line-up | Real fruit. Cold-pressed. [chuckles] That's the whole recipe. | cut (0:04.5), three cartons set down (0:04.8 to 0:05.2) |
+| 0:09.1 bag | [excited] Grab it, shake it, go! | the band comes in (0:08.5), paper bag (0:09.0) |
+| 0:12.6 corner | It's waiting on your corner... [playfully] before you've even found your shoes. | street (from 0:12.3) |
+| 0:17.1 van | (the music) | the chorus (0:17.1), van rolling past (0:17.5) |
+| 0:20.3 billboard | [confident] Never from concentrate. Never from yesterday. | wind (from 0:20.7) |
+| 0:23.7 outro | [cheerfully] Grove. Squeezed this morning. | pour and ding (0:23.7) |
+
+### Notes from making them
+
+- **Set things down; don't drop them.** A spring's overshoot carried a
+  dropped carton below the table and the shoe box into the shipper, and its
+  wobble read as rubber. A fall at real gravity was worse in a different way:
+  from any height worth seeing, it is over in a few frames and looks thrown.
+  `settle()` lowers an object the last couple of centimetres at the stage's
+  scale (`20 / mmPerUnit`) and slows it to rest as it touches, the way a thing
+  put down by hand arrives: straight down, no tip, no spin, no bounce.
+- **Check a stage for collisions.** Every multi-object stage names its
+  objects and mounts an `OverlapProbe`; render with
+  `REMOTION_OVERLAP_PROBE=1` and it logs any frame where one object's
+  vertices are inside another's bounds (in that object's own rotated frame):
+  `[overlap] frame 50: shoebox enters laptop (973 vertices)`. A scaled-down
+  render is enough: `--scale=0.25 --sequence --image-format=jpeg`.
+- **Print on the stock, not over it.** A face drawn straight over a kraft
+  bag read as a sticker. The bag's ink layer multiplies into the board, is
+  mottled through a noise mask and a hair soft at the edges, and the paper -
+  grain, the turned-over hem, the shading of a bag that is not quite flat -
+  is laid over everything (`OnKraft` in `grove/art.tsx`).
+- **Small type is set in sentence case,** at the face's own spacing, never
+  in tracked capitals.
+- **Name the status bar's face.** A device's status bar asks for SF or One
+  UI Sans, which a render machine has neither of. KITE points it at the
+  faces the film loads with `statusBarFont()`, which sets
+  `--mockup-status-bar-font`: Inter on the iPhones and Roboto on the Fold. The
+  product page is a light screen, so its bar is set dark
+  (`statusBar={{ color: '#000000' }}`), the way a light app's is.
+- **Slots must be direct children.** A component that returns
+  `<CustomBox.Top>` and friends is not a slot; a function that returns a
+  fragment of them is (`shoeboxFaces(colourway)`).
+- **A foldable's content follows the lit display.** Below 30 degrees the
+  cover screen is lit, so the Fold shot renders the countdown below it and
+  the lookbook above it.
+- **A greeting card's spread faces away from the default camera.** Turning
+  it by `-π` plus half the fold (`(180 - openAngle) / 2`) keeps the cover
+  square to the lens while it is shut and lands on the inside spread when it
+  is open.
+- **A mailer's `tapeColor` reaches the printed faces only.** The tape on an
+  unprinted end stays kraft, so the KITE shipper prints both ends.
+- **Lifting something off a screen** is a DOM cut-out placed where the
+  on-glass one sits on the lift frame (measured from a still), with the
+  on-glass copy hidden from that frame on. The phone holds still and square
+  for it, which is why that shot has no idle `float`.
+- **Keep transitions flat.** `slide`, `wipe`, `iris`, `clockWipe` and
+  `pushCut` move or clip the outgoing shot in 2D and are fine. `flip` puts
+  it in a CSS 3D perspective, which compounds with the 3D transforms that
+  place each screen's DOM on the glass: the printed faces came off the
+  geometry they belong to, and the half-way frame was black. And `pushCut`
+  leaves the incoming shot zoomed to 107% when it ends, so the shot jumps
+  back to 100% the frame after; Grove passes `incomingStartScale: 1` and
+  `incomingEndScale: 1`.
+- **Render one film at a time, without `fromSurface`.** Rendered while
+  another render (or a batch of stills) shared the CPU, a few frames in
+  every thousand came out with a whole canvas, or one surface, missing for
+  a single frame - Remotion's own screenshot code notes a frame drop under
+  pressure with Chrome's `fromSurface` capture. Rendered one at a time with
+  `DISABLE_FROM_SURFACE=1` (which `remotion.config.ts` sets), all three came
+  out without one: 15 such frames across the first renders, none in 2,260
+  frames of the second. To check a render, look for a frame that differs
+  from both of its neighbours far more than they differ from each other.
 
 WebGL in headless Chrome needs a GPU backend. `remotion.config.ts` asks for
 `swangle` (SwiftShader under ANGLE, on the CPU), which works anywhere and is

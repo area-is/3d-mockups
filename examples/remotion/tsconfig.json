@@ -11,6 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "types": [],
+    // The films' sound cue sheets are JSON, read by the generator script too.
+    "resolveJsonModule": true,
     // The type-level half of the aliases in remotion.config.ts. The package's
     // typings sit behind the `file:` symlink, so `react` and fiber resolve from
     // the monorepo's node_modules too, and fiber's `<group>`/`<mesh>` JSX
