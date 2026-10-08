@@ -94,10 +94,11 @@ the same shoe. The script needs Python 3 with Pillow and requests.
 
 ### Sound
 
-KITE and Grove are cut for narration, a music bed and effects from
-[ElevenLabs](https://elevenlabs.io). Each film's cue sheet,
-`src/campaigns/<film>/sound.json`, holds what the narrator says and when, the
-effects on the visual beats, and a prompt for the music. Every cue is anchored
+KITE and Grove are cut for sound from [ElevenLabs](https://elevenlabs.io):
+Grove for narration, a music bed and effects, KITE for music and effects
+only. Each film's cue sheet, `src/campaigns/<film>/sound.json`, holds what
+the narrator says and when (if anyone does), the effects on the visual
+beats, and a prompt for the music. Every cue is anchored
 to a shot and a frame within it, so re-timing a shot carries its sound along.
 `src/campaigns/sound.tsx` plays whatever of the sheet is in
 `public/audio/<film>/` and nothing that is not, so the films render silent
@@ -124,54 +125,67 @@ On `eleven_v3` and `eleven_v4` a line can carry audio tags, `[softly]`,
 not spoken. A tag holds until the next one, so a one-take read carries it
 from line to line.
 
-KITE's sound is in `public/audio/kite`: a voiceover and a music bed. The
-voiceover is written as an ad rather than a caption track. It opens on a hook
-("There's a run you're always chasing..."), then the feeling ("The one where
-every step feels like... nothing at all", whispered as the shoe lifts off the
-glass). The name lands just after the beat drops ("Meet Aero Two."), the proof
-comes while the watch posts a 4:38 pace ("Faster splits. Easier miles."), and
-it closes on the call to action and the tagline. That is six lines in 25
-seconds, with the boxes left to the music. The voice is ElevenLabs' Everett
-on `eleven_v4`, its tags setting each line's delivery, read as one take and
-cut with `--split`. Its transcript matches the script.
+KITE's sound is in `public/audio/kite`: a music bed and no narration, so the
+type on screen carries the words. The bed is one `eleven_music_v2_5` track,
+a soft build that drops into the full beat on its eighth second. Its `sync`
+(`{ "shot": "fold", "at": 33, "second": 8 }`) lands that drop on the frame
+the Fold's countdown reaches zero, so the bed starts 9 frames into the film.
 
-The music is one `eleven_music_v2_5` bed: a soft build that drops into the
-full beat on its eighth second. Its `sync` (`{ "shot": "fold", "at": 33,
-"second": 8 }`) lands that drop on the frame the Fold's countdown reaches
-zero, so the bed starts 9 frames into the film. The effects are still to
-generate. The mix is in the sheet: the music fades in over its first 12
-frames and out over the film's last second, and dips to `duck` (30%) for each
-line's window. A line's own `duck` overrides it, and KITE's two opening lines
-set it to 1 so the music's quiet build stays audible under them. After the
-drop, the voice sits about 10 dB over the music. Each line has a window (`maxSeconds`) that ends before the
-next line, and the script reports any read that runs past it. The script
-trims the silence the voice model leaves around a line, so it starts on its
-cue.
+Grove's sound is in `public/audio/grove`: a voiceover and a music bed. The
+voiceover is written as an ad rather than a caption track:
+- a wake-up hook, "Rise and shine! Your juice has been up since five-forty"
+  (the batch time on the corner's menu board);
+- the recipe as the cartons land, "Real fruit. Cold-pressed. That's the
+  whole recipe.";
+- "Grab it, shake it, go!" as the bag swings;
+- "It's waiting on your corner... before you've even found your shoes" as
+  "before you are." comes up;
+- the van left to the music;
+- then the promise and the tagline: "Never from concentrate. Never from
+  yesterday." and "Grove. Squeezed this morning."
 
-The narration is written for the voice, not the screen: "Aero Two", "October
-ninth" and "Kite" rather than "AERO 2", "10.09" and "KITE", which a
-text-to-speech model may read as a decimal or spell out. Each line
+The voice is ElevenLabs' Beth, an energetic commercial read, on `eleven_v4`.
+Its tags set each line's delivery, and it was read as one take and cut with
+`--split`. Its transcript matches the script. The music is an
+`eleven_music_v2_5` indie-pop bed that climbs in three steps: guitar and
+claps, the band from 8.85 s, and the full chorus from 17.4 s. Its `sync`
+puts the chorus on the van's first frame, which also lands the band on the
+cut into the bag. The model returned 40 s where 26.5 s was asked for, so the
+film plays the first 26 s and fades the last second out.
+
+Neither film's effects are generated yet. The mix is in the sheet: the music
+fades in over its first 12 frames and out over the film's last second, and
+dips to `duck` for each line's window, or to the line's own `duck` if it has
+one. Grove's music dips to 25% under the chorus and to 40% under the first
+three lines, so the light opening stays audible. The voice sits 9 to 11 dB
+over the music throughout. Each line has a window (`maxSeconds`) that ends
+before the next line, and the script reports any read that runs past it.
+The script trims the silence the voice model leaves around a line, so it
+starts on its cue.
+
+The narration is written for the voice, not the screen: "five-forty" rather
+than "5:40", which a text-to-speech model may read oddly. Each line
 complements the type on screen rather than reading it out.
 
-| KITE | Narration | Effects |
-| --- | --- | --- |
-| 0:00.3 title | [softly] There's a run you're always chasing... | whoosh as the shoe tears past (0:00.1) |
-| 0:03.9 app | The one where every step feels like... [whispers] nothing at all. | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
-| 0:08.8 Fold | [excited] Meet Aero Two. | countdown beeps (0:07.6, 0:07.9), launch chime and the music's drop (0:08.3), hinge (0:08.5) |
-| 0:11.9 watch | [confident] Faster splits. Easier miles. | notification (0:12.9) |
-| boxes | (the music) | box set down (0:15.1) |
-| 0:19.2 desk | Drops October ninth. Only on the Kite app. | camera swoosh (0:19.3) |
-| 0:23.3 outro | [warmly] Kite. Run lighter. | logo sting (0:23.0) |
+| KITE | Music and effects |
+| --- | --- |
+| 0:00 title | whoosh as the shoe tears past (0:00.1) |
+| 0:02.6 app | taps on each colourway (0:03.8, 0:05.2), lift-off (0:06.1) |
+| 0:07.2 Fold | countdown beeps (0:07.6, 0:07.9), launch chime and the music's drop (0:08.3), hinge (0:08.5) |
+| 0:11.1 watch | notification (0:12.9) |
+| 0:14.4 boxes | box set down (0:15.1) |
+| 0:18.3 desk | camera swoosh (0:19.3) |
+| 0:22.9 outro | logo sting (0:23.0) |
 
-| Grove | Narration | Effects |
+| Grove | Narration | Music and effects |
 | --- | --- | --- |
-| 0:00.7 hero | Squeezed this morning. Not last month. | orchard morning (from 0:00) |
-| 0:04.9 line-up | Blood orange. Lemon ginger. Green apple. | cut (0:04.5), three cartons set down (0:04.8 to 0:05.2) |
-| 0:09.1 bag | Cold, fresh, and good to go. | paper bag (0:09.0) |
-| 0:12.8 corner | On your corner, before you're even up. | street (from 0:12.3) |
-| 0:17.6 van | Delivered fresh every morning. | van rolling past (0:17.5) |
-| 0:20.9 billboard | Never from concentrate. | wind (from 0:20.7) |
-| 0:24.1 outro | Grove. Squeezed this morning. | pour and ding (0:23.7) |
+| 0:00.4 hero | [excited] Rise and shine! [playfully] Your juice has been up since five-forty. | orchard morning (from 0:00) |
+| 0:04.7 line-up | Real fruit. Cold-pressed. [chuckles] That's the whole recipe. | cut (0:04.5), three cartons set down (0:04.8 to 0:05.2) |
+| 0:09.1 bag | [excited] Grab it, shake it, go! | the band comes in (0:08.5), paper bag (0:09.0) |
+| 0:12.6 corner | It's waiting on your corner... [playfully] before you've even found your shoes. | street (from 0:12.3) |
+| 0:17.1 van | (the music) | the chorus (0:17.1), van rolling past (0:17.5) |
+| 0:20.3 billboard | [confident] Never from concentrate. Never from yesterday. | wind (from 0:20.7) |
+| 0:23.7 outro | [cheerfully] Grove. Squeezed this morning. | pour and ding (0:23.7) |
 
 ### Notes from making them
 

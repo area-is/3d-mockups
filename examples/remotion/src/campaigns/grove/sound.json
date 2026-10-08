@@ -1,24 +1,24 @@
 {
   "film": "grove",
   "voice": {
-    "voiceId": "JBFqnCBsd6RMkjVDRZzb",
-    "modelId": "eleven_multilingual_v2",
-    "settings": { "stability": 0.6, "similarity_boost": 0.8, "style": 0.2, "use_speaker_boost": true }
+    "voiceId": "FLj50PrMa40MhGHappOt",
+    "name": "Beth - Commercial, Upbeat, Engaging",
+    "modelId": "eleven_v4"
   },
   "music": {
-    "prompt": "Bright, warm morning track for a cold-pressed juice commercial: plucked acoustic guitar, marimba, light handclaps and soft percussion at 100 BPM. Cheerful and uncluttered, leaves room for a voiceover, and ends gently on a resolved chord at 26 seconds. No vocals.",
-    "seconds": 27,
-    "volume": 0.5,
-    "duck": 0.4
+    "prompt": "A 26-second sunny, upbeat indie-pop commercial track at 112 BPM: bright strummed acoustic guitar, ukulele, handclaps, a punchy kick and a bouncy bass. For the first eight seconds it is light and bouncy, just guitar, ukulele and claps under a voiceover. At eight and a half seconds the full band kicks in with the kick and bass, cheerful and driving, and it stays bright and full, then ends on one big final strum at twenty-five seconds that rings out to silence. Instrumental, crisp and uncluttered production with room for a voiceover.",
+    "seconds": 26.5,
+    "volume": 0.6,
+    "duck": 0.25,
+    "sync": { "shot": "van", "at": 0, "second": 17.4 }
   },
   "lines": [
-    { "id": "vo-01-hero", "shot": "hero", "at": 20, "maxSeconds": 3.2, "text": "Squeezed this morning. Not last month." },
-    { "id": "vo-02-lineup", "shot": "lineup", "at": 20, "maxSeconds": 3.2, "text": "Blood orange. Lemon ginger. Green apple." },
-    { "id": "vo-03-bag", "shot": "bag", "at": 16, "maxSeconds": 2.3, "text": "Cold, fresh, and good to go." },
-    { "id": "vo-04-street", "shot": "street", "at": 30, "maxSeconds": 3.6, "text": "On your corner, before you're even up." },
-    { "id": "vo-05-van", "shot": "van", "at": 16, "maxSeconds": 2.3, "text": "Delivered fresh every morning." },
-    { "id": "vo-06-billboard", "shot": "billboard", "at": 16, "maxSeconds": 2.3, "text": "Never from concentrate." },
-    { "id": "vo-07-outro", "shot": "outro", "at": 16, "maxSeconds": 1.8, "text": "Grove. Squeezed this morning." }
+    { "id": "vo-01-hero", "shot": "hero", "at": 12, "maxSeconds": 4.0, "duck": 0.4, "text": "[excited] Rise and shine! [playfully] Your juice has been up since five-forty." },
+    { "id": "vo-02-lineup", "shot": "lineup", "at": 14, "maxSeconds": 4.1, "duck": 0.4, "text": "Real fruit. Cold-pressed. [chuckles] That's the whole recipe." },
+    { "id": "vo-03-bag", "shot": "bag", "at": 16, "maxSeconds": 2.0, "duck": 0.4, "text": "[excited] Grab it, shake it, go!" },
+    { "id": "vo-04-street", "shot": "street", "at": 24, "maxSeconds": 3.9, "text": "It's waiting on your corner... [playfully] before you've even found your shoes." },
+    { "id": "vo-05-billboard", "shot": "billboard", "at": 0, "maxSeconds": 3.3, "text": "[confident] Never from concentrate. Never from yesterday." },
+    { "id": "vo-06-outro", "shot": "outro", "at": 4, "maxSeconds": 2.2, "text": "[cheerfully] Grove. Squeezed this morning." }
   ],
   "sfx": [
     { "id": "sfx-hero-morning", "shot": "hero", "at": [0], "seconds": 4.4, "volume": 0.35, "prompt": "Soft early-morning orchard ambience with distant birdsong." },

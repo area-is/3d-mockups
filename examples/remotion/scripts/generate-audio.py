@@ -228,13 +228,17 @@ def main():
         sys.exit(f'Not in {film}/sound.json: {", ".join(sorted(unknown))}')
 
     if take is not None:
+        if not sheet['lines']:
+            sys.exit(f'{film}/sound.json has no narration lines to cut a take into.')
         split_take(take, sheet, out_dir)
         return
 
     if '--dry-run' in flags:
         for name, kind, what, seconds, _ in entries:
             print(f'public/audio/{film}/{name}.mp3  [{kind}, {"max " if kind == "voice" else ""}{seconds}s]  {what}')
-        print(f"\nAs one take ({sheet['voice'].get('name', sheet['voice']['voiceId'])}, {sheet['voice']['modelId']}), to cut with --split:\n{one_take(sheet)}")
+        if sheet['lines']:
+            voice = sheet['voice']
+            print(f"\nAs one take ({voice.get('name', voice['voiceId'])}, {voice['modelId']}), to cut with --split:\n{one_take(sheet)}")
         return
 
     key = os.environ.get('ELEVENLABS_API_KEY')
@@ -246,8 +250,10 @@ def main():
 
     session = requests.Session()
     session.headers.update({'xi-api-key': key, 'Content-Type': 'application/json'})
-    voice = sheet['voice']
-    voice_id = os.environ.get('ELEVENLABS_VOICE_ID', voice['voiceId'])
+    voice = sheet.get('voice')
+    if sheet['lines'] and not voice:
+        sys.exit(f'{film}/sound.json has narration lines but no voice to read them.')
+    voice_id = os.environ.get('ELEVENLABS_VOICE_ID', voice['voiceId']) if voice else None
     lines = sheet['lines']
     over = []
 

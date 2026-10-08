@@ -13,7 +13,8 @@ import { Audio, getStaticFiles, interpolate, Sequence, staticFile, useVideoConfi
  */
 export interface SoundSheet {
   film: string
-  voice: { voiceId: string; name?: string; modelId: string; settings?: Record<string, number | boolean> }
+  /** Who reads the lines. A film without narration has no voice and no lines. */
+  voice?: { voiceId: string; name?: string; modelId: string; settings?: Record<string, number | boolean> }
   music: {
     prompt: string
     seconds: number

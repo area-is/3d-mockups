@@ -1,25 +1,13 @@
 {
   "film": "kite",
-  "voice": {
-    "voiceId": "TdGSaGM0xJze6GHo3qqb",
-    "name": "Everett - Confident American Ads",
-    "modelId": "eleven_v4"
-  },
   "music": {
     "prompt": "Cinematic sports-commercial track at 120 BPM that builds from intimate to anthemic. For the first eight seconds: a soft, warm synth pulse and sparse piano over a muffled heartbeat kick, with a slowly rising swell. At eight seconds the full beat drops in hard: punchy drums, driving synth bass and bright plucked arpeggios. The energy keeps climbing to an anthemic peak around fifteen seconds and holds strong to twenty-two seconds, then lands on one big final hit at twenty-three seconds that rings out to silence. Instrumental, crisp modern production, uncluttered mids that leave room for a voiceover.",
     "seconds": 25.5,
-    "volume": 0.55,
+    "volume": 0.8,
     "duck": 0.3,
     "sync": { "shot": "fold", "at": 33, "second": 8.0 }
   },
-  "lines": [
-    { "id": "vo-01-title", "shot": "title", "at": 8, "maxSeconds": 2.9, "duck": 1, "text": "[softly] There's a run you're always chasing..." },
-    { "id": "vo-02-phone", "shot": "phone", "at": 39, "maxSeconds": 3.9, "duck": 1, "text": "The one where every step feels like... [whispers] nothing at all." },
-    { "id": "vo-03-fold", "shot": "fold", "at": 48, "maxSeconds": 1.6, "text": "[excited] Meet Aero Two." },
-    { "id": "vo-04-watch", "shot": "watch", "at": 22, "maxSeconds": 2.6, "text": "[confident] Faster splits. Easier miles." },
-    { "id": "vo-05-desk", "shot": "desk", "at": 26, "maxSeconds": 3.0, "text": "Drops October ninth. Only on the Kite app." },
-    { "id": "vo-06-outro", "shot": "outro", "at": 10, "maxSeconds": 1.9, "text": "[warmly] Kite. Run lighter." }
-  ],
+  "lines": [],
   "sfx": [
     { "id": "sfx-title-whoosh", "shot": "title", "at": [2], "seconds": 1.0, "volume": 0.7, "prompt": "A fast, airy whoosh as a running shoe tears past the camera, clean sports-commercial sound design." },
     { "id": "sfx-phone-tap", "shot": "phone", "at": [36, 78], "seconds": 0.5, "volume": 0.5, "prompt": "A soft, crisp smartphone interface tap." },
