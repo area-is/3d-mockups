@@ -655,10 +655,10 @@ const OBJECTS: Entry[] = [
     id: 'shopping-bag',
     res: mmRes('shoppingBag'),
     colorways: stock(
+      ['olive', 'Olive', '#7d8a5c'],
       ['kraft', 'Kraft', '#c19a6b'],
       ['white', 'Gloss white', '#f2efe9'],
-      ['charcoal', 'Charcoal', '#33373d'],
-      ['olive', 'Olive', '#7d8a5c']
+      ['charcoal', 'Charcoal', '#33373d']
     ),
     material: true,
     content: (color) => <BagFront material={color} />,
