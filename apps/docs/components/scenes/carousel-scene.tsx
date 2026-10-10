@@ -63,10 +63,9 @@ import {
   CerealFront,
   CerealStory,
   CerealTop,
-  MailerEnd,
-  MailerFront,
-  MailerLid,
 } from '../screens/package-art'
+import { BoxEnd, BoxSide, BoxTop } from '@/app/examples/fleet/fleet-art'
+import { LIVERIES } from '@/app/examples/fleet/fleet-data'
 import { Newspaper, SwissSite, WatchFace } from '../screens/device-apps'
 import {
   SwissBill,
@@ -358,6 +357,9 @@ function codeFor(entry: Entry, colorway: Colorway): string | null {
 </${c.component}>`
 }
 
+/** The mailer box's print: the Signal livery from the fleet example. */
+const NORTHLINE = LIVERIES[0]!
+
 /** One per device family - the variants are on their own docs pages. */
 const DEVICES: Entry[] = [
   {
@@ -611,27 +613,38 @@ const OBJECTS: Entry[] = [
     res: mmRes('mailerBox'),
     tilt: 0.42,
     colorways: stock(
+      ['white', 'Bleached white', '#e9e5dc'],
       ['kraft', 'Kraft', '#b5915f'],
-      ['white', 'Bleached white', '#e8e4dd'],
       ['slate', 'Slate', '#5c6672']
     ),
     material: true,
-    content: (color) => <MailerLid material={color} />,
-    // A shipper: the brand on the lid under the tape, the pictograms down
-    // the ends where the tape wraps, the name along the front.
+    content: () => <BoxTop livery={NORTHLINE} />,
+    // Northline's shipper, the one on /examples/fleet: the name and the field
+    // on the lid under the tape, the name along both long sides, "this way
+    // up" on the ends. The print is opaque, so the finish shows on the stock
+    // the print leaves clear.
     render: ({ color, screen, surface, surfaceStyle, resolution }) => (
-      <MailerBox color={color} surfaceBackground={surface} surfaceStyle={surfaceStyle} resolution={resolution}>
+      <MailerBox
+        color={color}
+        tapeColor="rgba(20, 33, 61, 0.55)"
+        surfaceBackground={surface}
+        surfaceStyle={surfaceStyle}
+        resolution={resolution}
+      >
         {screen}
         {screen != null && (
           <>
             <MailerBox.Front>
-              <MailerFront material={color} />
+              <BoxSide livery={NORTHLINE} />
             </MailerBox.Front>
+            <MailerBox.Back>
+              <BoxSide livery={NORTHLINE} />
+            </MailerBox.Back>
             <MailerBox.Right>
-              <MailerEnd material={color} />
+              <BoxEnd livery={NORTHLINE} />
             </MailerBox.Right>
             <MailerBox.Left>
-              <MailerEnd material={color} />
+              <BoxEnd livery={NORTHLINE} />
             </MailerBox.Left>
           </>
         )}
@@ -642,10 +655,10 @@ const OBJECTS: Entry[] = [
     id: 'shopping-bag',
     res: mmRes('shoppingBag'),
     colorways: stock(
+      ['olive', 'Olive', '#7d8a5c'],
       ['kraft', 'Kraft', '#c19a6b'],
       ['white', 'Gloss white', '#f2efe9'],
-      ['charcoal', 'Charcoal', '#33373d'],
-      ['olive', 'Olive', '#7d8a5c']
+      ['charcoal', 'Charcoal', '#33373d']
     ),
     material: true,
     content: (color) => <BagFront material={color} />,
